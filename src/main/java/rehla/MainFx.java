@@ -6,9 +6,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class MainFx extends Application {
-
+double x,y =0;
     public static void main(String[] args) {
         launch(args);
     }
@@ -19,6 +20,15 @@ public class MainFx extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/AjouterActivite.fxml"));
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
+            primaryStage.initStyle(StageStyle.UNDECORATED);
+            root.setOnMousePressed(event -> {
+                x = event.getSceneX();
+                y = event.getSceneY();
+            });
+            root.setOnMouseDragged(event -> {
+                primaryStage.setX(event.getScreenX() - x);
+                primaryStage.setY(event.getScreenY() - y);
+            });
             primaryStage.setScene(scene);
             primaryStage.show();
         }

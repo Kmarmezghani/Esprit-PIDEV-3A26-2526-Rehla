@@ -2,6 +2,9 @@ package Controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import models.Activite;
 import services.ActiviteService;
@@ -9,7 +12,7 @@ import services.ActiviteService;
 
 public class AjouterActiviteController {
 
-    private ActiviteService activiteService=new ActiviteService();
+   /* private ActiviteService activiteService=new ActiviteService();
 
     @FXML
     private TextField tfage;
@@ -28,6 +31,7 @@ public class AjouterActiviteController {
         //Activite activite = new Activite(nom,prenom,age);
         //activiteService.add(activite);
 
-    }
+    }*/
+
 
 }

@@ -23,9 +23,7 @@
                      <image>
                         <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
                      </image>
-                     <HBox.margin>
-                        <Insets right="530.0" />
-                     </HBox.margin>
+
                   </ImageView>
                </children>
                <padding>
@@ -72,7 +70,7 @@
                   <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
                   <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@css/styling.css" text="Save" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER" />
-                  <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="69.0" text="cancel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@css/styling.css" text="cancel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                </children>
                <BorderPane.margin>
                   <Insets top="50.0" />

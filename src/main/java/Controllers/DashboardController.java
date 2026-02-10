@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -171,16 +172,31 @@ public class DashboardController {
     @FXML
     private void openAddPopup(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Formulaire.fxml"));
+            Parent root = FXMLLoader.load(
+                    getClass().getResource("/Formulaire.fxml")
+            );
 
             Stage popupStage = new Stage();
             popupStage.setTitle("Add new user");
-            popupStage.initModality(Modality.APPLICATION_MODAL); // block main window
+
+            // ✅ SET ICON
+            popupStage.getIcons().add(
+                    new Image(getClass().getResourceAsStream("/icons/logo.png"))
+            );
+
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+
+            // ✅ Attach popup to parent window (recommended)
+            Stage parentStage = (Stage) ((Node) event.getSource())
+                    .getScene().getWindow();
+            popupStage.initOwner(parentStage);
+
             popupStage.setScene(new Scene(root));
+            popupStage.setResizable(false); // optional
             popupStage.showAndWait();
 
         } catch (Exception e) {
-            e.printStackTrace(); // will show real error if popup fails
+            e.printStackTrace();
         }
     }
 }

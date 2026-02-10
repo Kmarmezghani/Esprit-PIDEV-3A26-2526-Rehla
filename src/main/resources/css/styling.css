@@ -56,6 +56,22 @@
 .button4:pressed {
     -fx-background-color: #778ab5;
 }
+.button5 {
+    -fx-background-color:  #ffffff;
+    -fx-background-radius: 1px 1px 1px 1px;
+    -fx-border-color: #98acd8;
+    -fx-border-width: 1px;
+}
+.button5:hover {
+    -fx-background-color: #D9A0A0;
+    -fx-border-color: #bc0c0c;
+    -fx-border-width: 1px 1px 1px 1px;
+}
+.button5:pressed {
+    -fx-background-color: #bc0c0c;
+
+}
+
 .table-view .column-header,
 .table-view .column-header-background .filler {
     -fx-cell-size: 20;

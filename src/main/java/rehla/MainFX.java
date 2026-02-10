@@ -16,7 +16,7 @@ public class MainFX extends Application {
 
     public void start(Stage primaryStage) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/test.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/AjouterActivite.fxml"));
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
             primaryStage.setTitle("Rehla");

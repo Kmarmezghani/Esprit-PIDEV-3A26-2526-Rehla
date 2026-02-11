@@ -1,6 +1,5 @@
 package services;
 
-import models.InscriptionActivite;
 import util.DBConnection;
 
 import java.sql.Connection;

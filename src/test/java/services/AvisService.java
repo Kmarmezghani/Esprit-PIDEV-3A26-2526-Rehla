@@ -1,6 +1,5 @@
 package services;
 
-import models.Avis;
 import util.DBConnection;
 
 import java.sql.*;

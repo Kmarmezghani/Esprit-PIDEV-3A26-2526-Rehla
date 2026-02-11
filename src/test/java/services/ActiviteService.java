@@ -1,6 +1,5 @@
 package services;
 
-import models.Activite;
 import util.DBConnection;
 
 import java.sql.Connection;

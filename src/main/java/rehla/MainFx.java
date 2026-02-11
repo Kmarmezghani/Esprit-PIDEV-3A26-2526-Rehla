@@ -1,7 +1,6 @@
 package rehla;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -17,7 +16,7 @@ double x,y =0;
     @Override
     public void start(Stage primaryStage) {
         try{
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/AjouterActivite.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
             primaryStage.initStyle(StageStyle.UNDECORATED);

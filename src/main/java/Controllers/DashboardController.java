@@ -521,7 +521,7 @@ public class DashboardController {
     // --- Helper Methods for Buttons ---
     private Button createEditButton() {
         Button btn = new Button("Edit");
-        btn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
+        btn.setStyle("-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-cursor: hand;");
         return btn;
     }
 

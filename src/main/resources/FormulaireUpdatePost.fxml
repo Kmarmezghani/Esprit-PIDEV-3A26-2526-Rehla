@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10" alignment="CENTER"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.UpdatePostController">
+
+    <padding>
+        <Insets top="20" bottom="20" left="20" right="20"/>
+    </padding>
+
+    <TextField fx:id="txtTitre" promptText="Titre"/>
+    <TextArea fx:id="txtContenu" promptText="Contenu"/>
+    <TextField fx:id="txtPopularite" promptText="Popularité"/>
+    <TextField fx:id="txtAuteurId" promptText="ID Auteur"/>
+
+    <Button text="Modifier" onAction="#updatePost"/>
+</VBox>

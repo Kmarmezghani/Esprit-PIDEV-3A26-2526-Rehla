@@ -417,6 +417,9 @@
                                                                 <TableColumn fx:id="colPopularitePost" text="Popularité" />
                                                                 <TableColumn fx:id="colAuteurPost" text="Auteur ID" />
                                                                 <TableColumn fx:id="colLikesPost" text="Likes" />
+                                                                <TableColumn fx:id="colAction" text="Action" prefWidth="100"/>
+
+
                                                             </columns>
                                                             <columnResizePolicy>
                                                                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

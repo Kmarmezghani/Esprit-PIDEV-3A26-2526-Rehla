@@ -38,7 +38,7 @@ public class PostService implements IService<Post> {
 
     @Override
     public void update(Post post) {
-        String sql = "UPDATE post SET titre=?, contenu=?, datePublication=?, popularite=?, personne_id=?, image=? WHERE id=?";
+        String sql = "UPDATE post SET titre=?, contenu=?, datePublication=?, popularite=?, personne_id=? WHERE id=?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, post.getTitre());
@@ -47,7 +47,7 @@ public class PostService implements IService<Post> {
             ps.setInt(4, post.getPopularite());
             ps.setInt(5, post.getAuteur().getId());
 
-            ps.setInt(7, post.getId());
+            ps.setInt(6, post.getId());
             ps.executeUpdate();
             System.out.println("Post mis à jour !");
         } catch (SQLException e) {

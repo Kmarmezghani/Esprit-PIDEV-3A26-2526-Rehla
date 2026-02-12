@@ -14,7 +14,17 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import models.Post;
 import services.PostService;
-
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.Cursor;
+import javafx.scene.layout.HBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.Cursor;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 public class DashboardController {
 
@@ -68,6 +78,8 @@ public class DashboardController {
     @FXML private TableColumn<Post, Integer> colPopularitePost;
     @FXML private TableColumn<Post, Integer> colAuteurPost;
     @FXML private TableColumn<Post, Integer> colLikesPost;
+    @FXML
+    private TableColumn<Post, Void> colAction;
 
 
 
@@ -109,6 +121,7 @@ public class DashboardController {
         });
         loadPosts();
 
+        addEditDeleteButtonsToTable();
     }
     private PostService postService = new PostService();
     private ObservableList<Post> postList = FXCollections.observableArrayList();
@@ -240,6 +253,94 @@ public class DashboardController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    private void addEditDeleteButtonsToTable() {
+
+        colAction.setCellFactory(param -> new TableCell<>() {
+
+            private final Button btnEdit = new Button();
+            private final Button btnDelete = new Button();
+            private final HBox hbox = new HBox(10, btnEdit, btnDelete);
+
+            {
+                // ----------------- EDIT -----------------
+                Image editImage = new Image(getClass().getResourceAsStream("/icons/edit.png"));
+                ImageView editView = new ImageView(editImage);
+                editView.setFitWidth(16);
+                editView.setFitHeight(16);
+                editView.setPreserveRatio(true);
+                btnEdit.setGraphic(editView);
+                btnEdit.setStyle("-fx-background-color: transparent;");
+                btnEdit.setCursor(Cursor.HAND);
+                btnEdit.setOnAction(event -> {
+                    Post post = getTableView().getItems().get(getIndex());
+                    openUpdatePopup(post);
+                });
+
+                // ----------------- DELETE -----------------
+                Image deleteImage = new Image(getClass().getResourceAsStream("/icons/poubelle.png"));
+                ImageView deleteView = new ImageView(deleteImage);
+                deleteView.setFitWidth(16);
+                deleteView.setFitHeight(16);
+                deleteView.setPreserveRatio(true);
+                btnDelete.setGraphic(deleteView);
+                btnDelete.setStyle("-fx-background-color: transparent;");
+                btnDelete.setCursor(Cursor.HAND);
+                btnDelete.setOnAction(event -> {
+                    Post post = getTableView().getItems().get(getIndex());
+                    deletePost(post);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(hbox);
+                }
+            }
+        });
+    }
+
+    private void openUpdatePopup(Post post) {
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/FormulaireUpdatePost.fxml")
+            );
+
+            Parent root = loader.load();
+
+            UpdatePostController controller = loader.getController();
+            controller.setPostToEdit(post);
+
+            Stage stage = new Stage();
+            stage.setTitle("Modifier Post");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            loadPosts(); // refresh table
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deletePost(Post post) {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Supprimer ce post ?");
+        alert.setContentText("Cette action est irréversible !");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                postService.delete(post);      // suppression DB
+                postList.remove(post);         // rafraîchir TableView
+            }
+        });
     }
 
 }

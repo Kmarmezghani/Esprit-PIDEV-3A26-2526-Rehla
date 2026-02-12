@@ -1,9 +1,10 @@
 package rehla;
 
-import models.Activite;
-import models.Avis;
-import services.ActiviteService;
-import services.AvisService;
+// Activities imports - handled by Activities module
+// import models.Activite;
+// import models.Avis;
+// import services.ActiviteService;
+// import services.AvisService;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -11,6 +12,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        // Test code for Activities module
+        // This file is not used - MainFx.java is the actual entry point
 
         /*ActiviteService activiteService = new ActiviteService();
         AvisService avisService = new AvisService();

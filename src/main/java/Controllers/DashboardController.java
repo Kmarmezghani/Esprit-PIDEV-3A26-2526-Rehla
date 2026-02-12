@@ -6,15 +6,21 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import models.Activite;
-import services.ActiviteService;
+import models.Pays;
+import models.Ville;
+import models.Attraction;
+import services.PaysService;
+import services.VilleService;
+import services.AttractionService;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -47,38 +53,58 @@ public class DashboardController {
     @FXML private Tab usertab;
     @FXML private TabPane usertabpanmain;
 
-    // TableView
+    // Activities TableView (managed by Activities module)
     @FXML
-    private TableView<Activite> tableactivite;
-
-    // Columns
+    private TableView<?> tableactivite;
     @FXML
-    private TableColumn<Activite, String> colnameactivite;
-
+    private TableColumn<?, ?> colnameactivite;
     @FXML
-    private TableColumn<Activite, String> coldescriptionactivite;
-
+    private TableColumn<?, ?> coldescriptionactivite;
     @FXML
-    private TableColumn<Activite, Double> colpriceactivite;
-
+    private TableColumn<?, ?> colpriceactivite;
     @FXML
-    private TableColumn<Activite, Double> coldureeactivite;
-
+    private TableColumn<?, ?> coldureeactivite;
     @FXML
-    private TableColumn<Activite, String> coltypeactivite;
-
+    private TableColumn<?, ?> coltypeactivite;
     @FXML
-    private TableColumn<Activite, Double> colavgratactivite;
-
+    private TableColumn<?, ?> colavgratactivite;
     @FXML
-    private TableColumn<Activite, Integer> colguideactivite;
+    private TableColumn<?, ?> colguideactivite;
     @FXML
-    private TableColumn<Activite, Void> colDeleteactivite;
+    private TableColumn<?, ?> colDeleteactivite;
 
     @FXML private TableView<?> tableactivite1111;
-    @FXML private TableView<?> tabledestination;
     @FXML private TableView<?> tablepost;
     @FXML private TableView<?> tableuser;
+
+    // Destination Tables
+    @FXML private TableView<Pays> tablePays;
+    @FXML private TableView<Ville> tableVille;
+    @FXML private TableView<Attraction> tableAttraction;
+
+    // Pays Columns
+    @FXML private TableColumn<Pays, String> colNomPays;
+    @FXML private TableColumn<Pays, String> colContinentPays;
+    @FXML private TableColumn<Pays, String> colDescriptionPays;
+    @FXML private TableColumn<Pays, Void> colActionsPays;
+
+    // Ville Columns
+    @FXML private TableColumn<Ville, String> colNomVille;
+    @FXML private TableColumn<Ville, Integer> colPaysVille;
+    @FXML private TableColumn<Ville, String> colRegionVille;
+    @FXML private TableColumn<Ville, String> colTypeTourismeVille;
+    @FXML private TableColumn<Ville, String> colSaisonVille;
+    @FXML private TableColumn<Ville, Integer> colPopulariteVille;
+    @FXML private TableColumn<Ville, Void> colActionsVille;
+
+    // Attraction Columns
+    @FXML private TableColumn<Attraction, String> colNomAttraction;
+    @FXML private TableColumn<Attraction, String> colDescriptionAttraction;
+    @FXML private TableColumn<Attraction, String> colTypeAttraction;
+    @FXML private TableColumn<Attraction, Double> colPrixAttraction;
+    @FXML private TableColumn<Attraction, String> colHorairesAttraction;
+    @FXML private TableColumn<Attraction, Integer> colVilleAttraction;
+    @FXML private TableColumn<Attraction, Void> colActionsAttraction;
 
 
     @FXML private ToggleButton dashactbut;
@@ -89,8 +115,16 @@ public class DashboardController {
 
 
     private final ToggleGroup dashboardGroup = new ToggleGroup();
-    private final ActiviteService activiteService = new ActiviteService();
-    private final ObservableList<Activite> activiteList = FXCollections.observableArrayList();
+
+    // Destination Services
+    private final PaysService paysService = new PaysService();
+    private final VilleService villeService = new VilleService();
+    private final AttractionService attractionService = new AttractionService();
+
+    // Destination Lists
+    private final ObservableList<Pays> paysList = FXCollections.observableArrayList();
+    private final ObservableList<Ville> villeList = FXCollections.observableArrayList();
+    private final ObservableList<Attraction> attractionList = FXCollections.observableArrayList();
 
 
     @FXML
@@ -118,21 +152,11 @@ public class DashboardController {
 
         dashboardGroup.selectToggle(dashuserbut);
         applySelectedStyles();
-        initActiviteTable();
-        addDeleteButton();
-        tableactivite.widthProperty().addListener((obs, oldW, newW) -> {
-            double w = newW.doubleValue();
-            double available = w - 20;
-
-
-            colnameactivite.setPrefWidth(available * 0.15);
-            coldescriptionactivite.setPrefWidth(available * 0.3);
-            colpriceactivite.setPrefWidth(available * 0.12);
-            coldureeactivite.setPrefWidth(available * 0.12);
-            coltypeactivite.setPrefWidth(available * 0.10);
-            colavgratactivite.setPrefWidth(available * 0.12);
-            colguideactivite.setPrefWidth(available * 0.10);
-        });
+        
+        // Initialize Destination Tables
+        initPaysTable();
+        initVilleTable();
+        initAttractionTable();
         Platform.runLater(() -> {
             Scene scene = dashuserbut.getScene();
             Stage stage = (Stage) scene.getWindow();
@@ -146,35 +170,14 @@ public class DashboardController {
 
     }
 
+    // Activities table initialization - handled by Activities module
+    // Placeholder method to prevent errors
     private void initActiviteTable() {
-
-        colnameactivite.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        coldescriptionactivite.setCellValueFactory(new PropertyValueFactory<>("description"));
-        colpriceactivite.setCellValueFactory(new PropertyValueFactory<>("prix"));
-        coldureeactivite.setCellValueFactory(new PropertyValueFactory<>("duree"));
-        coltypeactivite.setCellValueFactory(new PropertyValueFactory<>("typeActivite"));
-        colavgratactivite.setCellValueFactory(new PropertyValueFactory<>("noteMoyenne"));
-        colguideactivite.setCellValueFactory(new PropertyValueFactory<>("guideId"));
-
-        tableactivite.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-
-        refreshActiviteTable();
-
-        Platform.runLater(() -> {
-            colnameactivite.setPrefWidth(160);
-            coldescriptionactivite.setPrefWidth(200);
-            colpriceactivite.setPrefWidth(100);
-            coldureeactivite.setPrefWidth(100);
-            coltypeactivite.setPrefWidth(140);
-            colavgratactivite.setPrefWidth(170);
-            colguideactivite.setPrefWidth(90);
-            colDeleteactivite.setPrefWidth(50);
-        });
+        // Will be implemented by Activities module
     }
 
     private void refreshActiviteTable() {
-        activiteList.setAll(activiteService.getAll());
-        tableactivite.setItems(activiteList);
+        // Will be implemented by Activities module
     }
 
 
@@ -269,55 +272,263 @@ public class DashboardController {
 
     @FXML
     void openAddPopupactivite(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddActivite.fxml"));
-
-            Stage popupStage = new Stage();
-            popupStage.setTitle("Add new user");
-            popupStage.initModality(Modality.APPLICATION_MODAL);
-            popupStage.setScene(new Scene(root));
-            popupStage.showAndWait();
-            refreshActiviteTable();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        // Will be implemented by Activities module
+        System.out.println("Add Activity - handled by Activities module");
     }
-    private void addDeleteButton() {
 
-        colDeleteactivite.setCellFactory(param -> new TableCell<>() {
+    // ========== DESTINATION MODULE METHODS ==========
 
-            private final Button deleteBtn = new Button();
+    // --- PAYS (Country) Methods ---
+    private void initPaysTable() {
+        colNomPays.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colContinentPays.setCellValueFactory(new PropertyValueFactory<>("continent"));
+        colDescriptionPays.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        addPaysActionButtons();
+        refreshPaysTable();
+    }
+
+    private void refreshPaysTable() {
+        paysList.setAll(paysService.getAll());
+        tablePays.setItems(paysList);
+    }
+
+    private void addPaysActionButtons() {
+        colActionsPays.setCellFactory(param -> new TableCell<>() {
+            private final Button editBtn = createEditButton();
+            private final Button deleteBtn = createDeleteButton();
+            private final HBox container = new HBox(10, editBtn, deleteBtn);
 
             {
-                ImageView icon = new ImageView(new Image(
-                        getClass().getResourceAsStream("/icons/poubelle.png")
-                ));
-                icon.setFitWidth(20);
-                icon.setFitHeight(20);
+                container.setAlignment(Pos.CENTER);
 
-                deleteBtn.setGraphic(icon);
-                deleteBtn.setStyle("""
-                -fx-background-color: transparent;
-                -fx-padding: 0;
-                -fx-cursor: hand;
-            """);
+                editBtn.setOnAction(e -> {
+                    Pays pays = getTableView().getItems().get(getIndex());
+                    openEditPopupPays(pays);
+                });
 
                 deleteBtn.setOnAction(e -> {
-                    Activite activite = getTableView().getItems().get(getIndex());
-
-                    activiteService.delete(activite);      // DB
-                    getTableView().getItems().remove(activite); // UI
+                    Pays pays = getTableView().getItems().get(getIndex());
+                    paysService.delete(pays);
+                    refreshPaysTable();
                 });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : deleteBtn);
+                setGraphic(empty ? null : container);
             }
         });
+    }
+
+    @FXML
+    void openAddPopupPays(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddPays.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add Country");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshPaysTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openEditPopupPays(Pays pays) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FormulaireEditPays.fxml"));
+            Parent root = loader.load();
+            
+            EditPaysController controller = loader.getController();
+            controller.setPays(pays);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Edit Country");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshPaysTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- VILLE (City) Methods ---
+    private void initVilleTable() {
+        colNomVille.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colPaysVille.setCellValueFactory(new PropertyValueFactory<>("paysId"));
+        colRegionVille.setCellValueFactory(new PropertyValueFactory<>("region"));
+        colTypeTourismeVille.setCellValueFactory(new PropertyValueFactory<>("typeTourisme"));
+        colSaisonVille.setCellValueFactory(new PropertyValueFactory<>("saison"));
+        colPopulariteVille.setCellValueFactory(new PropertyValueFactory<>("popularite"));
+
+        addVilleActionButtons();
+        refreshVilleTable();
+    }
+
+    private void refreshVilleTable() {
+        villeList.setAll(villeService.getAll());
+        tableVille.setItems(villeList);
+    }
+
+    private void addVilleActionButtons() {
+        colActionsVille.setCellFactory(param -> new TableCell<>() {
+            private final Button editBtn = createEditButton();
+            private final Button deleteBtn = createDeleteButton();
+            private final HBox container = new HBox(10, editBtn, deleteBtn);
+
+            {
+                container.setAlignment(Pos.CENTER);
+
+                editBtn.setOnAction(e -> {
+                    Ville ville = getTableView().getItems().get(getIndex());
+                    openEditPopupVille(ville);
+                });
+
+                deleteBtn.setOnAction(e -> {
+                    Ville ville = getTableView().getItems().get(getIndex());
+                    villeService.delete(ville);
+                    refreshVilleTable();
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : container);
+            }
+        });
+    }
+
+    @FXML
+    void openAddPopupVille(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddVille.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add City");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshVilleTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openEditPopupVille(Ville ville) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FormulaireEditVille.fxml"));
+            Parent root = loader.load();
+
+            EditVilleController controller = loader.getController();
+            controller.setVille(ville);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Edit City");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshVilleTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- ATTRACTION Methods ---
+    private void initAttractionTable() {
+        colNomAttraction.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colDescriptionAttraction.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colTypeAttraction.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colPrixAttraction.setCellValueFactory(new PropertyValueFactory<>("prix"));
+        colHorairesAttraction.setCellValueFactory(new PropertyValueFactory<>("horaires"));
+        colVilleAttraction.setCellValueFactory(new PropertyValueFactory<>("villeId"));
+
+        addAttractionActionButtons();
+        refreshAttractionTable();
+    }
+
+    private void refreshAttractionTable() {
+        attractionList.setAll(attractionService.getAll());
+        tableAttraction.setItems(attractionList);
+    }
+
+    private void addAttractionActionButtons() {
+        colActionsAttraction.setCellFactory(param -> new TableCell<>() {
+            private final Button editBtn = createEditButton();
+            private final Button deleteBtn = createDeleteButton();
+            private final HBox container = new HBox(10, editBtn, deleteBtn);
+
+            {
+                container.setAlignment(Pos.CENTER);
+
+                editBtn.setOnAction(e -> {
+                    Attraction attraction = getTableView().getItems().get(getIndex());
+                    openEditPopupAttraction(attraction);
+                });
+
+                deleteBtn.setOnAction(e -> {
+                    Attraction attraction = getTableView().getItems().get(getIndex());
+                    attractionService.delete(attraction);
+                    refreshAttractionTable();
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : container);
+            }
+        });
+    }
+
+    @FXML
+    void openAddPopupAttraction(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddAttraction.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add Attraction");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshAttractionTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openEditPopupAttraction(Attraction attraction) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FormulaireEditAttraction.fxml"));
+            Parent root = loader.load();
+
+            EditAttractionController controller = loader.getController();
+            controller.setAttraction(attraction);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Edit Attraction");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshAttractionTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- Helper Methods for Buttons ---
+    private Button createEditButton() {
+        Button btn = new Button("Edit");
+        btn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
+        return btn;
+    }
+
+    private Button createDeleteButton() {
+        Button btn = new Button("Delete");
+        btn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-cursor: hand;");
+        return btn;
     }
 
 }

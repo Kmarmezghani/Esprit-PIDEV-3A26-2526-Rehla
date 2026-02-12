@@ -2,12 +2,16 @@ package Controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -30,7 +34,7 @@ public class HomePageController implements Initializable {
     private TextField searchField;
 
     @FXML
-    private FlowPane countriesFlowPane;
+    private FlowPane countriesFlowPane;  // Empty for now - Destination team will populate
 
     @FXML
     private FlowPane popularCitiesFlowPane;
@@ -339,8 +343,16 @@ public class HomePageController implements Initializable {
 
     @FXML
     void goToPosts(ActionEvent event) {
-        System.out.println("Posts - to be implemented");
-        showInfo("Posts", "Implement Posts module navigation");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PostsPage.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfo("Posts", "Posts page loading...");
+        }
     }
 
     // Window Controls
@@ -404,4 +416,62 @@ public class HomePageController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    /* ========================================
+       TEMPORARY: Module Testing Methods
+       DELETE THESE AFTER INTEGRATION!
+       ======================================== */
+    
+    @FXML
+    void frontofficeReservation(ActionEvent event) {
+        /* RESERVATION TEAM: Uncomment this code when ReservationForm.fxml is ready
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ReservationForm.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Ajouter Réservation");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        */
+        
+        showInfo("Module Réservation", 
+                "Équipe Réservation:\n\n" +
+                "1. Créer ReservationForm.fxml\n" +
+                "2. Créer ReservationController.java\n" +
+                "3. Décommenter le code dans frontofficeReservation()\n" +
+                "4. Cliquer ce bouton pour tester!\n\n" +
+                "Plus tard: Sera déclenché par le bouton 'Book Now' sur les villes");
+    }
+
+    @FXML
+    void frontofficeActivite(ActionEvent event) {
+        /* ACTIVITIES TEAM: Uncomment this code when ActivityForm.fxml is ready
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ActivityForm.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Ajouter Activité");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        */
+        
+        showInfo("Module Activités", 
+                "Équipe Activités:\n\n" +
+                "1. Créer ActivityForm.fxml\n" +
+                "2. Créer ActivityController.java\n" +
+                "3. Décommenter le code dans frontofficeActivite()\n" +
+                "4. Cliquer ce bouton pour tester!\n\n" +
+                "Plus tard: Montrera les activités pour chaque ville");
+    }
+
 }

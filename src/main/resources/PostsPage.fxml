@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.HomePageController">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.PostsPageController">
     <children>
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <!-- Top Navigation Bar -->
@@ -37,7 +37,7 @@
                             </padding>
                             <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
                             <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Destinations" />
-                            <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Posts" />
+                            <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand; -fx-font-weight: bold;" text="Posts" />
                             <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="About" />
                         </HBox>
                         
@@ -73,12 +73,12 @@
                         <VBox spacing="30.0" style="-fx-background-color: #ffffff;">
                             <!-- Hero Section -->
                             <VBox alignment="CENTER" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91); -fx-padding: 80;">
-                                <Label text="Discover Your Next Adventure" textFill="WHITE">
+                                <Label text="Discover Travel Stories" textFill="WHITE">
                                     <font>
                                         <Font name="System Bold" size="48.0" />
                                     </font>
                                 </Label>
-                                <Label text="Explore amazing destinations, attractions and activities around the world" textFill="WHITE">
+                                <Label text="Share your experiences and read inspiring travel blogs from our community" textFill="WHITE">
                                     <font>
                                         <Font size="18.0" />
                                     </font>
@@ -89,79 +89,55 @@
                                     <padding>
                                         <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
                                     </padding>
-                                    <TextField fx:id="searchField" prefWidth="400.0" promptText="Search destinations, cities, attractions..." style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+                                    <TextField fx:id="searchField" prefWidth="400.0" promptText="Search posts by title, author, destination..." style="-fx-background-color: transparent; -fx-border-color: transparent;" />
                                     <Button onAction="#handleSearch" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14;" text="Search" />
                                 </HBox>
                             </VBox>
                             
-                            <!-- Featured Destinations Section -->
+                            <!-- Recent Posts Section -->
                             <VBox spacing="20.0" style="-fx-background-color: #ffffff;">
                                 <padding>
                                     <Insets left="40.0" right="40.0" top="20.0" />
                                 </padding>
                                 
-                                <Label text="🌍 Explore Countries" textFill="#223f91">
+                                <Label text="📝 Recent Travel Posts" textFill="#223f91">
                                     <font>
                                         <Font name="System Bold" size="32.0" />
                                     </font>
                                 </Label>
-                                <Label text="Choose your dream destination and start your journey" textFill="#4a5f88">
+                                <Label text="Latest stories and experiences from our travelers" textFill="#4a5f88">
                                     <font>
                                         <Font size="16.0" />
                                     </font>
                                 </Label>
                                 
-                                <!-- DESTINATION MODULE: Country cards go here (empty for now) -->
-                                <FlowPane fx:id="countriesFlowPane" hgap="25.0" vgap="25.0">
+                                <!-- POSTS MODULE: Add your posts here -->
+                                <FlowPane fx:id="recentPostsFlowPane" hgap="25.0" vgap="25.0">
                                     <padding>
                                         <Insets top="20.0" />
                                     </padding>
                                 </FlowPane>
-                                
-                                <!-- Module Testing Buttons -->
-                                <VBox spacing="20.0" alignment="CENTER" style="-fx-background-color: white; -fx-padding: 40; -fx-border-color: #3A5BC7; -fx-border-width: 2; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
-                                    <Label text="City" textFill="#223f91">
-                                        <font>
-                                            <Font name="System Bold" size="20.0" />
-                                        </font>
-                                    </Label>
-                                    
-                                    <HBox spacing="25.0" alignment="CENTER">
-                                        <padding>
-                                            <Insets top="10.0" />
-                                        </padding>
-                                        
-                                        <!-- Reservation Button -->
-                                        <Button onAction="#frontofficeReservation" 
-                                                style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.4), 10, 0, 0, 3);" 
-                                                text="Réservation" />
-                                        
-                                        <!-- Activity Button -->
-                                        <Button onAction="#frontofficeActivite" 
-                                                style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.4), 10, 0, 0, 3);" 
-                                                text="Activité" />
-                                    </HBox>
-                                </VBox>
                             </VBox>
                             
-                            <!-- Popular Cities Section -->
+                            <!-- Popular Posts Section -->
                             <VBox spacing="20.0" style="-fx-background-color: #ffffff;">
                                 <padding>
                                     <Insets left="40.0" right="40.0" />
                                 </padding>
                                 
-                                <Label text="🏙️ Popular Cities" textFill="#223f91">
+                                <Label text="🔥 Popular Posts" textFill="#223f91">
                                     <font>
                                         <Font name="System Bold" size="32.0" />
                                     </font>
                                 </Label>
-                                <Label text="Most visited destinations by travelers" textFill="#4a5f88">
+                                <Label text="Most liked and commented travel stories" textFill="#4a5f88">
                                     <font>
                                         <Font size="16.0" />
                                     </font>
                                 </Label>
                                 
-                                <FlowPane fx:id="popularCitiesFlowPane" hgap="25.0" vgap="25.0">
+                                <!-- POSTS MODULE: Add popular posts here -->
+                                <FlowPane fx:id="popularPostsFlowPane" hgap="25.0" vgap="25.0">
                                     <padding>
                                         <Insets top="20.0" />
                                     </padding>

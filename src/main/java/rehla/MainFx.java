@@ -16,9 +16,10 @@ double x,y =0;
     @Override
     public void start(Stage primaryStage) {
         try{
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
+            // Load HomePage (Frontoffice) - change to /Dashboard.fxml for Backoffice
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
             Parent root = fxmlLoader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 1000, 700);  // Set size for HomePage
             primaryStage.initStyle(StageStyle.UNDECORATED);
             root.setOnMousePressed(event -> {
                 x = event.getSceneX();
@@ -28,6 +29,8 @@ double x,y =0;
                 primaryStage.setX(event.getScreenX() - x);
                 primaryStage.setY(event.getScreenY() - y);
             });
+            primaryStage.setMinWidth(1000);
+            primaryStage.setMinHeight(700);
             primaryStage.setScene(scene);
             primaryStage.show();
         }

@@ -10,9 +10,11 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -160,7 +162,31 @@ public class HomePageController implements Initializable {
         popularityLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
         popularityLabel.setTextFill(Color.web("#3A5BC7"));
 
-        card.getChildren().addAll(nameLabel, countryLabel, typeLabel, popularityLabel);
+        // Book button
+        Button bookButton = new Button("Book Now");
+        bookButton.setStyle("-fx-background-color: #3A5BC7; " +
+                "-fx-text-fill: white; " +
+                "-fx-font-weight: bold; " +
+                "-fx-font-size: 13; " +
+                "-fx-padding: 10 25; " +
+                "-fx-background-radius: 8; " +
+                "-fx-cursor: hand; " +
+                "-fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.3), 8, 0, 0, 2);");
+        
+        bookButton.setOnMouseEntered(e -> {
+            bookButton.setStyle(bookButton.getStyle() + "-fx-background-color: #2d4a9e;");
+        });
+        
+        bookButton.setOnMouseExited(e -> {
+            bookButton.setStyle(bookButton.getStyle().replace("-fx-background-color: #2d4a9e;", "-fx-background-color: #3A5BC7;"));
+        });
+        
+        bookButton.setOnAction(e -> {
+            e.consume(); // Prevent card click
+            handleBookCity(ville);
+        });
+
+        card.getChildren().addAll(nameLabel, countryLabel, typeLabel, popularityLabel, bookButton);
 
         // Hover effect
         card.setOnMouseEntered(e -> {
@@ -171,8 +197,12 @@ public class HomePageController implements Initializable {
             card.setStyle(card.getStyle().replace("-fx-background-color: #fffacd;", "-fx-background-color: white;"));
         });
 
-        // Navigate to city detail
-        card.setOnMouseClicked(e -> navigateToCity(ville));
+        // Navigate to city detail (only on card click, not button)
+        card.setOnMouseClicked(e -> {
+            if (e.getTarget() != bookButton) {
+                navigateToCity(ville);
+            }
+        });
 
         return card;
     }
@@ -353,6 +383,39 @@ public class HomePageController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void handleBookCity(Ville ville) {
+        /* RESERVATION TEAM: Uncomment this code when ReservationForm.fxml is ready
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ReservationForm.fxml"));
+            Parent root = loader.load();
+            
+            ReservationController controller = loader.getController();
+            controller.setVille(ville);  // Pass the city object
+            
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Book " + ville.getNom());
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        */
+        
+        // Temporary alert (remove after uncommenting above)
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Coming Soon");
+        alert.setHeaderText("Reservation Feature");
+        alert.setContentText("The reservation team will implement this soon!\n\n" +
+                            "City: " + ville.getNom() + "\n\n" +
+                            "They need to:\n" +
+                            "1. Create ReservationForm.fxml\n" +
+                            "2. Create ReservationController.java with setVille() method\n" +
+                            "3. Uncomment the code in this method");
         alert.showAndWait();
     }
 }

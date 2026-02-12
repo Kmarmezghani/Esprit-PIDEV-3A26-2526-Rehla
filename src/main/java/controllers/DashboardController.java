@@ -5,7 +5,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -221,5 +223,23 @@ public class DashboardController {
         tablepost.setItems(postList);
     }
 
+    @FXML
+    private void openAddPostForm() {
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FormulaireAddPost.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter Post");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            loadPosts(); // refresh après fermeture
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -1,12 +1,17 @@
 package Controllers;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import models.Post;
+import services.PostService;
 
 
 public class DashboardController {
@@ -40,7 +45,7 @@ public class DashboardController {
 
     @FXML private TableView<?> tableactivite1111;
     @FXML private TableView<?> tabledestination;
-    @FXML private TableView<?> tablepost;
+    @FXML private TableView<Post> tablepost;
     @FXML private TableView<?> tableuser;
 
 
@@ -52,6 +57,15 @@ public class DashboardController {
 
 
     private final ToggleGroup dashboardGroup = new ToggleGroup();
+
+
+    @FXML private TableColumn<Post, Integer> colIdPost;
+    @FXML private TableColumn<Post, String> colTitrePost;
+    @FXML private TableColumn<Post, String> colContenuPost;
+    @FXML private TableColumn<Post, java.time.LocalDate> colDatePost;
+    @FXML private TableColumn<Post, Integer> colPopularitePost;
+    @FXML private TableColumn<Post, Integer> colAuteurPost;
+    @FXML private TableColumn<Post, Integer> colLikesPost;
 
 
 
@@ -91,8 +105,11 @@ public class DashboardController {
                 }
             });
         });
+        loadPosts();
 
     }
+    private PostService postService = new PostService();
+    private ObservableList<Post> postList = FXCollections.observableArrayList();
 
 
 
@@ -184,6 +201,25 @@ public class DashboardController {
         stage.setMaximized(!stage.isMaximized());
     }
 
+    private void loadPosts() {
+
+        colIdPost.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colTitrePost.setCellValueFactory(new PropertyValueFactory<>("titre"));
+        colContenuPost.setCellValueFactory(new PropertyValueFactory<>("contenu"));
+        colDatePost.setCellValueFactory(new PropertyValueFactory<>("datePublication"));
+        colPopularitePost.setCellValueFactory(new PropertyValueFactory<>("popularite"));
+        colLikesPost.setCellValueFactory(new PropertyValueFactory<>("nbLikes"));
+
+        // Auteur → on affiche juste son ID
+        colAuteurPost.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleIntegerProperty(
+                        cellData.getValue().getAuteur().getId()
+                ).asObject()
+        );
+
+        postList.setAll(postService.getAll());
+        tablepost.setItems(postList);
+    }
 
 
 }

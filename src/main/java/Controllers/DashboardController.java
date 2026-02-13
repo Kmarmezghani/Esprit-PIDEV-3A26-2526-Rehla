@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,72 +15,87 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Activite;
+import models.Review;
 import services.ActiviteService;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import services.ReviewService;
 
 
 public class DashboardController {
 
+// ======================================================
+// ======================= TABS =========================
+// ======================================================
 
     @FXML private Tab activitetab;
-    @FXML private TabPane activitetabpanmain;
-
     @FXML private Tab admintab;
-
     @FXML private Tab attractiontab;
     @FXML private Tab commentairetab;
-
     @FXML private Tab destinationtab;
-    @FXML private TabPane destinationtabpanmain;
-
     @FXML private Tab posttab;
-    @FXML private TabPane posttabpanmain;
-
     @FXML private Tab reservationstab;
-    @FXML private TabPane reservationtabpanmain;
-
     @FXML private Tab reviewtab;
-
     @FXML private Tab ticketstab;
-
     @FXML private Tab usertab;
+
+
+// ======================= TAB PANES ====================
+
+    @FXML private TabPane activitetabpanmain;
+    @FXML private TabPane destinationtabpanmain;
+    @FXML private TabPane posttabpanmain;
+    @FXML private TabPane reservationtabpanmain;
     @FXML private TabPane usertabpanmain;
 
-    // TableView
-    @FXML
-    private TableView<Activite> tableactivite;
 
-    // Columns
-    @FXML
-    private TableColumn<Activite, String> colnameactivite;
 
-    @FXML
-    private TableColumn<Activite, String> coldescriptionactivite;
+// ======================================================
+// ================== ACTIVITE TABLE ====================
+// ======================================================
 
-    @FXML
-    private TableColumn<Activite, Double> colpriceactivite;
+    @FXML private TableView<Activite> tableactivite;
 
-    @FXML
-    private TableColumn<Activite, Double> coldureeactivite;
+    @FXML private TableColumn<Activite, String> colnameactivite;
+    @FXML private TableColumn<Activite, String> coldescriptionactivite;
+    @FXML private TableColumn<Activite, Double> colpriceactivite;
+    @FXML private TableColumn<Activite, Double> coldureeactivite;
+    @FXML private TableColumn<Activite, String> coltypeactivite;
+    @FXML private TableColumn<Activite, Double> colavgratactivite;
+    @FXML private TableColumn<Activite, String> colguideactivite;
+    @FXML private TableColumn<Activite, Void> colDeleteactivite;
 
-    @FXML
-    private TableColumn<Activite, String> coltypeactivite;
 
-    @FXML
-    private TableColumn<Activite, Double> colavgratactivite;
 
-    @FXML
-    private TableColumn<Activite, Integer> colguideactivite;
-    @FXML
-    private TableColumn<Activite, Void> colDeleteactivite;
+// ======================================================
+// ==================== REVIEW TABLE ====================
+// ======================================================
+
+    @FXML private TableView<Review> tableReview;
+
+    @FXML private TableColumn<Review, String> coluserReview;
+    @FXML private TableColumn<Review, String> colcommentReview;
+    @FXML private TableColumn<Review, Double> colnoteReview;
+    @FXML private TableColumn<Review, String> coldateReview;
+    @FXML private TableColumn<Review, Void> colDeleteReview;
+
+
+
+// ======================================================
+// ================= OTHER TABLES =======================
+// ======================================================
 
     @FXML private TableView<?> tableactivite1111;
     @FXML private TableView<?> tabledestination;
     @FXML private TableView<?> tablepost;
     @FXML private TableView<?> tableuser;
 
+
+
+// ======================================================
+// ================= DASHBOARD BUTTONS ==================
+// ======================================================
 
     @FXML private ToggleButton dashactbut;
     @FXML private ToggleButton dashdesbut;
@@ -88,21 +104,32 @@ public class DashboardController {
     @FXML private ToggleButton dashuserbut;
 
 
+
+// ======================================================
+// ===================== SERVICES =======================
+// ======================================================
+
     private final ToggleGroup dashboardGroup = new ToggleGroup();
+
     private final ActiviteService activiteService = new ActiviteService();
     private final ObservableList<Activite> activiteList = FXCollections.observableArrayList();
+    private Activite selectedActivite;
 
+    private final ReviewService reviewService = new ReviewService();
+    private final ObservableList<Review> reviewList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
 
+        // ======================================================
+        // ================ DASHBOARD TOGGLE GROUP ===============
+        // ======================================================
 
         dashuserbut.setToggleGroup(dashboardGroup);
         dashdesbut.setToggleGroup(dashboardGroup);
         dashresbut.setToggleGroup(dashboardGroup);
         dashactbut.setToggleGroup(dashboardGroup);
         dashpostbut.setToggleGroup(dashboardGroup);
-
 
         dashboardGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
             if (newT == null) {
@@ -111,19 +138,67 @@ public class DashboardController {
             applySelectedStyles();
         });
 
-
         hideAllPanes();
         showPane(usertabpanmain);
 
-
         dashboardGroup.selectToggle(dashuserbut);
         applySelectedStyles();
-        initActiviteTable();
-        addDeleteButton();
+
+
+
+        // ======================================================
+        // ================= TABLE INITIALIZATION ===============
+        // ======================================================
+
+        initActiviteTable();   // contains delete button now
+        initReviewTable();
+
+
+
+        // ======================================================
+        // ================ SELECTION LISTENERS =================
+        // ======================================================
+
+        tableactivite.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                selectedActivite = newSelection;
+            }
+        });
+
+        reviewtab.setOnSelectionChanged(event -> {
+            if (reviewtab.isSelected()) {
+                loadReviewsForSelectedActivite();
+            }
+        });
+
+
+
+        // ======================================================
+        // ================= ROW DOUBLE CLICK ===================
+        // ======================================================
+
+        tableactivite.setRowFactory(tv -> {
+            TableRow<Activite> row = new TableRow<>();
+
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Activite selectedActivite = row.getItem();
+                    openEditPopup(selectedActivite);
+                }
+            });
+
+            return row;
+        });
+
+
+
+        // ======================================================
+        // ================== COLUMN RESIZING ===================
+        // ======================================================
+
         tableactivite.widthProperty().addListener((obs, oldW, newW) -> {
             double w = newW.doubleValue();
             double available = w - 20;
-
 
             colnameactivite.setPrefWidth(available * 0.15);
             coldescriptionactivite.setPrefWidth(available * 0.3);
@@ -133,6 +208,24 @@ public class DashboardController {
             colavgratactivite.setPrefWidth(available * 0.12);
             colguideactivite.setPrefWidth(available * 0.10);
         });
+
+        tableReview.widthProperty().addListener((obs, oldW, newW) -> {
+            double w = newW.doubleValue();
+            double available = w - 20;
+
+            coluserReview.setPrefWidth(available * 0.15);
+            colcommentReview.setPrefWidth(available * 0.40);
+            colnoteReview.setPrefWidth(available * 0.10);
+            coldateReview.setPrefWidth(available * 0.20);
+            colDeleteReview.setPrefWidth(available * 0.10);
+        });
+
+
+
+        // ======================================================
+        // ================= WINDOW SHORTCUT ====================
+        // ======================================================
+
         Platform.runLater(() -> {
             Scene scene = dashuserbut.getScene();
             Stage stage = (Stage) scene.getWindow();
@@ -143,8 +236,10 @@ public class DashboardController {
                 }
             });
         });
-
     }
+// ===========================
+// ===== ACTIVITY-RELATED =====
+// ===========================
 
     private void initActiviteTable() {
 
@@ -154,11 +249,16 @@ public class DashboardController {
         coldureeactivite.setCellValueFactory(new PropertyValueFactory<>("duree"));
         coltypeactivite.setCellValueFactory(new PropertyValueFactory<>("typeActivite"));
         colavgratactivite.setCellValueFactory(new PropertyValueFactory<>("noteMoyenne"));
-        colguideactivite.setCellValueFactory(new PropertyValueFactory<>("guideId"));
+        colguideactivite.setCellValueFactory(cellData -> {
+            Activite activite = cellData.getValue();
+            String guideName = activiteService.getGuideNameByActiviteId(activite.getGuideId());
+            return new ReadOnlyStringWrapper(guideName);
+        });
 
         tableactivite.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         refreshActiviteTable();
+        addDeleteButton();
 
         Platform.runLater(() -> {
             colnameactivite.setPrefWidth(160);
@@ -178,6 +278,127 @@ public class DashboardController {
     }
 
 
+    private void addDeleteButton() {
+        colDeleteactivite.setCellFactory(param -> new TableCell<>() {
+
+            private final Button deleteBtn = new Button();
+
+            {
+                ImageView icon = new ImageView(new Image(
+                        getClass().getResourceAsStream("/icons/poubelle.png")
+                ));
+                icon.setFitWidth(20);
+                icon.setFitHeight(20);
+
+                deleteBtn.setGraphic(icon);
+                deleteBtn.setStyle("""
+                -fx-background-color: transparent;
+                -fx-padding: 0;
+                -fx-cursor: hand;
+            """);
+
+                deleteBtn.setOnAction(e -> {
+                    Activite activite = getTableView().getItems().get(getIndex());
+                    activiteService.delete(activite);      // DB
+                    getTableView().getItems().remove(activite); // UI
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : deleteBtn);
+            }
+        });
+    }
+    @FXML
+    private void openAddPopupactivite(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddActivite.fxml"));
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add new activity");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+
+            refreshActiviteTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void openEditPopup(Activite activite) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FormulaireAddActivite.fxml"));
+            Parent root = loader.load();
+            AjouterActiviteController controller = loader.getController();
+            controller.setActiviteToEdit(activite);
+
+            Stage stage = new Stage();
+            stage.setTitle("Edit Activity");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            refreshActiviteTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // ------------------- Review Methods -------------------
+
+    private void initReviewTable() {
+        coluserReview.setCellValueFactory(cellData ->
+                new ReadOnlyStringWrapper(cellData.getValue().getUserName())
+        );
+        colcommentReview.setCellValueFactory(new PropertyValueFactory<>("commentaire"));
+        colnoteReview.setCellValueFactory(new PropertyValueFactory<>("note"));
+        coldateReview.setCellValueFactory(cellData -> {
+            Review r = cellData.getValue();
+            String dateStr = r.getDateAvis() != null ? r.getDateAvis().toString() : "";
+            return new ReadOnlyStringWrapper(dateStr);
+        });
+
+        tableReview.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        addDeleteReviewButton();
+        tableReview.setItems(reviewList);
+    }
+
+    private void addDeleteReviewButton() {
+        colDeleteReview.setCellFactory(param -> new TableCell<>() {
+            private final Button deleteBtn = new Button();
+
+            {
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/icons/poubelle.png")));
+                icon.setFitWidth(20);
+                icon.setFitHeight(20);
+                deleteBtn.setGraphic(icon);
+                deleteBtn.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
+
+                deleteBtn.setOnAction(e -> {
+                    Review review = getTableView().getItems().get(getIndex());
+                    reviewService.delete(review);
+                    getTableView().getItems().remove(review);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : deleteBtn);
+            }
+        });
+    }
+
+    private void loadReviewsForSelectedActivite() {
+        if (selectedActivite == null) {
+            reviewList.clear();
+            return;
+        }
+        reviewList.setAll(reviewService.getReviewsByActiviteId(selectedActivite.getId()));
+    }
+
+    // ------------------- Dashboard / Tab Methods -------------------
 
     private void hideAllPanes() {
         hidePane(usertabpanmain);
@@ -195,7 +416,6 @@ public class DashboardController {
 
     private void showPane(TabPane paneToShow) {
         hideAllPanes();
-
         if (paneToShow == null) return;
         paneToShow.setVisible(true);
         paneToShow.setManaged(true);
@@ -244,11 +464,6 @@ public class DashboardController {
     }
 
     @FXML
-    void FXaddActivite(ActionEvent event) {
-
-    }
-
-    @FXML
     void closewindow(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
@@ -266,58 +481,9 @@ public class DashboardController {
         stage.setMaximized(!stage.isMaximized());
     }
 
-
     @FXML
-    void openAddPopupactivite(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddActivite.fxml"));
-
-            Stage popupStage = new Stage();
-            popupStage.setTitle("Add new user");
-            popupStage.initModality(Modality.APPLICATION_MODAL);
-            popupStage.setScene(new Scene(root));
-            popupStage.showAndWait();
-            refreshActiviteTable();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    private void FXaddActivite(ActionEvent event) {
     }
-    private void addDeleteButton() {
 
-        colDeleteactivite.setCellFactory(param -> new TableCell<>() {
-
-            private final Button deleteBtn = new Button();
-
-            {
-                ImageView icon = new ImageView(new Image(
-                        getClass().getResourceAsStream("/icons/poubelle.png")
-                ));
-                icon.setFitWidth(20);
-                icon.setFitHeight(20);
-
-                deleteBtn.setGraphic(icon);
-                deleteBtn.setStyle("""
-                -fx-background-color: transparent;
-                -fx-padding: 0;
-                -fx-cursor: hand;
-            """);
-
-                deleteBtn.setOnAction(e -> {
-                    Activite activite = getTableView().getItems().get(getIndex());
-
-                    activiteService.delete(activite);      // DB
-                    getTableView().getItems().remove(activite); // UI
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : deleteBtn);
-            }
-        });
-    }
 
 }

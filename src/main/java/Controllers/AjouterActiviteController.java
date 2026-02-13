@@ -45,6 +45,9 @@ public class AjouterActiviteController {
 
     @FXML
     private Spinner<Double> pricespinneractivite;
+    private Activite activiteToEdit = null;
+    private boolean editMode = false;
+
 
     @FXML
     public void initialize() {
@@ -71,8 +74,10 @@ public class AjouterActiviteController {
         Double price = pricespinneractivite.getValue();
         Double duration = durationspinneractivite.getValue();
 
-        // (Optionnel) mini validation
-        if (nom == null || nom.isBlank() || description == null || description.isBlank() || type == null || type.isBlank()) {
+        if (nom == null || nom.isBlank() ||
+                description == null || description.isBlank() ||
+                type == null || type.isBlank()) {
+
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Champs manquants");
             alert.setHeaderText(null);
@@ -81,15 +86,25 @@ public class AjouterActiviteController {
             return;
         }
 
-        Activite activite = new Activite(nom, description, price, duration, type, 0);
-        // ↑ Mets 0 si guideId est int. Sinon adapte selon ton modèle.
+        if (editMode) {
+            // 🔥 UPDATE MODE
+            activiteToEdit.setNom(nom);
+            activiteToEdit.setDescription(description);
+            activiteToEdit.setTypeActivite(type);
+            activiteToEdit.setPrix(price);
+            activiteToEdit.setDuree(duration);
 
-        activiteService.add(activite);
+            activiteService.update(activiteToEdit);
 
-        // fermer la popup
+        } else {
+            Activite activite = new Activite(nom, description, price, duration, type, 0);
+            activiteService.add(activite);
+        }
+
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
     }
+
 
     @FXML
    void handleCancel(ActionEvent event) {
@@ -99,5 +114,19 @@ public class AjouterActiviteController {
        stage.close();
 
    }
+    public void setActiviteToEdit(Activite activite) {
+
+        this.activiteToEdit = activite;
+        this.editMode = true;
+
+        // Pré-remplir les champs
+        TFnameactivite.setText(activite.getNom());
+        TFdescriptionactivite.setText(activite.getDescription());
+        TFtypeactivite.setText(activite.getTypeActivite());
+
+        pricespinneractivite.getValueFactory().setValue(activite.getPrix());
+        durationspinneractivite.getValueFactory().setValue(activite.getDuree());
+    }
+
 
 }

@@ -7,6 +7,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import javafx.scene.image.Image;
+
 public class MainFx extends Application {
 double x,y =0;
     public static void main(String[] args) {
@@ -20,6 +22,9 @@ double x,y =0;
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
             primaryStage.initStyle(StageStyle.UNDECORATED);
+            primaryStage.setTitle("Rehla");
+            Image icon = new Image(getClass().getResource("/icons/logoblue.png").toExternalForm());
+            primaryStage.getIcons().add(icon);
             root.setOnMousePressed(event -> {
                 x = event.getSceneX();
                 y = event.getSceneY();
@@ -30,11 +35,10 @@ double x,y =0;
             });
             primaryStage.setScene(scene);
             primaryStage.show();
+        } catch(Exception e){
+            e.printStackTrace();
         }
-        catch(Exception e){
-            System.out.println(e.getMessage());
-        }
-
-
     }
+
 }
+

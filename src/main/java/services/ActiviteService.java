@@ -107,4 +107,22 @@ public class ActiviteService implements IService<Activite> {
             System.out.println(e.getMessage());
         }
     }
+    public String getGuideNameByActiviteId(int guideId) {
+        String nomComplet = "N/A";
+        String sql = "SELECT p.nom, p.prenom " +
+                "FROM guide g " +
+                "JOIN personne p ON g.id = p.id " +
+                "WHERE g.id = " + guideId;
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                nomComplet = rs.getString("nom") + " " + rs.getString("prenom");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nomComplet;
+    }
+
 }

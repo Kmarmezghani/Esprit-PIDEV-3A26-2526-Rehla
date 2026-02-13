@@ -1,9 +1,6 @@
 package rehla;
 
-import models.Activite;
-import models.Avis;
 import services.ActiviteService;
-import services.AvisService;
 
 import java.sql.Date;
 import java.time.LocalDate;

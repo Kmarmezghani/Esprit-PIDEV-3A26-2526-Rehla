@@ -181,24 +181,37 @@
                                     </content>
                                 </Tab>
                                 <Tab fx:id="reviewtab" text="Reviews">
-                                    <content>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0">
-                                            <children>
-                                                <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                    <top>
-                                                        <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
-                                                            <children>
-                                                                <Label text="Label" />
-                                                            </children>
-                                                            <padding>
-                                                                <Insets left="30.0" />
-                                                            </padding>
-                                                        </HBox>
-                                                    </top>
-                                                </BorderPane>
-                                            </children>
-                                        </AnchorPane>
-                                    </content>
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0">
+                                 <children>
+                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Review" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddPopupactivite" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                       <center>
+                                          <TableView fx:id="tableReview" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                             <columns>
+                                                <TableColumn fx:id="colnoteReview" prefWidth="75.0" text="Note" />
+                                                <TableColumn fx:id="colcommentReview" prefWidth="91.199951171875" text="Commentaire" />
+                                                <TableColumn fx:id="coldateReview" prefWidth="59.20001220703125" text="Date" />
+                                                <TableColumn fx:id="coluserReview" prefWidth="75.0" text="User" />
+                                                <TableColumn fx:id="colDeleteReview" prefWidth="75.0" />
+                                             </columns>
+                                          </TableView>
+                                       </center>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
                                 </Tab>
                             </tabs>
                         </TabPane>

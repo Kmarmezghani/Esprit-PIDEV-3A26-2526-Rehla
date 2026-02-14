@@ -28,7 +28,7 @@ public class UpdatePostController {
 
     private final PostService postService = new PostService();
 
-    // 🔁 Charger les données du post
+
     public void setPostToEdit(Post post) {
         this.postToEdit = post;
 
@@ -45,7 +45,7 @@ public class UpdatePostController {
         }
     }
 
-    // 📂 Choisir nouvelle image
+
     @FXML
     private void choisirImage() {
         FileChooser fileChooser = new FileChooser();
@@ -65,7 +65,6 @@ public class UpdatePostController {
         }
     }
 
-    // 💾 Update Post
     @FXML
     private void updatePost() {
 
@@ -74,12 +73,12 @@ public class UpdatePostController {
             postToEdit.setContenu(txtContenu.getText());
             postToEdit.setPopularite(Integer.parseInt(txtPopularite.getText()));
 
-            // 🔁 mettre à jour auteur aussi
+
             Personne auteur = new Personne();
             auteur.setId(Integer.parseInt(txtAuteurId.getText()));
             postToEdit.setAuteur(auteur);
 
-            // 📸 si nouvelle image choisie
+
             if (selectedImageFile != null) {
                 String imagePath = copierImage(selectedImageFile);
                 postToEdit.setImage(imagePath);
@@ -99,7 +98,7 @@ public class UpdatePostController {
         }
     }
 
-    // 📁 Même méthode que AddPostController
+
     private String copierImage(File imageFile) throws IOException {
 
         String dossier = System.getProperty("user.home") + "/myapp/uploads/";

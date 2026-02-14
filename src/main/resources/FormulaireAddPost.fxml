@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.image.ImageView?>
 <VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="Controllers.AddPostController">
@@ -17,5 +18,16 @@
     <TextField fx:id="txtPopularite" promptText="Popularité"/>
     <TextField fx:id="txtAuteurId" promptText="ID Auteur"/>
 
-    <Button text="Ajouter" onAction="#addPost"/>
+    <ImageView fx:id="imagePreview"
+               fitWidth="200"
+               fitHeight="120"
+               preserveRatio="true"/>
+
+
+    <Button text="Choisir une image"
+            onAction="#choisirImage"/>
+
+
+    <Button text="Ajouter"
+            onAction="#addPost"/>
 </VBox>

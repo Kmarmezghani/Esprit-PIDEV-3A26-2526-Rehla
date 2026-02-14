@@ -11,17 +11,25 @@ public class Post {
     private int popularite;
     private Personne auteur;
     private int nbLikes;
-    public Post() {}
+    private String image;
+    public Post(String image) {
+        this.image = image;
+    }
 
     public Post(int id, String titre, String contenu,
                 LocalDate datePublication, int popularite,
-                Personne auteur) {
+                Personne auteur, String image) {
         this.id = id;
         this.titre = titre;
         this.contenu = contenu;
         this.datePublication = datePublication;
         this.popularite = popularite;
         this.auteur = auteur;
+        this.image = image;
+    }
+
+    public Post() {
+
     }
 
     public int getId() {
@@ -80,5 +88,12 @@ public class Post {
         this.nbLikes = nbLikes;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 }
 

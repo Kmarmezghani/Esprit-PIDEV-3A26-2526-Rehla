@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.image.ImageView?>
 <VBox spacing="10" alignment="CENTER"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -17,6 +18,17 @@
     <TextArea fx:id="txtContenu" promptText="Contenu"/>
     <TextField fx:id="txtPopularite" promptText="Popularité"/>
     <TextField fx:id="txtAuteurId" promptText="ID Auteur"/>
+    <ImageView fx:id="imagePreview"
+               fitWidth="200"
+               fitHeight="120"
+               preserveRatio="true"/>
 
-    <Button text="Modifier" onAction="#updatePost"/>
+
+    <Button text="Choisir une image"
+            onAction="#choisirImage"/>
+
+
+    <Button text="Modifier"
+            onAction="#updatePost"/>
+
 </VBox>

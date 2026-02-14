@@ -24,6 +24,9 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.io.File;
+import java.io.InputStream;
+
 public class DashboardController {
 
 
@@ -79,6 +82,8 @@ public class DashboardController {
     @FXML
     private TableColumn<Post, Void> colAction;
 
+    @FXML
+    private TableColumn<Post, String> colImagePost;
 
 
     @FXML
@@ -120,6 +125,7 @@ public class DashboardController {
         loadPosts();
 
         addEditDeleteButtonsToTable();
+        addImageColumn();
     }
     private PostService postService = new PostService();
     private ObservableList<Post> postList = FXCollections.observableArrayList();
@@ -229,6 +235,8 @@ public class DashboardController {
                         cellData.getValue().getAuteur().getId()
                 ).asObject()
         );
+        colImagePost.setCellValueFactory(new PropertyValueFactory<>("image"));
+
 
         postList.setAll(postService.getAll());
         tablepost.setItems(postList);
@@ -301,6 +309,51 @@ public class DashboardController {
             }
         });
     }
+    private void addImageColumn() {
+
+        colImagePost.setCellFactory(param -> new TableCell<>() {
+
+            private final ImageView imageView = new ImageView();
+
+            {
+                imageView.setFitWidth(80);
+                imageView.setFitHeight(60);
+                imageView.setPreserveRatio(true);
+            }
+
+            @Override
+            protected void updateItem(String imagePath, boolean empty) {
+                super.updateItem(imagePath, empty);
+
+                if (empty || imagePath == null || imagePath.trim().isEmpty()) {
+                    setGraphic(null);
+                    return;
+                }
+
+                try {
+                    File file = new File(imagePath);
+
+                    if (file.exists()) {
+                        imageView.setImage(new Image(file.toURI().toString()));
+                    } else {
+                        imageView.setImage(null); // pas d’image si fichier absent
+                    }
+
+                    setGraphic(imageView);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    setGraphic(null);
+                }
+            }
+        });
+
+        colImagePost.setCellValueFactory(
+                new PropertyValueFactory<>("image")
+        );
+    }
+
+
 
     private void openUpdatePopup(Post post) {
 
@@ -319,8 +372,8 @@ public class DashboardController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
-            loadPosts(); // refresh table
-
+            postList.setAll(postService.getAll());
+            tablepost.refresh();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -417,7 +417,10 @@
                                                                 <TableColumn fx:id="colPopularitePost" text="Popularité" />
                                                                 <TableColumn fx:id="colAuteurPost" text="Auteur ID" />
                                                                 <TableColumn fx:id="colLikesPost" text="Likes" />
+                                                                <TableColumn fx:id="colImagePost" text="Image" prefWidth="120"/>
                                                                 <TableColumn fx:id="colAction" text="Action" prefWidth="100"/>
+
+
 
 
                                                             </columns>

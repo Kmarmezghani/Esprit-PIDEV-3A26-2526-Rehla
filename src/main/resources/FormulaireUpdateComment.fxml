@@ -1,0 +1,24 @@
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx/17.0.2"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.UpdateCommentController"
+      spacing="10" alignment="CENTER">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Label -->
+    <Label text="Modifier le commentaire" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <!-- TextArea pour le contenu -->
+    <TextArea fx:id="txtContenu" prefWidth="300" prefHeight="150" wrapText="true"/>
+
+    <!-- Bouton Save -->
+    <Button fx:id="btnSave" text="Enregistrer" onAction="#saveComment"
+            style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
+</VBox>

@@ -60,7 +60,14 @@ public class PersonneService {
                 p.setPrenom(rs.getString("prenom"));
                 p.setEmail(rs.getString("email"));
                 p.setMotDePasse(rs.getString("motDePasse"));
-                p.setDateInscription(rs.getDate("dateInscription").toLocalDate());
+                java.sql.Date sqlDate = rs.getDate("dateInscription");
+
+                if (sqlDate != null) {
+                    p.setdateNaissance(sqlDate.toLocalDate());
+                } else {
+                    p.setdateNaissance(null);
+                }
+
                 p.setRole(Role.valueOf(rs.getString("role")));
                 p.setStatutCompte(StatutCompte.valueOf(rs.getString("statutCompte")));
                 personnes.add(p);

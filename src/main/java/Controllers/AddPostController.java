@@ -1,5 +1,7 @@
 package Controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -8,12 +10,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.Post;
 import models.Personne;
+import services.PersonneService;
 import services.PostService;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
+import java.util.List;
 
 public class AddPostController {
 
@@ -26,7 +30,46 @@ public class AddPostController {
     private File selectedImageFile;
 
     private final PostService postService = new PostService();
+    @FXML
+    private ComboBox<Personne> comboAuteur; // ComboBox pour les auteurs
 
+    private PersonneService userService = new PersonneService();
+
+    @FXML
+    public void initialize() {
+        loadAuteurs();
+    }
+
+    private void loadAuteurs() {
+        List<Personne> auteurs = userService.getAllPersonnes(); // récupère tous les utilisateurs
+        ObservableList<Personne> options = FXCollections.observableArrayList(auteurs);
+        comboAuteur.setItems(options);
+
+        // Optionnel : afficher seulement le nom dans le ComboBox
+        comboAuteur.setCellFactory(param -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(Personne item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNom()); // ou getFullName()
+                }
+            }
+        });
+
+        comboAuteur.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(Personne item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNom());
+                }
+            }
+        });
+    }
     // 📂 Ouvrir la galerie
     @FXML
     private void choisirImage() {
@@ -59,8 +102,13 @@ public class AddPostController {
             post.setDatePublication(LocalDate.now());
             post.setPopularite(Integer.parseInt(txtPopularite.getText()));
 
-            Personne auteur = new Personne();
-            auteur.setId(Integer.parseInt(txtAuteurId.getText()));
+            Personne auteur = comboAuteur.getSelectionModel().getSelectedItem();
+            if (auteur == null) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setContentText("Veuillez sélectionner un auteur !");
+                alert.showAndWait();
+                return;
+            }
             post.setAuteur(auteur);
 
 

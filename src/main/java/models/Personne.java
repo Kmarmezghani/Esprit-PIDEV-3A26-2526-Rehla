@@ -12,7 +12,7 @@ public class Personne {
     protected String prenom;
     protected String email;
     protected String motDePasse;
-    protected LocalDate dateInscription;
+    protected LocalDate dateNaissance;
     protected Role role;
     protected StatutCompte statutCompte;
 
@@ -22,7 +22,7 @@ public class Personne {
 
 
 
-    public Personne(int id, String nom, String prenom, String email, String motDePasse, LocalDate dateInscription,
+    public Personne(int id, String nom, String prenom, String email, String motDePasse, LocalDate dateNaissance,
                     Role role, StatutCompte statutCompte, Favoris favoris) {
         super();
         this.id = id;
@@ -30,7 +30,7 @@ public class Personne {
         this.prenom = prenom;
         this.email = email;
         this.motDePasse = motDePasse;
-        this.dateInscription = dateInscription;
+        this.dateNaissance = dateNaissance;
         this.role = role;
         this.statutCompte = statutCompte;
         this.favoris = favoris;
@@ -78,12 +78,12 @@ public class Personne {
         this.motDePasse = motDePasse;
     }
 
-    public LocalDate getDateInscription() {
-        return dateInscription;
+    public LocalDate getdateNaissance() {
+        return dateNaissance;
     }
 
-    public void setDateInscription(LocalDate dateInscription) {
-        this.dateInscription = dateInscription;
+    public void setdateNaissance(LocalDate dateInscription) {
+        this.dateNaissance = dateInscription;
     }
 
     public Role getRole() {

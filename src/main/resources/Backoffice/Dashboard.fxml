@@ -25,18 +25,18 @@
                     <children>
                         <ImageView fitHeight="52.0" fitWidth="94.0" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                                <Image url="@../icons/IMG_20260125_122708_191-removebg-preview.png" />
                             </image>
                             <HBox.margin>
                                 <Insets />
                             </HBox.margin>
                         </ImageView>
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#minwindow" styleClass="button4" stylesheets="@css/styling.css" textFill="#002b11">
+                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#minwindow" styleClass="button4" stylesheets="@../css/styling.css" textFill="#002b11">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="8.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/Fichier%202.png" />
+                                        <Image url="@../icons/Fichier%202.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -44,11 +44,11 @@
                                 <Insets bottom="20.0" />
                             </HBox.margin>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#maxwindow" styleClass="button4" stylesheets="@css/styling.css" textFill="#002b11">
+                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#maxwindow" styleClass="button4" stylesheets="@../css/styling.css" textFill="#002b11">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="12.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/icone%20rayen.png" />
+                                        <Image url="@../icons/icone%20rayen.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -56,11 +56,11 @@
                                 <Insets bottom="20.0" />
                             </HBox.margin>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#closewindow" styleClass="button3" stylesheets="@css/styling.css" textFill="#002b11">
+                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#closewindow" styleClass="button3" stylesheets="@../css/styling.css" textFill="#002b11">
                             <graphic>
-                                <ImageView fitHeight="18.0" fitWidth="8.0" pickOnBounds="true" preserveRatio="true">
+                                <ImageView fitHeight="18.0" fitWidth="8.0" pickOnBounds="true" preserveRatio="true" styleClass="button3">
                                     <image>
-                                        <Image url="@icons/Fichier%201.png" />
+                                        <Image url="@../icons/Fichier%201.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -76,11 +76,11 @@
             <left>
                 <VBox minWidth="130.0" prefHeight="356.0" prefWidth="180.0" style="-fx-background-color: #3A5BC7;" BorderPane.alignment="CENTER">
                     <children>
-                        <ToggleButton fx:id="dashuserbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Users">
+                        <ToggleButton fx:id="dashuserbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@../css/styling.css" text="Users">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/usericon.png" />
+                                        <Image url="@../icons/usericon.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -88,11 +88,11 @@
                                 <Insets left="30.0" />
                             </padding>
                         </ToggleButton>
-                        <ToggleButton fx:id="dashdesbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Destinations">
+                        <ToggleButton fx:id="dashdesbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@../css/styling.css" text="Destinations">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/desticon.png" />
+                                        <Image url="@../icons/desticon.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -100,11 +100,11 @@
                                 <Insets left="30.0" />
                             </padding>
                         </ToggleButton>
-                        <ToggleButton fx:id="dashresbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Reservations">
+                        <ToggleButton fx:id="dashresbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@../css/styling.css" text="Reservations">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/res.png" />
+                                        <Image url="@../icons/res.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -112,11 +112,11 @@
                                 <Insets left="30.0" />
                             </padding>
                         </ToggleButton>
-                        <ToggleButton fx:id="dashactbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Activities">
+                        <ToggleButton fx:id="dashactbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@../css/styling.css" text="Activities">
                             <graphic>
                                 <ImageView fitHeight="22.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/Bousole.png" />
+                                        <Image url="@../icons/Bousole.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -124,11 +124,11 @@
                                 <Insets left="30.0" />
                             </padding>
                         </ToggleButton>
-                        <ToggleButton fx:id="dashpostbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Posts">
+                        <ToggleButton fx:id="dashpostbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@../css/styling.css" text="Posts">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/camera.png" />
+                                        <Image url="@../icons/camera.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -142,7 +142,7 @@
          <center>
                 <StackPane BorderPane.alignment="CENTER">
                     <children>
-                        <TabPane fx:id="activitetabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                        <TabPane fx:id="activitetabpanmain" stylesheets="@../css/styling.css" tabClosingPolicy="UNAVAILABLE">
                             <tabs>
                                 <Tab fx:id="activitetab" text="Activities">
                                     <content>
@@ -153,8 +153,8 @@
                                                         <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                             <children>
                                                                 <Label text="Activities" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                                             </children>
                                                             <padding>
                                                                 <Insets left="30.0" />
@@ -162,7 +162,7 @@
                                                         </HBox>
                                                     </top>
                                                     <center>
-                                                        <TableView fx:id="tableactivite" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                        <TableView fx:id="tableactivite" stylesheets="@../css/styling.css" BorderPane.alignment="CENTER">
                                                             <columns>
                                                                 <TableColumn prefWidth="75.0" text="Name" />
                                                                 <TableColumn prefWidth="91.199951171875" text="Description" />
@@ -204,7 +204,7 @@
                                 </Tab>
                             </tabs>
                         </TabPane>
-                        <TabPane fx:id="usertabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                        <TabPane fx:id="usertabpanmain" stylesheets="@../css/styling.css" tabClosingPolicy="UNAVAILABLE">
                             <tabs>
                                 <Tab fx:id="usertab" text="users">
                                     <content>
@@ -215,8 +215,8 @@
                                                         <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                             <children>
                                                                 <Label text="Activities" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                                             </children>
                                                             <padding>
                                                                 <Insets left="30.0" />
@@ -224,7 +224,7 @@
                                                         </HBox>
                                                     </top>
                                                     <center>
-                                                        <TableView fx:id="tableuser" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                        <TableView fx:id="tableuser" stylesheets="@../css/styling.css" BorderPane.alignment="CENTER">
                                                             <columns>
                                                                 <TableColumn prefWidth="75.0" text="Name" />
                                                                 <TableColumn prefWidth="91.199951171875" text="Description" />
@@ -266,7 +266,7 @@
                                 </Tab>
                             </tabs>
                         </TabPane>
-                  <TabPane fx:id="destinationtabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                  <TabPane fx:id="destinationtabpanmain" stylesheets="@../css/styling.css" tabClosingPolicy="UNAVAILABLE">
                      <tabs>
                         <Tab fx:id="destinationtab" text="destinations">
                            <content>
@@ -277,8 +277,8 @@
                                           <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
                                                 <Label text="Activities" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" onAction="#FXaddActivite" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#FXaddActivite" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>
                                                 <Insets left="30.0" />
@@ -286,7 +286,7 @@
                                           </HBox>
                                        </top>
                                        <center>
-                                          <TableView fx:id="tabledestination" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                          <TableView fx:id="tabledestination" stylesheets="@../css/styling.css" BorderPane.alignment="CENTER">
                                              <columns>
                                                 <TableColumn prefWidth="75.0" text="Name" />
                                                 <TableColumn prefWidth="91.199951171875" text="Description" />
@@ -328,7 +328,7 @@
                         </Tab>
                      </tabs>
                   </TabPane>
-                  <TabPane fx:id="posttabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                  <TabPane fx:id="posttabpanmain" stylesheets="@../css/styling.css" tabClosingPolicy="UNAVAILABLE">
                      <tabs>
                         <Tab fx:id="posttab" text="posts">
                            <content>
@@ -339,8 +339,8 @@
                                           <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
                                                 <Label text="Activities" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>
                                                 <Insets left="30.0" />
@@ -348,7 +348,7 @@
                                           </HBox>
                                        </top>
                                        <center>
-                                          <TableView fx:id="tablereservation" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                          <TableView fx:id="tablereservation" stylesheets="@../css/styling.css" BorderPane.alignment="CENTER">
                                              <columns>
                                                 <TableColumn prefWidth="75.0" text="Name" />
                                                 <TableColumn prefWidth="91.199951171875" text="Description" />
@@ -390,7 +390,7 @@
                         </Tab>
                      </tabs>
                   </TabPane>
-                  <TabPane fx:id="reservationtabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                  <TabPane fx:id="reservationtabpanmain" stylesheets="@../css/styling.css" tabClosingPolicy="UNAVAILABLE">
                      <tabs>
                         <Tab fx:id="reservationstab" text="reservations">
                            <content>
@@ -401,8 +401,8 @@
                                           <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
                                                 <Label text="Reservations" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>
                                                 <Insets left="30.0" />
@@ -410,7 +410,7 @@
                                           </HBox>
                                        </top>
                                        <center>
-                                          <TableView fx:id="tableReservation" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                          <TableView fx:id="tableReservation" stylesheets="@../css/styling.css" BorderPane.alignment="CENTER">
                                              <columns>
                                                 <TableColumn fx:id="colDateReservation" prefWidth="96.0" text="Creation date" />
                                                 <TableColumn fx:id="colDateDebut" prefWidth="77.60003662109375" text="Start date" />
@@ -438,8 +438,8 @@
                                           <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
                                                 <Label text="Tickets" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" onAction="#openAddTicketPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddTicketPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>
                                                 <Insets left="30.0" />
@@ -447,7 +447,7 @@
                                           </HBox>
                                        </top>
                                        <center>
-                                          <TableView fx:id="tableTicket" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                          <TableView fx:id="tableTicket" stylesheets="@../css/styling.css" BorderPane.alignment="CENTER">
                                              <columns>
                                                 <TableColumn fx:id="colType" prefWidth="143.20001220703125" text="Type" />
                                                 <TableColumn fx:id="colDateDebut1" prefWidth="104.79998779296875" text="Start date" />

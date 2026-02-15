@@ -131,7 +131,7 @@ public class HomePageController implements Initializable {
     @FXML
     void goToMyReservations(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
@@ -213,7 +213,7 @@ public class HomePageController implements Initializable {
             stage.showAndWait();
 
             // Après fermeture du popup, naviguer vers MyReservations
-            FXMLLoader myResLoader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
+            FXMLLoader myResLoader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
             Parent myResRoot = myResLoader.load();
 
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();

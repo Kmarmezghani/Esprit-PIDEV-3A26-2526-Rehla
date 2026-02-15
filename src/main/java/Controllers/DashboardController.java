@@ -377,7 +377,7 @@ public class DashboardController {
     private void openAddPopup(ActionEvent event) {
         try {
             Parent root = FXMLLoader.load(
-                    getClass().getResource("/ajoutReservation.fxml")
+                    getClass().getResource("/Backoffice/ajoutReservation.fxml")
             );
 
             Stage popupStage = new Stage();
@@ -448,7 +448,7 @@ public class DashboardController {
     }
     private void openEditPopup(Reservation reservation) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutReservation.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutReservation.fxml"));
             Parent root = loader.load();
 
             // Récupérer le controller du popup
@@ -488,7 +488,7 @@ public class DashboardController {
 
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/ajoutTicket.fxml")
+                    getClass().getResource("/Backoffice/ajoutTicket.fxml")
             );
 
             Parent root = loader.load();
@@ -611,7 +611,7 @@ public class DashboardController {
     private void openEditTicketPopup(Ticket ticket) {
         try {
             int reservationId = ticket.getReservationId();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutTicket.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutTicket.fxml"));
             Parent root = loader.load();
 
             TicketController popupController = loader.getController();

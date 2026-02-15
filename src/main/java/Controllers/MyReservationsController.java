@@ -198,7 +198,7 @@ public class MyReservationsController {
 
         try {
             // Charger le FXML du popup d'ajout
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutTicket.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutTicket.fxml"));
             Parent root = loader.load();
 
             TicketController controller = loader.getController();
@@ -231,7 +231,7 @@ public class MyReservationsController {
     @FXML
     private void goToHome(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
             Parent root = loader.load();
 
             Stage stage = (Stage) tableReservation.getScene().getWindow();
@@ -356,7 +356,7 @@ public class MyReservationsController {
 
     private void openUpdateTicket(Ticket ticket) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutTicket.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutTicket.fxml"));
             Parent root = loader.load();
 
             TicketController controller = loader.getController();
@@ -383,7 +383,7 @@ public class MyReservationsController {
 
     private void openEditReservationPopup(Reservation reservation) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutReservation.fxml")); // ton FXML de formulaire
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutReservation.fxml")); // ton FXML de formulaire
             Parent root = loader.load();
 
 

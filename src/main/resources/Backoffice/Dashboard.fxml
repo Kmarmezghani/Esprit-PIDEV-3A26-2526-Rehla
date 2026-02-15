@@ -167,9 +167,11 @@
                                                                 <TableColumn fx:id="colnameactivite" prefWidth="75.0" text="Name" />
                                                                 <TableColumn fx:id="coldescriptionactivite" prefWidth="91.199951171875" text="Description" />
                                                                 <TableColumn fx:id="colpriceactivite" prefWidth="59.20001220703125" text="Price" />
-                                                                <TableColumn fx:id="coldureeactivite" prefWidth="75.0" text="Duration" />
+                                                                <TableColumn fx:id="coldateDactivite" prefWidth="75.0" text="Start Date" />
+                                                <TableColumn fx:id="coldateFactivite" prefWidth="75.0" text="End Date" />
                                                                 <TableColumn fx:id="coltypeactivite" prefWidth="70.4000244140625" text="Type" />
                                                                 <TableColumn fx:id="colavgratactivite" prefWidth="103.19992065429688" text="Average Rating" />
+                                                <TableColumn fx:id="colDestinationactivite" prefWidth="54.39996337890625" text="Destination" />
                                                                 <TableColumn fx:id="colguideactivite" prefWidth="54.39996337890625" text="Guide" />
                                                 <TableColumn fx:id="colDeleteactivite" prefWidth="75.0" />
                                                             </columns>
@@ -189,7 +191,6 @@
                                           <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
                                                 <Label text="Review" textFill="#002b11" />
-                                                <Button mnemonicParsing="false" onAction="#openAddPopupactivite" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
                                                 <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>

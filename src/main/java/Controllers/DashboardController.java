@@ -60,12 +60,14 @@ public class DashboardController {
     @FXML private TableColumn<Activite, String> colnameactivite;
     @FXML private TableColumn<Activite, String> coldescriptionactivite;
     @FXML private TableColumn<Activite, Double> colpriceactivite;
-    @FXML private TableColumn<Activite, Double> coldureeactivite;
     @FXML private TableColumn<Activite, String> coltypeactivite;
     @FXML private TableColumn<Activite, Double> colavgratactivite;
     @FXML private TableColumn<Activite, String> colguideactivite;
-    @FXML private TableColumn<Activite, Void> colDeleteactivite;
+    @FXML private TableColumn<Activite, String> colDestinationactivite;
+    @FXML private TableColumn<Activite, String> coldateDactivite;
+    @FXML private TableColumn<Activite, String> coldateFactivite;
 
+    @FXML private TableColumn<Activite, Void> colDeleteactivite;
 
 
 // ======================================================
@@ -121,10 +123,9 @@ public class DashboardController {
     @FXML
     public void initialize() {
 
-        // ======================================================
-        // ================ DASHBOARD TOGGLE GROUP ===============
-        // ======================================================
-
+        // =========================
+        // DASHBOARD TOGGLE GROUP
+        // =========================
         dashuserbut.setToggleGroup(dashboardGroup);
         dashdesbut.setToggleGroup(dashboardGroup);
         dashresbut.setToggleGroup(dashboardGroup);
@@ -144,25 +145,17 @@ public class DashboardController {
         dashboardGroup.selectToggle(dashuserbut);
         applySelectedStyles();
 
-
-
-        // ======================================================
-        // ================= TABLE INITIALIZATION ===============
-        // ======================================================
-
-        initActiviteTable();   // contains delete button now
+        // =========================
+        // TABLE INIT
+        // =========================
+        initActiviteTable();
         initReviewTable();
 
-
-
-        // ======================================================
-        // ================ SELECTION LISTENERS =================
-        // ======================================================
-
+        // =========================
+        // SELECTION LISTENERS
+        // =========================
         tableactivite.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                selectedActivite = newSelection;
-            }
+            selectedActivite = newSelection;
         });
 
         reviewtab.setOnSelectionChanged(event -> {
@@ -171,61 +164,53 @@ public class DashboardController {
             }
         });
 
-
-
-        // ======================================================
-        // ================= ROW DOUBLE CLICK ===================
-        // ======================================================
-
+        // =========================
+        // DOUBLE CLICK ROW = EDIT
+        // =========================
         tableactivite.setRowFactory(tv -> {
             TableRow<Activite> row = new TableRow<>();
-
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    Activite selectedActivite = row.getItem();
-                    openEditPopup(selectedActivite);
+                    openEditPopup(row.getItem());
                 }
             });
-
             return row;
         });
 
-
-
-        // ======================================================
-        // ================== COLUMN RESIZING ===================
-        // ======================================================
-
+        // =========================
+        // COLUMN RESIZING (ACTIVITE)
+        // =========================
         tableactivite.widthProperty().addListener((obs, oldW, newW) -> {
-            double w = newW.doubleValue();
-            double available = w - 20;
+            double available = newW.doubleValue() - 20;
 
-            colnameactivite.setPrefWidth(available * 0.15);
-            coldescriptionactivite.setPrefWidth(available * 0.3);
-            colpriceactivite.setPrefWidth(available * 0.12);
-            coldureeactivite.setPrefWidth(available * 0.12);
-            coltypeactivite.setPrefWidth(available * 0.10);
-            colavgratactivite.setPrefWidth(available * 0.12);
-            colguideactivite.setPrefWidth(available * 0.10);
+            colnameactivite.setPrefWidth(available * 0.11);
+            coldescriptionactivite.setPrefWidth(available * 0.22);
+            coldateDactivite.setPrefWidth(available * 0.10);
+            coldateFactivite.setPrefWidth(available * 0.10);
+            colpriceactivite.setPrefWidth(available * 0.08);
+            coltypeactivite.setPrefWidth(available * 0.09);
+            colavgratactivite.setPrefWidth(available * 0.09);
+            colDestinationactivite.setPrefWidth(available * 0.10);
+            colguideactivite.setPrefWidth(available * 0.09);
+            colDeleteactivite.setPrefWidth(available * 0.02);
         });
 
+        // =========================
+        // COLUMN RESIZING (REVIEW)
+        // =========================
         tableReview.widthProperty().addListener((obs, oldW, newW) -> {
-            double w = newW.doubleValue();
-            double available = w - 20;
+            double available = newW.doubleValue() - 20;
 
             coluserReview.setPrefWidth(available * 0.15);
-            colcommentReview.setPrefWidth(available * 0.40);
+            colcommentReview.setPrefWidth(available * 0.45);
             colnoteReview.setPrefWidth(available * 0.10);
             coldateReview.setPrefWidth(available * 0.20);
             colDeleteReview.setPrefWidth(available * 0.10);
         });
 
-
-
-        // ======================================================
-        // ================= WINDOW SHORTCUT ====================
-        // ======================================================
-
+        // =========================
+        // WINDOW SHORTCUT
+        // =========================
         Platform.runLater(() -> {
             Scene scene = dashuserbut.getScene();
             Stage stage = (Stage) scene.getWindow();
@@ -237,39 +222,49 @@ public class DashboardController {
             });
         });
     }
+
 // ===========================
 // ===== ACTIVITY-RELATED =====
 // ===========================
 
-    private void initActiviteTable() {
+    // ===================== ACTIVITE =====================
 
+    private void initActiviteTable() {
         colnameactivite.setCellValueFactory(new PropertyValueFactory<>("nom"));
         coldescriptionactivite.setCellValueFactory(new PropertyValueFactory<>("description"));
         colpriceactivite.setCellValueFactory(new PropertyValueFactory<>("prix"));
-        coldureeactivite.setCellValueFactory(new PropertyValueFactory<>("duree"));
         coltypeactivite.setCellValueFactory(new PropertyValueFactory<>("typeActivite"));
         colavgratactivite.setCellValueFactory(new PropertyValueFactory<>("noteMoyenne"));
+
         colguideactivite.setCellValueFactory(cellData -> {
-            Activite activite = cellData.getValue();
-            String guideName = activiteService.getGuideNameByActiviteId(activite.getGuideId());
+            Activite a = cellData.getValue();
+            String guideName = activiteService.getGuideNameByActiviteId(a.getGuideId());
             return new ReadOnlyStringWrapper(guideName);
+        });
+
+        colDestinationactivite.setCellValueFactory(cellData -> {
+            Activite a = cellData.getValue();
+            String label = activiteService.getDestinationNameById(a.getDestinationId());
+            return new ReadOnlyStringWrapper(label);
+        });
+
+
+        coldateDactivite.setCellValueFactory(cellData -> {
+            Activite a = cellData.getValue();
+            String v = (a.getDateDebut() != null) ? a.getDateDebut().toString() : "";
+            return new ReadOnlyStringWrapper(v);
+        });
+
+        coldateFactivite.setCellValueFactory(cellData -> {
+            Activite a = cellData.getValue();
+            String v = (a.getDateFin() != null) ? a.getDateFin().toString() : "";
+            return new ReadOnlyStringWrapper(v);
         });
 
         tableactivite.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         refreshActiviteTable();
         addDeleteButton();
-
-        Platform.runLater(() -> {
-            colnameactivite.setPrefWidth(160);
-            coldescriptionactivite.setPrefWidth(200);
-            colpriceactivite.setPrefWidth(100);
-            coldureeactivite.setPrefWidth(100);
-            coltypeactivite.setPrefWidth(140);
-            colavgratactivite.setPrefWidth(170);
-            colguideactivite.setPrefWidth(90);
-            colDeleteactivite.setPrefWidth(50);
-        });
     }
 
     private void refreshActiviteTable() {
@@ -277,30 +272,26 @@ public class DashboardController {
         tableactivite.setItems(activiteList);
     }
 
-
     private void addDeleteButton() {
         colDeleteactivite.setCellFactory(param -> new TableCell<>() {
-
             private final Button deleteBtn = new Button();
 
             {
-                ImageView icon = new ImageView(new Image(
-                        getClass().getResourceAsStream("/icons/poubelle.png")
-                ));
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/icons/poubelle.png")));
                 icon.setFitWidth(20);
                 icon.setFitHeight(20);
 
                 deleteBtn.setGraphic(icon);
                 deleteBtn.setStyle("""
-                -fx-background-color: transparent;
-                -fx-padding: 0;
-                -fx-cursor: hand;
-            """);
+                    -fx-background-color: transparent;
+                    -fx-padding: 0;
+                    -fx-cursor: hand;
+                """);
 
                 deleteBtn.setOnAction(e -> {
-                    Activite activite = getTableView().getItems().get(getIndex());
-                    activiteService.delete(activite);      // DB
-                    getTableView().getItems().remove(activite); // UI
+                    Activite a = getTableView().getItems().get(getIndex());
+                    activiteService.delete(a);
+                    getTableView().getItems().remove(a);
                 });
             }
 
@@ -311,25 +302,25 @@ public class DashboardController {
             }
         });
     }
+
     @FXML
     private void openAddPopupactivite(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/FormulaireAddActivite.fxml"));
-
+            Parent root = FXMLLoader.load(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
             Stage popupStage = new Stage();
             popupStage.setTitle("Add new activity");
             popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
-
             refreshActiviteTable();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     private void openEditPopup(Activite activite) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FormulaireAddActivite.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
             Parent root = loader.load();
             AjouterActiviteController controller = loader.getController();
             controller.setActiviteToEdit(activite);

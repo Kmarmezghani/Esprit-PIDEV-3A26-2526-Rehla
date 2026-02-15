@@ -110,4 +110,29 @@ public class ReviewService implements IService<Review> {
         }
         return reviews;
     }
+    public double getAverageNoteByActiviteId(int activiteId) {
+        String sql = "SELECT AVG(note) AS avgNote FROM avis WHERE activite_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, activiteId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("avgNote"); // 0.0 si aucun avis
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    public void deleteByIdAndUser(int reviewId, int userId) {
+        String sql = "DELETE FROM avis WHERE id = ? AND personne_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reviewId);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -1,6 +1,8 @@
 package rehla;
 
+import models.Activite;
 import services.ActiviteService;
+import services.ReviewService;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -10,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
 
         ActiviteService activiteService = new ActiviteService();
-        AvisService avisService = new AvisService();
+        ReviewService avisService = new ReviewService();
 
         Activite activite1 = new Activite(
                 "Excursion Désert",

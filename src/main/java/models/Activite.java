@@ -1,37 +1,49 @@
 package models;
 
+import java.time.LocalDateTime;
+
 public class Activite {
 
-    int id;
-    String nom;
-    String description;
-    double prix;
-    double duree;
-    String typeActivite;
-    double noteMoyenne;
-    int guideId;
-
+    private int id;
+    private String nom;
+    private String description;
+    private double prix;
+    private String typeActivite;
+    private double noteMoyenne;
+    private int guideId;
+    private int destinationId;
+    private LocalDateTime dateDebut;
+    private LocalDateTime dateFin;
+    private String status;
 
     public Activite() {}
 
-
-    public Activite(String nom, String description, double prix, double duree, String typeActivite, int guideId) {
+    public Activite(String nom, String description, double prix, String typeActivite,
+                    int guideId, int destinationId, LocalDateTime dateDebut, LocalDateTime dateFin, String status) {
         this.nom = nom;
         this.description = description;
         this.prix = prix;
-        this.duree = duree;
         this.typeActivite = typeActivite;
         this.guideId = guideId;
+        this.destinationId = destinationId;
+        this.dateDebut = dateDebut;
+        this.dateFin = dateFin;
+        this.status = status;
     }
 
-    public Activite(int id, String nom, String description, double prix, double duree, String typeActivite, int guideId) {
+    public Activite(int id, String nom, String description, double prix, String typeActivite, double noteMoyenne,
+                    int guideId, int destinationId, LocalDateTime dateDebut, LocalDateTime dateFin, String status) {
         this.id = id;
         this.nom = nom;
         this.description = description;
         this.prix = prix;
-        this.duree = duree;
         this.typeActivite = typeActivite;
+        this.noteMoyenne = noteMoyenne;
         this.guideId = guideId;
+        this.destinationId = destinationId;
+        this.dateDebut = dateDebut;
+        this.dateFin = dateFin;
+        this.status = status;
     }
 
     @Override
@@ -41,10 +53,13 @@ public class Activite {
                 ", nom='" + nom + '\'' +
                 ", description='" + description + '\'' +
                 ", prix=" + prix +
-                ", duree=" + duree +
                 ", typeActivite='" + typeActivite + '\'' +
                 ", noteMoyenne=" + noteMoyenne +
                 ", guideId=" + guideId +
+                ", destinationId=" + destinationId +
+                ", dateDebut=" + dateDebut +
+                ", dateFin=" + dateFin +
+                ", status='" + status + '\'' +
                 '}';
     }
 
@@ -60,9 +75,6 @@ public class Activite {
     public double getPrix() { return prix; }
     public void setPrix(double prix) { this.prix = prix; }
 
-    public double getDuree() { return duree; }
-    public void setDuree(double duree) { this.duree = duree; }
-
     public String getTypeActivite() { return typeActivite; }
     public void setTypeActivite(String typeActivite) { this.typeActivite = typeActivite; }
 
@@ -71,4 +83,16 @@ public class Activite {
 
     public int getGuideId() { return guideId; }
     public void setGuideId(int guideId) { this.guideId = guideId; }
+
+    public int getDestinationId() { return destinationId; }
+    public void setDestinationId(int destinationId) { this.destinationId = destinationId; }
+
+    public LocalDateTime getDateDebut() { return dateDebut; }
+    public void setDateDebut(LocalDateTime dateDebut) { this.dateDebut = dateDebut; }
+
+    public LocalDateTime getDateFin() { return dateFin; }
+    public void setDateFin(LocalDateTime dateFin) { this.dateFin = dateFin; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

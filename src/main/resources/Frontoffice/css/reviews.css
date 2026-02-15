@@ -1,0 +1,111 @@
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 14, 0, 0, 4);
+}
+
+/* Title "Reviews" like photo 2 */
+.h2 { -fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827; }
+.h3 { -fx-font-size: 16; -fx-font-weight: 800; -fx-text-fill: #223f91; }
+.muted { -fx-text-fill: #667085; -fx-font-size: 13; }
+
+/* Big average "4.0" */
+.avgBig { -fx-font-size: 56; -fx-font-weight: 900; -fx-text-fill: #111827; }
+
+/* Stars */
+.starsBig { -fx-font-size: 20; -fx-text-fill: #223f91; }
+
+/* Right label "5.0 14K reviews" */
+.rightMeta { -fx-font-size: 12.5; -fx-text-fill: #667085; }
+
+/* Vertical separator */
+.vSep { -fx-padding: 0 14 0 14; }
+.vSep .line { -fx-border-color: #e5e7eb; -fx-border-width: 0 0 0 1; }
+
+/* ProgressBar — Google Play style */
+.rateBar {
+    -fx-accent: #223f91;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 12;   /* thicker like photo 2 */
+}
+.rateBar .track {
+    -fx-background-color: #eef2f7;
+    -fx-background-radius: 999;
+    -fx-pref-height: 12;
+}
+.rateBar .bar {
+    -fx-background-color: #223f91;
+    -fx-background-radius: 999;
+    -fx-padding: 0;
+}
+
+/* buttons */
+.primaryBtn {
+    -fx-background-color: #3A5BC7;
+    -fx-text-fill: white;
+    -fx-font-weight: 800;
+    -fx-background-radius: 12;
+    -fx-padding: 12 18;
+    -fx-cursor: hand;
+}
+.dangerBtn {
+    -fx-background-color: #f97066;
+    -fx-text-fill: white;
+    -fx-font-weight: 800;
+    -fx-background-radius: 12;
+    -fx-padding: 10 16;
+    -fx-cursor: hand;
+}
+
+/* textarea */
+.reviewArea {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #dbe7ff;
+    -fx-background-color: #ffffff;
+}
+
+/* list view */
+.reviewsList {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.reviewsList .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 12 0;
+}
+
+/* review card inside list cell */
+.reviewCard {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #eef2ff;
+    -fx-padding: 14;
+}
+.reviewCard.mine {
+    -fx-border-color: #3A5BC7;
+    -fx-border-width: 1.2;
+}
+
+.avatar {
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-max-width: 38;
+    -fx-max-height: 38;
+    -fx-background-radius: 999;
+    -fx-background-color: #edf0ff;
+    -fx-alignment: center;
+}
+.avatarText {
+    -fx-font-weight: 900;
+    -fx-text-fill: #223f91;
+}
+
+.rName { -fx-font-weight: 800; -fx-text-fill: #101828; -fx-font-size: 13; }
+.rMeta { -fx-text-fill: #6a7aa6; -fx-font-size: 12; }
+.rStars { -fx-text-fill: #223f91; -fx-font-weight: 900; -fx-font-size: 12; }
+.rComment { -fx-text-fill: #344054; -fx-font-size: 13; }

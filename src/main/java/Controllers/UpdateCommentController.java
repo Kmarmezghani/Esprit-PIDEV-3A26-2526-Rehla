@@ -33,7 +33,7 @@ public class UpdateCommentController {
             return;
         }
 
-        // 🔹 Contrôle de saisie
+        //  Contrôle de saisie
         if (txtContenu.getText() == null || txtContenu.getText().trim().isEmpty()) {
             showError("Le contenu du commentaire ne peut pas être vide !");
             return;

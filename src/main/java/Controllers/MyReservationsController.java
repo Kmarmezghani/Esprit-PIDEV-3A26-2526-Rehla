@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -26,6 +27,8 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 
 public class MyReservationsController {
+    @FXML
+    private TextField searchField;
 
     // ================= RESERVATION TABLE =================
 
@@ -186,6 +189,7 @@ public class MyReservationsController {
         }
 
         try {
+            // Charger le FXML du popup d'ajout
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutTicket.fxml"));
             Parent root = loader.load();
 
@@ -198,8 +202,17 @@ public class MyReservationsController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
+
+            // 🔹 Recharger les tickets depuis la DB
+            ticketList.setAll(ticketService.getTicketsByReservation(selectedReservation.getId()));
+
+            // Reload tickets
             loadTicketsByReservation(selectedReservation.getId());
-            refreshReservationTable();
+
+// Refresh totals without destroying selection
+            tableReservation.refresh();
+
+// Refresh calendar safely
             showCalendarForReservation(selectedReservation);
 
 
@@ -207,6 +220,7 @@ public class MyReservationsController {
             e.printStackTrace();
         }
     }
+
 
     // ================= GO HOME =================
 
@@ -318,9 +332,11 @@ public class MyReservationsController {
         // 🔥 DELETE
         deleteBtn.setOnAction(e -> {
             ticketService.delete(ticket);
+
             loadTicketsByReservation(selectedReservation.getId());
+            tableReservation.refresh();
             showCalendarForReservation(selectedReservation);
-            refreshReservationTable();
+
         });
 
         // 🔥 DOUBLE CLICK = UPDATE
@@ -394,6 +410,51 @@ public class MyReservationsController {
     }
 
 
+    // Window Controls
+    @FXML
+    void closewindow(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.close();
+    }
+
+    @FXML
+    void minwindow(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setIconified(true);
+    }
+
+    @FXML
+    void maxwindow(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setMaximized(!stage.isMaximized());
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    @FXML
+    void goToDestinations(ActionEvent event) {
+        System.out.println("Destinations - to be implemented");
+        showInfo("Destinations", "Implement navigation to your module page");
+    }
+
+    @FXML
+    void goToPosts(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PostsPage.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfo("Posts", "Posts page loading...");
+        }
+    }
 
 
 

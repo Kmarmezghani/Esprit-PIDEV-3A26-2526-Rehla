@@ -457,6 +457,33 @@ public class HomePageController implements Initializable {
     }
 
     @FXML
+    private void handleAddReservation(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajout.fxml"));
+            Parent root = loader.load();
+
+            AjouterReservationController controller = loader.getController();
+
+            // Création d'un Stage modal
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Add Reservation");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            // Après fermeture du popup, naviguer vers MyReservations
+            FXMLLoader myResLoader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
+            Parent myResRoot = myResLoader.load();
+
+            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            currentStage.setScene(new Scene(myResRoot));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     void frontofficeActivite(ActionEvent event) {
         /* ACTIVITIES TEAM: Uncomment this code when ActivityForm.fxml is ready
         try {

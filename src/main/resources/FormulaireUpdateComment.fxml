@@ -19,6 +19,6 @@
     <TextArea fx:id="txtContenu" prefWidth="300" prefHeight="150" wrapText="true"/>
 
     <!-- Bouton Save -->
-    <Button fx:id="btnSave" text="Enregistrer" onAction="#saveComment"
+    <Button fx:id="btnSave" text="Enregistrer" onAction="#updateComment"
             style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
 </VBox>

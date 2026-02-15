@@ -95,41 +95,67 @@ public class AddPostController {
     private void addPost() {
 
         try {
-            Post post = new Post();
-            post.setTitre(txtTitre.getText());
-            post.setContenu(txtContenu.getText());
-            post.setDatePublication(LocalDate.now());
-            post.setPopularite(Integer.parseInt(txtPopularite.getText()));
+
+            //  CONTROLE DE SAISIE
+
+            if (txtTitre.getText() == null || txtTitre.getText().trim().isEmpty()) {
+                showError("Le titre ne peut pas être vide !");
+                return;
+            }
+
+            if (txtContenu.getText() == null || txtContenu.getText().trim().isEmpty()) {
+                showError("Le contenu ne peut pas être vide !");
+                return;
+            }
+
+            if (txtPopularite.getText() == null || txtPopularite.getText().trim().isEmpty()) {
+                showError("La popularité est obligatoire !");
+                return;
+            }
+
+            int popularite;
+            try {
+                popularite = Integer.parseInt(txtPopularite.getText().trim());
+            } catch (NumberFormatException e) {
+                showError("La popularité doit être un nombre !");
+                return;
+            }
 
             Personne auteur = comboAuteur.getSelectionModel().getSelectedItem();
             if (auteur == null) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setContentText("Veuillez sélectionner un auteur !");
-                alert.showAndWait();
+                showError("Veuillez sélectionner un auteur !");
                 return;
             }
-            post.setAuteur(auteur);
 
+            // Création du post
+            Post post = new Post();
+            post.setTitre(txtTitre.getText().trim());
+            post.setContenu(txtContenu.getText().trim());
+            post.setDatePublication(LocalDate.now());
+            post.setPopularite(popularite);
+            post.setAuteur(auteur);
 
             if (selectedImageFile != null) {
                 String imagePath = copierImagePath(selectedImageFile);
-
                 post.setImage(imagePath);
             }
 
             postService.add(post);
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Post ajouté avec succès !");
-            alert.showAndWait();
+            new Alert(Alert.AlertType.INFORMATION, "Post ajouté avec succès !").showAndWait();
 
-            Stage stage = (Stage) txtTitre.getScene().getWindow();
-            stage.close();
+            ((Stage) txtTitre.getScene().getWindow()).close();
 
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait();
+            showError(e.getMessage());
         }
     }
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 
     private String copierImagePath(File imageFile) throws IOException {
 

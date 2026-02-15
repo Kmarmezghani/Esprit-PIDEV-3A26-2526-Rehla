@@ -69,14 +69,24 @@ public class UpdatePostController {
     private void updatePost() {
 
         try {
-            postToEdit.setTitre(txtTitre.getText());
-            postToEdit.setContenu(txtContenu.getText());
+
+            //  CONTROLE DE SAISIE
+            if (txtTitre.getText() == null || txtTitre.getText().trim().isEmpty()) {
+                showError("Le titre ne peut pas être vide !");
+                return;
+            }
+
+            if (txtContenu.getText() == null || txtContenu.getText().trim().isEmpty()) {
+                showError("Le contenu ne peut pas être vide !");
+                return;
+            }
+
+
+            // Mise à jour
+            postToEdit.setTitre(txtTitre.getText().trim());
+            postToEdit.setContenu(txtContenu.getText().trim());
             postToEdit.setPopularite(Integer.parseInt(txtPopularite.getText()));
 
-
-            Personne auteur = new Personne();
-            auteur.setId(Integer.parseInt(txtAuteurId.getText()));
-            postToEdit.setAuteur(auteur);
 
 
             if (selectedImageFile != null) {
@@ -86,16 +96,21 @@ public class UpdatePostController {
 
             postService.update(postToEdit);
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Post modifié avec succès !");
-            alert.showAndWait();
+            new Alert(Alert.AlertType.INFORMATION, "Post modifié avec succès !").showAndWait();
 
             Stage stage = (Stage) txtTitre.getScene().getWindow();
             stage.close();
 
+        } catch (NumberFormatException e) {
+            showError("La popularité doit être un nombre !");
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait();
+            showError(e.getMessage());
         }
+    }
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
 

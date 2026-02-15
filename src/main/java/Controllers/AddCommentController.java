@@ -15,9 +15,12 @@ import java.time.LocalDate;
 
 public class AddCommentController {
 
-    @FXML private TextArea txtContenu;
-    @FXML private ComboBox<Personne> cbAuteur;
-    @FXML private ComboBox<Post> cbPost;
+    @FXML
+    private TextArea txtContenu;
+    @FXML
+    private ComboBox<Personne> cbAuteur;
+    @FXML
+    private ComboBox<Post> cbPost;
 
     private final CommentaireService commentaireService = new CommentaireService();
     private final PersonneService personneService = new PersonneService();
@@ -70,8 +73,26 @@ public class AddCommentController {
 
         try {
 
+            // CONTROLE DE SAISIE
+
+            if (txtContenu.getText() == null || txtContenu.getText().trim().isEmpty()) {
+                showError("Le contenu du commentaire ne peut pas être vide !");
+                return;
+            }
+
+            if (cbAuteur.getValue() == null) {
+                showError("Veuillez sélectionner un auteur !");
+                return;
+            }
+
+            if (cbPost.getValue() == null) {
+                showError("Veuillez sélectionner un post !");
+                return;
+            }
+
+            //  Création du commentaire
             Commentaire c = new Commentaire();
-            c.setContenu(txtContenu.getText());
+            c.setContenu(txtContenu.getText().trim());
             c.setDateCommentaire(LocalDate.now());
             c.setAuteur(cbAuteur.getValue());
             c.setPost(cbPost.getValue());
@@ -82,12 +103,16 @@ public class AddCommentController {
                     "Commentaire ajouté avec succès !")
                     .showAndWait();
 
-            Stage stage = (Stage) txtContenu.getScene().getWindow();
-            stage.close();
+            ((Stage) txtContenu.getScene().getWindow()).close();
 
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR,
-                    e.getMessage()).showAndWait();
+            showError(e.getMessage());
         }
     }
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 }

@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -18,7 +19,9 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Reservation;
+import models.Ticket;
 import services.ReservationService;
+import services.TicketService;
 
 import java.sql.Date;
 
@@ -54,6 +57,12 @@ public class DashboardController {
     @FXML private TableView<?> tabledestination;
     @FXML private TableView<?> tablepost;
     @FXML private TableView<?> tableuser;
+    private TicketService ticketService = new TicketService();
+    @FXML
+    private TableView<Ticket> tableTicket;
+    private Reservation selectedReservation;
+    private Reservation currentReservationForTickets;
+
 
 
     @FXML private TableView<Reservation> tableReservation;
@@ -66,6 +75,16 @@ public class DashboardController {
     @FXML private TableColumn<Reservation, String> colDestination;
     @FXML private TableColumn<Reservation, Integer> colNbrTickets;
     @FXML private TableColumn<Reservation, Void> colDeleteReservation;
+    @FXML private TableColumn<Reservation, Void> colTicketReservation;
+
+
+    @FXML private TableColumn<Ticket, Date> colDateDebut1;
+    @FXML private TableColumn<Ticket, Date> colDateFin1;
+    @FXML private TableColumn<Ticket, String> colStatut1;
+    @FXML private TableColumn<Ticket, Double> colPrix;
+    @FXML private TableColumn<Ticket, String> colType;
+    @FXML private TableColumn<Ticket, Void> colDeleteTicket;
+
 
 
 
@@ -77,6 +96,8 @@ public class DashboardController {
 
 
     private final ToggleGroup dashboardGroup = new ToggleGroup();
+
+
 
     @FXML
     public void initialize() {
@@ -105,7 +126,30 @@ public class DashboardController {
         applySelectedStyles();
 
         addDeleteButton();
+        addTicketButton();
         initReservationTable();
+        initTicketTable();
+        addDeleteTicketButton();
+
+        ticketstab.setOnSelectionChanged(event -> {
+            if (ticketstab.isSelected()) {
+
+                if (currentReservationForTickets == null) {
+                    // 🔥 No reservation selected → show ALL tickets
+                    refreshTicketTable();
+                } else {
+                    // Reservation selected → show its tickets
+                    loadTicketsByReservation(currentReservationForTickets.getId());
+                }
+            }
+        });
+        reservationstab.setOnSelectionChanged(event -> {
+            if (reservationstab.isSelected()) {
+                currentReservationForTickets = null;
+            }
+        });
+
+
 
         Platform.runLater(() -> {
             Scene scene = dashuserbut.getScene();
@@ -117,6 +161,30 @@ public class DashboardController {
                 }
             });
         });
+        tableReservation.widthProperty().addListener((obs, oldW, newW) -> {
+            double w = newW.doubleValue();
+            double available = w - 20;
+
+            colDateReservation.setPrefWidth(available * 0.15);
+            colDateDebut.setPrefWidth(available * 0.15);
+            colDateFin.setPrefWidth(available * 0.15);
+            colStatut.setPrefWidth(available * 0.12);
+            colCoutTotal.setPrefWidth(available * 0.15);
+            colDeleteReservation.setPrefWidth(available * 0.10);
+        });
+        tableTicket.widthProperty().addListener((obs, oldW, newW) -> {
+            double w = newW.doubleValue();
+            double available = w - 20;
+
+            colType.setPrefWidth(available * 0.20);
+            colPrix.setPrefWidth(available * 0.15);
+            colStatut1.setPrefWidth(available * 0.15);
+            colDateDebut1.setPrefWidth(available * 0.15);
+            colDateFin1.setPrefWidth(available * 0.15);
+            colDeleteTicket.setPrefWidth(available * 0.10);
+        });
+
+
     }
 
     private ReservationService reservationService = new ReservationService();
@@ -128,7 +196,12 @@ public class DashboardController {
         colDateDebut.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
         colDateFin.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
-        colCoutTotal.setCellValueFactory(new PropertyValueFactory<>("coutTotal"));
+        colCoutTotal.setCellValueFactory(cellData -> {
+            int reservationId = cellData.getValue().getId();
+            double total = ticketService.sumPrixByReservation(reservationId);
+            return new SimpleDoubleProperty(total).asObject();
+        });
+
 
         colDestination.setCellValueFactory(cellData -> {
             int destId = cellData.getValue().getDestinationId();
@@ -137,11 +210,12 @@ public class DashboardController {
         });
 
         // ⚠️ colonne calculée (nbr tickets)
-        colNbrTickets.setCellValueFactory(cellData ->
-                new SimpleIntegerProperty(
-                        reservationService.getNombreTickets(cellData.getValue().getId())
-                ).asObject()
-        );
+        colNbrTickets.setCellValueFactory(cellData -> {
+            int reservationId = cellData.getValue().getId();
+            int count = ticketService.countTicketsByReservation(reservationId);
+            return new SimpleIntegerProperty(count).asObject();
+        });
+
         tableReservation.setRowFactory(tv -> {
             TableRow<Reservation> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -152,6 +226,15 @@ public class DashboardController {
             });
             return row;
         });
+        tableReservation.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+
+            selectedReservation = newSelection;
+
+
+            if (newSelection != null) {
+                loadTicketsByReservation(newSelection.getId());
+            }
+        });
 
         refreshReservationTable();
     }
@@ -161,6 +244,45 @@ public class DashboardController {
         tableReservation.setItems(reservationList);
 
     }
+
+    private ObservableList<Ticket> ticketList = FXCollections.observableArrayList();
+
+    private void initTicketTable() {
+
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
+        colStatut1.setCellValueFactory(new PropertyValueFactory<>("statut"));
+        colDateDebut1.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
+        colDateFin1.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
+
+
+        // 🔹 Double click pour modifier
+        tableTicket.setRowFactory(tv -> {
+            TableRow<Ticket> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Ticket t = row.getItem();
+                    openEditTicketPopup(t);
+                }
+            });
+            return row;
+        });
+
+        refreshTicketTable();
+    }
+    private void refreshTicketTable() {
+        ticketList.setAll(ticketService.getAll());
+        tableTicket.setItems(ticketList);
+    }
+    private void loadTicketsByReservation(int reservationId) {
+
+        ticketList.setAll(
+                ticketService.getTicketsByReservation(reservationId)
+        );
+
+        tableTicket.setItems(ticketList);
+    }
+
 
 
 
@@ -255,7 +377,7 @@ public class DashboardController {
     private void openAddPopup(ActionEvent event) {
         try {
             Parent root = FXMLLoader.load(
-                    getClass().getResource("/ajout.fxml")
+                    getClass().getResource("/ajoutReservation.fxml")
             );
 
             Stage popupStage = new Stage();
@@ -276,6 +398,7 @@ public class DashboardController {
             popupStage.setScene(new Scene(root));
             popupStage.setResizable(false); // optional
             popupStage.showAndWait();
+            refreshReservationTable();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -307,6 +430,13 @@ public class DashboardController {
 
                     reservationService.delete(reservation);      // DB
                     getTableView().getItems().remove(reservation); // UI
+                    refreshReservationTable();
+                    tableTicket.getItems().clear();
+
+
+
+
+                    currentReservationForTickets = null;
                 });
             }
             @Override
@@ -318,7 +448,7 @@ public class DashboardController {
     }
     private void openEditPopup(Reservation reservation) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajout.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutReservation.fxml"));
             Parent root = loader.load();
 
             // Récupérer le controller du popup
@@ -340,5 +470,168 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
+    @FXML
+    private void openAddTicketPopup(ActionEvent event) {
+
+        // Use selectedReservation if no ticket button clicked
+        if (currentReservationForTickets == null) {
+            if (selectedReservation != null) {
+                currentReservationForTickets = selectedReservation;
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING,
+                        "Veuillez sélectionner une réservation !");
+                alert.showAndWait();
+                return;
+            }
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/ajoutTicket.fxml")
+            );
+
+            Parent root = loader.load();
+            TicketController popupController = loader.getController();
+
+            // Pass the reservation
+            popupController.setReservation(currentReservationForTickets);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add Ticket");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+
+            // refresh tickets
+            loadTicketsByReservation(currentReservationForTickets.getId());
+
+            refreshReservationTable();
+
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void addTicketButton() {
+
+        colTicketReservation.setCellFactory(param -> new TableCell<>() {
+
+            private final Button ticketBtn = new Button();
+
+            {
+                ImageView icon = new ImageView(new Image(
+                        getClass().getResourceAsStream("/icons/ticket.png")
+                ));
+                icon.setFitWidth(22);
+                icon.setFitHeight(27);
+
+                ticketBtn.setGraphic(icon);
+                ticketBtn.setStyle("""
+                -fx-background-color: transparent;
+                -fx-padding: 0;
+                -fx-cursor: hand;
+            """);
+
+                ticketBtn.setOnAction(e -> {
+
+                    Reservation reservation =
+                            getTableView().getItems().get(getIndex());
+
+                    // 🔥 IMPORTANT
+                    currentReservationForTickets = reservation;
+
+                    // Switch to ticket tab
+                    reservationtabpanmain.getSelectionModel().select(ticketstab);
+
+                    // Load tickets
+                    loadTicketsByReservation(reservation.getId());
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : ticketBtn);
+            }
+        });
+    }
+
+
+
+
+    private void addDeleteTicketButton() {
+
+        colDeleteTicket.setCellFactory(param -> new TableCell<>() {
+
+            private final Button deleteBtn = new Button();
+
+            {
+                ImageView icon = new ImageView(new Image(
+                        getClass().getResourceAsStream("/icons/poubelle.png")
+                ));
+                icon.setFitWidth(20);
+                icon.setFitHeight(20);
+
+                deleteBtn.setGraphic(icon);
+                deleteBtn.setStyle("""
+                -fx-background-color: transparent;
+                -fx-padding: 0;
+                -fx-cursor: hand;
+            """);
+
+                deleteBtn.setOnAction(e -> {
+                    Ticket ticket = getTableView().getItems().get(getIndex());
+
+                    ticketService.delete(ticket);        // DB
+                    getTableView().getItems().remove(ticket); // UI
+                    if (currentReservationForTickets != null) {
+                        loadTicketsByReservation(currentReservationForTickets.getId());
+                    } else {
+                        refreshTicketTable(); // show all tickets
+                    }
+                    refreshReservationTable();
+
+
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : deleteBtn);
+            }
+        });
+    }
+
+    private void openEditTicketPopup(Ticket ticket) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutTicket.fxml"));
+            Parent root = loader.load();
+
+            TicketController popupController = loader.getController();
+
+            // Pré-remplir
+            popupController.setTicket(ticket);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Modifier Ticket");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+
+            refreshTicketTable(); // refresh après modification
+            refreshReservationTable();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 
 }

@@ -114,9 +114,9 @@
                         </ToggleButton>
                         <ToggleButton fx:id="dashactbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Activities">
                             <graphic>
-                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                <ImageView fitHeight="22.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/usericon.png" />
+                                        <Image url="@icons/Bousole.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -414,12 +414,13 @@
                                              <columns>
                                                 <TableColumn fx:id="colDateReservation" prefWidth="96.0" text="Creation date" />
                                                 <TableColumn fx:id="colDateDebut" prefWidth="77.60003662109375" text="Start date" />
-                                                <TableColumn fx:id="colDateFin" prefWidth="116.79998779296875" text="End Date" />
-                                                <TableColumn fx:id="colStatut" prefWidth="78.39996337890625" text="Status" />
-                                                <TableColumn fx:id="colCoutTotal" prefWidth="87.20001220703125" text="Total Cost" />
-                                                <TableColumn fx:id="colDestination" prefWidth="99.99993896484375" text="Destination" />
-                                                <TableColumn fx:id="colNbrTickets" prefWidth="116.79998779296875" text="Number of Tickets" />
-                                                <TableColumn fx:id="colDeleteReservation" prefWidth="58.400012207031295" />
+                                                <TableColumn fx:id="colDateFin" prefWidth="91.199951171875" text="End Date" />
+                                                <TableColumn fx:id="colStatut" prefWidth="72.79998779296875" text="Status" />
+                                                <TableColumn fx:id="colCoutTotal" prefWidth="68.0" text="Total Cost" />
+                                                <TableColumn fx:id="colDestination" prefWidth="85.5999755859375" text="Destination" />
+                                                <TableColumn fx:id="colNbrTickets" prefWidth="114.4000244140625" text="Number of Tickets" />
+                                                <TableColumn fx:id="colDeleteReservation" prefWidth="62.39990234375" />
+                                                <TableColumn fx:id="colTicketReservation" prefWidth="126.4000244140625" />
                                              </columns>
                                           </TableView>
                                        </center>
@@ -434,15 +435,29 @@
                                  <children>
                                     <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <top>
-                                          <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
-                                                <Label text="Label" />
+                                                <Label text="Tickets" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddTicketPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>
                                                 <Insets left="30.0" />
                                              </padding>
                                           </HBox>
                                        </top>
+                                       <center>
+                                          <TableView fx:id="tableTicket" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                             <columns>
+                                                <TableColumn fx:id="colType" prefWidth="143.20001220703125" text="Type" />
+                                                <TableColumn fx:id="colDateDebut1" prefWidth="104.79998779296875" text="Start date" />
+                                                <TableColumn fx:id="colDateFin1" prefWidth="132.0" text="End Date" />
+                                                <TableColumn fx:id="colStatut1" prefWidth="113.5999755859375" text="Status" />
+                                                <TableColumn fx:id="colPrix" prefWidth="126.39990234375" text="Cost" />
+                                                <TableColumn fx:id="colDeleteTicket" minWidth="0.0" prefWidth="112.800048828125" />
+                                             </columns>
+                                          </TableView>
+                                       </center>
                                     </BorderPane>
                                  </children>
                               </AnchorPane>

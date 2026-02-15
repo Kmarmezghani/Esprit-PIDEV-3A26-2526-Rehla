@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.stage.Stage;
@@ -31,8 +32,11 @@ public class AjouterReservationController {
     private ChoiceBox<String> cb_status;
     private String[] status = {"Confirmed","Pending","Cancelled"};
     private Map<String, Integer> destinationMap = new HashMap<>();
+
     public void initialize() {
         cb_status.getItems().addAll(status);
+        cb_status.setValue("Pending");
+        cb_status.setDisable(true);
         loadDestinationsFromDB();
 
     }
@@ -70,13 +74,28 @@ public class AjouterReservationController {
     void ajouterReservation(ActionEvent event) {
         // Récupérer les valeurs du formulaire
         String selectedDestination = cb_destination.getValue();
-        String statut = cb_status.getValue();
+        String statut;
+        if (reservation == null) {
+            statut = "Pending"; // 🔥 Force Pending in ADD
+        } else {
+            statut = cb_status.getValue();
+        }
         LocalDate dateDebutLD = dp_start.getValue();
         LocalDate dateFinLD = dp_end.getValue();
 
         // Vérification des champs obligatoires
         if (statut == null || dateDebutLD == null || dateFinLD == null || selectedDestination == null) {
-            System.out.println("Champs manquants !");
+            showError("All fields must be filled.");
+            return;
+        }
+
+        if (dateDebutLD.isBefore(LocalDate.now())) {
+            showError("Start date cannot be before today.");
+            return;
+        }
+
+        if (dateFinLD.isBefore(dateDebutLD)) {
+            showError("End date cannot be before start date.");
             return;
         }
 
@@ -134,7 +153,26 @@ public class AjouterReservationController {
         dp_start.setValue(reservation.getDateDebut().toLocalDate());
         dp_end.setValue(reservation.getDateFin().toLocalDate());
         cb_status.setValue(reservation.getStatut());
+        cb_status.setDisable(false);
+        int destinationId = reservation.getDestinationId();
+
+        for (Map.Entry<String, Integer> entry : destinationMap.entrySet()) {
+            if (entry.getValue() == destinationId) {
+                cb_destination.setValue(entry.getKey());
+                break;
+            }
+        }
+
         // tu peux aussi remplir les ChoiceBox/personne/destination si besoin
     }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Validation Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 
 }

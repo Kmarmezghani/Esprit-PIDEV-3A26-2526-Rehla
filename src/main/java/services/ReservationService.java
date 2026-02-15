@@ -36,34 +36,26 @@ public class ReservationService implements IService <Reservation>{
 
     @Override
     public void update(Reservation reservation) {
+
         String SQL = "UPDATE reservation SET " +
-                "dateReservation = ?, " +
-                "dateDebut = ?, " +
-                "dateFin = ?, " +
-                "statut = ?, " +
-                "coutTotal = ?, " +
-                "personne_id = ?, " +
-                "destination_id = ? " +
-                "WHERE id = ?";
+                "dateReservation = '" + reservation.getDateReservation() + "', " +
+                "dateDebut = '" + reservation.getDateDebut() + "', " +
+                "dateFin = '" + reservation.getDateFin() + "', " +
+                "statut = '" + reservation.getStatut() + "', " +
+                "coutTotal = '" + reservation.getCoutTotal() + "', " +
+                "personne_id = '" + reservation.getPersonneId() + "', " +
+                "destination_id = '" + reservation.getDestinationId() + "' " +
+                "WHERE id = " + reservation.getId();
 
         try {
-            PreparedStatement stmt = conn.prepareStatement(SQL);
-            stmt.setDate(1, reservation.getDateReservation());
-            stmt.setDate(2, reservation.getDateDebut());
-            stmt.setDate(3, reservation.getDateFin());
-            stmt.setString(4, reservation.getStatut());
-            stmt.setDouble(5, reservation.getCoutTotal());
-            stmt.setInt(6, reservation.getPersonneId());
-            stmt.setInt(7, reservation.getDestinationId());
-            stmt.setInt(8, reservation.getId());
-
-            stmt.executeUpdate();
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(SQL);
             System.out.println("Reservation updated successfully!");
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
-
     }
+
 
     @Override
     public void delete(Reservation reservation) {
@@ -140,6 +132,40 @@ public class ReservationService implements IService <Reservation>{
         }
         return nom;
     }
+
+    public Reservation getById(int id) {
+
+        Reservation reservation = null;
+
+        String sql = "SELECT * FROM reservation WHERE id = ?";
+
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setInt(1, id);
+
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+
+                reservation = new Reservation();
+
+                reservation.setId(rs.getInt("id"));
+                reservation.setDateReservation(rs.getDate("dateReservation"));
+                reservation.setDateDebut(rs.getDate("dateDebut"));
+                reservation.setDateFin(rs.getDate("dateFin"));
+                reservation.setStatut(rs.getString("statut"));
+                reservation.setCoutTotal(rs.getDouble("coutTotal"));
+                reservation.setPersonneId(rs.getInt("personne_id"));
+                reservation.setDestinationId(rs.getInt("destination_id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return reservation;
+    }
+
 
 
 }

@@ -398,7 +398,7 @@
                                                     <top>
                                                         <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                             <children>
-                                                                <Label text="Activities" textFill="#002b11" />
+                                                                <Label text="posts" textFill="#002b11" />
                                                                 <Button mnemonicParsing="false"  onAction="#openAddPostForm" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
                                                                 <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                                             </children>

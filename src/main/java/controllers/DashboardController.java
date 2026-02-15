@@ -98,6 +98,9 @@ public class DashboardController {
 
     private CommentaireService commentaireService = new CommentaireService();
     private ObservableList<Commentaire> commentaireList = FXCollections.observableArrayList();
+    private PostService postService = new PostService();
+    private ObservableList<Post> postList = FXCollections.observableArrayList();
+
 
     @FXML
     public void initialize() {
@@ -149,9 +152,6 @@ public class DashboardController {
 
         addImageColumn();
     }
-    private PostService postService = new PostService();
-    private ObservableList<Post> postList = FXCollections.observableArrayList();
-
 
 
 
@@ -241,7 +241,7 @@ public class DashboardController {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setMaximized(!stage.isMaximized());
     }
-
+/*---------------------------------------posts--------------------------------*/
     private void loadPosts() {
 
         colIdPost.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -257,13 +257,13 @@ public class DashboardController {
                         cellData.getValue().getAuteur().getId()
                 ).asObject()
         );
-        colImagePost.setCellValueFactory(new PropertyValueFactory<>("image"));
+
 
 
         postList.setAll(postService.getAll());
         tablepost.setItems(postList);
     }
-
+/*----------------appeler le formulaire FormulaireAddPost avec ajout d'un titre----------------- */
     @FXML
     private void openAddPostForm() {
 
@@ -318,7 +318,7 @@ public class DashboardController {
                     onDelete.accept(item);
                 });
             }
-
+/*---------------tableview appelle updateItem pour mettre le contenu--------------*/
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -392,6 +392,7 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Modifier Post");
             stage.setScene(new Scene(root));
+            /*attendre jusqu'a la fermiture de la fenetre et puis récuperer tt les posts*/
             stage.showAndWait();
 
             postList.setAll(postService.getAll());
@@ -410,11 +411,12 @@ public class DashboardController {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                postService.delete(post);      // suppression DB
+                postService.delete(post);
                 postList.remove(post);         // rafraîchir TableView
             }
         });
     }
+    /*-------------------------------------commentaires--------------------------------*/
     private void loadCommentaires() {
 
         colIdCom.setCellValueFactory(new PropertyValueFactory<>("id"));

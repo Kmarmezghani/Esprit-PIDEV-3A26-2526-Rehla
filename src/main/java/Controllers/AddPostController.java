@@ -24,7 +24,6 @@ public class AddPostController {
     @FXML private TextField txtTitre;
     @FXML private TextArea txtContenu;
     @FXML private TextField txtPopularite;
-    @FXML private TextField txtAuteurId;
     @FXML private ImageView imagePreview;
 
     private File selectedImageFile;
@@ -113,7 +112,7 @@ public class AddPostController {
 
 
             if (selectedImageFile != null) {
-                String imagePath = copierImage(selectedImageFile);
+                String imagePath = copierImagePath(selectedImageFile);
 
                 post.setImage(imagePath);
             }
@@ -132,7 +131,7 @@ public class AddPostController {
         }
     }
 
-    private String copierImage(File imageFile) throws IOException {
+    private String copierImagePath(File imageFile) throws IOException {
 
 
         String dossier = System.getProperty("user.home") + "/myapp/uploads/";

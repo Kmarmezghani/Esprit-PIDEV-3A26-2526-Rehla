@@ -46,7 +46,7 @@ public class UpdatePostController {
     }
 
 
-    @FXML
+  @FXML
     private void choisirImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choisir une image");
@@ -80,7 +80,7 @@ public class UpdatePostController {
 
 
             if (selectedImageFile != null) {
-                String imagePath = copierImage(selectedImageFile);
+                String imagePath = copierImagePath(selectedImageFile);
                 postToEdit.setImage(imagePath);
             }
 
@@ -99,7 +99,7 @@ public class UpdatePostController {
     }
 
 
-    private String copierImage(File imageFile) throws IOException {
+    private String copierImagePath(File imageFile) throws IOException {
 
         String dossier = System.getProperty("user.home") + "/myapp/uploads/";
         Files.createDirectories(Paths.get(dossier));

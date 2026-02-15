@@ -18,8 +18,8 @@ public class MainFX extends Application {
     @Override
     public void start(Stage primaryStage) {
         try{
-           FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
-            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Backoffice/Dashboard.fxml"));
+           //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Backoffice/Dashboard.fxml"));
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
             primaryStage.initStyle(StageStyle.UNDECORATED);

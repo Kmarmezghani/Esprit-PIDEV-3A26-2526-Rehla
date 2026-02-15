@@ -153,13 +153,23 @@ public class MyReservationsController {
                 deleteBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
                 deleteBtn.setOnAction(event -> {
+
                     Reservation reservation = getTableView().getItems().get(getIndex());
 
                     reservationService.delete(reservation);
 
-                    refreshReservationTable();
+                    // 🔥 If the deleted one is the selected one → clear everything
+                    if (selectedReservation != null &&
+                            selectedReservation.getId() == reservation.getId()) {
 
+                        selectedReservation = null;
+                        ticketList.clear();
+                        calendarContainer.getChildren().clear();
+                    }
+
+                    refreshReservationTable();
                 });
+
             }
 
             @Override
@@ -169,8 +179,6 @@ public class MyReservationsController {
             }
         });
     }
-
-    // ================= DELETE TICKET =================
 
 
 
@@ -203,16 +211,12 @@ public class MyReservationsController {
             stage.showAndWait();
 
 
-            // 🔹 Recharger les tickets depuis la DB
             ticketList.setAll(ticketService.getTicketsByReservation(selectedReservation.getId()));
 
-            // Reload tickets
             loadTicketsByReservation(selectedReservation.getId());
 
-// Refresh totals without destroying selection
             tableReservation.refresh();
 
-// Refresh calendar safely
             showCalendarForReservation(selectedReservation);
 
 
@@ -287,7 +291,6 @@ public class MyReservationsController {
             dayNumber.setStyle("-fx-font-weight:bold;");
             dayBox.getChildren().add(dayNumber);
 
-            // 🔥 Ajouter tickets du jour
             for (Ticket ticket : ticketList) {
 
                 LocalDate ticketStart = ticket.getDateDebut().toLocalDate();
@@ -329,7 +332,7 @@ public class MyReservationsController {
         Button deleteBtn = new Button("🗑");
         deleteBtn.setStyle("-fx-background-color:transparent; -fx-text-fill:white;");
 
-        // 🔥 DELETE
+
         deleteBtn.setOnAction(e -> {
             ticketService.delete(ticket);
 
@@ -339,7 +342,7 @@ public class MyReservationsController {
 
         });
 
-        // 🔥 DOUBLE CLICK = UPDATE
+
         box.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 openUpdateTicket(ticket);
@@ -359,7 +362,6 @@ public class MyReservationsController {
             TicketController controller = loader.getController();
             controller.setTicket(ticket);
 
-            // ✅ Toujours récupérer la réservation du ticket
             Reservation reservation = reservationService.getById(ticket.getReservationId());
             controller.setReservation(reservation);
 
@@ -369,7 +371,6 @@ public class MyReservationsController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
-            // 🔹 Refresh après update
             loadTicketsByReservation(reservation.getId()); // utilisez la réservation récupérée
             refreshReservationTable();
             showCalendarForReservation(reservation);
@@ -385,10 +386,9 @@ public class MyReservationsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutReservation.fxml")); // ton FXML de formulaire
             Parent root = loader.load();
 
-            // Récupérer le controller du popup
+
             AjouterReservationController controller = loader.getController();
 
-            // Pré-remplir les champs avec la réservation sélectionnée
             controller.setReservation(reservation);
 
             Stage stage = new Stage();
@@ -397,7 +397,6 @@ public class MyReservationsController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
-            // Après fermeture, refresh TableView et tickets si besoin
             refreshReservationTable();
             if (selectedReservation != null) {
                 loadTicketsByReservation(selectedReservation.getId());
@@ -455,7 +454,6 @@ public class MyReservationsController {
             showInfo("Posts", "Posts page loading...");
         }
     }
-
 
 
 

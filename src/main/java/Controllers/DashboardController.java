@@ -466,6 +466,7 @@ public class DashboardController {
             // Après fermeture, refresh TableView
             refreshReservationTable();
 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -609,13 +610,18 @@ public class DashboardController {
 
     private void openEditTicketPopup(Ticket ticket) {
         try {
+            int reservationId = ticket.getReservationId();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutTicket.fxml"));
             Parent root = loader.load();
 
             TicketController popupController = loader.getController();
 
-            // Pré-remplir
+            // 🔥 IMPORTANT: get reservation from DB
+            Reservation reservation = reservationService.getById(ticket.getReservationId());
+
+            // Pass BOTH
             popupController.setTicket(ticket);
+            popupController.setReservation(reservation);
 
             Stage popupStage = new Stage();
             popupStage.setTitle("Modifier Ticket");
@@ -623,7 +629,7 @@ public class DashboardController {
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
 
-            refreshTicketTable(); // refresh après modification
+            loadTicketsByReservation(reservationId);
             refreshReservationTable();
 
         } catch (Exception e) {

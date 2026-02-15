@@ -95,33 +95,6 @@ public class TicketService implements IService <Ticket>{
         return tickets;
     }
 
-    // ===== GET BY RESERVATION =====
-    public List<Ticket> getByReservation(int reservationId) {
-        List<Ticket> tickets = new ArrayList<>();
-        String SQL = "SELECT * FROM ticket WHERE reservation_id = " + reservationId;
-
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(SQL);
-
-            while (rs.next()) {
-                Ticket t = new Ticket();
-                t.setId(rs.getInt("id"));
-                t.setReservationId(rs.getInt("reservation_id"));
-                t.setType(rs.getString("type"));
-                t.setPrix(rs.getDouble("prix"));
-                t.setStatut(rs.getString("statut"));
-                t.setDateDebut(rs.getDate("dateDebut"));
-                t.setDateFin(rs.getDate("dateFin"));
-
-                tickets.add(t);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return tickets;
-    }
 
 
     public double sumPrixByReservation(int reservationId) {

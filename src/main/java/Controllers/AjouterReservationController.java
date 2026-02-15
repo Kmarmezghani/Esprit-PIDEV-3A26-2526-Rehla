@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AjouterReservationController {
-    IService<Reservation> service = new ReservationService();
     private ReservationService reservationService = new ReservationService();
     private Reservation reservation;
 
@@ -39,9 +38,6 @@ public class AjouterReservationController {
         cb_status.setDisable(true);
         loadDestinationsFromDB();
 
-    }
-    public void getStatus(ActionEvent event) {
-        String myStatus = cb_status.getValue();
     }
 
     @FXML
@@ -60,8 +56,8 @@ public class AjouterReservationController {
                 int id = rs.getInt("id");
                 String nom = rs.getString("nom");
 
-                destinationMap.put(nom, id); // map nom → id
-                cb_destination.getItems().add(nom); // afficher nom
+                destinationMap.put(nom, id);
+                cb_destination.getItems().add(nom);
             }
 
         } catch (SQLException e) {
@@ -72,18 +68,16 @@ public class AjouterReservationController {
 
     @FXML
     void ajouterReservation(ActionEvent event) {
-        // Récupérer les valeurs du formulaire
         String selectedDestination = cb_destination.getValue();
         String statut;
         if (reservation == null) {
-            statut = "Pending"; // 🔥 Force Pending in ADD
+            statut = "Pending";
         } else {
             statut = cb_status.getValue();
         }
         LocalDate dateDebutLD = dp_start.getValue();
         LocalDate dateFinLD = dp_end.getValue();
 
-        // Vérification des champs obligatoires
         if (statut == null || dateDebutLD == null || dateFinLD == null || selectedDestination == null) {
             showError("All fields must be filled.");
             return;
@@ -99,16 +93,14 @@ public class AjouterReservationController {
             return;
         }
 
-        // Conversion en java.sql.Date
         Date dateReservation = Date.valueOf(LocalDate.now());
         Date dateDebut = Date.valueOf(dateDebutLD);
         Date dateFin = Date.valueOf(dateFinLD);
 
-        double coutTotal = 0;          // à calculer si besoin
-        int personneId = 1;            // FK personne (user connecté)
-        int destinationId = destinationMap.get(selectedDestination); // Map<String, Integer>
+        double coutTotal = 0;
+        int personneId = 1;
+        int destinationId = destinationMap.get(selectedDestination);
 
-        // Si reservation == null → ajout, sinon modification
         if (reservation == null) {
             // Ajout
             Reservation newRes = new Reservation(
@@ -123,7 +115,7 @@ public class AjouterReservationController {
             reservationService.add(newRes);
         } else {
             // Modification
-            reservation.setDateReservation(dateReservation); // date de mise à jour
+            reservation.setDateReservation(dateReservation);
             reservation.setDateDebut(dateDebut);
             reservation.setDateFin(dateFin);
             reservation.setStatut(statut);
@@ -133,7 +125,6 @@ public class AjouterReservationController {
             reservationService.update(reservation);
         }
 
-        // Fermer le popup
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
     }
@@ -163,7 +154,6 @@ public class AjouterReservationController {
             }
         }
 
-        // tu peux aussi remplir les ChoiceBox/personne/destination si besoin
     }
 
     private void showError(String message) {

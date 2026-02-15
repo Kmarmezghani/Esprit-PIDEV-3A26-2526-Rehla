@@ -5,12 +5,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Activite;
 import services.ActiviteService;
@@ -20,21 +18,21 @@ import java.util.List;
 
 public class MyActivitiesPageController {
 
-    private static final int CURRENT_USER_ID = 3;
+    private static final int CURRENT_USER_ID = 3; // ✅ guide connecté
 
     @FXML private FlowPane myActivitiesFlowPane;
     @FXML private TextField searchField;
     @FXML private Label LBLcount;
 
     private final ActiviteService activiteService = new ActiviteService();
-/*
+
     @FXML
     public void initialize() {
         loadMyActivities("");
     }
 
     // ======================
-    // Actions in the HERO
+    // SEARCH
     // ======================
     @FXML
     public void handleSearch(javafx.event.ActionEvent event) {
@@ -42,7 +40,10 @@ public class MyActivitiesPageController {
         loadMyActivities(q);
     }
 
-    /*@FXML
+    // ======================
+    // CREATE (POPUP)
+    // ======================
+    @FXML
     public void createActivity(javafx.event.ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
@@ -52,16 +53,13 @@ public class MyActivitiesPageController {
             ctrl.setGuideId(CURRENT_USER_ID);
 
             Stage popup = new Stage();
-            popup.initOwner(((Node) event.getSource()).getScene().getWindow());
-            popup.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            popup.initOwner(getStageFromEvent(event));
+            popup.initModality(Modality.WINDOW_MODAL);
             popup.setTitle("Create Activity");
             popup.setResizable(false);
+            popup.setScene(new Scene(root));
 
-            Scene scene = new Scene(root);
-            popup.setScene(scene);
-
-            // ✅ when popup closes -> refresh list
-            popup.setOnHidden(e -> refreshMyActivities());
+            popup.setOnHidden(e -> loadMyActivities(""));
 
             popup.showAndWait();
 
@@ -70,15 +68,9 @@ public class MyActivitiesPageController {
         }
     }
 
-    // ✅ you call your service here and rebuild cards in FlowPane
-    private void refreshMyActivities() {
-        // example:
-        // List<Activite> all = activiteService.getByGuideId(CURRENT_USER_ID);
-        // renderActivities(all);
-    }
-
-
-
+    // ======================
+    // DATA
+    // ======================
     private void loadMyActivities(String query) {
         myActivitiesFlowPane.getChildren().clear();
 
@@ -92,15 +84,13 @@ public class MyActivitiesPageController {
 
     private List<Activite> safeGetMyActivities(String query) {
         try {
-            // TEMP: adapt to your real method later (guideId/creatorId)
             List<Activite> all = activiteService.getByGuideId(CURRENT_USER_ID);
             if (all == null) return Collections.emptyList();
 
-            String q = (query == null) ? "" : query.toLowerCase();
+            String q = (query == null) ? "" : query.toLowerCase().trim();
 
             return all.stream()
                     .filter(a -> a != null)
-                    // .filter(a -> a.getGuideId() == CURRENT_USER_ID) // enable when you have the field
                     .filter(a -> q.isBlank() || ((a.getNom() == null ? "" : a.getNom().toLowerCase()).contains(q)))
                     .toList();
 
@@ -111,72 +101,145 @@ public class MyActivitiesPageController {
     }
 
     private VBox activityCard(Activite a) {
-        VBox card = new VBox(8);
+        VBox card = new VBox(10);
         card.setPrefWidth(270);
         card.setStyle("""
-            -fx-background-color: white;
-            -fx-background-radius: 16;
-            -fx-padding: 14;
-            -fx-border-color: #eef2ff;
-            -fx-border-radius: 16;
-            -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);
-        """);
+        -fx-background-color: white;
+        -fx-background-radius: 16;
+        -fx-padding: 14;
+        -fx-border-color: #eef2ff;
+        -fx-border-radius: 16;
+        -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);
+    """);
 
-        javafx.scene.control.Label title = new javafx.scene.control.Label(a.getNom() == null ? "Untitled" : a.getNom());
+        // --- Top row: title + delete button
+        javafx.scene.layout.HBox top = new javafx.scene.layout.HBox(8);
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        Label title = new Label(a.getNom() == null ? "Untitled" : a.getNom());
         title.setStyle("-fx-font-size: 16; -fx-font-weight: 800; -fx-text-fill: #111827;");
 
-        javafx.scene.control.Label price = new javafx.scene.control.Label(String.format("💰 %.2f TND", a.getPrix()));
+        Button deleteBtn = new Button("🗑");
+        deleteBtn.setStyle("""
+        -fx-background-color: transparent;
+        -fx-text-fill: #d32f2f;
+        -fx-font-size: 14;
+        -fx-cursor: hand;
+        -fx-padding: 2 6;
+    """);
+
+        // ✅ delete action (stop double click from triggering edit)
+        deleteBtn.setOnAction(e -> {
+            e.consume();
+            confirmAndDelete(a);
+        });
+
+        top.getChildren().addAll(title, spacer, deleteBtn);
+
+        Label price = new Label(String.format("💰 %.2f TND", a.getPrix()));
         price.setStyle("-fx-text-fill: #4a5f88; -fx-font-size: 13;");
 
-        javafx.scene.control.Label type = new javafx.scene.control.Label("Type: " + (a.getTypeActivite() == null ? "—" : a.getTypeActivite()));
+        Label type = new Label("Type: " + (a.getTypeActivite() == null ? "—" : a.getTypeActivite()));
         type.setStyle("-fx-text-fill: #667085; -fx-font-size: 12;");
 
-        card.getChildren().addAll(title, price, type);
+        card.getChildren().addAll(top, price, type);
 
-        // click later -> open details/edit
-        card.setOnMouseClicked(e -> System.out.println("Clicked activity id=" + a.getId()));
+
+        card.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
+                openEditActivityPopup(a, card);
+            }
+        });
 
         return card;
-    }*/
+    }
+    private void confirmAndDelete(Activite a) {
+        if (a.getGuideId() != CURRENT_USER_ID) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Not allowed");
+            alert.setHeaderText(null);
+            alert.setContentText("You can only delete your own activities.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete activity");
+        confirm.setHeaderText("Are you sure?");
+        confirm.setContentText("This will permanently delete: " + (a.getNom() == null ? "" : a.getNom()));
+
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
+                try {
+                    activiteService.delete(a);
+                    loadMyActivities("");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Alert err = new Alert(Alert.AlertType.ERROR);
+                    err.setTitle("Error");
+                    err.setHeaderText(null);
+                    err.setContentText("Delete failed.");
+                    err.showAndWait();
+                }
+            }
+        });
+    }
+
+
+
+    private void openEditActivityPopup(Activite activite, Node anyNodeInScene) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
+            Parent root = loader.load();
+
+            AjouterActiviteController ctrl = loader.getController();
+            ctrl.setGuideId(CURRENT_USER_ID);
+            ctrl.setActiviteToEdit(activite);
+
+            Stage popup = new Stage();
+            popup.initOwner(anyNodeInScene.getScene().getWindow());
+            popup.initModality(Modality.WINDOW_MODAL);
+            popup.setTitle("Edit Activity");
+            popup.setResizable(false);
+            popup.setScene(new Scene(root));
+
+            popup.setOnHidden(e -> loadMyActivities(""));
+
+            popup.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // ======================
-    // NAVIGATION
-    // ======================*/
-    @FXML public void goToHome(javafx.event.ActionEvent e) { switchScene(e, "/HomePage.fxml"); }
-    @FXML public void goToDestinations(javafx.event.ActionEvent e) { /* TODO */ }
-    @FXML public void goToPosts(javafx.event.ActionEvent e) { switchScene(e, "/PostsPage.fxml"); }
-    @FXML public void goToactivities(javafx.event.ActionEvent e) { switchScene(e, "/ActivitiesPage.fxml"); }
+    // NAVIGATION (KEEP FULLSCREEN)
+    // ======================
+    @FXML public void goToHome(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/HomePage.fxml"); }
+    @FXML public void goToDestinations(javafx.event.ActionEvent e) { }
+    @FXML public void goToPosts(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/PostsPage.fxml"); }
+    @FXML public void goToactivities(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/ActivitiesPage.fxml"); }
 
-    @FXML public void goToMyProfile(javafx.event.ActionEvent e) { /* TODO */ }
-    @FXML public void goToMyPosts(javafx.event.ActionEvent e) { /* TODO */ }
-    @FXML public void goToMyReservations(javafx.event.ActionEvent e) { /* TODO */ }
-    @FXML public void goToMyActivities(javafx.event.ActionEvent e) { switchScene(e, "/MyActivitiesPage.fxml"); }
+    @FXML public void goToMyProfile(javafx.event.ActionEvent e) { }
+    @FXML public void goToMyPosts(javafx.event.ActionEvent e) { }
+    @FXML public void goToMyReservations(javafx.event.ActionEvent e) { }
+    @FXML public void goToMyActivities(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/MyActivitiesPage.fxml"); }
 
-    @FXML public void handleLogout(javafx.event.ActionEvent e) { /* TODO */ }
+    @FXML public void handleLogout(javafx.event.ActionEvent e) { }
 
     // ======================
     // WINDOW BUTTONS
     // ======================
-    @FXML
-    public void minwindow(javafx.event.ActionEvent event) {
-        Stage stage = getStageFromEvent(event);
-        stage.setIconified(true);
-    }
-
-    @FXML
-    public void maxwindow(javafx.event.ActionEvent event) {
+    @FXML public void minwindow(javafx.event.ActionEvent event) { getStageFromEvent(event).setIconified(true); }
+    @FXML public void maxwindow(javafx.event.ActionEvent event) {
         Stage stage = getStageFromEvent(event);
         stage.setMaximized(!stage.isMaximized());
     }
-
-    @FXML
-    public void closewindow(javafx.event.ActionEvent event) {
-        Stage stage = getStageFromEvent(event);
-        stage.close();
-    }
+    @FXML public void closewindow(javafx.event.ActionEvent event) { getStageFromEvent(event).close(); }
 
     // ======================
-    // SCENE SWITCH HELPERS
+    // HELPERS
     // ======================
     private Stage getStageFromEvent(javafx.event.ActionEvent event) {
         Object src = event.getSource();
@@ -190,11 +253,24 @@ public class MyActivitiesPageController {
         throw new IllegalArgumentException("Unknown event source: " + src);
     }
 
+
     private void switchScene(javafx.event.ActionEvent event, String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
             Stage stage = getStageFromEvent(event);
-            stage.setScene(new Scene(root));
+
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
+            } else {
+                stage.getScene().setRoot(root);
+            }
+
+            // optional but helps layout after root switch
+            root.applyCss();
+            root.layout();
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }

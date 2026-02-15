@@ -479,33 +479,45 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ActivitiesPage.fxml"));
             Parent root = loader.load();
+
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
+            } else {
+                stage.getScene().setRoot(root);
+            }
+
+
+            root.applyCss();
+            root.layout();
+
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Activities");
-            alert.setHeaderText(null);
-            alert.setContentText("Activities page loading...");
-            alert.showAndWait();
         }
     }
+
 
     @FXML
-    public void goToMyActivities(javafx.event.ActionEvent event) {
+    public void goToMyActivities(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/MyActivitiesPage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyActivitiesPage.fxml"));
+            Parent root = loader.load();
 
             MenuItem item = (MenuItem) event.getSource();
-            javafx.scene.control.ContextMenu cm = item.getParentPopup();
-            javafx.stage.Window window = cm.getOwnerWindow();
-            Stage stage = (Stage) window;
+            Stage stage = (Stage) item.getParentPopup().getOwnerWindow();
 
-            stage.setScene(new Scene(root));
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
 
 

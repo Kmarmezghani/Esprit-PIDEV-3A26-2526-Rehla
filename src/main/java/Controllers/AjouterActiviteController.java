@@ -32,8 +32,6 @@ public class AjouterActiviteController {
     @FXML private Spinner<Integer> SPheureFin;
     @FXML private Spinner<Integer> SPminuteFin;
 
-    @FXML private TextField TFguideId;
-
     @FXML private ComboBox<String> CBstatus;
     @FXML private ComboBox<String> CBdestination;
 
@@ -41,6 +39,17 @@ public class AjouterActiviteController {
 
     private Activite activiteToEdit = null;
     private boolean editMode = false;
+
+    private Integer fixedGuideId = null;
+    private boolean adminMode = false;
+
+    public void setGuideId(int guideId) {
+        this.fixedGuideId = guideId;
+    }
+
+    public void setAdminMode(boolean adminMode) {
+        this.adminMode = adminMode;
+    }
 
     @FXML
     public void initialize() {
@@ -60,7 +69,7 @@ public class AjouterActiviteController {
         SPheureFin.setEditable(true);
         SPminuteFin.setEditable(true);
 
-        CBstatus.setItems(FXCollections.observableArrayList("DISPONIBLE", "NON_DISPONIBLE"));
+        CBstatus.setItems(FXCollections.observableArrayList("DISPONIBLE", "INDISPONIBLE"));
         CBstatus.getSelectionModel().selectFirst();
 
         destinationMap = activiteService.getDestinationsMap();
@@ -75,72 +84,60 @@ public class AjouterActiviteController {
         String type = TFtypeactivite.getText();
 
         Double price = pricespinneractivite.getValue();
-        int guideId = parseIntOrZero(TFguideId);
-
         String status = CBstatus.getValue();
 
         LocalDateTime dateDebut = buildDateTime(DPdateDebut, SPheureDebut, SPminuteDebut);
         LocalDateTime dateFin = buildDateTime(DPdateFin, SPheureFin, SPminuteFin);
 
         String destNom = CBdestination.getValue();
-        int destinationId = (destNom != null && destinationMap.containsKey(destNom)) ? destinationMap.get(destNom) : 0;
+        int destinationId = (destNom != null && destinationMap.containsKey(destNom))
+                ? destinationMap.get(destNom)
+                : 0;
 
-        if (nom == null || nom.isBlank()) {
-            showWarn("Missing name", "Please enter the activity name.");
-            return;
-        }
+        // ========= VALIDATIONS =========
+        if (nom == null || nom.isBlank()) { showWarn("Missing name", "Please enter the activity name."); return; }
+        if (description == null || description.isBlank()) { showWarn("Missing description", "Please enter the activity description."); return; }
+        if (type == null || type.isBlank()) { showWarn("Missing type", "Please enter the activity type."); return; }
+        if (destinationId == 0) { showWarn("Missing destination", "Please select a destination."); return; }
+        if (dateDebut == null) { showWarn("Missing start date", "Please select a start date and time."); return; }
+        if (dateFin == null) { showWarn("Missing end date", "Please select an end date and time."); return; }
 
-        if (description == null || description.isBlank()) {
-            showWarn("Missing description", "Please enter the activity description.");
-            return;
-        }
-
-        if (type == null || type.isBlank()) {
-            showWarn("Missing type", "Please enter the activity type.");
-            return;
-        }
-
-        if (destinationId == 0) {
-            showWarn("Missing destination", "Please select a destination.");
-            return;
-        }
-
-        if (dateDebut == null) {
-            showWarn("Missing start date", "Please select a start date and time.");
-            return;
-        }
-
-        if (dateFin == null) {
-            showWarn("Missing end date", "Please select an end date and time.");
-            return;
-        }
         LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
 
-        if (dateDebut.toLocalDate().isBefore(today)) {
-            showWarn("Invalid start date", "Start date cannot be before today.");
-            return;
+        if (dateDebut.toLocalDate().isBefore(today)) { showWarn("Invalid start date", "Start date cannot be before today."); return; }
+        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) { showWarn("Invalid start time", "Start time cannot be earlier than the current time."); return; }
+        if (dateFin.isBefore(dateDebut)) { showWarn("Invalid dates", "End date must be after start date."); return; }
+
+        // ========= GUIDE ID LOGIC =========
+        Integer guideIdToUse = null;
+
+
+        if (editMode && activiteToEdit != null) {
+            int existing = activiteToEdit.getGuideId();
+            guideIdToUse = (existing == 0 ? null : existing);
         }
 
-        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) {
-            showWarn("Invalid start time", "Start time cannot be earlier than the current time.");
-            return;
+        else if (fixedGuideId != null) {
+            guideIdToUse = fixedGuideId;
         }
 
-        if (dateFin.isBefore(dateDebut)) {
-            showWarn("Invalid dates", "End date must be after start date.");
-            return;
+        else if (adminMode) {
+            guideIdToUse = null;
         }
 
+        // ========= SAVE =========
         if (editMode && activiteToEdit != null) {
 
             activiteToEdit.setNom(nom);
             activiteToEdit.setDescription(description);
             activiteToEdit.setPrix(price);
             activiteToEdit.setTypeActivite(type);
-
             activiteToEdit.setDestinationId(destinationId);
-            activiteToEdit.setGuideId(guideId);
+
+            if (guideIdToUse != null) {
+                activiteToEdit.setGuideId(guideIdToUse);
+            }
 
             activiteToEdit.setStatus(status);
             activiteToEdit.setDateDebut(dateDebut);
@@ -155,14 +152,14 @@ public class AjouterActiviteController {
             a.setDescription(description);
             a.setPrix(price);
             a.setTypeActivite(type);
-
             a.setDestinationId(destinationId);
-            a.setGuideId(guideId);
+
+
+            if (guideIdToUse != null) a.setGuideId(guideIdToUse);
 
             a.setStatus(status);
             a.setDateDebut(dateDebut);
             a.setDateFin(dateFin);
-
             a.setNoteMoyenne(0);
 
             activiteService.add(a);
@@ -177,7 +174,6 @@ public class AjouterActiviteController {
     }
 
     public void setActiviteToEdit(Activite activite) {
-
         this.activiteToEdit = activite;
         this.editMode = true;
 
@@ -186,7 +182,6 @@ public class AjouterActiviteController {
         TFtypeactivite.setText(activite.getTypeActivite());
 
         pricespinneractivite.getValueFactory().setValue(activite.getPrix());
-
 
         if (activite.getStatus() != null) {
             CBstatus.getSelectionModel().select(activite.getStatus());
@@ -205,18 +200,6 @@ public class AjouterActiviteController {
             DPdateFin.setValue(activite.getDateFin().toLocalDate());
             SPheureFin.getValueFactory().setValue(activite.getDateFin().getHour());
             SPminuteFin.getValueFactory().setValue(activite.getDateFin().getMinute());
-        }
-    }
-
-    private int parseIntOrZero(TextField tf) {
-        if (tf == null) return 0;
-        String s = tf.getText();
-        if (s == null || s.isBlank()) return 0;
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (NumberFormatException e) {
-            showWarn("Invalid value", "Please enter a valid integer for: " + tf.getId());
-            return 0;
         }
     }
 

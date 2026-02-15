@@ -306,23 +306,32 @@ public class DashboardController {
     @FXML
     private void openAddPopupactivite(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
+            Parent root = loader.load();
+
+            AjouterActiviteController controller = loader.getController();
+            controller.setAdminMode(true); // ✅ admin create => guide_id stays NULL
+
             Stage popupStage = new Stage();
             popupStage.setTitle("Add new activity");
             popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
+
             refreshActiviteTable();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
     private void openEditPopup(Activite activite) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireAddActivite.fxml"));
             Parent root = loader.load();
+
             AjouterActiviteController controller = loader.getController();
+            controller.setAdminMode(true);
             controller.setActiviteToEdit(activite);
 
             Stage stage = new Stage();

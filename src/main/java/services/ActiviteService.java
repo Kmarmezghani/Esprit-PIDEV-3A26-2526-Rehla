@@ -259,6 +259,46 @@ public class ActiviteService implements IService<Activite> {
 
         return activites;
     }
+    public List<Activite> getDisponibles() {
+
+        String sql = "SELECT * FROM activite WHERE status = 'DISPONIBLE'";
+        List<Activite> activites = new ArrayList<>();
+
+        try (Statement stm = conn.createStatement();
+             ResultSet rs = stm.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Activite a = new Activite();
+                a.setId(rs.getInt("id"));
+                a.setNom(rs.getString("nom"));
+                a.setDescription(rs.getString("description"));
+                a.setPrix(rs.getDouble("prix"));
+                a.setTypeActivite(rs.getString("typeActivite"));
+                a.setNoteMoyenne(rs.getDouble("noteMoyenne"));
+
+                int gid = rs.getInt("guide_id");
+                a.setGuideId(rs.wasNull() ? 0 : gid);
+
+                int did = rs.getInt("destination_id");
+                a.setDestinationId(rs.wasNull() ? 0 : did);
+
+                Timestamp td = rs.getTimestamp("date_debut");
+                a.setDateDebut(td != null ? td.toLocalDateTime() : null);
+
+                Timestamp tf = rs.getTimestamp("date_fin");
+                a.setDateFin(tf != null ? tf.toLocalDateTime() : null);
+
+                a.setStatus(rs.getString("status"));
+
+                activites.add(a);
+            }
+
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        return activites;
+    }
 
 
 

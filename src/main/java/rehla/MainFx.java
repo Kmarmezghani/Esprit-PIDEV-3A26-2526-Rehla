@@ -18,13 +18,13 @@ double x,y =0;
     @Override
     public void start(Stage primaryStage) {
         try{
-            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Backoffice/Dashboard.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
+            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Backoffice/Dashboard.fxml"));
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
             primaryStage.initStyle(StageStyle.UNDECORATED);
             primaryStage.setTitle("Rehla");
-            Image icon = new Image(getClass().getResource("/icons/logoblue.png").toExternalForm());
+            Image icon = new Image(getClass().getResource("/Backoffice/icons/logoblue.png").toExternalForm());
             primaryStage.getIcons().add(icon);
             root.setOnMousePressed(event -> {
                 x = event.getSceneX();

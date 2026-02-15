@@ -5,11 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -38,6 +34,9 @@ public class ActivitiesPageController {
         reloadFromDB();
     }
 
+    // ======================
+    // SEARCH
+    // ======================
     @FXML
     void handleSearch(javafx.event.ActionEvent event) {
         applySearchFilter();
@@ -66,6 +65,9 @@ public class ActivitiesPageController {
         renderActivities(filtered);
     }
 
+    // ======================
+    // RENDER CARDS
+    // ======================
     private void renderActivities(List<Activite> list) {
         activitiesFlowPane.getChildren().clear();
         for (Activite a : list) {
@@ -140,11 +142,14 @@ public class ActivitiesPageController {
         card.getChildren().addAll(img, title, destination, date, infoRow, buttons);
 
         card.setOnMouseEntered(e -> card.setStyle(card.getStyle() + "-fx-background-color: #f7fbff;"));
-        card.setOnMouseExited(e -> card.setStyle(card.getStyle().replace("-fx-background-color: #f7fbff;", "-fx-background-color: white;")));
+        card.setOnMouseExited(e ->
+                card.setStyle(card.getStyle().replace("-fx-background-color: #f7fbff;", "-fx-background-color: white;"))
+        );
 
         return card;
     }
 
+    // ✅ FIXED: keep fullscreen by reusing same Scene
     private void openActivityDetails(Activite a) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ActivityDetailsPage.fxml"));
@@ -154,48 +159,69 @@ public class ActivitiesPageController {
             controller.setActivity(a);
 
             Stage stage = (Stage) activitiesFlowPane.getScene().getWindow();
-            stage.setScene(new Scene(root));
+
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
         } catch (Exception ex) {
             ex.printStackTrace();
             showInfo("Error", "Cannot open activity details.");
         }
     }
 
+    // ======================
+    // DATA
+    // ======================
     public void reloadFromDB() {
-        allActivities = activiteService.getAll();
+        allActivities = activiteService.getDisponibles();
         applySearchFilter();
     }
 
-    private String safe(String s) {
-        return s == null ? "" : s;
+    // ======================
+    // NAVIGATION (Button + MenuItem) + keep fullscreen
+    // ======================
+    private Stage getStageFromEvent(javafx.event.ActionEvent event) {
+        Object src = event.getSource();
+
+        if (src instanceof Node n) {
+            return (Stage) n.getScene().getWindow();
+        }
+        if (src instanceof MenuItem mi) {
+            return (Stage) mi.getParentPopup().getOwnerWindow();
+        }
+        throw new IllegalArgumentException("Unknown event source: " + src);
     }
 
-    private void showInfo(String title, String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
-    }
-
-    private void switchScene(Node anyNodeOnScene, String fxmlPath) {
+    private void switchScene(javafx.event.ActionEvent event, String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
-            Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage stage = getStageFromEvent(event);
+
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    @FXML public void goToHome(javafx.event.ActionEvent event) { switchScene((Node) event.getSource(), "/HomePage.fxml"); }
-    @FXML public void goToDestinations(javafx.event.ActionEvent event) { }
-    @FXML public void goToPosts(javafx.event.ActionEvent event) { switchScene((Node) event.getSource(), "/PostsPage.fxml"); }
-    @FXML public void goToactivities(javafx.event.ActionEvent event) { }
+    @FXML public void goToHome(javafx.event.ActionEvent event) { switchScene(event, "/Frontoffice/HomePage.fxml"); }
+    @FXML public void goToDestinations(javafx.event.ActionEvent event) { /* TODO */ }
+    @FXML public void goToPosts(javafx.event.ActionEvent event) { switchScene(event, "/Frontoffice/PostsPage.fxml"); }
+    @FXML public void goToactivities(javafx.event.ActionEvent event) { /* already here */ }
 
-    @FXML public void goToMyProfile(javafx.event.ActionEvent event) { }
-    @FXML public void goToMyPosts(javafx.event.ActionEvent event) { }
-    @FXML public void goToMyReservations(javafx.event.ActionEvent event) { }
+    @FXML public void goToMyProfile(javafx.event.ActionEvent event) { /* TODO */ }
+    @FXML public void goToMyPosts(javafx.event.ActionEvent event) { /* TODO */ }
+    @FXML public void goToMyReservations(javafx.event.ActionEvent event) { /* TODO */ }
+    @FXML public void goToMyActivities(javafx.event.ActionEvent event) { switchScene(event, "/Frontoffice/MyActivitiesPage.fxml"); }
 
     @FXML
     public void handleLogout(javafx.event.ActionEvent event) {
@@ -208,15 +234,26 @@ public class ActivitiesPageController {
         });
     }
 
-    @FXML public void closewindow(javafx.event.ActionEvent event) { ((Stage)((Node)event.getSource()).getScene().getWindow()).close(); }
-    @FXML public void minwindow(javafx.event.ActionEvent event) { ((Stage)((Node)event.getSource()).getScene().getWindow()).setIconified(true); }
+    // ======================
+    // WINDOW BUTTONS
+    // ======================
+    @FXML public void closewindow(javafx.event.ActionEvent event) { getStageFromEvent(event).close(); }
+    @FXML public void minwindow(javafx.event.ActionEvent event) { getStageFromEvent(event).setIconified(true); }
     @FXML public void maxwindow(javafx.event.ActionEvent event) {
-        Stage s = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        s.setMaximized(!s.isMaximized());
-    }
-    @FXML
-    public void goToMyActivities(javafx.event.ActionEvent event) {
-        switchScene((Node) event.getSource(), "/Frontoffice/MyActivitiesPage.fxml");
+        Stage stage = getStageFromEvent(event);
+        stage.setMaximized(!stage.isMaximized());
     }
 
+    // ======================
+    // UTILS
+    // ======================
+    private String safe(String s) { return s == null ? "" : s; }
+
+    private void showInfo(String title, String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
+    }
 }

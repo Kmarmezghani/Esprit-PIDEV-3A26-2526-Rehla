@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.RegisterController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <!-- Top Navigation Bar -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <!-- Navigation Menu -->
+                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets left="100.0" />
+                            </padding>
+                        </HBox>
+
+                        <!-- Window Controls -->
+                        <Button onAction="#minwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@css/styling.css" text="□" />
+                        <Button onAction="#closewindow" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@css/styling.css" text="✕">
+                     <HBox.margin>
+                        <Insets top="4.0" />
+                     </HBox.margin></Button>
+                    </children>
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+            </top>
+
+            <!-- Main Content -->
+            <center>
+                <ScrollPane fitToWidth="true" prefHeight="710.0" prefWidth="1000.0" style="-fx-background-color: #ffffff;" BorderPane.alignment="CENTER">
+                    <content>
+                        <VBox spacing="30.0" style="-fx-background-color: #ffffff;">
+                            <!-- Hero Section -->
+                            <VBox alignment="CENTER" prefHeight="628.0" prefWidth="985.0" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91); -fx-padding: 80;">
+                                <Label text="Create Account" textFill="WHITE">
+                                    <font>
+                                        <Font name="System Bold" size="48.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Welcome to our new family member !" textFill="WHITE">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+
+                                <!-- Search Bar -->
+                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="740.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 10;">
+                                    <padding>
+                                        <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
+                                    </padding>
+                                    <TextField fx:id="searchField" prefHeight="27.0" prefWidth="47.0" promptText="Nom" style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+                                </HBox>
+                        <HBox alignment="CENTER" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 10;">
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
+                           </padding>
+                           <children>
+                              <TextField fx:id="searchField1" prefHeight="27.0" prefWidth="82.0" promptText="Prénom" style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="48.0" prefWidth="740.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 10;">
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
+                           </padding>
+                           <children>
+                              <TextField fx:id="searchField2" prefHeight="27.0" prefWidth="43.0" promptText="Email" style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="48.0" prefWidth="740.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 10;">
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
+                           </padding>
+                           <children>
+                              <TextField fx:id="searchField21" prefHeight="27.0" prefWidth="70.0" promptText="Password" style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="48.0" prefWidth="740.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 10;">
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="10.0" top="10.0" />
+                           </padding>
+                           <children>
+                              <TextField fx:id="searchField211" prefHeight="27.0" prefWidth="113.0" promptText="Confirm Password" style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+                           </children>
+                        </HBox>
+                        <Label text="Role" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="roleCombo" prefWidth="200.0" promptText="Choose role" style="-fx-background-color: white; -fx-background-radius: 20;" />
+                        <Button onAction="#handleRegister" prefWidth="235.0" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14;" text="Create account " />
+                        <Label prefHeight="27.0" prefWidth="210.0" text="Already have an account ?" textFill="WHITE">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Button onAction="#goToLogin" prefWidth="235.0" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14;" text="Log in" />
+                            </VBox>
+
+                            <!-- Footer -->
+                            <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-padding: 20;">
+                                <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                    <font>
+                                        <Font name="System Bold" size="16.0" />
+                                    </font>
+                                </Label>
+                                <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

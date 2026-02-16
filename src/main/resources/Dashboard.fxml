@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="541.0" prefWidth="911.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.DashboardController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="911.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="52.0" fitWidth="94.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                            <HBox.margin>
+                                <Insets />
+                            </HBox.margin>
+                        </ImageView>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" onAction="#handleLogout" prefHeight="32.0" prefWidth="90.0" style="-fx-background-color: rgba(255,255,255,0.3); -fx-text-fill: white; -fx-font-size: 14; -fx-cursor: hand; -fx-background-radius: 8;" text="Logout" />
+                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#minwindow" styleClass="button4" stylesheets="@css/styling.css" textFill="#002b11">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="8.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/Fichier%202.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <HBox.margin>
+                                <Insets bottom="20.0" />
+                            </HBox.margin>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#maxwindow" styleClass="button4" stylesheets="@css/styling.css" textFill="#002b11">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="12.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/icone%20rayen.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <HBox.margin>
+                                <Insets bottom="20.0" />
+                            </HBox.margin>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#closewindow" styleClass="button3" stylesheets="@css/styling.css" textFill="#002b11">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="8.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/Fichier%201.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <HBox.margin>
+                                <Insets bottom="20.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets left="30.0" />
+                    </padding></HBox>
+            </top>
+            <left>
+                <VBox minWidth="130.0" prefHeight="356.0" prefWidth="180.0" style="-fx-background-color: #3A5BC7;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ToggleButton fx:id="dashuserbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Users">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/usericon.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </ToggleButton>
+                        <ToggleButton fx:id="dashdesbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Destinations">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/usericon.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </ToggleButton>
+                        <ToggleButton fx:id="dashresbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Reservations">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/usericon.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </ToggleButton>
+                        <ToggleButton fx:id="dashactbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Activities">
+                            <graphic>
+                                <ImageView fitHeight="22.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/Bousole.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </ToggleButton>
+                        <ToggleButton fx:id="dashpostbut" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#dashboardButtonClicked" prefHeight="55.0" prefWidth="144.0" styleClass="button1" stylesheets="@css/styling.css" text="Posts">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/usericon.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets left="30.0" />
+                            </padding>
+                        </ToggleButton>
+                    </children>
+                </VBox>
+            </left>
+         <center>
+                <StackPane BorderPane.alignment="CENTER">
+                    <children>
+                        <TabPane fx:id="activitetabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                            <tabs>
+                                <Tab fx:id="activitetab" text="Activities">
+                                    <content>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                            <children>
+                                                <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="Activities" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="30.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                    <center>
+                                                        <TableView fx:id="tableactivite" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                            <columns>
+                                                                <TableColumn prefWidth="75.0" text="Name" />
+                                                                <TableColumn prefWidth="91.199951171875" text="Description" />
+                                                                <TableColumn prefWidth="59.20001220703125" text="Price" />
+                                                                <TableColumn prefWidth="75.0" text="Duration" />
+                                                                <TableColumn prefWidth="70.4000244140625" text="Type" />
+                                                                <TableColumn prefWidth="103.19992065429688" text="Average Rating" />
+                                                                <TableColumn prefWidth="54.39996337890625" text="Guide" />
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                    </center>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                                <Tab fx:id="reviewtab" text="Reviews">
+                                    <content>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                            <children>
+                                                <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="Label" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="30.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                            </tabs>
+                        </TabPane>
+                        <TabPane fx:id="usertabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                            <tabs>
+                                <Tab fx:id="usertab" text="Users">
+                                    <content>
+                                        <AnchorPane>
+                                            <children>
+                                                <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="Users" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#refreshUsersTable" prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="20.0" top="10.0" bottom="10.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                    <center>
+                                                        <TableView fx:id="tableuser" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                            <columns>
+                                                                <TableColumn fx:id="colUserId" prefWidth="50.0" text="Id" />
+                                                                <TableColumn fx:id="colUserNom" prefWidth="120.0" text="Nom" />
+                                                                <TableColumn fx:id="colUserPrenom" prefWidth="120.0" text="Prénom" />
+                                                                <TableColumn fx:id="colUserEmail" prefWidth="180.0" text="Email" />
+                                                                <TableColumn fx:id="colUserRole" prefWidth="80.0" text="Role" />
+                                                                <TableColumn fx:id="colUserStatut" prefWidth="90.0" text="Statut" />
+                                                                <TableColumn fx:id="colUserDateInsc" prefWidth="110.0" text="Date inscription" />
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                    </center>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                                <Tab fx:id="preferencetab" text="Preferences">
+                                    <content>
+                                        <AnchorPane>
+                                            <children>
+                                                <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="User preferences" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#refreshPreferencesTable" prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="20.0" top="10.0" bottom="10.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                    <center>
+                                                        <TableView fx:id="tablePreferences" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                            <columns>
+                                                                <TableColumn fx:id="colPrefUser" prefWidth="180.0" text="User (email)" />
+                                                                <TableColumn fx:id="colPrefBudgetMin" prefWidth="90.0" text="Budget min" />
+                                                                <TableColumn fx:id="colPrefBudgetMax" prefWidth="90.0" text="Budget max" />
+                                                                <TableColumn fx:id="colPrefTypes" prefWidth="150.0" text="Types voyage" />
+                                                                <TableColumn fx:id="colPrefCentres" prefWidth="200.0" text="Centres d'intérêt" />
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                    </center>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                                <Tab fx:id="admintab" text="Admins">
+                                    <content>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                            <children>
+                                                <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="Label" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="30.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                            </tabs>
+                        </TabPane>
+                  <TabPane fx:id="destinationtabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                     <tabs>
+                        <Tab fx:id="destinationtab" text="destinations">
+                           <content>
+                              <AnchorPane>
+                                 <children>
+                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Activities" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#FXaddActivite" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                       <center>
+                                          <TableView fx:id="tabledestination" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                             <columns>
+                                                <TableColumn prefWidth="75.0" text="Name" />
+                                                <TableColumn prefWidth="91.199951171875" text="Description" />
+                                                <TableColumn prefWidth="59.20001220703125" text="Price" />
+                                                <TableColumn prefWidth="75.0" text="Duration" />
+                                                <TableColumn prefWidth="70.4000244140625" text="Type" />
+                                                <TableColumn prefWidth="103.19992065429688" text="Average Rating" />
+                                                <TableColumn prefWidth="54.39996337890625" text="Guide" />
+                                             </columns>
+                                             <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                             </columnResizePolicy>
+                                          </TableView>
+                                       </center>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                        <Tab fx:id="attractiontab" text="attractions">
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Label" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
+                  <TabPane fx:id="posttabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                     <tabs>
+                        <Tab fx:id="posttab" text="posts">
+                           <content>
+                              <AnchorPane>
+                                 <children>
+                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Activities" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                       <center>
+                                          <TableView fx:id="tablereservation" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                             <columns>
+                                                <TableColumn prefWidth="75.0" text="Name" />
+                                                <TableColumn prefWidth="91.199951171875" text="Description" />
+                                                <TableColumn prefWidth="59.20001220703125" text="Price" />
+                                                <TableColumn prefWidth="75.0" text="Duration" />
+                                                <TableColumn prefWidth="70.4000244140625" text="Type" />
+                                                <TableColumn prefWidth="103.19992065429688" text="Average Rating" />
+                                                <TableColumn prefWidth="54.39996337890625" text="Guide" />
+                                             </columns>
+                                             <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                             </columnResizePolicy>
+                                          </TableView>
+                                       </center>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                        <Tab fx:id="commentairetab" text="comments">
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Label" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
+                  <TabPane fx:id="reservationtabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                     <tabs>
+                        <Tab fx:id="reservationstab" text="reservations">
+                           <content>
+                              <AnchorPane>
+                                 <children>
+                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Reservations" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                       <center>
+                                          <TableView fx:id="tableReservation" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                             <columns>
+                                                <TableColumn fx:id="colDateReservation" prefWidth="96.0" text="Creation date" />
+                                                <TableColumn fx:id="colDateDebut" prefWidth="77.60003662109375" text="Start date" />
+                                                <TableColumn fx:id="colDateFin" prefWidth="91.199951171875" text="End Date" />
+                                                <TableColumn fx:id="colStatut" prefWidth="72.79998779296875" text="Status" />
+                                                <TableColumn fx:id="colCoutTotal" prefWidth="68.0" text="Total Cost" />
+                                                <TableColumn fx:id="colDestination" prefWidth="85.5999755859375" text="Destination" />
+                                                <TableColumn fx:id="colNbrTickets" prefWidth="114.4000244140625" text="Number of Tickets" />
+                                                <TableColumn fx:id="colDeleteReservation" prefWidth="62.39990234375" />
+                                                <TableColumn fx:id="colTicketReservation" prefWidth="126.4000244140625" />
+                                             </columns>
+                                          </TableView>
+                                       </center>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                        <Tab fx:id="ticketstab" text="tickets">
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Label text="Tickets" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" onAction="#openAddTicketPopup" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@css/styling.css" text=" Export(Excel)" textFill="#002b11" />
+                                             </children>
+                                             <padding>
+                                                <Insets left="30.0" />
+                                             </padding>
+                                          </HBox>
+                                       </top>
+                                       <center>
+                                          <TableView fx:id="tableTicket" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                             <columns>
+                                                <TableColumn fx:id="colType" prefWidth="143.20001220703125" text="Type" />
+                                                <TableColumn fx:id="colDateDebut1" prefWidth="104.79998779296875" text="Start date" />
+                                                <TableColumn fx:id="colDateFin1" prefWidth="132.0" text="End Date" />
+                                                <TableColumn fx:id="colStatut1" prefWidth="113.5999755859375" text="Status" />
+                                                <TableColumn fx:id="colPrix" prefWidth="126.39990234375" text="Cost" />
+                                                <TableColumn fx:id="colDeleteTicket" minWidth="0.0" prefWidth="112.800048828125" />
+                                             </columns>
+                                          </TableView>
+                                       </center>
+                                    </BorderPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
+                    </children>
+                </StackPane>
+         </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

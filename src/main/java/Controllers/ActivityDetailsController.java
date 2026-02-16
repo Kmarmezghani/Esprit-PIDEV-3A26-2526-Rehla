@@ -63,14 +63,10 @@ public class ActivityDetailsController {
     @FXML
     public void initialize() {
 
-        // Spinner 1..5
         SPreviewRating.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 5));
         SPreviewRating.setEditable(true);
-
-        // Disable delete by default
         BTNdeleteMyReview.setDisable(true);
 
-        // enable delete only if selected review belongs to current user
         reviewsList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             boolean canDelete = newV != null && newV.getPersonneId() == CURRENT_USER_ID;
             BTNdeleteMyReview.setDisable(!canDelete);
@@ -123,7 +119,7 @@ public class ActivityDetailsController {
         BTNdeleteMyReview.setDisable(true);
 
         int total = list.size();
-        int[] count = new int[6]; // index 1..5
+        int[] count = new int[6];
         int sum = 0;
 
         for (Review r : list) {
@@ -134,16 +130,13 @@ public class ActivityDetailsController {
 
         double avg = (total == 0) ? 0.0 : (sum / (double) total);
 
-        // Update model + top header rating
         activity.setNoteMoyenne(avg);
         LBLrating.setText("⭐ " + String.format("%.1f", avg));
 
-        // Left big avg + stars + total
         if (LBLavgBig != null) LBLavgBig.setText(String.format("%.1f", avg));
         if (LBLstarsText != null) LBLstarsText.setText(starsFromAverage(avg));
         if (LBLcountText != null) LBLcountText.setText(total + " ratings");
 
-        // Right distribution bars + labels
         double denom = (total == 0) ? 1.0 : total;
 
         if (PB5 != null) PB5.setProgress(count[5] / denom);
@@ -159,7 +152,6 @@ public class ActivityDetailsController {
         if (LBLc1 != null) LBLc1.setText("1.0  " + count[1] + " reviews");
     }
 
-    // Quarter-star style for average
     private String starsFromAverage(double avg) {
         avg = Math.max(0, Math.min(5, avg));
         StringBuilder sb = new StringBuilder();
@@ -168,9 +160,9 @@ public class ActivityDetailsController {
             double diff = avg - (i - 1);
 
             if (diff >= 1) sb.append("★");
-            else if (diff >= 0.75) sb.append("★");     // you can change to 3/4 char if you want
-            else if (diff >= 0.5) sb.append("⯨");     // half
-            else if (diff >= 0.25) sb.append("⯪");    // quarter
+            else if (diff >= 0.75) sb.append("★");
+            else if (diff >= 0.5) sb.append("⯨");
+            else if (diff >= 0.25) sb.append("⯪");
             else sb.append("☆");
         }
         return sb.toString();
@@ -183,13 +175,11 @@ public class ActivityDetailsController {
 
         editingReview = r;
 
-        // Fill form
         TAreview.setText(r.getCommentaire() == null ? "" : r.getCommentaire());
         if (SPreviewRating.getValueFactory() != null) {
             SPreviewRating.getValueFactory().setValue(r.getNote());
         }
 
-        // Focus
         TAreview.requestFocus();
         TAreview.positionCaret(TAreview.getText().length());
     }
@@ -215,17 +205,14 @@ public class ActivityDetailsController {
         int rating = SPreviewRating.getValue();
 
         if (editingReview != null) {
-            // UPDATE
             editingReview.setNote(rating);
             editingReview.setCommentaire(comment);
             editingReview.setDateAvis(LocalDate.now());
 
-            // MUST exist in ReviewService
             reviewService.update(editingReview);
 
             exitEditMode();
         } else {
-            // ADD
             Review r = new Review();
             r.setActiviteId(activity.getId());
             r.setPersonneId(CURRENT_USER_ID);
@@ -254,7 +241,6 @@ public class ActivityDetailsController {
             return;
         }
 
-        // If deleting the one being edited, exit edit mode
         if (editingReview != null && editingReview.getId() == selected.getId()) {
             exitEditMode();
         }
@@ -269,11 +255,24 @@ public class ActivityDetailsController {
         switchScene((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
     }
 
+
     private void switchScene(Node anyNodeOnScene, String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
             Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
-            stage.setScene(new Scene(root));
+
+            boolean wasMax = stage.isMaximized();
+            boolean wasFull = stage.isFullScreen();
+            double w = stage.getWidth();
+            double h = stage.getHeight();
+
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Scene newScene = new Scene(root, w, h);
+
+            stage.setScene(newScene);
+
+            stage.setMaximized(wasMax);
+            stage.setFullScreen(wasFull);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -343,7 +342,6 @@ public class ActivityDetailsController {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            // EDIT ICON (only if owner + selected)
             Button editBtn = new Button("✎");
             editBtn.setStyle("""
                 -fx-background-color: transparent;
@@ -358,7 +356,6 @@ public class ActivityDetailsController {
 
             editBtn.setOnAction(e -> ActivityDetailsController.this.startEdit(r));
 
-            // Rating right side
             VBox ratingBox = new VBox(2);
             ratingBox.setMinWidth(110);
             ratingBox.setMaxWidth(110);

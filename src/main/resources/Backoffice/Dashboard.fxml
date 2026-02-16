@@ -92,7 +92,7 @@
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/usericon.png" />
+                                        <Image url="@icons/desticon.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -104,7 +104,7 @@
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/usericon.png" />
+                                        <Image url="@icons/res.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -116,7 +116,7 @@
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/usericon.png" />
+                                        <Image url="@icons/Bousole.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
@@ -128,7 +128,7 @@
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
-                                        <Image url="@icons/usericon.png" />
+                                        <Image url="@icons/camera.png" />
                                     </image>
                                 </ImageView>
                             </graphic>

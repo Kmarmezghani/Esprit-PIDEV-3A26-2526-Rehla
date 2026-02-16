@@ -88,7 +88,7 @@ public class ActivitiesPageController {
 
         ImageView img = new ImageView();
         try {
-            img.setImage(new Image(getClass().getResourceAsStream("/icons/activity_placeholder.png")));
+            img.setImage(new Image(getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png")));
         } catch (Exception ignored) {}
         img.setFitWidth(248);
         img.setFitHeight(140);
@@ -149,7 +149,6 @@ public class ActivitiesPageController {
         return card;
     }
 
-    // ✅ FIXED: keep fullscreen by reusing same Scene
     private void openActivityDetails(Activite a) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ActivityDetailsPage.fxml"));
@@ -180,9 +179,6 @@ public class ActivitiesPageController {
         applySearchFilter();
     }
 
-    // ======================
-    // NAVIGATION (Button + MenuItem) + keep fullscreen
-    // ======================
     private Stage getStageFromEvent(javafx.event.ActionEvent event) {
         Object src = event.getSource();
 

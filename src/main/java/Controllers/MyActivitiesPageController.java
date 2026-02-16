@@ -18,7 +18,7 @@ import java.util.List;
 
 public class MyActivitiesPageController {
 
-    private static final int CURRENT_USER_ID = 3; // ✅ guide connecté
+    private static final int CURRENT_USER_ID = 3;
 
     @FXML private FlowPane myActivitiesFlowPane;
     @FXML private TextField searchField;
@@ -112,7 +112,7 @@ public class MyActivitiesPageController {
         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);
     """);
 
-        // --- Top row: title + delete button
+
         javafx.scene.layout.HBox top = new javafx.scene.layout.HBox(8);
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
@@ -124,12 +124,11 @@ public class MyActivitiesPageController {
         deleteBtn.setStyle("""
         -fx-background-color: transparent;
         -fx-text-fill: #d32f2f;
-        -fx-font-size: 14;
+        -fx-font-size: 16;
         -fx-cursor: hand;
         -fx-padding: 2 6;
     """);
 
-        // ✅ delete action (stop double click from triggering edit)
         deleteBtn.setOnAction(e -> {
             e.consume();
             confirmAndDelete(a);

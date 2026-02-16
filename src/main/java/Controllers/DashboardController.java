@@ -235,7 +235,6 @@ public class DashboardController {
         colpriceactivite.setCellValueFactory(new PropertyValueFactory<>("prix"));
         coltypeactivite.setCellValueFactory(new PropertyValueFactory<>("typeActivite"));
         colavgratactivite.setCellValueFactory(new PropertyValueFactory<>("noteMoyenne"));
-
         colguideactivite.setCellValueFactory(cellData -> {
             Activite a = cellData.getValue();
             String guideName = activiteService.getGuideNameByActiviteId(a.getGuideId());
@@ -310,7 +309,7 @@ public class DashboardController {
             Parent root = loader.load();
 
             AjouterActiviteController controller = loader.getController();
-            controller.setAdminMode(true); // ✅ admin create => guide_id stays NULL
+            controller.setAdminMode(true);
 
             Stage popupStage = new Stage();
             popupStage.setTitle("Add new activity");

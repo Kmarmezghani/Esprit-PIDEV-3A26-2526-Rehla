@@ -16,9 +16,13 @@ public class MainFx extends Application {
     @Override
     public void start(Stage primaryStage) {
         try{
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
+            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/blogAllPosts.fxml"));
+
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
+           scene.getStylesheets().add(getClass().getResource("/css/blog_styles.css").toExternalForm());
+
             primaryStage.initStyle(StageStyle.UNDECORATED);
             root.setOnMousePressed(event -> {
                 x = event.getSceneX();
@@ -32,8 +36,9 @@ public class MainFx extends Application {
             primaryStage.show();
         }
         catch(Exception e){
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
+
 
 
     }

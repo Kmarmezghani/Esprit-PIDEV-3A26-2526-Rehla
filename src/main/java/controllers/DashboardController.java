@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -79,7 +80,7 @@ public class DashboardController {
     @FXML private TableColumn<Post, String> colContenuPost;
     @FXML private TableColumn<Post, java.time.LocalDate> colDatePost;
     @FXML private TableColumn<Post, Integer> colPopularitePost;
-    @FXML private TableColumn<Post, Integer> colAuteurPost;
+    @FXML private TableColumn<Post, String> colAuteurPost;
     @FXML private TableColumn<Post, Integer> colLikesPost;
     @FXML
     private TableColumn<Post, Void> colAction;
@@ -244,19 +245,31 @@ public class DashboardController {
 /*---------------------------------------posts--------------------------------*/
     private void loadPosts() {
 
-        colIdPost.setCellValueFactory(new PropertyValueFactory<>("id"));
+
         colTitrePost.setCellValueFactory(new PropertyValueFactory<>("titre"));
         colContenuPost.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         colDatePost.setCellValueFactory(new PropertyValueFactory<>("datePublication"));
         colPopularitePost.setCellValueFactory(new PropertyValueFactory<>("popularite"));
         colLikesPost.setCellValueFactory(new PropertyValueFactory<>("nbLikes"));
 
-        // Auteur → on affiche juste son ID
-        colAuteurPost.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleIntegerProperty(
-                        cellData.getValue().getAuteur().getId()
-                ).asObject()
-        );
+        colAuteurPost.setCellValueFactory(cellData -> {
+            String nom = "";
+            String prenom = "";
+
+            if (cellData.getValue().getAuteur() != null) {
+                nom = cellData.getValue().getAuteur().getNom() != null ? cellData.getValue().getAuteur().getNom() : "";
+                prenom = cellData.getValue().getAuteur().getPrenom() != null ? cellData.getValue().getAuteur().getPrenom() : "";
+            }
+
+            String fullName = (nom + " " + prenom).trim();
+            if (fullName.isEmpty()) {
+                fullName = "Inconnu";
+            }
+
+            return new SimpleStringProperty(fullName);
+        });
+
+
 
 
 
@@ -420,7 +433,7 @@ public class DashboardController {
     /*-------------------------------------commentaires--------------------------------*/
     private void loadCommentaires() {
 
-        colIdCom.setCellValueFactory(new PropertyValueFactory<>("id"));
+
         colContenuCom.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         colDateCom.setCellValueFactory(new PropertyValueFactory<>("dateCommentaire"));
 

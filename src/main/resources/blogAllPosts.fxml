@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="Controllers.ClientPostsController" fx:id="root">
+
+    <BorderPane fx:id="mainContent" styleClass="root">
+
+    <!-- HERO / TOP -->
+    <top>
+        <VBox styleClass="hero" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="hero-top">
+                <Label text="PulseBlog" styleClass="brand"/>
+
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="search-wrap">
+                    <Label text="⌕" styleClass="search-icon"/>
+                    <TextField promptText="Rechercher un post, une tendance, un auteur..." styleClass="search"/>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button text="✨ Nouveau" styleClass="btn-primary" />
+                <Button text="🔔" styleClass="btn-icon"/>
+                <Button text="💬" styleClass="btn-icon"/>
+
+                <HBox spacing="10" alignment="CENTER_RIGHT" styleClass="me">
+                    <ImageView fx:id="imgMe" fitWidth="36" fitHeight="36" preserveRatio="true" styleClass="avatar"/>
+                    <VBox spacing="0">
+                        <Label fx:id="lblMe" text="Vous" styleClass="me-name"/>
+                        <Label text="En ligne" styleClass="me-sub"/>
+                    </VBox>
+                </HBox>
+            </HBox>
+
+            <!-- CHIPS -->
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="chips">
+                <ToggleButton text="Pour vous" styleClass="chip chip-active" selected="true"/>
+                <ToggleButton text="Tendances" styleClass="chip"/>
+                <ToggleButton text="Tech" styleClass="chip"/>
+                <ToggleButton text="Cuisine" styleClass="chip"/>
+                <ToggleButton text="Voyage" styleClass="chip"/>
+                <ToggleButton text="Art" styleClass="chip"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="🔥 Top aujourd’hui : #JavaFX #Recettes #Design" styleClass="ticker"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- LEFT (mini dock) -->
+    <left>
+        <VBox spacing="10" styleClass="dock">
+            <Button text="🏠" styleClass="dock-btn" />
+            <Button text="🧾" styleClass="dock-btn dock-active" />
+            <Button text="⭐" styleClass="dock-btn" />
+            <Button text="👥" styleClass="dock-btn" />
+            <Button text="⚙" styleClass="dock-btn" />
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button text="🌙" styleClass="dock-btn" />
+        </VBox>
+    </left>
+
+    <!-- RIGHT (insights) -->
+    <right>
+        <VBox spacing="14" styleClass="right">
+            <VBox styleClass="glass" spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📌" styleClass="card-emoji"/>
+                    <Label text="Insights" styleClass="card-title"/>
+                </HBox>
+                <HBox spacing="10">
+                    <VBox styleClass="mini-stat" spacing="2">
+                        <Label text="1.2k" styleClass="mini-stat-val"/>
+                        <Label text="Vues" styleClass="mini-stat-lbl"/>
+                    </VBox>
+                    <VBox styleClass="mini-stat" spacing="2">
+                        <Label text="86" styleClass="mini-stat-val"/>
+                        <Label text="Likes" styleClass="mini-stat-lbl"/>
+                    </VBox>
+                    <VBox styleClass="mini-stat" spacing="2">
+                        <Label text="14" styleClass="mini-stat-val"/>
+                        <Label text="Posts" styleClass="mini-stat-lbl"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="glass" spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="🚀" styleClass="card-emoji"/>
+                    <Label text="À suivre" styleClass="card-title"/>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ImageView fitWidth="32" fitHeight="32" preserveRatio="true" styleClass="avatar"/>
+                    <VBox spacing="0">
+                        <Label text="Tech Daily" styleClass="who"/>
+                        <Label text="Recommandé" styleClass="muted"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="+ Suivre" styleClass="btn-soft"/>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ImageView fitWidth="32" fitHeight="32" preserveRatio="true" styleClass="avatar"/>
+                    <VBox spacing="0">
+                        <Label text="Cuisine Pro" styleClass="who"/>
+                        <Label text="Populaire" styleClass="muted"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="+ Suivre" styleClass="btn-soft"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="glass" spacing="8">
+                <Label text="🎧 Playlist du moment" styleClass="card-title"/>
+                <Label text="Lo-fi Focus • 2h 14m" styleClass="muted"/>
+                <ProgressBar progress="0.35" styleClass="bar"/>
+            </VBox>
+        </VBox>
+    </right>
+
+    <!-- CENTER FEED -->
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll">
+            <content>
+                <VBox spacing="14" styleClass="feed">
+
+                    <!-- COMPOSER (creative) -->
+                    <VBox styleClass="glass composer" spacing="10">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <ImageView fx:id="imgMe2" fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="avatar"/>
+                            <TextField fx:id="txtNewPost" promptText="Écrivez quelque chose de fort..." styleClass="composer-input"/>
+                            <Button text="Publier" styleClass="btn-primary"/>
+                        </HBox>
+
+                        <HBox spacing="10">
+                            <Button text="🖼 Image" styleClass="btn-soft" />
+                            <Button text="🎥 Vidéo" styleClass="btn-soft"/>
+                            <Button text="📍 Lieu" styleClass="btn-soft"/>
+                            <Button text="🧠 Sondage" styleClass="btn-soft"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="Astuce: utilisez #tags" styleClass="hint"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- container dynamique -->
+                    <VBox fx:id="postsContainer" spacing="14"/>
+
+                    <!-- EXEMPLE POST CARD -->
+                    <VBox styleClass="post glass" spacing="10">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <ImageView fx:id="imgAvatar1" fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="avatar"/>
+                            <VBox spacing="0">
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Label text="John Doe" styleClass="name"/>
+                                    <Label text="•" styleClass="muted"/>
+                                    <Label text="14 Feb • Public" styleClass="muted"/>
+                                </HBox>
+                                <HBox spacing="6" alignment="CENTER_LEFT">
+                                    <Label text="#Design" styleClass="tag"/>
+                                    <Label text="#JavaFX" styleClass="tag"/>
+                                    <Label text="🔥" />
+                                    <Label text="Tendance" styleClass="badge"/>
+                                </HBox>
+                            </VBox>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="⋯" styleClass="btn-icon"/>
+                        </HBox>
+
+                        <Label text="Une UI plus vivante: dégradés, glassmorphism, badges, chips et hover subtil."
+                               wrapText="true" styleClass="text"/>
+
+                        <StackPane styleClass="media">
+                            <ImageView fx:id="postImage1" fitWidth="680" fitHeight="320" preserveRatio="true" styleClass="post-img"/>
+                            <HBox alignment="TOP_RIGHT" styleClass="media-overlay">
+                                <Label text="⏱ 1 min" styleClass="pill"/>
+                            </HBox>
+                        </StackPane>
+
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Label text="❤️ 10" styleClass="muted"/>
+                            <Label text="💬 3" styleClass="muted"/>
+                            <Label text="⭐ 2" styleClass="muted"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="Vue par 128 personnes" styleClass="muted"/>
+                        </HBox>
+
+                        <HBox spacing="10" styleClass="actions">
+                            <Button text="❤️ Like" styleClass="action"/>
+                            <Button text="💬 Commenter" styleClass="action" onAction="#handleComment"/>
+                            <Button text="⭐ Favori" styleClass="action"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="↗ Partager" styleClass="action"/>
+                        </HBox>
+
+                        <Separator styleClass="sep"/>
+
+                        <VBox spacing="8">
+                            <HBox spacing="10" alignment="TOP_LEFT">
+                                <ImageView fitWidth="28" fitHeight="28" preserveRatio="true" styleClass="avatar small"/>
+                                <VBox spacing="2" styleClass="bubble">
+                                    <Label text="Alice" styleClass="bubble-name"/>
+                                    <Label text="Magnifique style!" wrapText="true" styleClass="bubble-text"/>
+                                </VBox>
+                            </HBox>
+
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <ImageView fitWidth="28" fitHeight="28" preserveRatio="true" styleClass="avatar small"/>
+                                <TextField promptText="Écrire un commentaire..." styleClass="comment"/>
+                                <Button text="Envoyer" styleClass="btn-soft" />
+                            </HBox>
+                        </VBox>
+                    </VBox>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>
+</StackPane>

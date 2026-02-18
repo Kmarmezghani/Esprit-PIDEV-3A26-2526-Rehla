@@ -340,3 +340,20 @@
 .btn-icon:hover {
     -fx-background-color: rgba(255,255,255,0.25);
 }
+/*-------likes---------------------*/
+
+.like-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.like-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-background-radius: 8;
+}
+
+.like-btn:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}

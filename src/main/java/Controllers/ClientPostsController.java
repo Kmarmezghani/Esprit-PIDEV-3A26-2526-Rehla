@@ -7,7 +7,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.effect.GaussianBlur;
+
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image  ;
+
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -18,6 +23,8 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.stage.StageStyle;
 
+import java.awt.*;
+
 public class ClientPostsController {
 
 
@@ -27,7 +34,45 @@ public class ClientPostsController {
     @FXML
     private StackPane root;   // ajoute fx:id="root" au StackPane
 
+    @FXML
+    private ImageView likeIcon;
 
+    @FXML
+    private Button btnLike;
+
+    private boolean isLiked = false;
+
+    private Image heartEmpty;
+    private Image heartFull;
+    @FXML private ImageView commentIcon;
+
+    private Image commentEmpty;
+
+    @FXML
+    private ImageView starIcon;
+
+    @FXML
+    private Button btnStar;
+
+    private boolean isStarred = false;
+
+    private Image starEmpty;
+    private Image starFull;
+    @FXML
+    private void initialize() {
+
+        heartEmpty = new Image(getClass().getResourceAsStream("/icons/heartwhite.png"));
+        heartFull = new Image(getClass().getResourceAsStream("/icons/HeartRed.png"));
+
+        likeIcon.setImage(heartEmpty);
+        commentEmpty = new Image(getClass()
+                .getResourceAsStream("/icons/comment.png"));
+        commentIcon.setImage(commentEmpty);
+
+        starEmpty = new Image(getClass().getResourceAsStream("/icons/whiteStar.png"));
+        starFull = new Image(getClass().getResourceAsStream("/icons/yellowStar.png"));
+        starIcon.setImage(starEmpty);
+    }
     @FXML
     private void handleComment(ActionEvent event) {
         try {
@@ -74,7 +119,32 @@ public class ClientPostsController {
         stage.setFullScreen(!stage.isFullScreen());
     }
 
+    @FXML
+    private void handleLike() {
 
+        isLiked = !isLiked;
+
+        if (isLiked) {
+            likeIcon.setImage(heartFull);
+            btnLike.setStyle("-fx-background-color: transparent;");
+        } else {
+            likeIcon.setImage(heartEmpty);
+            btnLike.setStyle("-fx-background-color: transparent;");
+        }
+    }
+
+    @FXML
+    private void handleStar() {
+        isStarred = !isStarred;
+
+        if (isStarred) {
+            starIcon.setImage(starFull);
+            btnStar.setStyle("-fx-background-color: transparent;");
+        } else {
+            starIcon.setImage(starEmpty);
+            btnStar.setStyle("-fx-background-color: transparent;");
+        }
+    }
 }
 
 

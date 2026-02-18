@@ -59,7 +59,6 @@
     <left>
         <VBox spacing="10" styleClass="dock">
             <Button text="🏠" styleClass="dock-btn" />
-            <Button text="🧾" styleClass="dock-btn dock-active" />
             <Button text="⭐" styleClass="dock-btn" />
             <Button text="👥" styleClass="dock-btn" />
             <Button text="⚙" styleClass="dock-btn" />
@@ -70,7 +69,7 @@
 
     <!-- RIGHT (insights) -->
     <right>
-        <VBox spacing="14" styleClass="right">
+        <VBox spacing="14" styleClass="right" prefWidth="250">
             <VBox styleClass="glass" spacing="10">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label text="📌" styleClass="card-emoji"/>
@@ -129,7 +128,7 @@
 
     <!-- CENTER FEED -->
     <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll">
+        <ScrollPane fitToWidth="true" styleClass="scroll" prefWidth="800">
             <content>
                 <VBox spacing="14" styleClass="feed">
 
@@ -185,25 +184,71 @@
                                 <Label text="⏱ 1 min" styleClass="pill"/>
                             </HBox>
                         </StackPane>
+                        <HBox spacing="18" alignment="CENTER_LEFT">
 
-                        <HBox spacing="12" alignment="CENTER_LEFT">
-                            <Label text="❤️ 10" styleClass="muted"/>
-                            <Label text="💬 3" styleClass="muted"/>
-                            <Label text="⭐ 2" styleClass="muted"/>
+                            <!-- LIKE -->
+                            <HBox spacing="6" alignment="CENTER_LEFT">
+                                <Button fx:id="btnLike"
+                                        onAction="#handleLike"
+                                        styleClass="like-btn">
+
+                                    <graphic>
+                                        <ImageView fx:id="likeIcon"
+                                                   fitWidth="25"
+                                                   fitHeight="25"
+                                                   preserveRatio="true"/>
+                                    </graphic>
+                                </Button>
+
+                                <Label fx:id="lblLikes"
+                                       text="3"
+                                       styleClass="muted"/>
+                            </HBox>
+
+                            <!-- COMMENT -->
+                            <!-- COMMENT -->
+                            <HBox spacing="6" alignment="CENTER_LEFT">
+                                <Button fx:id="btnComment"
+                                        onAction="#handleComment"
+                                        style="-fx-background-color: transparent;">
+                                    <graphic>
+                                        <ImageView fx:id="commentIcon"
+                                                   fitWidth="21"
+                                                   fitHeight="21"
+                                                   preserveRatio="true"/>
+                                    </graphic>
+                                </Button>
+
+                                <Label fx:id="lblComments"
+                                       text="3"
+                                       styleClass="muted"/>
+                            </HBox>
+
+
+                            <!-- FAVORI -->
+
+                            <HBox spacing="6" alignment="CENTER_LEFT">
+                                <Button fx:id="btnStar"
+                                        onAction="#handleStar"
+                                        style="-fx-background-color: transparent;">
+                                    <graphic>
+                                        <ImageView fx:id="starIcon"
+                                                   fitWidth="18"
+                                                   fitHeight="18"
+                                                   preserveRatio="true"/>
+                                    </graphic>
+                                </Button>
+
+
+                            </HBox>
+
+
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Label text="Vue par 128 personnes" styleClass="muted"/>
+
+                            <Label text="Vue par 128 personnes"
+                                   styleClass="muted"/>
+
                         </HBox>
-
-                        <HBox spacing="10" styleClass="actions">
-                            <Button text="❤️ Like" styleClass="action"/>
-                            <Button text="💬 Commenter" styleClass="action" onAction="#handleComment"/>
-                            <Button text="⭐ Favori" styleClass="action"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="↗ Partager" styleClass="action"/>
-                        </HBox>
-
-
-
 
                     </VBox>
 

@@ -412,7 +412,8 @@ public class DashboardController {
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 postService.delete(post);
-                postList.remove(post);         // rafraîchir TableView
+                postList.remove(post);
+                loadCommentaires(); // rafraîchir TableView
             }
         });
     }

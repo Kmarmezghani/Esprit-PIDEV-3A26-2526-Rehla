@@ -24,9 +24,13 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
+
+
                 <Button text="✨ Nouveau" styleClass="btn-primary" />
                 <Button text="🔔" styleClass="btn-icon"/>
                 <Button text="💬" styleClass="btn-icon"/>
+                <Button text="⛶" styleClass="btn-icon" onAction="#handleFullScreen"/>
+                <Button text="✕" styleClass="btn-icon" onAction="#handleClose"/>
 
                 <HBox spacing="10" alignment="CENTER_RIGHT" styleClass="me">
                     <ImageView fx:id="imgMe" fitWidth="36" fitHeight="36" preserveRatio="true" styleClass="avatar"/>
@@ -198,23 +202,9 @@
                             <Button text="↗ Partager" styleClass="action"/>
                         </HBox>
 
-                        <Separator styleClass="sep"/>
 
-                        <VBox spacing="8">
-                            <HBox spacing="10" alignment="TOP_LEFT">
-                                <ImageView fitWidth="28" fitHeight="28" preserveRatio="true" styleClass="avatar small"/>
-                                <VBox spacing="2" styleClass="bubble">
-                                    <Label text="Alice" styleClass="bubble-name"/>
-                                    <Label text="Magnifique style!" wrapText="true" styleClass="bubble-text"/>
-                                </VBox>
-                            </HBox>
 
-                            <HBox spacing="10" alignment="CENTER_LEFT">
-                                <ImageView fitWidth="28" fitHeight="28" preserveRatio="true" styleClass="avatar small"/>
-                                <TextField promptText="Écrire un commentaire..." styleClass="comment"/>
-                                <Button text="Envoyer" styleClass="btn-soft" />
-                            </HBox>
-                        </VBox>
+
                     </VBox>
 
                 </VBox>

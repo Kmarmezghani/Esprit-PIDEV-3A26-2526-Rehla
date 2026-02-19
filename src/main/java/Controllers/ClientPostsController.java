@@ -4,11 +4,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.control.MenuItem;
 
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image  ;
@@ -24,6 +26,7 @@ import javafx.scene.Scene;
 import javafx.stage.StageStyle;
 
 import java.awt.*;
+
 
 public class ClientPostsController {
 
@@ -145,6 +148,52 @@ public class ClientPostsController {
             btnStar.setStyle("-fx-background-color: transparent;");
         }
     }
+    private void handleUpdatePost() {
+        System.out.println("Update post...");
+
+
+
+    }
+    private void handleDeletePost() {
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer ce post ?");
+        confirm.setContentText("Cette action est irréversible.");
+
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                System.out.println("Post supprimé !");
+                // ici tu mettras la suppression réelle
+            }
+        });
+    }
+    @FXML
+    private void handlePostOptions(ActionEvent event) {
+
+        Button sourceBtn = (Button) event.getSource();
+
+        // Création du menu contextuel
+        ContextMenu menu = new ContextMenu();
+
+        MenuItem updateItem = new MenuItem("✏ Modifier");
+        MenuItem deleteItem = new MenuItem("🗑 Supprimer");
+
+        // ACTION UPDATE
+        updateItem.setOnAction(e -> handleUpdatePost());
+
+        // ACTION DELETE
+        deleteItem.setOnAction(e -> handleDeletePost());
+
+        menu.getItems().addAll(updateItem, deleteItem);
+
+        // Afficher le menu sous le bouton
+        menu.show(sourceBtn, Side.BOTTOM, 0, 0);
+    }
+
+
+
+
 }
 
 

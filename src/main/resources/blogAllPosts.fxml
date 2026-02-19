@@ -172,7 +172,10 @@
                             </VBox>
 
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="⋯" styleClass="btn-icon"/>
+                            <Button text="⋯"
+                                    styleClass="btn-icon"
+                                    onAction="#handlePostOptions"/>
+
                         </HBox>
 
                         <Label text="Une UI plus vivante: dégradés, glassmorphism, badges, chips et hover subtil."
@@ -205,7 +208,7 @@
                                        styleClass="muted"/>
                             </HBox>
 
-                            <!-- COMMENT -->
+
                             <!-- COMMENT -->
                             <HBox spacing="6" alignment="CENTER_LEFT">
                                 <Button fx:id="btnComment"

@@ -15,7 +15,7 @@
       maxWidth="450"
       maxHeight="500"
       alignment="TOP_CENTER"
-      styleClass=" comment-popup">
+      styleClass="comment-popup">
 
 
     <padding>

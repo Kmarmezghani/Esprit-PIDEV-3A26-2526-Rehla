@@ -149,32 +149,88 @@ public class BlogProfileController {
         contentText.setFill(Color.web("#424242"));
         contentText.setStyle("-fx-font-size: 13px;");
 
+
         // Footer avec like / comment / fav
         HBox footer = new HBox(15);
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(4, 0, 0, 0));
 
+// ================= LIKE =================
         Button likeButton = new Button();
         likeButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
-        Label likesLabel = new Label();
+        likeButton.setPadding(Insets.EMPTY);
+
+        Label likesLabel = new Label("0");
         likesLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
+        likesLabel.setPadding(Insets.EMPTY);
+        HBox likeContainer = new HBox(2, likeButton, likesLabel); // Espacement 4px
+        likeContainer.setSpacing(4);
+        likeContainer.setAlignment(Pos.CENTER_LEFT);
+        ImageView likeEmpty = getIcon("blackHeart.png", 24);
+        ImageView likeFull = getIcon("HeartRed.png", 25);
+        likeEmpty.setPreserveRatio(true);
+        likeFull.setPreserveRatio(true);
 
+        likeButton.setGraphic(likeEmpty);
 
+        final boolean[] liked = {false};
 
+        likeButton.setOnAction(e -> {
+            liked[0] = !liked[0];
 
-        Button commentButton = new Button("💬 Commenter");
+            if (liked[0]) {
+                likeButton.setGraphic(likeFull);
+                likesLabel.setText(String.valueOf(
+                        Integer.parseInt(likesLabel.getText()) + 1));
+            } else {
+                likeButton.setGraphic(likeEmpty);
+                likesLabel.setText(String.valueOf(
+                        Integer.parseInt(likesLabel.getText()) - 1));
+            }
+        });
+
+// ================= COMMENT =================
+        Button commentButton = new Button();
+        ImageView commentIcon = getIcon("commentB.png", 23);
+        commentIcon.setPreserveRatio(true);  // Évite l'étirement
+        commentIcon.setSmooth(true);         // Améliore la netteté
+        commentButton.setGraphic(commentIcon);
         commentButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #616161;"
                 + "-fx-font-size: 12px; -fx-cursor: hand;");
 
 
-
+// ================= FAVORIS =================
         Button favButton = new Button();
         favButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
+        ImageView favEmpty = getIcon("blackStar.png", 28 );
+        favEmpty.setPreserveRatio(true);  // Préserve le ratio d'aspect
+        favEmpty.setSmooth(true);
+        ImageView favFull = getIcon("yellowStar.png", 23);
 
+        favButton.setGraphic(favEmpty);
 
+        final boolean[] favorited = {false};
+
+        favButton.setOnAction(e -> {
+            favorited[0] = !favorited[0];
+
+            if (favorited[0]) {
+                favButton.setGraphic(favFull);
+            } else {
+                favButton.setGraphic(favEmpty);
+            }
+        });
+
+        // Hover effect
+        likeButton.setOnMouseEntered(e -> likeButton.setOpacity(0.7));
+        likeButton.setOnMouseExited(e -> likeButton.setOpacity(1));
+
+        favButton.setOnMouseEntered(e -> favButton.setOpacity(0.7));
+        favButton.setOnMouseExited(e -> favButton.setOpacity(1));
 
         footer.getChildren().addAll(likeButton, likesLabel, commentButton, favButton);
+
 
         card.getChildren().addAll(header, titleLabel, contentText, footer);
 
@@ -254,6 +310,14 @@ public class BlogProfileController {
             postsContainer.getChildren().add(box);
         });
     }
+    private ImageView getIcon(String name, double size) {
+        Image img = new Image(getClass().getResourceAsStream("/icons/" + name));
+        ImageView iv = new ImageView(img);
+        iv.setFitWidth(size);
+        iv.setFitHeight(size);
+        return iv;
+    }
+
 
 
 

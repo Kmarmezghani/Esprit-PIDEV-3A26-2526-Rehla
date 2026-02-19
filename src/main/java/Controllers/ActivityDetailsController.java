@@ -19,10 +19,12 @@ import models.Review;
 import services.ActiviteService;
 import services.ReviewService;
 
-import java.time.LocalDate;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class ActivityDetailsController {
 
@@ -47,7 +49,10 @@ public class ActivityDetailsController {
     @FXML private javafx.scene.image.ImageView IMGactivity;
 
     @FXML private ListView<Review> reviewsList;
-    @FXML private Spinner<Integer> SPreviewRating;
+
+    // ✅ CHANGED: Spinner removed, stars box added
+    @FXML private HBox starBox;
+
     @FXML private TextArea TAreview;
     @FXML private Button BTNdeleteMyReview;
 
@@ -60,17 +65,18 @@ public class ActivityDetailsController {
     // ===== Editing state =====
     private Review editingReview = null;
 
+    // ✅ CHANGED: star rating state
+    private int selectedRating = 5;
+    private int hoverRating = 0;
+
     @FXML
     public void initialize() {
 
-        // Spinner 1..5
-        SPreviewRating.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 5));
-        SPreviewRating.setEditable(true);
-
-        // Disable delete by default
         BTNdeleteMyReview.setDisable(true);
 
-        // enable delete only if selected review belongs to current user
+        // ✅ CHANGED: init stars
+        initStarRating();
+
         reviewsList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             boolean canDelete = newV != null && newV.getPersonneId() == CURRENT_USER_ID;
             BTNdeleteMyReview.setDisable(!canDelete);
@@ -123,7 +129,7 @@ public class ActivityDetailsController {
         BTNdeleteMyReview.setDisable(true);
 
         int total = list.size();
-        int[] count = new int[6]; // index 1..5
+        int[] count = new int[6];
         int sum = 0;
 
         for (Review r : list) {
@@ -134,16 +140,13 @@ public class ActivityDetailsController {
 
         double avg = (total == 0) ? 0.0 : (sum / (double) total);
 
-        // Update model + top header rating
         activity.setNoteMoyenne(avg);
         LBLrating.setText("⭐ " + String.format("%.1f", avg));
 
-        // Left big avg + stars + total
         if (LBLavgBig != null) LBLavgBig.setText(String.format("%.1f", avg));
         if (LBLstarsText != null) LBLstarsText.setText(starsFromAverage(avg));
         if (LBLcountText != null) LBLcountText.setText(total + " ratings");
 
-        // Right distribution bars + labels
         double denom = (total == 0) ? 1.0 : total;
 
         if (PB5 != null) PB5.setProgress(count[5] / denom);
@@ -159,7 +162,6 @@ public class ActivityDetailsController {
         if (LBLc1 != null) LBLc1.setText("1.0  " + count[1] + " reviews");
     }
 
-    // Quarter-star style for average
     private String starsFromAverage(double avg) {
         avg = Math.max(0, Math.min(5, avg));
         StringBuilder sb = new StringBuilder();
@@ -168,12 +170,52 @@ public class ActivityDetailsController {
             double diff = avg - (i - 1);
 
             if (diff >= 1) sb.append("★");
-            else if (diff >= 0.75) sb.append("★");     // you can change to 3/4 char if you want
-            else if (diff >= 0.5) sb.append("⯨");     // half
-            else if (diff >= 0.25) sb.append("⯪");    // quarter
+            else if (diff >= 0.75) sb.append("★");
+            else if (diff >= 0.5) sb.append("⯨");
+            else if (diff >= 0.25) sb.append("⯪");
             else sb.append("☆");
         }
         return sb.toString();
+    }
+
+    // ✅ CHANGED: Stars rating UI
+    private void initStarRating() {
+        if (starBox == null) return;
+
+        starBox.getChildren().clear();
+
+        for (int i = 1; i <= 5; i++) {
+            Label star = new Label("☆");
+            star.setStyle("-fx-font-size: 26; -fx-text-fill: #223f91; -fx-cursor: hand;");
+
+            final int value = i;
+
+            star.setOnMouseEntered(e -> {
+                hoverRating = value;
+                updateStars(hoverRating);
+            });
+
+            star.setOnMouseExited(e -> {
+                hoverRating = 0;
+                updateStars(selectedRating);
+            });
+
+            star.setOnMouseClicked(e -> {
+                selectedRating = value;
+                updateStars(selectedRating);
+            });
+
+            starBox.getChildren().add(star);
+        }
+
+        updateStars(selectedRating);
+    }
+
+    private void updateStars(int rating) {
+        for (int i = 0; i < starBox.getChildren().size(); i++) {
+            Label star = (Label) starBox.getChildren().get(i);
+            star.setText(i < rating ? "★" : "☆");
+        }
     }
 
     // ===== Start editing =====
@@ -183,13 +225,11 @@ public class ActivityDetailsController {
 
         editingReview = r;
 
-        // Fill form
         TAreview.setText(r.getCommentaire() == null ? "" : r.getCommentaire());
-        if (SPreviewRating.getValueFactory() != null) {
-            SPreviewRating.getValueFactory().setValue(r.getNote());
-        }
 
-        // Focus
+        selectedRating = Math.max(1, Math.min(5, r.getNote()));
+        updateStars(selectedRating);
+
         TAreview.requestFocus();
         TAreview.positionCaret(TAreview.getText().length());
     }
@@ -197,9 +237,9 @@ public class ActivityDetailsController {
     private void exitEditMode() {
         editingReview = null;
         TAreview.clear();
-        if (SPreviewRating.getValueFactory() != null) {
-            SPreviewRating.getValueFactory().setValue(5);
-        }
+
+        selectedRating = 5;
+        updateStars(selectedRating);
     }
 
     @FXML
@@ -212,34 +252,44 @@ public class ActivityDetailsController {
             return;
         }
 
-        int rating = SPreviewRating.getValue();
+        int rating = selectedRating;
 
         if (editingReview != null) {
-            // UPDATE
             editingReview.setNote(rating);
             editingReview.setCommentaire(comment);
-            editingReview.setDateAvis(LocalDate.now());
+            editingReview.setDateAvis(LocalDateTime.now());
 
-            // MUST exist in ReviewService
             reviewService.update(editingReview);
-
             exitEditMode();
         } else {
-            // ADD
             Review r = new Review();
             r.setActiviteId(activity.getId());
             r.setPersonneId(CURRENT_USER_ID);
             r.setNote(rating);
             r.setCommentaire(comment);
-            r.setDateAvis(LocalDate.now());
+            r.setDateAvis(LocalDateTime.now());
 
             reviewService.add(r);
-
             TAreview.clear();
         }
 
         activiteService.updateNoteMoyenne(activity.getId());
         loadReviewsAndRating();
+    }
+
+    // ✅ NEW: confirmation dialog
+    private boolean confirmDelete() {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete review");
+        confirm.setHeaderText("Are you sure you want to delete your review?");
+        confirm.setContentText("This action cannot be undone.");
+
+        ButtonType deleteBtn = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirm.getButtonTypes().setAll(deleteBtn, cancelBtn);
+
+        Optional<ButtonType> res = confirm.showAndWait();
+        return res.isPresent() && res.get() == deleteBtn;
     }
 
     @FXML
@@ -254,7 +304,9 @@ public class ActivityDetailsController {
             return;
         }
 
-        // If deleting the one being edited, exit edit mode
+        // ✅ ADDED: ask confirmation
+        if (!confirmDelete()) return;
+
         if (editingReview != null && editingReview.getId() == selected.getId()) {
             exitEditMode();
         }
@@ -343,7 +395,6 @@ public class ActivityDetailsController {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            // EDIT ICON (only if owner + selected)
             Button editBtn = new Button("✎");
             editBtn.setStyle("""
                 -fx-background-color: transparent;
@@ -358,7 +409,6 @@ public class ActivityDetailsController {
 
             editBtn.setOnAction(e -> ActivityDetailsController.this.startEdit(r));
 
-            // Rating right side
             VBox ratingBox = new VBox(2);
             ratingBox.setMinWidth(110);
             ratingBox.setMaxWidth(110);
@@ -420,17 +470,28 @@ public class ActivityDetailsController {
         return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
     }
 
-    private String buildTimeAgo(LocalDate dateAvis) {
+    private String buildTimeAgo(LocalDateTime dateAvis) {
         if (dateAvis == null) return "";
-        LocalDate now = LocalDate.now();
+
+        LocalDateTime now = LocalDateTime.now();
         if (dateAvis.isAfter(now)) return "Today";
 
-        Period p = Period.between(dateAvis, now);
+        Period p = Period.between(dateAvis.toLocalDate(), now.toLocalDate());
         if (p.getYears() > 0) return p.getYears() + " year" + (p.getYears() > 1 ? "s" : "") + " ago";
         if (p.getMonths() > 0) return p.getMonths() + " month" + (p.getMonths() > 1 ? "s" : "") + " ago";
-        if (p.getDays() > 7) return (p.getDays() / 7) + " week" + ((p.getDays() / 7) > 1 ? "s" : "") + " ago";
-        if (p.getDays() > 1) return p.getDays() + " days ago";
-        if (p.getDays() == 1) return "Yesterday";
-        return "Today";
+
+        Duration d = Duration.between(dateAvis, now);
+        long days = d.toDays();
+        if (days > 7) return (days / 7) + " week" + ((days / 7) > 1 ? "s" : "") + " ago";
+        if (days > 1) return days + " days ago";
+        if (days == 1) return "Yesterday";
+
+        long hours = d.toHours();
+        if (hours >= 1) return hours + " hour" + (hours > 1 ? "s" : "") + " ago";
+
+        long mins = d.toMinutes();
+        if (mins >= 1) return mins + " min ago";
+
+        return "Just now";
     }
 }

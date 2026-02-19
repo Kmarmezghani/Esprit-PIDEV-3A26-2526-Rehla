@@ -1,15 +1,16 @@
 package models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Review {
     private int id;
     private int activiteId;
     private int personneId;
-    private String userName; // On récupère le nom via la table personne
+    private String userName;
     private String commentaire;
     private int note;
-    private LocalDate dateAvis;
+    private LocalDateTime dateAvis;
 
     // getters et setters
     public int getId() { return id; }
@@ -30,6 +31,6 @@ public class Review {
     public int getNote() { return note; }
     public void setNote(int note) { this.note = note; }
 
-    public LocalDate getDateAvis() { return dateAvis; }
-    public void setDateAvis(LocalDate dateAvis) { this.dateAvis = dateAvis; }
+    public LocalDateTime getDateAvis() { return dateAvis; }
+    public void setDateAvis(LocalDateTime dateAvis) { this.dateAvis = dateAvis; }
 }

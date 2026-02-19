@@ -35,6 +35,9 @@ public class AjouterActiviteController {
     @FXML private ComboBox<String> CBstatus;
     @FXML private ComboBox<String> CBdestination;
 
+    @FXML private Label LBLmaxPlaces;
+    @FXML private Spinner<Integer> SPmaxPlaces;
+
     private Map<String, Integer> destinationMap;
 
     private Activite activiteToEdit = null;
@@ -45,17 +48,19 @@ public class AjouterActiviteController {
 
     public void setGuideId(int guideId) {
         this.fixedGuideId = guideId;
+        updateMaxPlacesVisibility();
     }
 
     public void setAdminMode(boolean adminMode) {
         this.adminMode = adminMode;
+        updateMaxPlacesVisibility();
     }
 
     @FXML
     public void initialize() {
 
         pricespinneractivite.setValueFactory(
-                new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 100000.0, 0.0, 5.0)
+                new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 100000.0, 1.0, 5.0)
         );
         pricespinneractivite.setEditable(true);
 
@@ -74,6 +79,29 @@ public class AjouterActiviteController {
 
         destinationMap = activiteService.getDestinationsMap();
         CBdestination.setItems(FXCollections.observableArrayList(destinationMap.keySet()));
+
+        if (SPmaxPlaces != null) {
+            SPmaxPlaces.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 10, 1));
+            SPmaxPlaces.setEditable(true);
+        }
+
+        updateMaxPlacesVisibility();
+    }
+
+    private void updateMaxPlacesVisibility() {
+        if (SPmaxPlaces == null) return;
+
+        boolean isGuideCreating = (fixedGuideId != null) && !adminMode;
+
+        // ✅ hide/show Spinner
+        SPmaxPlaces.setVisible(isGuideCreating);
+        SPmaxPlaces.setManaged(isGuideCreating);
+
+        // ✅ hide/show Label too (THIS WAS MISSING)
+        if (LBLmaxPlaces != null) {
+            LBLmaxPlaces.setVisible(isGuideCreating);
+            LBLmaxPlaces.setManaged(isGuideCreating);
+        }
     }
 
     @FXML
@@ -98,6 +126,8 @@ public class AjouterActiviteController {
         if (nom == null || nom.isBlank()) { showWarn("Missing name", "Please enter the activity name."); return; }
         if (description == null || description.isBlank()) { showWarn("Missing description", "Please enter the activity description."); return; }
         if (type == null || type.isBlank()) { showWarn("Missing type", "Please enter the activity type."); return; }
+        if (price == null || price <= 0) { showWarn("Invalid price", "Price must be greater than 0."); return; }
+
         if (destinationId == 0) { showWarn("Missing destination", "Please select a destination."); return; }
         if (dateDebut == null) { showWarn("Missing start date", "Please select a start date and time."); return; }
         if (dateFin == null) { showWarn("Missing end date", "Please select an end date and time."); return; }
@@ -112,18 +142,28 @@ public class AjouterActiviteController {
         // ========= GUIDE ID LOGIC =========
         Integer guideIdToUse = null;
 
-
         if (editMode && activiteToEdit != null) {
             int existing = activiteToEdit.getGuideId();
             guideIdToUse = (existing == 0 ? null : existing);
-        }
-
-        else if (fixedGuideId != null) {
+        } else if (fixedGuideId != null) {
             guideIdToUse = fixedGuideId;
+        } else if (adminMode) {
+            guideIdToUse = null;
         }
 
-        else if (adminMode) {
-            guideIdToUse = null;
+        // ✅ max places logic
+        Integer maxPlacesToUse = null;
+        boolean isGuideActivity = (guideIdToUse != null);
+
+        if (isGuideActivity) {
+            Integer v = (SPmaxPlaces != null) ? SPmaxPlaces.getValue() : null;
+            if (v == null || v <= 0) {
+                showWarn("Missing max places", "Please choose a maximum number of participants.");
+                return;
+            }
+            maxPlacesToUse = v;
+        } else {
+            maxPlacesToUse = null;
         }
 
         // ========= SAVE =========
@@ -143,6 +183,8 @@ public class AjouterActiviteController {
             activiteToEdit.setDateDebut(dateDebut);
             activiteToEdit.setDateFin(dateFin);
 
+            activiteToEdit.setMaxPlaces(maxPlacesToUse);
+
             activiteService.update(activiteToEdit);
 
         } else {
@@ -154,13 +196,14 @@ public class AjouterActiviteController {
             a.setTypeActivite(type);
             a.setDestinationId(destinationId);
 
-
             if (guideIdToUse != null) a.setGuideId(guideIdToUse);
 
             a.setStatus(status);
             a.setDateDebut(dateDebut);
             a.setDateFin(dateFin);
             a.setNoteMoyenne(0);
+
+            a.setMaxPlaces(maxPlacesToUse);
 
             activiteService.add(a);
         }
@@ -200,6 +243,17 @@ public class AjouterActiviteController {
             DPdateFin.setValue(activite.getDateFin().toLocalDate());
             SPheureFin.getValueFactory().setValue(activite.getDateFin().getHour());
             SPminuteFin.getValueFactory().setValue(activite.getDateFin().getMinute());
+        }
+
+        // ✅ keep same visibility logic (admin hide)
+        updateMaxPlacesVisibility();
+
+        // ✅ if editing a guide activity, set value
+        if (SPmaxPlaces != null && activite.getGuideId() != 0) {
+            Integer mp = activite.getMaxPlaces();
+            if (mp != null && mp > 0) {
+                SPmaxPlaces.getValueFactory().setValue(mp);
+            }
         }
     }
 

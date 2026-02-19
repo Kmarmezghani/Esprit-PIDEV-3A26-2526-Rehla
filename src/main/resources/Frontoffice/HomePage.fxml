@@ -135,10 +135,10 @@
                                         <padding>
                                             <Insets top="10.0" />
                                         </padding>
-                                        
+
                                         <!-- Reservation Button -->
-                                        <Button onAction="#frontofficeReservation" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.4), 10, 0, 0, 3);" text="Réservation" />
-                                        
+                                        <Button fx:id="btnAddReservation" onAction="#handleAddReservation" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.4), 10, 0, 0, 3);" text="Book Now" />
+
                                         <!-- Activity Button -->
                                         <Button onAction="#frontofficeActivite" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 15 40; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.4), 10, 0, 0, 3);" text="Activité" />
                                     </HBox>

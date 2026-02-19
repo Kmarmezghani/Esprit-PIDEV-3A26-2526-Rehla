@@ -1,5 +1,6 @@
 package Controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -15,10 +16,11 @@ import services.ActiviteService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class MyActivitiesPageController {
 
-    private static final int CURRENT_USER_ID = 3; // ✅ guide connecté
+    private static final int CURRENT_USER_ID = 5;
 
     @FXML private FlowPane myActivitiesFlowPane;
     @FXML private TextField searchField;
@@ -112,7 +114,6 @@ public class MyActivitiesPageController {
         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 3);
     """);
 
-        // --- Top row: title + delete button
         javafx.scene.layout.HBox top = new javafx.scene.layout.HBox(8);
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
@@ -124,12 +125,11 @@ public class MyActivitiesPageController {
         deleteBtn.setStyle("""
         -fx-background-color: transparent;
         -fx-text-fill: #d32f2f;
-        -fx-font-size: 14;
+        -fx-font-size: 16;
         -fx-cursor: hand;
         -fx-padding: 2 6;
     """);
 
-        // ✅ delete action (stop double click from triggering edit)
         deleteBtn.setOnAction(e -> {
             e.consume();
             confirmAndDelete(a);
@@ -145,7 +145,6 @@ public class MyActivitiesPageController {
 
         card.getChildren().addAll(top, price, type);
 
-
         card.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
                 openEditActivityPopup(a, card);
@@ -154,7 +153,24 @@ public class MyActivitiesPageController {
 
         return card;
     }
+
+    // ✅ SAME CONFIRMATION STYLE AS REVIEW DELETE
+    private boolean confirmDeleteActivity(Activite a) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete activity");
+        confirm.setHeaderText("Are you sure you want to delete your activity?");
+        confirm.setContentText("This action cannot be undone.\n\nActivity: " + (a.getNom() == null ? "" : a.getNom()));
+
+        ButtonType deleteBtn = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirm.getButtonTypes().setAll(deleteBtn, cancelBtn);
+
+        Optional<ButtonType> res = confirm.showAndWait();
+        return res.isPresent() && res.get() == deleteBtn;
+    }
+
     private void confirmAndDelete(Activite a) {
+        // ✅ optional safety: if not yours => refuse
         if (a.getGuideId() != CURRENT_USER_ID) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Not allowed");
@@ -164,29 +180,21 @@ public class MyActivitiesPageController {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete activity");
-        confirm.setHeaderText("Are you sure?");
-        confirm.setContentText("This will permanently delete: " + (a.getNom() == null ? "" : a.getNom()));
+        // ✅ ask confirmation
+        if (!confirmDeleteActivity(a)) return;
 
-        confirm.showAndWait().ifPresent(btn -> {
-            if (btn == ButtonType.OK) {
-                try {
-                    activiteService.delete(a);
-                    loadMyActivities("");
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    Alert err = new Alert(Alert.AlertType.ERROR);
-                    err.setTitle("Error");
-                    err.setHeaderText(null);
-                    err.setContentText("Delete failed.");
-                    err.showAndWait();
-                }
-            }
-        });
+        try {
+            activiteService.delete(a);
+            loadMyActivities("");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Alert err = new Alert(Alert.AlertType.ERROR);
+            err.setTitle("Error");
+            err.setHeaderText(null);
+            err.setContentText("Delete failed.");
+            err.showAndWait();
+        }
     }
-
-
 
     private void openEditActivityPopup(Activite activite, Node anyNodeInScene) {
         try {
@@ -223,7 +231,21 @@ public class MyActivitiesPageController {
 
     @FXML public void goToMyProfile(javafx.event.ActionEvent e) { }
     @FXML public void goToMyPosts(javafx.event.ActionEvent e) { }
-    @FXML public void goToMyReservations(javafx.event.ActionEvent e) { }
+
+    @FXML
+    void goToMyReservations(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML public void goToMyActivities(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/MyActivitiesPage.fxml"); }
 
     @FXML public void handleLogout(javafx.event.ActionEvent e) { }
@@ -253,7 +275,6 @@ public class MyActivitiesPageController {
         throw new IllegalArgumentException("Unknown event source: " + src);
     }
 
-
     private void switchScene(javafx.event.ActionEvent event, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -267,7 +288,6 @@ public class MyActivitiesPageController {
                 stage.getScene().setRoot(root);
             }
 
-            // optional but helps layout after root switch
             root.applyCss();
             root.layout();
 

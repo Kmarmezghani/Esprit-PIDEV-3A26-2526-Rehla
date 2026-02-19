@@ -4,6 +4,7 @@ import models.Review;
 import util.DBConnection;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,13 @@ public class ReviewService implements IService<Review> {
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
             stmt.setInt(1, review.getNote());
             stmt.setString(2, review.getCommentaire());
-            stmt.setDate(3, review.getDateAvis() != null ? Date.valueOf(review.getDateAvis()) : null);
+            if (review.getDateAvis() != null) {
+                stmt.setTimestamp(3, Timestamp.valueOf(review.getDateAvis()));
+            } else {
+                // si DB a DEFAULT CURRENT_TIMESTAMP, tu peux aussi mettre null
+                stmt.setTimestamp(3, null);
+            }
+
             stmt.setInt(4, review.getActiviteId());
             stmt.setInt(5, review.getPersonneId());
             stmt.executeUpdate();
@@ -36,7 +43,13 @@ public class ReviewService implements IService<Review> {
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
             stmt.setInt(1, review.getNote());
             stmt.setString(2, review.getCommentaire());
-            stmt.setDate(3, review.getDateAvis() != null ? Date.valueOf(review.getDateAvis()) : null);
+
+            if (review.getDateAvis() != null) {
+                stmt.setTimestamp(3, Timestamp.valueOf(review.getDateAvis()));
+            } else {
+                stmt.setTimestamp(3, null);
+            }
+
             stmt.setInt(4, review.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -63,8 +76,10 @@ public class ReviewService implements IService<Review> {
                 "FROM avis r " +
                 "JOIN personne p ON r.personne_id = p.id " +
                 "ORDER BY r.dateAvis DESC";
+
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(SQL)) {
+
             while (rs.next()) {
                 Review review = new Review();
                 review.setId(rs.getInt("id"));
@@ -73,7 +88,9 @@ public class ReviewService implements IService<Review> {
                 review.setUserName(rs.getString("userName"));
                 review.setCommentaire(rs.getString("commentaire"));
                 review.setNote(rs.getInt("note"));
-                review.setDateAvis(rs.getDate("dateAvis") != null ? rs.getDate("dateAvis").toLocalDate() : null);
+                Timestamp ts = rs.getTimestamp("dateAvis");
+                review.setDateAvis(ts != null ? ts.toLocalDateTime() : null);
+
                 reviews.add(review);
             }
         } catch (SQLException e) {
@@ -82,7 +99,6 @@ public class ReviewService implements IService<Review> {
         return reviews;
     }
 
-    // Optional helper to get reviews for a specific activity
     public List<Review> getReviewsByActiviteId(int activiteId) {
         List<Review> reviews = new ArrayList<>();
         String SQL = "SELECT r.id, r.activite_id, r.personne_id, CONCAT(p.nom,' ',p.prenom) AS userName, " +
@@ -91,32 +107,40 @@ public class ReviewService implements IService<Review> {
                 "JOIN personne p ON r.personne_id = p.id " +
                 "WHERE r.activite_id = ? " +
                 "ORDER BY r.dateAvis DESC";
+
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
             stmt.setInt(1, activiteId);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                Review review = new Review();
-                review.setId(rs.getInt("id"));
-                review.setActiviteId(rs.getInt("activite_id"));
-                review.setPersonneId(rs.getInt("personne_id"));
-                review.setUserName(rs.getString("userName"));
-                review.setCommentaire(rs.getString("commentaire"));
-                review.setNote(rs.getInt("note"));
-                review.setDateAvis(rs.getDate("dateAvis") != null ? rs.getDate("dateAvis").toLocalDate() : null);
-                reviews.add(review);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Review review = new Review();
+                    review.setId(rs.getInt("id"));
+                    review.setActiviteId(rs.getInt("activite_id"));
+                    review.setPersonneId(rs.getInt("personne_id"));
+                    review.setUserName(rs.getString("userName"));
+                    review.setCommentaire(rs.getString("commentaire"));
+                    review.setNote(rs.getInt("note"));
+
+                    Timestamp ts = rs.getTimestamp("dateAvis");
+                    review.setDateAvis(ts != null ? ts.toLocalDateTime() : null);
+
+                    reviews.add(review);
+                }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return reviews;
     }
+
     public double getAverageNoteByActiviteId(int activiteId) {
         String sql = "SELECT AVG(note) AS avgNote FROM avis WHERE activite_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getDouble("avgNote"); // 0.0 si aucun avis
+                return rs.getDouble("avgNote");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -134,5 +158,4 @@ public class ReviewService implements IService<Review> {
             e.printStackTrace();
         }
     }
-
 }

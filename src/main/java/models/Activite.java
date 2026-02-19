@@ -15,6 +15,7 @@ public class Activite {
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private String status;
+    private Integer maxPlaces;
 
     public Activite() {}
 
@@ -95,4 +96,6 @@ public class Activite {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public Integer getMaxPlaces() { return maxPlaces; }
+    public void setMaxPlaces(Integer maxPlaces) { this.maxPlaces = maxPlaces; }
 }

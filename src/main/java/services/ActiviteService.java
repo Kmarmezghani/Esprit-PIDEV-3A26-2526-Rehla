@@ -4,7 +4,6 @@ import models.Activite;
 import util.DBConnection;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,9 +20,8 @@ public class ActiviteService implements IService<Activite> {
     @Override
     public void add(Activite activite) {
         activite.setNoteMoyenne(0);
-
-        String sql = "INSERT INTO activite (nom, description, prix, typeActivite, noteMoyenne, guide_id, destination_id, date_debut, date_fin, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO activite (nom, description, prix, typeActivite, noteMoyenne, guide_id, destination_id, date_debut, date_fin, status, max_places) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, activite.getNom());
@@ -47,6 +45,10 @@ public class ActiviteService implements IService<Activite> {
             if (activite.getStatus() != null) ps.setString(10, activite.getStatus());
             else ps.setNull(10, Types.VARCHAR);
 
+            Integer mp = activite.getMaxPlaces();
+            if (mp != null && mp > 0) ps.setInt(11, mp);
+            else ps.setNull(11, Types.INTEGER);
+
             ps.executeUpdate();
             System.out.println("Activite added successfully!");
         } catch (SQLException e) {
@@ -56,7 +58,7 @@ public class ActiviteService implements IService<Activite> {
 
     @Override
     public void update(Activite activite) {
-        String sql = "UPDATE activite SET nom=?, description=?, prix=?, typeActivite=?, noteMoyenne=?, guide_id=?, destination_id=?, date_debut=?, date_fin=?, status=? " +
+        String sql = "UPDATE activite SET nom=?, description=?, prix=?, typeActivite=?, noteMoyenne=?, guide_id=?, destination_id=?, date_debut=?, date_fin=?, status=?, max_places=? " +
                 "WHERE id=?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -81,7 +83,11 @@ public class ActiviteService implements IService<Activite> {
             if (activite.getStatus() != null) ps.setString(10, activite.getStatus());
             else ps.setNull(10, Types.VARCHAR);
 
-            ps.setInt(11, activite.getId());
+            Integer mp = activite.getMaxPlaces();
+            if (mp != null && mp > 0) ps.setInt(11, mp);
+            else ps.setNull(11, Types.INTEGER);
+
+            ps.setInt(12, activite.getId());
 
             ps.executeUpdate();
             System.out.println("Activite updated successfully!");
@@ -134,6 +140,9 @@ public class ActiviteService implements IService<Activite> {
 
                 a.setStatus(rs.getString("status"));
 
+                int mp = rs.getInt("max_places");
+                a.setMaxPlaces(rs.wasNull() ? null : mp);
+
                 activites.add(a);
             }
         } catch (SQLException ex) {
@@ -178,6 +187,7 @@ public class ActiviteService implements IService<Activite> {
 
         return nomComplet;
     }
+
     public Map<String, Integer> getDestinationsMap() {
         Map<String, Integer> map = new LinkedHashMap<>();
         String sql = "SELECT id, nom FROM destination ORDER BY nom";
@@ -215,17 +225,15 @@ public class ActiviteService implements IService<Activite> {
         }
         return "";
     }
-    public List<Activite> getByGuideId(int guideId) {
 
+    public List<Activite> getByGuideId(int guideId) {
         String sql = "SELECT * FROM activite WHERE guide_id = ?";
         List<Activite> activites = new ArrayList<>();
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, guideId);
 
             try (ResultSet rs = ps.executeQuery()) {
-
                 while (rs.next()) {
                     Activite a = new Activite();
                     a.setId(rs.getInt("id"));
@@ -249,18 +257,22 @@ public class ActiviteService implements IService<Activite> {
 
                     a.setStatus(rs.getString("status"));
 
+                    // ✅ lire max_places
+                    int mp = rs.getInt("max_places");
+                    a.setMaxPlaces(rs.wasNull() ? null : mp);
+
                     activites.add(a);
                 }
             }
-
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
 
         return activites;
     }
-    public List<Activite> getDisponibles() {
 
+    public List<Activite> getDisponibles() {
+        markExpiredActivitiesAsUnavailable();
         String sql = "SELECT * FROM activite WHERE status = 'DISPONIBLE'";
         List<Activite> activites = new ArrayList<>();
 
@@ -290,6 +302,10 @@ public class ActiviteService implements IService<Activite> {
 
                 a.setStatus(rs.getString("status"));
 
+                // ✅ lire max_places
+                int mp = rs.getInt("max_places");
+                a.setMaxPlaces(rs.wasNull() ? null : mp);
+
                 activites.add(a);
             }
 
@@ -300,6 +316,19 @@ public class ActiviteService implements IService<Activite> {
         return activites;
     }
 
+    public void markExpiredActivitiesAsUnavailable() {
+        String sql = """
+        UPDATE activite
+        SET status = 'INDISPONIBLE'
+        WHERE date_fin IS NOT NULL
+          AND date_fin <= NOW()
+          AND status <> 'INDISPONIBLE'
+    """;
 
-
+        try (Statement st = conn.createStatement()) {
+            st.executeUpdate(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }

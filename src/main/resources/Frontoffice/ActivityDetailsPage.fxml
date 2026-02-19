@@ -7,7 +7,6 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -17,10 +16,13 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" stylesheets="@css/reviews.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ActivityDetailsController">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" stylesheets="@css/reviews.css"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.ActivityDetailsController">
 
     <children>
-        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
             <!-- TOP NAV BAR -->
             <top>
@@ -75,13 +77,17 @@
                                 <padding><Insets bottom="28" left="40" right="40" top="24" /></padding>
 
                                 <!-- Reviews Card -->
-                                <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;              -fx-border-color: #eef2ff; -fx-border-radius: 18;              -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 4);" styleClass="card">
+                                <VBox spacing="16"
+                                      style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;
+                                      -fx-border-color: #eef2ff; -fx-border-radius: 18;
+                                      -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 4);"
+                                      styleClass="card">
 
-                                <HBox alignment="CENTER_LEFT">
-                                    <Label style="-fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827;" styleClass="h2" text="Reviews" />
-                                </HBox>
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label style="-fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827;" styleClass="h2" text="Reviews" />
+                                    </HBox>
 
-                                    <!-- Summary row (Google Play style) -->
+                                    <!-- Summary row -->
                                     <HBox alignment="CENTER_LEFT" spacing="30" HBox.hgrow="ALWAYS">
 
                                         <!-- Left: Average block -->
@@ -91,7 +97,6 @@
                                             <Label fx:id="LBLcountText" styleClass="muted" text="35K ratings" />
                                         </VBox>
 
-                                        <!-- Vertical divider -->
                                         <Separator orientation="VERTICAL" prefHeight="110" styleClass="vSep" />
 
                                         <!-- Right: Distribution bars -->
@@ -125,12 +130,9 @@
                                         </VBox>
                                     </HBox>
 
-
-
-
                                     <Separator />
 
-                                    <!-- Reviews list (beautiful cards via cellFactory) -->
+                                    <!-- Reviews list -->
                                     <ListView fx:id="reviewsList" prefHeight="260" styleClass="reviewsList" />
 
                                     <HBox alignment="CENTER_LEFT">
@@ -143,9 +145,10 @@
                                     <VBox spacing="10">
                                         <Label styleClass="h3" text="Write a review" />
 
+                                        <!-- ✅ CHANGED: Spinner -> stars -->
                                         <HBox alignment="CENTER_LEFT" spacing="10">
                                             <Label styleClass="muted" text="Rating:" />
-                                            <Spinner fx:id="SPreviewRating" prefWidth="120" />
+                                            <HBox fx:id="starBox" spacing="6" alignment="CENTER_LEFT"/>
                                         </HBox>
 
                                         <TextArea fx:id="TAreview" prefRowCount="5" promptText="Share your experience..." styleClass="reviewArea" wrapText="true" />

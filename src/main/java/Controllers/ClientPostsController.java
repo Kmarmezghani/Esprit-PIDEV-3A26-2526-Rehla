@@ -347,12 +347,7 @@ public class ClientPostsController {
     }
 
 
-    private void handleUpdatePost() {
-        System.out.println("Update post...");
 
-
-
-    }
     private void handleDeletePost(Post post) {
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -396,7 +391,7 @@ public class ClientPostsController {
         MenuItem deleteItem = new MenuItem("Supprimer", deleteIcon);
 
         // ACTION UPDATE
-        updateItem.setOnAction(e -> handleUpdatePost());
+        updateItem.setOnAction(e -> handleUpdatePost(post));
 
         // ACTION DELETE
         deleteItem.setOnAction(e -> handleDeletePost(post));
@@ -489,6 +484,40 @@ public class ClientPostsController {
             } catch (InterruptedException ignored) {}
             javafx.application.Platform.runLater(() -> root.getChildren().remove(toast));
         }).start();
+    }
+    private void handleUpdatePost(Post post) {
+        try {
+            // Charger le FXML du popup
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UpdatePostPopup.fxml"));
+            Parent popup = loader.load();
+
+            // Récupérer le controller pour lui passer le post à éditer
+            UpdatePostPopupController controller = loader.getController();
+            controller.setPost(post); // méthode à créer dans le controller pour initialiser les champs
+
+            // 🔥 Blur sur le blog
+            GaussianBlur blur = new GaussianBlur(20);
+            mainContent.setEffect(blur);
+
+            // 🔥 Fond sombre
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+
+            overlay.getChildren().add(popup);
+            StackPane.setAlignment(popup, Pos.CENTER);
+
+            root.getChildren().add(overlay);
+
+            // 🔥 Fermeture
+            controller.setOnClose(() -> {
+                mainContent.setEffect(null);
+                root.getChildren().remove(overlay);
+                loadPosts(); // rafraîchir la liste après modification
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

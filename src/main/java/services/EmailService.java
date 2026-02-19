@@ -6,11 +6,14 @@ import jakarta.mail.internet.MimeMessage;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class EmailService {
 
-    private static final String FROM_EMAIL = "rehla.noreply@gmail.com";
-    private static final String APP_PASSWORD = "rvre dpgg ulwo dpfq";
+    private static final Dotenv dotenv = Dotenv.load();
+
+    private static final String FROM_EMAIL = dotenv.get("EMAIL_USERNAME");
+    private static final String APP_PASSWORD = dotenv.get("EMAIL_APP_PASSWORD");
     private static final String FROM_NAME = "Rehla";
 
     public void sendBookingConfirmation(String toEmail,

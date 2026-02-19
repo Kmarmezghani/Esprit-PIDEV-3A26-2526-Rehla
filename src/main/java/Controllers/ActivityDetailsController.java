@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -50,7 +51,7 @@ public class ActivityDetailsController {
 
     @FXML private ListView<Review> reviewsList;
 
-    // ✅ CHANGED: Spinner removed, stars box added
+    // stars box
     @FXML private HBox starBox;
 
     @FXML private TextArea TAreview;
@@ -65,7 +66,7 @@ public class ActivityDetailsController {
     // ===== Editing state =====
     private Review editingReview = null;
 
-    // ✅ CHANGED: star rating state
+    // star rating state
     private int selectedRating = 5;
     private int hoverRating = 0;
 
@@ -74,7 +75,6 @@ public class ActivityDetailsController {
 
         BTNdeleteMyReview.setDisable(true);
 
-        // ✅ CHANGED: init stars
         initStarRating();
 
         reviewsList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
@@ -178,7 +178,7 @@ public class ActivityDetailsController {
         return sb.toString();
     }
 
-    // ✅ CHANGED: Stars rating UI
+    // Stars rating UI
     private void initStarRating() {
         if (starBox == null) return;
 
@@ -218,7 +218,7 @@ public class ActivityDetailsController {
         }
     }
 
-    // ===== Start editing =====
+    // Start editing
     private void startEdit(Review r) {
         if (r == null) return;
         if (r.getPersonneId() != CURRENT_USER_ID) return;
@@ -277,7 +277,7 @@ public class ActivityDetailsController {
         loadReviewsAndRating();
     }
 
-    // ✅ NEW: confirmation dialog
+    // confirmation dialog for delete
     private boolean confirmDelete() {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete review");
@@ -304,7 +304,6 @@ public class ActivityDetailsController {
             return;
         }
 
-        // ✅ ADDED: ask confirmation
         if (!confirmDelete()) return;
 
         if (editingReview != null && editingReview.getId() == selected.getId()) {
@@ -316,25 +315,55 @@ public class ActivityDetailsController {
         loadReviewsAndRating();
     }
 
+    // =========================
+    // NAVIGATION (KEEP FULLSCREEN)
+    // =========================
     @FXML
-    public void backToActivities(javafx.event.ActionEvent event) {
-        switchScene((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
+    public void backToActivities(ActionEvent event) {
+        switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
     }
 
-    private void switchScene(Node anyNodeOnScene, String fxmlPath) {
+    @FXML
+    public void goToHome(ActionEvent event) {
+        switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/HomePage.fxml");
+    }
+
+    @FXML
+    public void goToDestinations(ActionEvent event) {
+        // TODO
+    }
+
+    @FXML
+    public void goToPosts(ActionEvent event) {
+        switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/PostsPage.fxml");
+    }
+
+    @FXML
+    public void goToactivities(ActionEvent event) {
+        switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
+    }
+
+    // ✅ THIS IS THE FIX
+    private void switchSceneKeepSize(Node anyNodeOnScene, String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
             Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
-            stage.setScene(new Scene(root));
+
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
+            } else {
+                stage.getScene().setRoot(root); // ✅ keeps fullscreen/size
+            }
+
+            root.applyCss();
+            root.layout();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    @FXML public void goToHome(javafx.event.ActionEvent event) { switchScene((Node) event.getSource(), "/Frontoffice/HomePage.fxml"); }
-    @FXML public void goToDestinations(javafx.event.ActionEvent event) { }
-    @FXML public void goToPosts(javafx.event.ActionEvent event) { switchScene((Node) event.getSource(), "/Frontoffice/PostsPage.fxml"); }
-    @FXML public void goToactivities(javafx.event.ActionEvent event) { switchScene((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml"); }
 
     private void showWarn(String title, String msg) {
         Alert alert = new Alert(Alert.AlertType.WARNING);

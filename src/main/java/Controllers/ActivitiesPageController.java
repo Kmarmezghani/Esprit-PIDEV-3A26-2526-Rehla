@@ -273,10 +273,10 @@ public class ActivitiesPageController {
                                 }
                             }
 
-                            // ✅ DB booking
+
                             inscriptionService.book(CURRENT_USER_ID, a.getId(), a.getPrix());
 
-                            // ✅ SEND EMAIL (real user email from DB)
+
                             String userEmail = personneService.getEmailById(CURRENT_USER_ID);
                             String userName = personneService.getFullNameById(CURRENT_USER_ID);
 

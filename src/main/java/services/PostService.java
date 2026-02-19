@@ -81,7 +81,10 @@ public class PostService implements IService<Post> {
     public List<Post> getAll() {
 
         List<Post> posts = new ArrayList<>();
-        String sql = "SELECT * FROM post";
+
+        String sql = "SELECT p.*, pe.nom, pe.prenom " +
+                "FROM post p " +
+                "JOIN personne pe ON p.personne_id = pe.id";
 
         try {
             Statement st = conn.createStatement();
@@ -91,6 +94,8 @@ public class PostService implements IService<Post> {
 
                 Personne auteur = new Personne();
                 auteur.setId(rs.getInt("personne_id"));
+                auteur.setNom(rs.getString("nom"));
+                auteur.setPrenom(rs.getString("prenom"));
 
                 Post post = new Post(
                         rs.getInt("id"),

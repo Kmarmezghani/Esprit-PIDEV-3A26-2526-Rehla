@@ -19,11 +19,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image  ;
 
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import models.Personne;
 import models.Post;
 import services.PostService;
 
 import java.io.File;
+import java.time.LocalDate;
 
 import javafx.collections.ListChangeListener;
 
@@ -37,7 +40,8 @@ public class ClientPostsController {
     @FXML
     private StackPane root;   // ajoute fx:id="root" au StackPane
 
-
+    @FXML
+    private TextField txtNewPost;
 
 
 
@@ -57,6 +61,8 @@ public class ClientPostsController {
 
     private Image starEmpty;
     private Image starFull;
+
+    private File selectedImageFile;
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
 
     @FXML
@@ -117,9 +123,14 @@ public class ClientPostsController {
         avatar.getStyleClass().add("avatar");
 
         VBox userInfo = new VBox(2);
+        System.out.println("auteeeeeee" +post.getAuteur().getPrenom());
 
         // Nom auteur
-        Label name = new Label("John Doe");
+        Label name = new Label(
+                post.getAuteur().getPrenom() + " " +
+                        post.getAuteur().getNom()
+        );
+
         name.getStyleClass().add("name");
 
         // Date + Public (statique)
@@ -342,7 +353,7 @@ public class ClientPostsController {
 
 
     }
-    private void handleDeletePost() {
+    private void handleDeletePost(Post post) {
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
@@ -350,34 +361,135 @@ public class ClientPostsController {
         confirm.setContentText("Cette action est irréversible.");
 
         confirm.showAndWait().ifPresent(response -> {
+
             if (response == ButtonType.OK) {
-                System.out.println("Post supprimé !");
-                // ici tu mettras la suppression réelle
+
+                PostService postService = new PostService();
+
+                // 🔥 Suppression en base
+                postService.delete(post);
+
+                // 🔥 Suppression de la liste observable
+                postsList.remove(post);
+
+                System.out.println("Post supprimé avec succès !");
             }
         });
     }
-
-
     private void showMenu(Button btn, Post post) {
 
         ContextMenu menu = new ContextMenu();
 
-        MenuItem updateItem = new MenuItem("✏ Modifier");
-        MenuItem deleteItem = new MenuItem("🗑 Supprimer");
+        ImageView editIcon = new ImageView(
+                new Image(getClass().getResourceAsStream("/icons/edit2.png"))
+        );
+        editIcon.setFitWidth(16);
+        editIcon.setFitHeight(16);
+
+        ImageView deleteIcon = new ImageView(
+                new Image(getClass().getResourceAsStream("/icons/delete.png"))
+        );
+        deleteIcon.setFitWidth(16);
+        deleteIcon.setFitHeight(16);
+
+        MenuItem updateItem = new MenuItem("Modifier", editIcon);
+        MenuItem deleteItem = new MenuItem("Supprimer", deleteIcon);
 
         // ACTION UPDATE
         updateItem.setOnAction(e -> handleUpdatePost());
 
         // ACTION DELETE
-        deleteItem.setOnAction(e -> handleDeletePost());
+        deleteItem.setOnAction(e -> handleDeletePost(post));
 
         menu.getItems().addAll(updateItem, deleteItem);
 
         menu.show(btn, Side.BOTTOM, 0, 5);
     }
 
+    @FXML
+    private void handleChooseImage(ActionEvent event) {
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir une image");
+
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        Stage stage = (Stage) root.getScene().getWindow();
+        selectedImageFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedImageFile != null) {
+            System.out.println("Image sélectionnée : " + selectedImageFile.getAbsolutePath());
+            showToast("Votre image a été sélectionnée !");
+        }
+    }
+    @FXML
+    private void handleAddPost() {
+
+        String contenu = txtNewPost.getText();
+
+        if (contenu == null || contenu.isBlank()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Contenu vide !");
+            alert.setContentText("Veuillez écrire quelque chose.");
+            alert.show();
+            return;
+        }
+
+        Personne auteur = new Personne();
+        auteur.setId(1);
+
+        String imagePath = null;
+
+        if (selectedImageFile != null) {
+            imagePath = selectedImageFile.getAbsolutePath();
+        }
+
+        Post newPost = new Post(
+                0,
+                "",
+                contenu,
+                LocalDate.now(),
+                0,
+                auteur,
+                imagePath
+        );
+
+        PostService postService = new PostService();
+        postService.add(newPost);
 
 
+        loadPosts();
+
+        txtNewPost.clear();
+        selectedImageFile = null;
+
+        System.out.println("Post ajouté avec image !");
+        showToast("Publication publiée !");
+    }
+    private void showToast(String message) {
+        Label toast = new Label(message);
+        toast.getStyleClass().add("toast");
+        toast.setStyle(
+                "-fx-background-color: rgba(0,0,0,0.7);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-padding: 10px 20px;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-font-size: 14px;"
+        );
+
+        root.getChildren().add(toast);
+        StackPane.setAlignment(toast, Pos.TOP_CENTER);
+
+        // Faire disparaître après 2 secondes
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ignored) {}
+            javafx.application.Platform.runLater(() -> root.getChildren().remove(toast));
+        }).start();
+    }
 }
 
 

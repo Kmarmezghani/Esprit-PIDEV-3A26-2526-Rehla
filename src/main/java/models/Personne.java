@@ -36,7 +36,10 @@ public class Personne {
         this.favoris = favoris;
     }
 
-
+    @Override
+    public String toString() {
+        return prenom + " " + nom;
+    }
 
     public int getId() {
         return id;

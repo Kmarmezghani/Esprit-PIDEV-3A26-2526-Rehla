@@ -156,11 +156,13 @@
                         <HBox spacing="10" alignment="CENTER_LEFT">
                             <ImageView fx:id="imgMe2" fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="avatar"/>
                             <TextField fx:id="txtNewPost" promptText="Écrivez quelque chose de fort..." styleClass="composer-input"/>
-                            <Button text="Publier" styleClass="btn-primary"/>
+                            <Button text="Publier"
+                                    styleClass="btn-primary"
+                                    onAction="#handleAddPost"/>
                         </HBox>
 
                         <HBox spacing="10">
-                            <Button text="🖼 Image" styleClass="btn-soft" />
+                            <Button text="🖼 Image" styleClass="btn-soft" onAction="#handleChooseImage" />
                             <Button text="🎥 Vidéo" styleClass="btn-soft"/>
                             <Button text="📍 Lieu" styleClass="btn-soft"/>
                             <Button text="🧠 Sondage" styleClass="btn-soft"/>

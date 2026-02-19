@@ -387,3 +387,22 @@
 .menu-item:hover {
     -fx-background-color: #2c2c40;
 }
+.scroll {
+    -fx-background-color: transparent;
+}
+
+.scroll .viewport {
+    -fx-background-color: transparent;
+}
+.feed {
+    -fx-padding: 20 0 40 0;
+}
+
+
+.right {
+    -fx-padding: 20 15 20 0;
+}
+
+.dock {
+    -fx-padding: 20 0 20 15;
+}

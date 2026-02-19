@@ -57,7 +57,13 @@
 
     <!-- LEFT (mini dock) -->
     <left>
-        <VBox spacing="10" styleClass="dock">
+
+            <VBox spacing="10"
+                  styleClass="dock"
+                  prefWidth="320"
+                  minWidth="350"
+                  maxWidth="350">
+
             <Button text="🏠" styleClass="dock-btn" />
             <Button text="⭐" styleClass="dock-btn" />
             <Button text="👥" styleClass="dock-btn" />
@@ -69,7 +75,13 @@
 
     <!-- RIGHT (insights) -->
     <right>
-        <VBox spacing="14" styleClass="right" prefWidth="250">
+
+            <VBox spacing="14"
+                  styleClass="right"
+                  prefWidth="320"
+                  minWidth="320"
+                  maxWidth="320">
+
             <VBox styleClass="glass" spacing="10">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label text="📌" styleClass="card-emoji"/>
@@ -128,9 +140,16 @@
 
     <!-- CENTER FEED -->
     <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll" prefWidth="800">
-            <content>
-                <VBox spacing="14" styleClass="feed">
+        <ScrollPane fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    styleClass="scroll">
+
+
+        <content>
+            <VBox spacing="14"
+                  styleClass="feed"
+                  maxWidth="720">
 
                     <!-- COMPOSER (creative) -->
                     <VBox styleClass="glass composer" spacing="10">
@@ -153,107 +172,8 @@
                     <!-- container dynamique -->
                     <VBox fx:id="postsContainer" spacing="14"/>
 
-                    <!-- EXEMPLE POST CARD -->
-                    <VBox styleClass="post glass" spacing="10">
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <ImageView fx:id="imgAvatar1" fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="avatar"/>
-                            <VBox spacing="0">
-                                <HBox spacing="8" alignment="CENTER_LEFT">
-                                    <Label text="John Doe" styleClass="name"/>
-                                    <Label text="•" styleClass="muted"/>
-                                    <Label text="14 Feb • Public" styleClass="muted"/>
-                                </HBox>
-                                <HBox spacing="6" alignment="CENTER_LEFT">
-                                    <Label text="#Design" styleClass="tag"/>
-                                    <Label text="#JavaFX" styleClass="tag"/>
-                                    <Label text="🔥" />
-                                    <Label text="Tendance" styleClass="badge"/>
-                                </HBox>
-                            </VBox>
-
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="⋯"
-                                    styleClass="btn-icon"
-                                    onAction="#handlePostOptions"/>
-
-                        </HBox>
-
-                        <Label text="Une UI plus vivante: dégradés, glassmorphism, badges, chips et hover subtil."
-                               wrapText="true" styleClass="text"/>
-
-                        <StackPane styleClass="media">
-                            <ImageView fx:id="postImage1" fitWidth="680" fitHeight="320" preserveRatio="true" styleClass="post-img"/>
-                            <HBox alignment="TOP_RIGHT" styleClass="media-overlay">
-                                <Label text="⏱ 1 min" styleClass="pill"/>
-                            </HBox>
-                        </StackPane>
-                        <HBox spacing="18" alignment="CENTER_LEFT">
-
-                            <!-- LIKE -->
-                            <HBox spacing="6" alignment="CENTER_LEFT">
-                                <Button fx:id="btnLike"
-                                        onAction="#handleLike"
-                                        styleClass="like-btn">
-
-                                    <graphic>
-                                        <ImageView fx:id="likeIcon"
-                                                   fitWidth="25"
-                                                   fitHeight="25"
-                                                   preserveRatio="true"/>
-                                    </graphic>
-                                </Button>
-
-                                <Label fx:id="lblLikes"
-                                       text="3"
-                                       styleClass="muted"/>
-                            </HBox>
 
 
-                            <!-- COMMENT -->
-                            <HBox spacing="6" alignment="CENTER_LEFT">
-                                <Button fx:id="btnComment"
-                                        onAction="#handleComment"
-                                        style="-fx-background-color: transparent;">
-                                    <graphic>
-                                        <ImageView fx:id="commentIcon"
-                                                   fitWidth="21"
-                                                   fitHeight="21"
-                                                   preserveRatio="true"/>
-                                    </graphic>
-                                </Button>
-
-                                <Label fx:id="lblComments"
-                                       text="3"
-                                       styleClass="muted"/>
-                            </HBox>
-
-
-                            <!-- FAVORI -->
-
-                            <HBox spacing="6" alignment="CENTER_LEFT">
-                                <Button fx:id="btnStar"
-                                        onAction="#handleStar"
-                                        style="-fx-background-color: transparent;">
-                                    <graphic>
-                                        <ImageView fx:id="starIcon"
-                                                   fitWidth="18"
-                                                   fitHeight="18"
-                                                   preserveRatio="true"/>
-                                    </graphic>
-                                </Button>
-
-
-                            </HBox>
-
-
-                            <Region HBox.hgrow="ALWAYS"/>
-
-                            <Label text="Vue par 128 personnes"
-                                   styleClass="muted"/>
-
-                        </HBox>
-
-                    </VBox>
 
                 </VBox>
             </content>

@@ -32,6 +32,9 @@ public class Post {
 
     }
 
+    public Post(String yosrAmamou, String s, String s1) {
+    }
+
     public int getId() {
         return id;
     }

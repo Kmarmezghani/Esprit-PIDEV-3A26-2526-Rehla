@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<?import javafx.scene.shape.Circle?>
+<BorderPane fx:id="root"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.BlogProfileController">
+
+    <!-- ====== BARRE HAUTE (HEADER) ====== -->
+    <top>
+        <HBox spacing="20" alignment="CENTER_LEFT"
+              style="-fx-background-color: linear-gradient(to right, #a7a3ec, #3B82F6, #06B6D4);
+             -fx-padding: 10 25;
+             -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.5), 20, 0.4, 0, 4);">
+
+        <!-- Logo / Titre du site -->
+            <Label text="MyBlogSphere"
+                   style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Champ de recherche -->
+            <TextField fx:id="searchField"
+                       promptText="Rechercher un blog, un auteur..."
+                       style="-fx-background-radius: 20; -fx-background-color: rgba(255,255,255,0.15);
+                              -fx-text-fill: white; -fx-prompt-text-fill: #E0E0E0;
+                              -fx-border-color: rgba(255,255,255,0.3); -fx-border-radius: 20;
+                              -fx-border-width: 1; -fx-padding: 4 12;"/>
+            <!-- Notifications -->
+            <Button text="🔔"
+                    style="-fx-font-size: 18px; -fx-background-color: transparent;
+                           -fx-text-fill: white; -fx-cursor: hand;"/>
+            <!-- Profil connecté -->
+            <HBox spacing="8" alignment="CENTER_RIGHT">
+                <ImageView fx:id="currentUserAvatar" fitHeight="32" fitWidth="32"
+                           style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8,0,0,1);
+                                   -fx-background-radius: 16; -fx-border-radius: 16;"/>
+                <Label fx:id="currentUserName"
+                       text="Vous"
+                       style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- ====== CONTENU PRINCIPAL ====== -->
+    <center>
+        <BorderPane>
+
+            <!-- ====== COUVERTURE + INFOS PROFIL ====== -->
+            <top>
+                <VBox spacing="10">
+
+
+                    <!-- Bloc profil -->
+                    <HBox spacing="20" style="-fx-padding: 0 28 15 28;">
+                        <!-- Avatar + boutons principaux -->
+                        <VBox spacing="10">
+                            <StackPane>
+                                <ImageView fx:id="profileAvatar"
+                                           fitWidth="120" fitHeight="120"
+                                           style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 12,0,0,3);
+                                                   -fx-border-color: white; -fx-border-width: 3;
+                                                   -fx-border-radius: 60; -fx-background-radius: 60;"/>
+                                <Circle radius="60"
+                                        style="-fx-fill: transparent; -fx-stroke: rgba(255,255,255,0.8);
+                                               -fx-stroke-width: 3;"/>
+                            </StackPane>
+
+                            <HBox spacing="8">
+                                <Button fx:id="followButton" text="S'abonner"
+                                        style="-fx-background-color: #0e8bdc; -fx-text-fill: white;
+                                               -fx-font-weight: bold; -fx-background-radius: 20;
+                                               -fx-padding: 6 18; -fx-cursor: hand;"/>
+                                <Button text="Message"
+                                        style="-fx-background-color: #EEEEEE; -fx-text-fill: #424242;
+                                               -fx-background-radius: 20; -fx-padding: 6 18;
+                                               -fx-cursor: hand;"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Infos principales -->
+                        <VBox spacing="8" VBox.vgrow="NEVER">
+                            <Label fx:id="profileName"
+                                   text="Yosr Amamou"
+                                   style="-fx-font-size: 52px;
+                  -fx-font-weight: bold;
+                  -fx-text-fill: #ffffff;
+                  -fx-letter-spacing: 1.5px;"/>
+
+                            <Label fx:id="profileHeadline"
+                                   text="Développeuse Full-Stack • Passionnée de tech, IA écriture"
+                                   style="-fx-text-fill: #eeeeee;
+                  -fx-font-size: 18px;"/>
+
+                            <!-- Stats -->
+                            <HBox spacing="30" style="-fx-padding: 8 0 0 0;">
+                                <VBox alignment="CENTER">
+                                    <Label text="Articles"
+                                           style="-fx-text-fill: #757575; -fx-font-size: 11px;"/>
+                                    <Label fx:id="postsCountLabel"
+                                           text="18"
+                                           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                                </VBox>
+                                <VBox alignment="CENTER">
+                                    <Label text="Abonnés"
+                                           style="-fx-text-fill: #757575; -fx-font-size: 11px;"/>
+                                    <Label fx:id="followersCountLabel"
+                                           text="1.2K"
+                                           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                                </VBox>
+                                <VBox alignment="CENTER">
+                                    <Label text="Favoris"
+                                           style="-fx-text-fill: #757575; -fx-font-size: 11px;"/>
+                                    <Label fx:id="favoritesCountLabel"
+                                           text="87"
+                                           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <!-- Boutons actions rapides -->
+                        <VBox spacing="8" alignment="CENTER_RIGHT">
+                            <Button text="✏ Modifier le profil"
+                                    style="-fx-background-radius: 20; -fx-background-color: #E3F2FD;
+                                           -fx-text-fill: #1E88E5; -fx-font-weight: bold;
+                                           -fx-padding: 6 18; -fx-cursor: hand;"/>
+                            <Button text="⚙ Paramètres"
+                                    style="-fx-background-radius: 20; -fx-background-color: #F5F5F5;
+                                           -fx-text-fill: #424242; -fx-padding: 4 10; -fx-cursor: hand;"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Barre d’onglets -->
+                    <HBox spacing="0" style="-fx-padding: 0 28 0 28;
+                                              -fx-border-color: #E0E0E0 transparent #E0E0E0 transparent;
+                                              -fx-border-width: 1 0 1 0;">
+                        <ToggleButton fx:id="tabPosts" text="Articles"
+                                      selected="true"
+                                      style="-fx-background-color: transparent;
+                                             -fx-text-fill: #1E88E5; -fx-font-size: 13px;
+                                             -fx-font-weight: bold; -fx-padding: 10 25;
+                                             -fx-border-color: transparent transparent #1E88E5 transparent;
+                                             -fx-border-width: 0 0 3 0;"/>
+                        <ToggleButton fx:id="tabFavorites" text="Favoris"
+                                      style="-fx-background-color: transparent;
+                                             -fx-text-fill: #616161; -fx-font-size: 13px;
+                                             -fx-padding: 10 25; -fx-border-width: 0;"/>
+                        <ToggleButton fx:id="tabAbout" text="À propos"
+                                      style="-fx-background-color: transparent;
+                                             -fx-text-fill: #616161; -fx-font-size: 13px;
+                                             -fx-padding: 10 25; -fx-border-width: 0;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="➕ Nouveau blog"
+                                style="-fx-background-radius: 20; -fx-background-color: #1E88E5;
+                                       -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 18;
+                                       -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+            </top>
+
+            <!-- ====== CENTRE : COLONNE GAUCHE (INFO) + COLONNE DROITE (POSTS) ====== -->
+            <center>
+                <HBox spacing="16" style="-fx-padding: 16 28 20 28;
+                                          -fx-background-color: linear-gradient(to bottom,#FAFAFA,#E3F2FD);">
+
+                    <!-- ====== COLONNE GAUCHE : INFOS + TAGS ====== -->
+                    <VBox spacing="12" prefWidth="260">
+
+                        <!-- Carte infos personnelles -->
+                        <VBox spacing="6"
+                              style="-fx-background-color: white; -fx-background-radius: 10;
+                                     -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10,0,0,2);">
+                            <Label text="À propos"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <Separator/>
+                            <Label text="💻 Ingénieure en Technologies de l'Information"
+                                   wrapText="true"
+                                   style="-fx-text-fill: #424242; -fx-font-size: 12px;"/>
+                            <Label text="📍 La Soukra, Tunisie"
+                                   style="-fx-text-fill: #424242; -fx-font-size: 12px;"/>
+                            <Label text="🎓 ISET Charguia"
+                                   style="-fx-text-fill: #424242; -fx-font-size: 12px;"/>
+                            <Label text="✨ Passion : IA, Cloud, blogging photographie"
+                                   wrapText="true"
+                                   style="-fx-text-fill: #424242; -fx-font-size: 12px;"/>
+                        </VBox>
+
+                        <!-- Carte tags / catégories -->
+                        <VBox spacing="8"
+                              style="-fx-background-color: white; -fx-background-radius: 10;
+                                     -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10,0,0,2);">
+                            <Label text="Centres d'intérêt"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <FlowPane hgap="6" vgap="6">
+                                <Label text="#JavaFX"
+                                       style="-fx-background-color: #E3F2FD; -fx-background-radius: 12;
+                                              -fx-padding: 3 10; -fx-text-fill: #1E88E5; -fx-font-size: 11px;"/>
+                                <Label text="#BackEnd"
+                                       style="-fx-background-color: #FFF3E0; -fx-background-radius: 12;
+                                              -fx-padding: 3 10; -fx-text-fill: #FB8C00; -fx-font-size: 11px;"/>
+                                <Label text="#IA"
+                                       style="-fx-background-color: #F3E5F5; -fx-background-radius: 12;
+                                              -fx-padding: 3 10; -fx-text-fill: #8E24AA; -fx-font-size: 11px;"/>
+                                <Label text="#DevOps"
+                                       style="-fx-background-color: #E8F5E9; -fx-background-radius: 12;
+                                              -fx-padding: 3 10; -fx-text-fill: #43A047; -fx-font-size: 11px;"/>
+                                <Label text="#Blogging"
+                                       style="-fx-background-color: #FFEBEE; -fx-background-radius: 12;
+                                              -fx-padding: 3 10; -fx-text-fill: #E53935; -fx-font-size: 11px;"/>
+                            </FlowPane>
+                        </VBox>
+
+                        <!-- Carte blogs suivis -->
+                        <VBox spacing="8"
+                              style="-fx-background-color: white; -fx-background-radius: 10;
+                                     -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10,0,0,2);">
+                            <Label text="Blogs que vous suivez"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <VBox spacing="6">
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Circle radius="12" style="-fx-fill: #1E88E5;"/>
+                                    <Label text="Tech Horizon" style="-fx-font-size: 12px;"/>
+                                </HBox>
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Circle radius="12" style="-fx-fill: #8E24AA;"/>
+                                    <Label text="Deep Learning Café" style="-fx-font-size: 12px;"/>
+                                </HBox>
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Circle radius="12" style="-fx-fill: #FB8C00;"/>
+                                    <Label text="Cloud Stories" style="-fx-font-size: 12px;"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </VBox>
+
+                    <!-- ====== COLONNE DROITE : CRÉER + FEED ====== -->
+                    <VBox spacing="12" HBox.hgrow="ALWAYS">
+
+                        <!-- Carte créer un nouvel article -->
+                        <VBox spacing="8"
+                              style="-fx-background-color: white; -fx-background-radius: 10;
+                                     -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 12,0,0,2);">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <ImageView fx:id="composerAvatar" fitWidth="36" fitHeight="36"
+                                           style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8,0,0,1);
+                                                   -fx-border-radius: 18; -fx-background-radius: 18;"/>
+                                <TextField fx:id="newPostTitleField"
+                                           promptText="Titre de votre nouvel article..."
+                                           style="-fx-background-radius: 18;
+                                                  -fx-background-color: #F5F5F5;
+                                                  -fx-padding: 6 10;"/>
+                            </HBox>
+                            <TextArea fx:id="newPostContentArea"
+                                      promptText="Partagez vos idées, tutoriels, expériences..."
+                                      prefRowCount="3"
+                                      wrapText="true"
+                                      style="-fx-background-radius: 10;
+                                             -fx-background-color: #FAFAFA;
+                                             -fx-padding: 6 8;"/>
+                            <HBox spacing="8" alignment="CENTER_RIGHT">
+                                <Button text="📷 Image" style="-fx-background-color: transparent;
+                                                               -fx-text-fill: #757575;"/>
+                                <Button text="🏷 Tags" style="-fx-background-color: transparent;
+                                                              -fx-text-fill: #757575;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button fx:id="publishButton" text="Publier"
+                                        style="-fx-background-radius: 20; -fx-background-color: #43A047;
+                                               -fx-text-fill: white; -fx-font-weight: bold;
+                                               -fx-padding: 6 18; -fx-cursor: hand;"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- ====== LISTE DES POSTS ====== -->
+                        <ScrollPane fitToWidth="true" prefViewportHeight="400"
+                                    style="-fx-background-color: transparent; -fx-padding: 0;">
+                            <VBox fx:id="postsContainer" spacing="12"
+                                  style="-fx-padding: 10 0 10 0;"/>
+                        </ScrollPane>
+                    </VBox>
+                </HBox>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

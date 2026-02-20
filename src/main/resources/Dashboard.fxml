@@ -190,6 +190,103 @@
                 <StackPane BorderPane.alignment="CENTER">
                     <children>
 
+                        <TabPane fx:id="usertabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                            <tabs>
+                                <Tab fx:id="usertab" text="Users">
+                                    <content>
+                                        <AnchorPane>
+                                            <children>
+                                                <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="Users" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#refreshUsersTable" prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="20.0" top="10.0" bottom="10.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                    <center>
+                                                        <TableView fx:id="tableuser" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                            <columns>
+                                                                <TableColumn fx:id="colUserId" prefWidth="50.0" text="Id" />
+                                                                <TableColumn fx:id="colUserNom" prefWidth="120.0" text="Nom" />
+                                                                <TableColumn fx:id="colUserPrenom" prefWidth="120.0" text="Prénom" />
+                                                                <TableColumn fx:id="colUserEmail" prefWidth="180.0" text="Email" />
+                                                                <TableColumn fx:id="colUserRole" prefWidth="80.0" text="Role" />
+                                                                <TableColumn fx:id="colUserStatut" prefWidth="90.0" text="Statut" />
+                                                                <TableColumn fx:id="colUserDateInsc" prefWidth="110.0" text="Date inscription" />
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                    </center>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                                <Tab fx:id="preferencetab" text="Preferences">
+                                    <content>
+                                        <AnchorPane>
+                                            <children>
+                                                <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="User preferences" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false" onAction="#refreshPreferencesTable" prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="20.0" top="10.0" bottom="10.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                    <center>
+                                                        <TableView fx:id="tablePreferences" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                            <columns>
+                                                                <TableColumn fx:id="colPrefUser" prefWidth="180.0" text="User (email)" />
+                                                                <TableColumn fx:id="colPrefBudgetMin" prefWidth="90.0" text="Budget min" />
+                                                                <TableColumn fx:id="colPrefBudgetMax" prefWidth="90.0" text="Budget max" />
+                                                                <TableColumn fx:id="colPrefTypes" prefWidth="150.0" text="Types voyage" />
+                                                                <TableColumn fx:id="colPrefCentres" prefWidth="200.0" text="Centres d'intérêt" />
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                    </center>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                                <Tab fx:id="admintab" text="Admins">
+                                    <content>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                            <children>
+                                                <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <top>
+                                                        <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                                            <children>
+                                                                <Label text="Label" />
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="30.0" />
+                                                            </padding>
+                                                        </HBox>
+                                                    </top>
+                                                </BorderPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </Tab>
+                            </tabs>
+                        </TabPane>
+
                         <TabPane fx:id="posttabpanmain"  tabClosingPolicy="UNAVAILABLE">
                             <tabs>
                                 <Tab fx:id="posttab" text="posts">

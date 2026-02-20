@@ -13,6 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import models.Personne;
 import services.PersonneService;
+import services.PreferenceService;
 import util.Session;
 import util.ValidationUtil;
 

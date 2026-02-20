@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import models.Personne;
 import models.Preference;
 import services.PersonneService;
+import services.PreferenceService;
 import util.Session;
 import util.ValidationUtil;
 

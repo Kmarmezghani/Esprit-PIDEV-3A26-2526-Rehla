@@ -7,10 +7,11 @@
 <?import javafx.scene.text.Font?>
 
 <?import javafx.scene.shape.Circle?>
-<BorderPane fx:id="root"
-            xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controllers.BlogProfileController">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="Controllers.BlogProfileController" fx:id="stackRoot">
+
+    <BorderPane fx:id="root" styleClass="root">
 
     <!-- ====== BARRE HAUTE (HEADER) ====== -->
     <top>
@@ -273,15 +274,19 @@
                                              -fx-background-color: #FAFAFA;
                                              -fx-padding: 6 8;"/>
                             <HBox spacing="8" alignment="CENTER_RIGHT">
-                                <Button text="📷 Image" style="-fx-background-color: transparent;
-                                                               -fx-text-fill: #757575;"/>
+                                <Button fx:id="imageButton"
+                                        text="📷 Image"
+                                        onAction="#handleChooseImage"
+                                        style="-fx-background-color: transparent;
+               -fx-text-fill: #757575;"/>
+
                                 <Button text="🏷 Tags" style="-fx-background-color: transparent;
                                                               -fx-text-fill: #757575;"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button fx:id="publishButton" text="Publier"
+                                <Button  fx:id="publishButton" text="Publier"
                                         style="-fx-background-radius: 20; -fx-background-color: #43A047;
                                                -fx-text-fill: white; -fx-font-weight: bold;
-                                               -fx-padding: 6 18; -fx-cursor: hand;"/>
+                                               -fx-padding: 6 18; -fx-cursor: hand;" />
                             </HBox>
                         </VBox>
 
@@ -297,3 +302,4 @@
         </BorderPane>
     </center>
 </BorderPane>
+</StackPane>

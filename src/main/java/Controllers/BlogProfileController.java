@@ -1,19 +1,29 @@
 package Controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.CacheHint;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
+import services.CommentaireService;
+import services.LikeService;
 import services.PostService;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -48,15 +58,29 @@ public class BlogProfileController {
 
     private final List<Post> allPosts = new ArrayList<>();
     private PostService postService = new PostService();
+    private CommentaireService commentaireService = new CommentaireService();
     @FXML private Button fullscreenButton;
     @FXML private Button closeButton;
-
+    @FXML
+    private StackPane stackRoot;   // racine pour overlay
+    private LikeService likeService = new LikeService();
+    private Personne currentUser; // utilisateur connecté
+    @FXML
+    private Button imageButton;
+       // ton contenu principal
     private final DateTimeFormatter dateFormatter =
             DateTimeFormatter.ofPattern("dd MMM yyyy");
+    private String selectedImagePath = null;
+
 
     @FXML
     private void initialize() {
-        closeButton.setOnAction(e -> root.getScene().getWindow().hide());
+        closeButton.setOnAction(e -> {
+            root.setCache(false);
+            root.setEffect(null);
+            Stage stage = (Stage) root.getScene().getWindow();
+            stage.close();
+        });
 
         // Fullscreen : bascule la fenêtre en plein écran
         fullscreenButton.setOnAction(e -> {
@@ -70,7 +94,10 @@ public class BlogProfileController {
         publishButton.setOnAction(e -> handlePublish());
         followButton.setOnAction(e -> toggleFollow());
         initTabs();
+        currentUser = new Personne();
+        currentUser.setId(1);
         loadPostsFromDatabase();
+
     }
     private void loadPostsFromDatabase() {
         allPosts.clear();
@@ -125,9 +152,15 @@ public class BlogProfileController {
         HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        ImageView avatar = new ImageView(profileAvatar.getImage());
-        avatar.setFitWidth(32);
-        avatar.setFitHeight(32);
+        Image profileImg = profileAvatar.getImage();
+        ImageView avatar = new ImageView();
+        if(profileImg != null) {
+            avatar.setImage(profileImg);
+            avatar.setFitWidth(32);
+            avatar.setFitHeight(32);
+        } else {
+            System.err.println("Profile avatar non chargé !");
+        }
 
         VBox authorBox = new VBox(2);
 
@@ -143,15 +176,43 @@ public class BlogProfileController {
 
         authorBox.getChildren().addAll(authorLabel, dateLabel);
 
-        Region headerSpacer = new Region();
-        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+// ================= DELETE & UPDATE =================------------------------------------------------------------------
 
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // HBox pour Update/Delete
+        HBox buttonsBox = new HBox(4);
+        buttonsBox.setAlignment(Pos.CENTER_RIGHT);
+
+        if (post.getAuteur() != null && post.getAuteur().getId() == currentUser.getId()) {
+            Button updateButton = new Button();
+            updateButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            updateButton.setGraphic(getIcon("editblue.png", 18));
+            updateButton.setOnAction(e -> handleUpdatePost(post));
+
+            Button deleteButton = new Button();
+            deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            deleteButton.setGraphic(getIcon("delete.png", 18));
+            deleteButton.setOnAction(e -> {
+                boolean confirm = confirmDialog("Supprimer le post", "Voulez-vous vraiment supprimer ce post ?");
+                if (confirm) {
+                    postService.delete(post);
+                    allPosts.remove(post);
+                    renderPosts(allPosts);
+                    postsCountLabel.setText(String.valueOf(allPosts.size()));
+                }
+            });
+
+            buttonsBox.getChildren().addAll(updateButton, deleteButton);
+        }
         Button moreButton = new Button("⋮");
         moreButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #757575;");
+        // Ajouter tous au header
+        header.getChildren().addAll(avatar, authorBox, spacer, buttonsBox, moreButton);
 
-        header.getChildren().addAll(avatar, authorBox, headerSpacer, moreButton);
 
-        // Titre
+        // ------------------------------Titre------------------------------------------------------------------------------------
         Label titleLabel = new Label(post.getTitre());
         titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
         titleLabel.setWrapText(true);
@@ -173,71 +234,95 @@ public class BlogProfileController {
         // 👉 IMAGE CENTRÉE
         if (post.getImage() != null && !post.getImage().isEmpty()) {
 
-            ImageView postImage = new ImageView(
-                    new Image("file:" + post.getImage())
-            );
-            postImage.setFitWidth(500);
-            postImage.setPreserveRatio(true);
+            try {
+                File file = new File(post.getImage());
 
-            // Conteneur pour centrer l’image
-            HBox imageBox = new HBox(postImage);
-            imageBox.setAlignment(Pos.CENTER);
+                if (file.exists()) {
 
-            card.getChildren().add(imageBox);
+                    Image image = new Image(
+                            file.toURI().toString(),
+                            500, 0,      // largeur max 500
+                            true,        // preserve ratio
+                            true,        // smooth
+                            true         // background loading
+                    );
+
+                    ImageView postImage = new ImageView(image);
+                    postImage.setPreserveRatio(true);
+
+                    HBox imageBox = new HBox(postImage);
+                    imageBox.setAlignment(Pos.CENTER);
+
+                    card.getChildren().add(imageBox);
+                }
+
+            } catch (Exception ex) {
+                System.err.println("Erreur chargement image : " + ex.getMessage());
+            }
         }
 
 
+
         card.getChildren().add(footer);
-// ================= LIKE =================
+
+        // ================= LIKE =================
         Button likeButton = new Button();
         likeButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         likeButton.setPadding(Insets.EMPTY);
-
-        Label likesLabel = new Label("0");
-        likesLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
-        likesLabel.setPadding(Insets.EMPTY);
-        HBox likeContainer = new HBox(2, likeButton, likesLabel); // Espacement 4px
-        likeContainer.setSpacing(4);
-        likeContainer.setAlignment(Pos.CENTER_LEFT);
         ImageView likeEmpty = getIcon("blackHeart.png", 24);
-        ImageView likeFull = getIcon("HeartRed.png", 25);
+        ImageView likeFull = getIcon("HeartRed.png", 24);
+
         likeEmpty.setPreserveRatio(true);
         likeFull.setPreserveRatio(true);
+        boolean isLiked = likeService.isLikedByUser(currentUser, post);
+        likeButton.setGraphic(isLiked ? likeFull : likeEmpty);
+        int nbLikes = likeService.getNbLikes(post);
 
-        likeButton.setGraphic(likeEmpty);
-
-        final boolean[] liked = {false};
-
+        Label likesLabel = new Label(String.valueOf(nbLikes));
+        likesLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
+        likesLabel.setPadding(Insets.EMPTY);
+        HBox likeContainer = new HBox(4, likeButton, likesLabel);
+        likeContainer.setAlignment(Pos.CENTER_LEFT);
         likeButton.setOnAction(e -> {
-            liked[0] = !liked[0];
 
-            if (liked[0]) {
+            if (likeButton.getGraphic() == likeEmpty) {
+                likeService.addLike(currentUser, post);
                 likeButton.setGraphic(likeFull);
-                likesLabel.setText(String.valueOf(
-                        Integer.parseInt(likesLabel.getText()) + 1));
             } else {
+                likeService.deleteLike(currentUser, post);
                 likeButton.setGraphic(likeEmpty);
-                likesLabel.setText(String.valueOf(
-                        Integer.parseInt(likesLabel.getText()) - 1));
             }
+
+            // Refresh compteur
+            int newCount = likeService.getNbLikes(post);
+            likesLabel.setText(String.valueOf(newCount));
         });
-
 // ================= COMMENT =================
-        Button commentButton = new Button();
-        ImageView commentIcon = getIcon("commentB.png", 23);
-        commentIcon.setPreserveRatio(true);  // Évite l'étirement
-        commentIcon.setSmooth(true);         // Améliore la netteté
-        commentButton.setGraphic(commentIcon);
-        commentButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #616161;"
-                + "-fx-font-size: 12px; -fx-cursor: hand;");
 
+        Button commentButton = new Button();
+        commentButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+
+        ImageView commentIcon = getIcon("commentB.png", 22);
+        commentIcon.setPreserveRatio(true);
+
+        commentButton.setGraphic(commentIcon);
+
+       int nbCommentaires = commentaireService.countByPost(post.getId());
+
+       Label commentsLabel = new Label(String.valueOf(nbCommentaires));
+        commentsLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
+
+      HBox commentContainer = new HBox(4, commentButton, commentsLabel);
+        commentContainer.setAlignment(Pos.CENTER_LEFT);
+
+      commentButton.setOnAction(e -> handleComment(post));
 
 // ================= FAVORIS =================
         Button favButton = new Button();
         favButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
         ImageView favEmpty = getIcon("blackStar.png", 28 );
-        favEmpty.setPreserveRatio(true);  // Préserve le ratio d'aspect
+        favEmpty.setPreserveRatio(true);
         favEmpty.setSmooth(true);
         ImageView favFull = getIcon("yellowStar.png", 23);
 
@@ -262,30 +347,72 @@ public class BlogProfileController {
         favButton.setOnMouseEntered(e -> favButton.setOpacity(0.7));
         favButton.setOnMouseExited(e -> favButton.setOpacity(1));
 
-        footer.getChildren().addAll(likeButton, likesLabel, commentButton, favButton);
+        footer.getChildren().addAll(
+                likeContainer,
+                commentContainer,
+                favButton
+        );
 
         VBox.setMargin(card, new Insets(0, 4, 0, 4));
         return card;
     }
 
 
+    private boolean confirmDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.initOwner(root.getScene().getWindow());
+
+        return alert.showAndWait().filter(response -> response == ButtonType.OK).isPresent();
+    }
+
     private void handlePublish() {
-        String title = newPostTitleField.getText().trim();
-        String content = newPostContentArea.getText().trim();
+
+        String title = newPostTitleField.getText() != null
+                ? newPostTitleField.getText().trim()
+                : "";
+
+        String content = newPostContentArea.getText() != null
+                ? newPostContentArea.getText().trim()
+                : "";
 
         if (title.isEmpty() || content.isEmpty()) {
             showInfoDialog("Publication", "Merci de remplir le titre et le contenu.");
             return;
         }
 
-        Post post = new Post(profileName.getText(), title, content);
-        allPosts.add(0, post); // en haut de la liste
-        renderPosts(allPosts);
+        try {
 
-        newPostTitleField.clear();
-        newPostContentArea.clear();
-        postsCountLabel.setText(String.valueOf(Integer.parseInt(postsCountLabel.getText()) + 1));
+            Post post = new Post();
+            post.setTitre(title);
+            post.setContenu(content);
+            post.setDatePublication(LocalDate.now());
+            post.setAuteur(currentUser);   // important si tu utilises la DB
+
+            // Si une image a été choisie
+            if (selectedImagePath != null) {
+                post.setImage(selectedImagePath);
+            }
+
+            // Sauvegarde en base
+            postService.add(post);
+
+            // Recharge depuis la DB (plus propre que allPosts.add)
+            loadPostsFromDatabase();
+
+            // Reset champs
+            newPostTitleField.clear();
+            newPostContentArea.clear();
+            selectedImagePath = null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfoDialog("Erreur", "Une erreur est survenue lors de la publication.");
+        }
     }
+
 
     private void toggleFollow() {
         if ("S'abonner".equals(followButton.getText())) {
@@ -341,14 +468,56 @@ public class BlogProfileController {
         });
     }
     private ImageView getIcon(String name, double size) {
-        Image img = new Image(getClass().getResourceAsStream("/icons/" + name));
+        InputStream is = getClass().getResourceAsStream("/icons/" + name);
+        if (is == null) {
+            System.err.println("Icon non trouvée: " + name);
+            return new ImageView(); // retour d'un ImageView vide pour éviter le crash
+        }
+        Image img = new Image(is);
         ImageView iv = new ImageView(img);
         iv.setFitWidth(size);
         iv.setFitHeight(size);
+        iv.setPreserveRatio(true);
         return iv;
     }
 
+    private void handleUpdatePost(Post post) {
+        try {
+            // Charger le FXML du popup
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/updatePostPopup.fxml"));
+            Parent popup = loader.load();
 
+            // Récupérer le controller pour lui passer le post à éditer
+            UpdatePostPopupController controller = loader.getController();
+            controller.setPost(post); // initialise les champs du popup
+
+            // 🔥 Blur sur le blog
+            root.setCache(true);
+            root.setCacheHint(CacheHint.SPEED);
+            GaussianBlur blur = new GaussianBlur(10);
+            root.setEffect(blur);
+
+            // 🔥 Fond sombre
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+            overlay.getChildren().add(popup);
+            StackPane.setAlignment(popup, Pos.CENTER);
+
+            stackRoot.getChildren().add(overlay);
+
+
+            controller.setOnClose(() -> {
+                root.setEffect(null);
+                stackRoot.getChildren().remove(overlay);
+                loadPostsFromDatabase();
+            });
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
 
     private void showInfoDialog(String title, String message) {
@@ -359,4 +528,57 @@ public class BlogProfileController {
         alert.initOwner(root.getScene().getWindow());
         alert.showAndWait();
     }
+
+    private void handleComment(Post post) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CommentPopup.fxml"));
+            Parent popup = loader.load();
+
+            CommentPopupController controller = loader.getController();
+            controller.setPost(post);
+
+            // 🔥 Blur du profil
+            GaussianBlur blur = new GaussianBlur(20);
+            root.setEffect(blur);
+
+            // 🔥 Overlay sombre
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            overlay.getChildren().add(popup);
+            StackPane.setAlignment(popup, Pos.CENTER);
+
+            stackRoot.getChildren().add(overlay);
+
+            controller.setOnClose(() -> {
+                root.setEffect(null);
+                stackRoot.getChildren().remove(overlay);
+                loadPostsFromDatabase(); // refresh si besoin
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
+    private void handleChooseImage() {
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir une image");
+
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        Stage stage = (Stage) root.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            selectedImagePath = file.getAbsolutePath();
+            System.out.println("Image sélectionnée : " + selectedImagePath);
+
+            showInfoDialog("Image", "Image sélectionnée avec succès !");
+        }
+    }
+
 }

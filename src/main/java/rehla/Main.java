@@ -1,26 +1,31 @@
 package rehla;
 
-import java.sql.Date;
-import models.Reservation;
-import services.IService;
-import services.ReservationService;
+import models.Personne;
+import models.Post;
+import services.PostService;
+
+import java.time.LocalDate;
 
 public class Main {
     public static void main(String[] args) {
-        IService<Reservation> service = new ReservationService();
+        Personne user1 = new Personne();
+        user1.setId(1);
+        Post post = new Post();
+        post.setTitre("esaiiiiiiiiiiiiii");
+        post.setContenu("esssssssss du post...");
+        post.setDatePublication(LocalDate.now());
+        post.setPopularite(0);
+        post.setAuteur(user1);
+        PostService ps1 = new PostService();
 
-        Reservation r = new Reservation(
-                Date.valueOf("2026-02-08"),   // dateReservation
-                Date.valueOf("2026-07-01"),   // dateDebut
-                Date.valueOf("2026-07-10"),   // dateFin
-                "CONFIRMEE",                  // statut
-                1750.00,                      // coutTotal
-                1,                            // personne_id (FK)
-                1                             // destination_id (FK)
-        );
+        ps1.add(post);
+        Post post2 = new Post();
+        post.setTitre("Mon eeeeeeeee post");
+        post.setContenu("essai du post...");
+        post.setDatePublication(LocalDate.now());
+        post.setPopularite(12);
+        post.setAuteur(user1);
 
-        service.add(r);
-
-        System.out.println(service.getAll());
+        ps1.add(post);
     }
 }

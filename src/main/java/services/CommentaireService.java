@@ -96,7 +96,10 @@ public class CommentaireService implements IService<Commentaire> {
     }
     public List<Commentaire> getCommentairesByPost(Post post) {
         List<Commentaire> commentaires = new ArrayList<>();
-        String sql = "SELECT * FROM commentaire WHERE post_id = ?";
+        String sql = "SELECT c.id, c.contenu, c.dateCommentaire, p.id AS auteur_id, p.prenom, p.nom " +
+                "FROM commentaire c " +
+                "JOIN personne p ON c.personne_id = p.id " +
+                "WHERE c.post_id = ?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, post.getId());
@@ -108,9 +111,11 @@ public class CommentaireService implements IService<Commentaire> {
                 c.setContenu(rs.getString("contenu"));
                 c.setDateCommentaire(rs.getDate("dateCommentaire").toLocalDate());
 
-                // Auteur
+                // Auteur complet
                 Personne auteur = new Personne();
-                auteur.setId(rs.getInt("personne_id"));
+                auteur.setId(rs.getInt("auteur_id"));
+                auteur.setPrenom(rs.getString("prenom"));
+                auteur.setNom(rs.getString("nom"));
                 c.setAuteur(auteur);
 
                 // Post

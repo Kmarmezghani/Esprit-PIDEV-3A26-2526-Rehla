@@ -38,10 +38,16 @@
                    prefWidth="400"/>
 
         <Label text="Image (optionnel) :" styleClass="label"/>
-        <TextField fx:id="txtImage"
-                   promptText="Chemin de l'image"
-                   styleClass="comment"
-                   prefWidth="400"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <ImageView fx:id="imgPreview"
+                       fitWidth="100"
+                       fitHeight="80"
+                       preserveRatio="true"
+                       styleClass="post-img"/>
+            <Button text="Choisir"
+                    onAction="#chooseImage"
+                    styleClass="btn-primary"/>
+        </HBox>
     </VBox>
 
     <Separator/>

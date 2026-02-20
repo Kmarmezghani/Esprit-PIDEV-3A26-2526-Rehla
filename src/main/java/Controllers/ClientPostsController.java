@@ -300,15 +300,14 @@ public class ClientPostsController {
 
 
 
-    @FXML
-    private void handleComment(Post event) {
+    private void handleComment(Post post) {
         try {
-
-            FXMLLoader loader =
-                    new FXMLLoader(getClass().getResource("/CommentPopup.fxml"));
-
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CommentPopup.fxml"));
             Parent popup = loader.load();
             CommentPopupController controller = loader.getController();
+
+            // ⚡ Important : passer le post pour charger les commentaires
+            controller.setPost(post);
 
             // 🔥 Blur seulement sur le blog
             GaussianBlur blur = new GaussianBlur(20);
@@ -318,7 +317,6 @@ public class ClientPostsController {
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
 
-            // IMPORTANT: ne pas toucher la taille du popup
             overlay.getChildren().add(popup);
             StackPane.setAlignment(popup, Pos.CENTER);
 
@@ -334,6 +332,7 @@ public class ClientPostsController {
             e.printStackTrace();
         }
     }
+
 
 
     public void handleClose(ActionEvent event) {
@@ -519,6 +518,7 @@ public class ClientPostsController {
             e.printStackTrace();
         }
     }
+
 }
 
 

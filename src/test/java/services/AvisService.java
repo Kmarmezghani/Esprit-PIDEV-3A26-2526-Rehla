@@ -1,7 +1,6 @@
 package services;
 
 import models.Avis;
-import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;

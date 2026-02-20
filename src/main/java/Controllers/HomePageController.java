@@ -19,9 +19,9 @@ import java.util.ResourceBundle;
 
 /**
  * HOMEPAGE CONTROLLER - FRONTOFFICE TEMPLATE
- * 
+ *
  * This controller manages the main landing page of the application.
- * 
+ *
  * IMPORTANT FOR TEAMMATES:
  * - Destination module code is COMMENTED OUT below
  * - If you have the Destination module (Ville, Pays models), UNCOMMENT those sections
@@ -41,7 +41,7 @@ public class HomePageController implements Initializable {
 
     /* =====================================================
        DESTINATION MODULE IMPORTS - COMMENTED OUT
-       
+
        Uncomment if you have Destination module:
        import javafx.fxml.FXMLLoader;
        import javafx.geometry.Insets;
@@ -67,7 +67,7 @@ public class HomePageController implements Initializable {
 
     /* =====================================================
        DESTINATION MODULE SERVICES - COMMENTED OUT
-       
+
        Uncomment if you have Destination module:
        private final PaysService paysService = new PaysService();
        private final VilleService villeService = new VilleService();
@@ -77,30 +77,30 @@ public class HomePageController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         /* =====================================================
            DESTINATION MODULE: Uncomment to load countries and cities
-           
+
            loadCountries();
            loadPopularCities();
            ===================================================== */
-        
+
         // TODO: Add your own module content here
         // Example for Reservation module:
         // loadRecentReservations();
-        
+
         // Example for Posts module:
         // loadRecentPosts();
     }
 
     /* =====================================================
        DESTINATION MODULE METHODS - ALL COMMENTED OUT
-       
+
        These methods load and display countries and cities.
        Uncomment if you have the Destination module.
        ===================================================== */
-    
+
     /*
     private void loadCountries() {
         List<Pays> paysList = paysService.getAll();
-        
+
         for (Pays pays : paysList) {
             VBox countryCard = createCountryCard(pays);
             countriesFlowPane.getChildren().add(countryCard);
@@ -131,7 +131,7 @@ public class HomePageController implements Initializable {
         long cityCount = villeService.getAll().stream()
                 .filter(v -> v.getPaysId() == pays.getId())
                 .count();
-        
+
         Label cityCountLabel = new Label(cityCount + " cities to explore");
         cityCountLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         cityCountLabel.setTextFill(Color.web("#3A5BC7"));
@@ -143,7 +143,7 @@ public class HomePageController implements Initializable {
             card.setScaleX(1.05);
             card.setScaleY(1.05);
         });
-        
+
         card.setOnMouseExited(e -> {
             card.setStyle(card.getStyle().replace("-fx-background-color: #f0f8ff;", "-fx-background-color: white;"));
             card.setScaleX(1.0);
@@ -157,7 +157,7 @@ public class HomePageController implements Initializable {
 
     private void loadPopularCities() {
         List<Ville> villes = villeService.getAll();
-        
+
         List<Ville> topCities = villes.stream()
                 .sorted(Comparator.comparingInt(Ville::getPopularite).reversed())
                 .limit(6)
@@ -210,15 +210,15 @@ public class HomePageController implements Initializable {
                 "-fx-background-radius: 8; " +
                 "-fx-cursor: hand; " +
                 "-fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.3), 8, 0, 0, 2);");
-        
+
         bookButton.setOnMouseEntered(e -> {
             bookButton.setStyle(bookButton.getStyle() + "-fx-background-color: #2d4a9e;");
         });
-        
+
         bookButton.setOnMouseExited(e -> {
             bookButton.setStyle(bookButton.getStyle().replace("-fx-background-color: #2d4a9e;", "-fx-background-color: #3A5BC7;"));
         });
-        
+
         bookButton.setOnAction(e -> {
             e.consume();
             handleBookCity(ville);
@@ -229,7 +229,7 @@ public class HomePageController implements Initializable {
         card.setOnMouseEntered(e -> {
             card.setStyle(card.getStyle() + "-fx-background-color: #fffacd; -fx-cursor: hand;");
         });
-        
+
         card.setOnMouseExited(e -> {
             card.setStyle(card.getStyle().replace("-fx-background-color: #fffacd;", "-fx-background-color: white;"));
         });
@@ -263,10 +263,10 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/CountryDetailPage.fxml"));
             Parent root = loader.load();
-            
+
             CountryDetailController controller = loader.getController();
             controller.setPays(pays);
-            
+
             Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException e) {
@@ -278,10 +278,10 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/CityDetailPage.fxml"));
             Parent root = loader.load();
-            
+
             CityDetailController controller = loader.getController();
             controller.setVille(ville);
-            
+
             Stage stage = (Stage) popularCitiesFlowPane.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException e) {
@@ -294,16 +294,16 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ReservationForm.fxml"));
             Parent root = loader.load();
-            
+
             ReservationController controller = loader.getController();
             controller.setVille(ville);
-            
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Book " + ville.getNom());
             stage.setScene(new Scene(root));
             stage.showAndWait();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -315,8 +315,8 @@ public class HomePageController implements Initializable {
         }
     }
     */
-    
-    /* ===================================================== 
+
+    /* =====================================================
        END OF DESTINATION MODULE CODE
        ===================================================== */
 
@@ -346,7 +346,7 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PostsPage.fxml"));
             Parent root = loader.load();
-            
+
             Stage stage = (Stage) searchField.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (Exception e) {
@@ -377,8 +377,15 @@ public class HomePageController implements Initializable {
     // Profile Menu Actions
     @FXML
     void goToMyProfile(ActionEvent event) {
-        System.out.println("📱 My Profile - to be implemented");
-        showInfo("Profile", "My Profile page - implement in your module");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfilePage.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfo("Profile", "Could not open profile page.");
+        }
     }
 
     @FXML
@@ -389,22 +396,35 @@ public class HomePageController implements Initializable {
 
     @FXML
     void goToMyReservations(ActionEvent event) {
-        System.out.println("📅 My Reservations - to be implemented");
-        showInfo("My Reservations", "Reservations page - implement in Reservation module");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     void handleLogout(ActionEvent event) {
-        System.out.println("🚪 Logging out...");
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Logout");
         alert.setHeaderText("Are you sure you want to logout?");
         alert.setContentText("You will be returned to the login screen.");
-        
+
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                System.out.println("✅ User logged out");
-                showInfo("Logged Out", "You have been successfully logged out!");
+                util.Session.clear();
+                try {
+                    Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
+                    Stage stage = (Stage) searchField.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -421,14 +441,14 @@ public class HomePageController implements Initializable {
        TEMPORARY: Module Testing Methods
        DELETE THESE AFTER INTEGRATION!
        ======================================== */
-    
+
     @FXML
     void frontofficeReservation(ActionEvent event) {
         /* RESERVATION TEAM: Uncomment this code when ReservationForm.fxml is ready
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ReservationForm.fxml"));
             Parent root = loader.load();
-            
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Ajouter Réservation");
@@ -438,14 +458,41 @@ public class HomePageController implements Initializable {
             e.printStackTrace();
         }
         */
-        
-        showInfo("Module Réservation", 
+
+        showInfo("Module Réservation",
                 "Équipe Réservation:\n\n" +
-                "1. Créer ReservationForm.fxml\n" +
-                "2. Créer ReservationController.java\n" +
-                "3. Décommenter le code dans frontofficeReservation()\n" +
-                "4. Cliquer ce bouton pour tester!\n\n" +
-                "Plus tard: Sera déclenché par le bouton 'Book Now' sur les villes");
+                        "1. Créer ReservationForm.fxml\n" +
+                        "2. Créer ReservationController.java\n" +
+                        "3. Décommenter le code dans frontofficeReservation()\n" +
+                        "4. Cliquer ce bouton pour tester!\n\n" +
+                        "Plus tard: Sera déclenché par le bouton 'Book Now' sur les villes");
+    }
+
+    @FXML
+    private void handleAddReservation(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajout.fxml"));
+            Parent root = loader.load();
+
+            AjouterReservationController controller = loader.getController();
+
+            // Création d'un Stage modal
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Add Reservation");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            // Après fermeture du popup, naviguer vers MyReservations
+            FXMLLoader myResLoader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
+            Parent myResRoot = myResLoader.load();
+
+            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            currentStage.setScene(new Scene(myResRoot));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -454,7 +501,7 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ActivityForm.fxml"));
             Parent root = loader.load();
-            
+
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Ajouter Activité");
@@ -464,14 +511,14 @@ public class HomePageController implements Initializable {
             e.printStackTrace();
         }
         */
-        
-        showInfo("Module Activités", 
+
+        showInfo("Module Activités",
                 "Équipe Activités:\n\n" +
-                "1. Créer ActivityForm.fxml\n" +
-                "2. Créer ActivityController.java\n" +
-                "3. Décommenter le code dans frontofficeActivite()\n" +
-                "4. Cliquer ce bouton pour tester!\n\n" +
-                "Plus tard: Montrera les activités pour chaque ville");
+                        "1. Créer ActivityForm.fxml\n" +
+                        "2. Créer ActivityController.java\n" +
+                        "3. Décommenter le code dans frontofficeActivite()\n" +
+                        "4. Cliquer ce bouton pour tester!\n\n" +
+                        "Plus tard: Montrera les activités pour chaque ville");
     }
 
 }

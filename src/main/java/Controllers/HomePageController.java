@@ -11,9 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.net.URL;
 import java.util.ResourceBundle;
 

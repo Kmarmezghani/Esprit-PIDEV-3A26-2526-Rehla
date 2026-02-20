@@ -575,6 +575,30 @@ public class ClientPostsController {
             e.printStackTrace();
         }
     }
+    @FXML
+    private void goToProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/blogProfileView.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((Node) event.getSource())
+                    .getScene()
+                    .getWindow();
+
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/css/blog_styles.css").toExternalForm()
+            );
+
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 

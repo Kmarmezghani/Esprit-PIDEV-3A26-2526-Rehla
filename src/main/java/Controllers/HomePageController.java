@@ -342,14 +342,23 @@ public class HomePageController implements Initializable {
     @FXML
     void goToPosts(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PostsPage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/blogAllPosts.fxml"));
             Parent root = loader.load();
 
+            Scene scene = new Scene(root);
+
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/css/blog_styles.css").toExternalForm()
+            );
+
             Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
+            stage.show();
+
         } catch (Exception e) {
             e.printStackTrace();
-            showInfo("Posts", "Posts page loading...");
+            showInfo("Posts", "Erreur lors du chargement de blogAllPosts.");
         }
     }
 

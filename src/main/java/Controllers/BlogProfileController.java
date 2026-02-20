@@ -131,7 +131,8 @@ public class BlogProfileController {
 
         VBox authorBox = new VBox(2);
 
-        Label authorLabel = new Label(post.getAuteur().toString());
+        Label authorLabel = new Label(post.getAuteur().getNom() + " " + post.getAuteur().getPrenom());
+
 
         authorLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 

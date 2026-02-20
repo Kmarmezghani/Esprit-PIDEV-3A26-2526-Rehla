@@ -143,156 +143,253 @@
             <center>
                 <VBox spacing="20" styleClass="main-container">
 
-                <!-- ================= KPI CARDS ================= -->
+                    <!-- ================= KPI CARDS ================= -->
 
-                <HBox spacing="20" alignment="CENTER_LEFT" styleClass="kpi-container">
+                    <HBox spacing="20" alignment="CENTER_LEFT" styleClass="kpi-container">
 
-                    <VBox styleClass="kpi-card">
-                        <Label text="Total Users" styleClass="kpi-title"/>
-                        <Label fx:id="lblTotalUsers" text="58" styleClass="kpi-value"/>
-                    </VBox>
+                        <VBox styleClass="kpi-card">
+                            <Label text="Total Users" styleClass="kpi-title"/>
+                            <Label fx:id="lblTotalUsers" text="58" styleClass="kpi-value"/>
+                        </VBox>
 
-                    <VBox styleClass="kpi-card">
-                        <Label text="Total Posts" styleClass="kpi-title"/>
-                        <Label fx:id="lblTotalPosts" text="120" styleClass="kpi-value"/>
-                    </VBox>
+                        <VBox styleClass="kpi-card">
+                            <Label text="Total Posts" styleClass="kpi-title"/>
+                            <Label fx:id="lblTotalPosts" text="120" styleClass="kpi-value"/>
+                        </VBox>
 
-                    <VBox styleClass="kpi-card">
-                        <Label text="Total Comments" styleClass="kpi-title"/>
-                        <Label fx:id="lblTotalComments" text="340" styleClass="kpi-value"/>
-                    </VBox>
+                        <VBox styleClass="kpi-card">
+                            <Label text="Total Comments" styleClass="kpi-title"/>
+                            <Label fx:id="lblTotalComments" text="340" styleClass="kpi-value"/>
+                        </VBox>
 
-                    <VBox styleClass="kpi-card">
-                        <Label text="Reservations" styleClass="kpi-title"/>
-                        <Label fx:id="lblTotalReservations" text="85" styleClass="kpi-value"/>
-                    </VBox>
+                        <VBox styleClass="kpi-card">
+                            <Label text="Reservations" styleClass="kpi-title"/>
+                            <Label fx:id="lblTotalReservations" text="85" styleClass="kpi-value"/>
+                        </VBox>
 
-                </HBox>
+                    </HBox>
 
-                <!-- ================= ACTION BAR ================= -->
+                    <!-- ================= ACTION BAR ================= -->
 
-                <HBox spacing="15" alignment="CENTER_LEFT" styleClass="action-bar">
+                    <HBox spacing="15" alignment="CENTER_LEFT" styleClass="action-bar">
 
-                    <Label text="Dashboard Overview" styleClass="section-title"/>
+                        <Label text="Dashboard Overview" styleClass="section-title"/>
 
-                    <Region HBox.hgrow="ALWAYS"/>
+                        <Region HBox.hgrow="ALWAYS"/>
 
-                    <TextField fx:id="searchField"
-                               promptText="Search..."
-                               prefWidth="200"
-                               styleClass="search-field"/>
+                        <TextField fx:id="searchField"
+                                   promptText="Search..."
+                                   prefWidth="200"
+                                   styleClass="search-field"/>
 
-                    <Button text="Refresh"
+                        <Button text="Refresh"
 
-                            styleClass="button2"/>
+                                styleClass="button2"/>
 
-                </HBox>
-                <StackPane BorderPane.alignment="CENTER">
-                    <children>
+                    </HBox>
+                    <StackPane BorderPane.alignment="CENTER">
+                        <children>
 
-                        <TabPane fx:id="posttabpanmain"  tabClosingPolicy="UNAVAILABLE">
-                            <tabs>
-                                <Tab fx:id="posttab" text="posts">
-                                    <content>
-                                        <AnchorPane>
-                                            <children>
-                                                <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                    <top>
-                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
-                                                            <children>
-                                                                <Label text="posts" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false"  onAction="#openAddPostForm" prefHeight="26.0" prefWidth="80.0" styleClass="button2"  text="Add new" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2"  text=" Export(Excel)" textFill="#002b11" />
-                                                            </children>
-                                                            <padding>
-                                                                <Insets left="30.0" />
-                                                            </padding>
-                                                        </HBox>
-                                                    </top>
-                                                    <center>
-                                                        <TableView fx:id="tablepost" BorderPane.alignment="CENTER">
-                                                            <columns>
+                            <TabPane fx:id="usertabpanmain" stylesheets="@css/styling.css" tabClosingPolicy="UNAVAILABLE">
+                                <tabs>
+                                    <Tab fx:id="usertab" text="Users">
+                                        <content>
+                                            <AnchorPane>
+                                                <children>
+                                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                        <top>
+                                                            <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                                <children>
+                                                                    <Label text="Users" textFill="#002b11" />
+                                                                    <Button mnemonicParsing="false"  prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                                </children>
+                                                                <padding>
+                                                                    <Insets left="20.0" top="10.0" bottom="10.0" />
+                                                                </padding>
+                                                            </HBox>
+                                                        </top>
+                                                        <center>
+                                                            <TableView fx:id="tableuser" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                                <columns>
+                                                                    <TableColumn fx:id="colUserId" prefWidth="50.0" text="Id" />
+                                                                    <TableColumn fx:id="colUserNom" prefWidth="120.0" text="Nom" />
+                                                                    <TableColumn fx:id="colUserPrenom" prefWidth="120.0" text="Prénom" />
+                                                                    <TableColumn fx:id="colUserEmail" prefWidth="180.0" text="Email" />
+                                                                    <TableColumn fx:id="colUserRole" prefWidth="80.0" text="Role" />
+                                                                    <TableColumn fx:id="colUserStatut" prefWidth="90.0" text="Statut" />
+                                                                    <TableColumn fx:id="colUserDateInsc" prefWidth="110.0" text="Date inscription" />
+                                                                </columns>
+                                                                <columnResizePolicy>
+                                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                                </columnResizePolicy>
+                                                            </TableView>
+                                                        </center>
+                                                    </BorderPane>
+                                                </children>
+                                            </AnchorPane>
+                                        </content>
+                                    </Tab>
+                                    <Tab fx:id="preferencetab" text="Preferences">
+                                        <content>
+                                            <AnchorPane>
+                                                <children>
+                                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                        <top>
+                                                            <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                                <children>
+                                                                    <Label text="User preferences" textFill="#002b11" />
+                                                                    <Button mnemonicParsing="false"  prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                                </children>
+                                                                <padding>
+                                                                    <Insets left="20.0" top="10.0" bottom="10.0" />
+                                                                </padding>
+                                                            </HBox>
+                                                        </top>
+                                                        <center>
+                                                            <TableView fx:id="tablePreferences" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
+                                                                <columns>
+                                                                    <TableColumn fx:id="colPrefUser" prefWidth="180.0" text="User (email)" />
+                                                                    <TableColumn fx:id="colPrefBudgetMin" prefWidth="90.0" text="Budget min" />
+                                                                    <TableColumn fx:id="colPrefBudgetMax" prefWidth="90.0" text="Budget max" />
+                                                                    <TableColumn fx:id="colPrefTypes" prefWidth="150.0" text="Types voyage" />
+                                                                    <TableColumn fx:id="colPrefCentres" prefWidth="200.0" text="Centres d'intérêt" />
+                                                                </columns>
+                                                                <columnResizePolicy>
+                                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                                </columnResizePolicy>
+                                                            </TableView>
+                                                        </center>
+                                                    </BorderPane>
+                                                </children>
+                                            </AnchorPane>
+                                        </content>
+                                    </Tab>
+                                    <Tab fx:id="admintab" text="Admins">
+                                        <content>
+                                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                <children>
+                                                    <BorderPane prefHeight="327.0" prefWidth="534.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                        <top>
+                                                            <HBox alignment="CENTER_LEFT" prefHeight="46.0" prefWidth="358.0" BorderPane.alignment="CENTER">
+                                                                <children>
+                                                                    <Label text="Label" />
+                                                                </children>
+                                                                <padding>
+                                                                    <Insets left="30.0" />
+                                                                </padding>
+                                                            </HBox>
+                                                        </top>
+                                                    </BorderPane>
+                                                </children>
+                                            </AnchorPane>
+                                        </content>
+                                    </Tab>
+                                </tabs>
+                            </TabPane>
 
-                                                                <TableColumn fx:id="colTitrePost" text="Titre du post" />
-                                                                <TableColumn fx:id="colContenuPost" text="Description" />
-                                                                <TableColumn fx:id="colDatePost" text="Date de publication" />
-                                                                <TableColumn fx:id="colPopularitePost" text="Score de popularité" />
-                                                                <TableColumn fx:id="colAuteurPost" text="Auteur" />
-                                                                <TableColumn fx:id="colLikesPost" text="Nombre de likes" />
-                                                                <TableColumn fx:id="colImagePost" text="Image associée" prefWidth="120"/>
-                                                                <TableColumn fx:id="colAction" text="Actions" prefWidth="120"/>
+                            <TabPane fx:id="posttabpanmain"  tabClosingPolicy="UNAVAILABLE">
+                                <tabs>
+                                    <Tab fx:id="posttab" text="posts">
+                                        <content>
+                                            <AnchorPane>
+                                                <children>
+                                                    <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                        <top>
+                                                            <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                                <children>
+                                                                    <Label text="posts" textFill="#002b11" />
+                                                                    <Button mnemonicParsing="false"  onAction="#openAddPostForm" prefHeight="26.0" prefWidth="80.0" styleClass="button2"  text="Add new" textFill="#002b11" />
+                                                                    <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2"  text=" Export(Excel)" textFill="#002b11" />
+                                                                </children>
+                                                                <padding>
+                                                                    <Insets left="30.0" />
+                                                                </padding>
+                                                            </HBox>
+                                                        </top>
+                                                        <center>
+                                                            <TableView fx:id="tablepost" BorderPane.alignment="CENTER">
+                                                                <columns>
+
+                                                                    <TableColumn fx:id="colTitrePost" text="Titre du post" />
+                                                                    <TableColumn fx:id="colContenuPost" text="Description" />
+                                                                    <TableColumn fx:id="colDatePost" text="Date de publication" />
+                                                                    <TableColumn fx:id="colPopularitePost" text="Score de popularité" />
+                                                                    <TableColumn fx:id="colAuteurPost" text="Auteur" />
+                                                                    <TableColumn fx:id="colLikesPost" text="Nombre de likes" />
+                                                                    <TableColumn fx:id="colImagePost" text="Image associée" prefWidth="120"/>
+                                                                    <TableColumn fx:id="colAction" text="Actions" prefWidth="120"/>
 
 
 
-                                                            </columns>
-                                                            <columnResizePolicy>
-                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                                                            </columnResizePolicy>
-                                                        </TableView>
-                                                    </center>
-                                                </BorderPane>
-                                            </children>
-                                        </AnchorPane>
-                                    </content>
-                                </Tab>
-                                <Tab fx:id="commentairetab" text="comments">
-                                    <content>
-                                        <AnchorPane>
-                                            <children>
-                                                <BorderPane AnchorPane.bottomAnchor="0.0"
-                                                            AnchorPane.leftAnchor="0.0"
-                                                            AnchorPane.rightAnchor="0.0"
-                                                            AnchorPane.topAnchor="0.0">
+                                                                </columns>
+                                                                <columnResizePolicy>
+                                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                                </columnResizePolicy>
+                                                            </TableView>
+                                                        </center>
+                                                    </BorderPane>
+                                                </children>
+                                            </AnchorPane>
+                                        </content>
+                                    </Tab>
+                                    <Tab fx:id="commentairetab" text="comments">
+                                        <content>
+                                            <AnchorPane>
+                                                <children>
+                                                    <BorderPane AnchorPane.bottomAnchor="0.0"
+                                                                AnchorPane.leftAnchor="0.0"
+                                                                AnchorPane.rightAnchor="0.0"
+                                                                AnchorPane.topAnchor="0.0">
 
-                                                    <top>
-                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
-                                                            <children>
-                                                                <Label text="Commentaires" textFill="#002b11"/>
+                                                        <top>
+                                                            <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
+                                                                <children>
+                                                                    <Label text="Commentaires" textFill="#002b11"/>
 
-                                                                <Button mnemonicParsing="false"
-                                                                        onAction="#openAddCommentForm"
-                                                                        prefHeight="26.0"
-                                                                        prefWidth="90.0"
-                                                                        styleClass="button2"
+                                                                    <Button mnemonicParsing="false"
+                                                                            onAction="#openAddCommentForm"
+                                                                            prefHeight="26.0"
+                                                                            prefWidth="90.0"
+                                                                            styleClass="button2"
 
-                                                                        text="Add new"
-                                                                        textFill="#002b11"/>
+                                                                            text="Add new"
+                                                                            textFill="#002b11"/>
 
-                                                            </children>
-                                                            <padding>
-                                                                <Insets left="30.0"/>
-                                                            </padding>
-                                                        </HBox>
-                                                    </top>
+                                                                </children>
+                                                                <padding>
+                                                                    <Insets left="30.0"/>
+                                                                </padding>
+                                                            </HBox>
+                                                        </top>
 
 
-                                                    <center>
-                                                        <TableView fx:id="tableCommentaire">
-                                                            <columns>
+                                                        <center>
+                                                            <TableView fx:id="tableCommentaire">
+                                                                <columns>
 
-                                                                <TableColumn fx:id="colContenuCom" text="Contenu du Commentaire"/>
-                                                                <TableColumn fx:id="colDateCom" text="Date de Publication"/>
-                                                                <TableColumn fx:id="colAuteurCom" text="Auteur"/>
-                                                                <TableColumn fx:id="colPostCom" text="Post Associé"/>
-                                                                <TableColumn fx:id="colAction2" text="Actions" prefWidth="120"/>
-                                                            </columns>
+                                                                    <TableColumn fx:id="colContenuCom" text="Contenu du Commentaire"/>
+                                                                    <TableColumn fx:id="colDateCom" text="Date de Publication"/>
+                                                                    <TableColumn fx:id="colAuteurCom" text="Auteur"/>
+                                                                    <TableColumn fx:id="colPostCom" text="Post Associé"/>
+                                                                    <TableColumn fx:id="colAction2" text="Actions" prefWidth="120"/>
+                                                                </columns>
 
-                                                            <columnResizePolicy>
-                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                                                            </columnResizePolicy>
-                                                        </TableView>
-                                                    </center>
+                                                                <columnResizePolicy>
+                                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                                </columnResizePolicy>
+                                                            </TableView>
+                                                        </center>
 
-                                                </BorderPane>
-                                            </children>
-                                        </AnchorPane>
-                                    </content>
-                                </Tab>
+                                                    </BorderPane>
+                                                </children>
+                                            </AnchorPane>
+                                        </content>
+                                    </Tab>
 
-                            </tabs>
-                        </TabPane>
-                    </children>
-                </StackPane>
+                                </tabs>
+                            </TabPane>
+                        </children>
+                    </StackPane>
                 </VBox>
             </center>
         </BorderPane>

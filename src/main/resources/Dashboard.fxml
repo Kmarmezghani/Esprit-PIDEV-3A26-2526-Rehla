@@ -201,7 +201,7 @@
                                                         <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                             <children>
                                                                 <Label text="Users" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" onAction="#refreshUsersTable" prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false"  prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
                                                             </children>
                                                             <padding>
                                                                 <Insets left="20.0" top="10.0" bottom="10.0" />
@@ -238,7 +238,7 @@
                                                         <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                             <children>
                                                                 <Label text="User preferences" textFill="#002b11" />
-                                                                <Button mnemonicParsing="false" onAction="#refreshPreferencesTable" prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
+                                                                <Button mnemonicParsing="false"  prefHeight="26.0" prefWidth="90.0" styleClass="button2" stylesheets="@css/styling.css" text="Refresh" textFill="#002b11" />
                                                             </children>
                                                             <padding>
                                                                 <Insets left="20.0" top="10.0" bottom="10.0" />

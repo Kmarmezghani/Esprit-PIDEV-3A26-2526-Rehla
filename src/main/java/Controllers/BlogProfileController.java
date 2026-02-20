@@ -9,8 +9,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
+import services.PostService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -45,20 +47,40 @@ public class BlogProfileController {
     @FXML private Button followButton;
 
     private final List<Post> allPosts = new ArrayList<>();
-
+    private PostService postService = new PostService();
+    @FXML private Button fullscreenButton;
+    @FXML private Button closeButton;
 
     private final DateTimeFormatter dateFormatter =
             DateTimeFormatter.ofPattern("dd MMM yyyy");
 
     @FXML
     private void initialize() {
+        closeButton.setOnAction(e -> root.getScene().getWindow().hide());
+
+        // Fullscreen : bascule la fenêtre en plein écran
+        fullscreenButton.setOnAction(e -> {
+            Stage stage = (Stage) root.getScene().getWindow();
+            stage.setFullScreen(!stage.isFullScreen());
+        });
         initProfileInfo();
-        initSamplePosts();
+
         renderPosts(allPosts);
 
         publishButton.setOnAction(e -> handlePublish());
         followButton.setOnAction(e -> toggleFollow());
         initTabs();
+        loadPostsFromDatabase();
+    }
+    private void loadPostsFromDatabase() {
+        allPosts.clear();
+
+        List<Post> postsFromDB = postService.getAll();
+        allPosts.addAll(postsFromDB);
+
+        renderPosts(allPosts);
+
+        postsCountLabel.setText(String.valueOf(allPosts.size()));
     }
 
     private void initProfileInfo() {
@@ -84,23 +106,7 @@ public class BlogProfileController {
         favoritesCountLabel.setText("87");
     }
 
-    private void initSamplePosts() {
-        allPosts.add(new Post(
-                "Yosr Amamou",
-                "Comment j’ai construit mon premier blog JavaFX",
-                "Dans cet article, je partage les étapes et les astuces pour créer une interface de blog moderne en JavaFX..."
-        ));
-        allPosts.add(new Post(
-                "Yosr Amamou",
-                "Déployer une application Spring Boot sur le cloud",
-                "Aujourd’hui, on va voir comment déployer simplement une appli Spring Boot sur un provider cloud en quelques minutes..."
-        ));
-        allPosts.add(new Post(
-                "Yosr Amamou",
-                "Mes outils favoris pour booster la productivité",
-                "Entre VS Code, IntelliJ, Notion et quelques extensions magiques, voici ma stack d’outils pour rester focus et efficace..."
-        ));
-    }
+
 
     private void renderPosts(List<Post> posts) {
         postsContainer.getChildren().clear();
@@ -124,10 +130,16 @@ public class BlogProfileController {
         avatar.setFitHeight(32);
 
         VBox authorBox = new VBox(2);
-        Label authorLabel = new Label("auteur");
+
+        Label authorLabel = new Label(post.getAuteur().toString());
+
         authorLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
-        Label dateLabel = new Label(dateFormatter.format(LocalDate.now()));
+
+        Label dateLabel = new Label(
+                post.getDatePublication().format(dateFormatter)
+        );
         dateLabel.setStyle("-fx-text-fill: #757575; -fx-font-size: 11px;");
+
         authorBox.getChildren().addAll(authorLabel, dateLabel);
 
         Region headerSpacer = new Region();
@@ -139,22 +151,42 @@ public class BlogProfileController {
         header.getChildren().addAll(avatar, authorBox, headerSpacer, moreButton);
 
         // Titre
-        Label titleLabel = new Label("post1");
+        Label titleLabel = new Label(post.getTitre());
         titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
         titleLabel.setWrapText(true);
 
-        // Contenu
-        Text contentText = new Text("content1 ");
+        Text contentText = new Text(post.getContenu());
         contentText.wrappingWidthProperty().bind(card.widthProperty().subtract(24));
         contentText.setFill(Color.web("#424242"));
         contentText.setStyle("-fx-font-size: 13px;");
+
 
 
         // Footer avec like / comment / fav
         HBox footer = new HBox(15);
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(4, 0, 0, 0));
+        card.getChildren().addAll(header, titleLabel, contentText);
 
+
+        // 👉 IMAGE CENTRÉE
+        if (post.getImage() != null && !post.getImage().isEmpty()) {
+
+            ImageView postImage = new ImageView(
+                    new Image("file:" + post.getImage())
+            );
+            postImage.setFitWidth(500);
+            postImage.setPreserveRatio(true);
+
+            // Conteneur pour centrer l’image
+            HBox imageBox = new HBox(postImage);
+            imageBox.setAlignment(Pos.CENTER);
+
+            card.getChildren().add(imageBox);
+        }
+
+
+        card.getChildren().add(footer);
 // ================= LIKE =================
         Button likeButton = new Button();
         likeButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
@@ -230,9 +262,6 @@ public class BlogProfileController {
         favButton.setOnMouseExited(e -> favButton.setOpacity(1));
 
         footer.getChildren().addAll(likeButton, likesLabel, commentButton, favButton);
-
-
-        card.getChildren().addAll(header, titleLabel, contentText, footer);
 
         VBox.setMargin(card, new Insets(0, 4, 0, 4));
         return card;

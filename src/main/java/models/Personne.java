@@ -35,7 +35,10 @@ public class Personne {
         this.statutCompte = statutCompte;
         this.favoris = favoris;
     }
-
+    public Personne(String nom, String prenom) {
+        this.nom = nom;
+        this.prenom = prenom;
+    }
     @Override
     public String toString() {
         return prenom + " " + nom;

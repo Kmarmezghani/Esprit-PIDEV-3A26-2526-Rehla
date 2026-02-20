@@ -44,6 +44,14 @@
                        text="Vous"
                        style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
             </HBox>
+            <HBox spacing="8" alignment="CENTER_RIGHT" style="-fx-padding: 5 25 5 25;">
+                <Button text="⛶"
+                        style="-fx-background-color: transparent; -fx-font-size: 16px; -fx-cursor: hand;"
+                        fx:id="fullscreenButton"/>
+                <Button text="✖"
+                        style="-fx-background-color: transparent; -fx-font-size: 16px; -fx-cursor: hand;"
+                        fx:id="closeButton"/>
+            </HBox>
         </HBox>
     </top>
 

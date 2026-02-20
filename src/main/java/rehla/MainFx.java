@@ -17,8 +17,8 @@ public class MainFx extends Application {
     public void start(Stage primaryStage) {
         try{
             //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
-             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/blogAllPosts.fxml"));
-            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/BlogProfileView.fxml"));
+            //  FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/blogAllPosts.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/BlogProfileView.fxml"));
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
            scene.getStylesheets().add(getClass().getResource("/css/blog_styles.css").toExternalForm());

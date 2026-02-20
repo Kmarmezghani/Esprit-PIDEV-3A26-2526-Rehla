@@ -1,6 +1,8 @@
 package Controllers;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,8 +16,11 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import models.Commentaire;
+import models.Personne;
 import models.Post;
+import models.Preference;
 import services.CommentaireService;
+import services.PersonneService;
 import services.PostService;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,9 +31,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import services.PreferenceService;
 
 import java.io.File;
 import java.io.InputStream;
+import java.time.format.DateTimeFormatter;
 
 public class DashboardController {
 
@@ -62,7 +69,7 @@ public class DashboardController {
     @FXML private TableView<?> tableactivite1111;
     @FXML private TableView<?> tabledestination;
     @FXML private TableView<Post> tablepost;
-    @FXML private TableView<?> tableuser;
+
     @FXML private TableView<Commentaire> tableCommentaire;
 
     @FXML private ToggleButton dashactbut;
@@ -97,6 +104,32 @@ public class DashboardController {
     @FXML private TableColumn<Commentaire, Integer> colAuteurCom;
     @FXML private TableColumn<Commentaire, Integer> colPostCom;
 
+
+    @FXML private Tab preferencetab;
+
+    @FXML private TableView<Personne> tableuser;
+    @FXML private TableView<Preference> tablePreferences;
+
+    @FXML private TableColumn<Personne, Integer> colUserId;
+    @FXML private TableColumn<Personne, String> colUserNom;
+    @FXML private TableColumn<Personne, String> colUserPrenom;
+    @FXML private TableColumn<Personne, String> colUserEmail;
+    @FXML private TableColumn<Personne, String> colUserRole;
+    @FXML private TableColumn<Personne, String> colUserStatut;
+    @FXML private TableColumn<Personne, String> colUserDateInsc;
+    @FXML private TableColumn<Preference, String> colPrefUser;
+    @FXML private TableColumn<Preference, Double> colPrefBudgetMin;
+    @FXML private TableColumn<Preference, Double> colPrefBudgetMax;
+    @FXML private TableColumn<Preference, String> colPrefTypes;
+    @FXML private TableColumn<Preference, String> colPrefCentres;
+
+    private PersonneService personneService = new PersonneService();
+    private PreferenceService preferenceService = new PreferenceService();
+    private ObservableList<Personne> userList = FXCollections.observableArrayList();
+    private ObservableList<Preference> preferenceList = FXCollections.observableArrayList();
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+
     private CommentaireService commentaireService = new CommentaireService();
     private ObservableList<Commentaire> commentaireList = FXCollections.observableArrayList();
     private PostService postService = new PostService();
@@ -112,7 +145,8 @@ public class DashboardController {
         dashresbut.setToggleGroup(dashboardGroup);
         dashactbut.setToggleGroup(dashboardGroup);
         dashpostbut.setToggleGroup(dashboardGroup);
-
+        initUsersTable();
+        initPreferencesTable();
 
         dashboardGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
             if (newT == null) {
@@ -242,7 +276,7 @@ public class DashboardController {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setMaximized(!stage.isMaximized());
     }
-/*---------------------------------------posts--------------------------------*/
+/*---------------------------------------posts-------------------------------------------*/
     private void loadPosts() {
 
 
@@ -268,11 +302,7 @@ public class DashboardController {
 
             return new SimpleStringProperty(fullName);
         });
-
-
-
-
-
+        
         postList.setAll(postService.getAll());
         tablepost.setItems(postList);
     }
@@ -510,5 +540,64 @@ public class DashboardController {
             }
         });
     }
+    /*------------------Module users------------------------------------------*/
+
+    @FXML
+    void refreshUsersTable(ActionEvent event) {
+        refreshUsersTable();
+    }
+
+    @FXML
+    void refreshPreferencesTable(ActionEvent event) {
+        refreshPreferencesTable();
+    }
+
+    private void initUsersTable() {
+        colUserId.setCellValueFactory(cell -> new SimpleIntegerProperty(cell.getValue().getId()).asObject());
+        colUserNom.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNom()));
+        colUserPrenom.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPrenom()));
+        colUserEmail.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEmail()));
+        colUserRole.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getRole()));
+        colUserStatut.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getStatutCompte()));
+        colUserDateInsc.setCellValueFactory(cell -> {
+            var dt = cell.getValue().getDateInscription();
+            String s = dt != null ? dt.format(DATE_FORMAT) : "";
+            return new SimpleStringProperty(s);
+        });
+        userList.setAll(personneService.getAll());
+        tableuser.setItems(userList);
+    }
+
+    private void refreshUsersTable() {
+        userList.setAll(personneService.getAll());
+        tableuser.setItems(userList);
+    }
+
+    private void initPreferencesTable() {
+        colPrefUser.setCellValueFactory(cell -> {
+            int pid = cell.getValue().getPersonneId();
+            Personne p = personneService.getById(pid);
+            String email = p != null ? p.getEmail() : "—";
+            return new SimpleStringProperty(email);
+        });
+        colPrefBudgetMin.setCellValueFactory(cell -> {
+            Double v = cell.getValue().getBudgetMin();
+            return new SimpleDoubleProperty(v != null ? v : 0).asObject();
+        });
+        colPrefBudgetMax.setCellValueFactory(cell -> {
+            Double v = cell.getValue().getBudgetMax();
+            return new SimpleDoubleProperty(v != null ? v : 0).asObject();
+        });
+        colPrefTypes.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTypesVoyage() != null ? cell.getValue().getTypesVoyage() : "—"));
+        colPrefCentres.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCentresInteret() != null ? cell.getValue().getCentresInteret() : "—"));
+        preferenceList.setAll(preferenceService.getAll());
+        tablePreferences.setItems(preferenceList);
+    }
+
+    private void refreshPreferencesTable() {
+        preferenceList.setAll(preferenceService.getAll());
+        tablePreferences.setItems(preferenceList);
+    }
+    /*------------------------------------------------------------------------*/
 
 }

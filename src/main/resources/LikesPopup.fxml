@@ -1,0 +1,50 @@
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.image.ImageView?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Controllers.LikesPopupController"
+      spacing="15"
+      prefWidth="450"
+      prefHeight="500"
+      maxWidth="450"
+      maxHeight="500"
+      alignment="TOP_CENTER"
+      styleClass="comment-popup">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="8">
+
+        <ImageView fx:id="likeIcon"
+                   fitWidth="22"
+                   fitHeight="22"
+                   preserveRatio="true"/>
+
+        <Label text="Likes" styleClass="card-title"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button text="✕" onAction="#closePopup" styleClass="btn-icon"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- USERS LIST -->
+    <ScrollPane fitToWidth="true" styleClass="scroll">
+        <content>
+            <VBox fx:id="likesContainer" spacing="15"/>
+        </content>
+    </ScrollPane>
+
+</VBox>

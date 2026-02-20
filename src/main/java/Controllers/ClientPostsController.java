@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -20,9 +21,12 @@ import javafx.scene.image.Image  ;
 
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
+import services.CommentaireService;
+import services.LikeService;
 import services.PostService;
 
 import java.io.File;
@@ -61,10 +65,10 @@ public class ClientPostsController {
 
     private Image starEmpty;
     private Image starFull;
-
+    private Personne currentUser;
     private File selectedImageFile;
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
-
+    private LikeService likeService = new LikeService();
     @FXML
     private void initialize() {
 
@@ -78,12 +82,14 @@ public class ClientPostsController {
         starEmpty = new Image(getClass().getResourceAsStream("/icons/whiteStar.png"));
         starFull = new Image(getClass().getResourceAsStream("/icons/yellowStar.png"));
 
-
+        currentUser = new Personne();
+        currentUser.setId(1);
 
 
         postsList.addListener((ListChangeListener<Post>) change -> {
             refreshUI();
         });
+
 
         loadPosts();
         postsContainer.setFillWidth(true);
@@ -222,25 +228,42 @@ public class ClientPostsController {
         likeBtn.getStyleClass().add("like-btn");
 
         ImageView likeIcon = new ImageView(heartEmpty);
+
+
+        if (likeService.isLikedByUser(currentUser, post)) {
+            likeIcon.setImage(heartFull);
+        }
         likeIcon.setFitWidth(25);
         likeIcon.setFitHeight(25);
         likeIcon.setPreserveRatio(true);
         likeIcon.setSmooth(true);
 
         likeBtn.setGraphic(likeIcon);
+        int nbLikes = likeService.getNbLikes(post);
 
-        Label likes = new Label("3");
+        Label likes = new Label(String.valueOf(nbLikes));
         likes.getStyleClass().add("muted");
-
+        likes.setOnMouseClicked(e -> handleLikes(post));
+        likes.setStyle("-fx-cursor: hand;");
         likeBtn.setOnAction(e -> {
+
             if (likeIcon.getImage() == heartEmpty) {
+
+                likeService.addLike(currentUser, post);
                 likeIcon.setImage(heartFull);
+
             } else {
+
+                likeService.deleteLike(currentUser, post);
                 likeIcon.setImage(heartEmpty);
             }
+
+            int newCount = likeService.getNbLikes(post);
+            likes.setText(String.valueOf(newCount));
         });
 
         likeBox.getChildren().addAll(likeBtn, likes);
+
 
         // COMMENT
         HBox commentBox = new HBox(6);
@@ -257,8 +280,12 @@ public class ClientPostsController {
 
         commentBtn.setOnAction(e -> handleComment(post));
 
-        Label comments = new Label("3");
+        CommentaireService commentService = new CommentaireService();
+        int nbCommentaires = commentService.countByPost(post.getId());
+
+        Label comments = new Label(String.valueOf(nbCommentaires));
         comments.getStyleClass().add("muted");
+
 
         commentBox.getChildren().addAll(commentBtn, comments);
 
@@ -322,10 +349,10 @@ public class ClientPostsController {
 
             root.getChildren().add(overlay);
 
-            // 🔥 Fermeture
             controller.setOnClose(() -> {
                 mainContent.setEffect(null);
                 root.getChildren().remove(overlay);
+                loadPosts();
             });
 
         } catch (Exception e) {
@@ -519,6 +546,35 @@ public class ClientPostsController {
         }
     }
 
+    private void handleLikes(Post post) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/LikesPopup.fxml"));
+            Parent popup = loader.load();
+
+            LikesPopupController controller = loader.getController();
+            controller.setPost(post);
+
+
+            GaussianBlur blur = new GaussianBlur(20);
+            mainContent.setEffect(blur);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+
+            overlay.getChildren().add(popup);
+            StackPane.setAlignment(popup, Pos.CENTER);
+
+            root.getChildren().add(overlay);
+
+            controller.setOnClose(() -> {
+                mainContent.setEffect(null);
+                root.getChildren().remove(overlay);
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 

@@ -80,6 +80,17 @@ public class LikeService {
         }
         return count;
     }
-
+    public boolean isLikedByUser(Personne personne, Post post) {
+        String sql = "SELECT * FROM likes WHERE personne_id = ? AND post_id = ?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, personne.getId());
+            ps.setInt(2, post.getId());
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
 
 }

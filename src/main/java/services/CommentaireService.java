@@ -129,5 +129,23 @@ public class CommentaireService implements IService<Commentaire> {
         }
         return commentaires;
     }
+    public int countByPost(int postId) {
+        int count = 0;
+        String query = "SELECT COUNT(*) FROM commentaire WHERE post_id = ?";
+
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, postId);
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
 
 }

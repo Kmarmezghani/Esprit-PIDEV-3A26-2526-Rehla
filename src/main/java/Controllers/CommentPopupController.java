@@ -117,7 +117,7 @@ public class CommentPopupController {
         lblMessage.getStyleClass().add("comment-text");
         lblMessage.setWrapText(true);
 
-        // ================= ACTIONS =================
+
         // ================= ACTIONS =================
         HBox actionBox = new HBox(10);
         actionBox.setAlignment(Pos.CENTER_RIGHT);

@@ -1,6 +1,7 @@
 package services;
 
 import models.Ticket;
+import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;

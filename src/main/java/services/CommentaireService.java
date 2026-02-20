@@ -3,6 +3,7 @@ package services;
 import models.Commentaire;
 import models.Personne;
 import models.Post;
+import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;

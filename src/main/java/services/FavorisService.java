@@ -7,6 +7,7 @@ import java.util.List;
 import models.Favoris;
 
 import models.Post;
+import util.DBConnection;
 
 public class FavorisService {
 

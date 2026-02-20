@@ -1,0 +1,213 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #f4f6fb;
+}
+
+/* ================= HEADER ================= */
+
+.border-pane > .top {
+    -fx-background-color: linear-gradient(to right, #1e2a78, #3047b5);
+}
+
+/* ================= SIDEBAR ================= */
+
+.border-pane > .left {
+    -fx-background-color: linear-gradient(to bottom, #3047b5, #1e2a78);
+}
+
+/* ================= SIDEBAR BUTTONS ================= */
+
+.button1 {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-background-radius: 0;
+    -fx-padding: 12 15 12 30;
+}
+
+.button1:hover {
+    -fx-background-color: rgba(255,255,255,0.15);
+}
+
+.button1:selected {
+    -fx-background-color: white;
+    -fx-text-fill: #1e2a78;
+    -fx-background-radius: 0 20 20 0;
+}
+
+.button1:selected:hover {
+    -fx-background-color: white;
+}
+
+/* ================= ACTION BUTTONS ================= */
+
+.button2 {
+    -fx-background-color: linear-gradient(to right, #4e73df, #224abe);
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-padding: 6 18 6 18;
+    -fx-font-weight: bold;
+}
+
+.button2:hover {
+    -fx-background-color: linear-gradient(to right, #2e59d9, #1e3db5);
+}
+
+.button2:pressed {
+    -fx-background-color: #1e3db5;
+}
+
+/* ================= WINDOW BUTTONS ================= */
+
+.button3 {
+    -fx-background-color: transparent;
+}
+
+.button3:hover {
+    -fx-background-color: #e81123;
+}
+
+.button4 {
+    -fx-background-color: transparent;
+}
+
+.button4:hover {
+    -fx-background-color: rgba(255,255,255,0.2);
+}
+
+/* ================= TABLE DESIGN ================= */
+
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: #e4e7f2;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f8f9fc;
+    -fx-pref-height: 40;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #1e2a78;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.table-view .cell {
+    -fx-alignment: CENTER;
+    -fx-padding: 10;
+    -fx-font-size: 13px;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9faff;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #e8ecff;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #cfd8ff;
+}
+
+.table-row-cell:selected .text {
+    -fx-fill: #1e2a78;
+    -fx-font-weight: bold;
+}
+
+/* ================= TAB PANE ================= */
+
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-background-color: transparent;
+    -fx-padding: 5 15 5 15;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #9aa3c2;
+    -fx-font-size: 14px;
+}
+
+.tab-pane .tab:selected {
+    -fx-border-color: #3047b5;
+    -fx-border-width: 0 0 3 0;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: #1e2a78;
+    -fx-font-weight: bold;
+}
+/*----------*/
+/* MAIN BACKGROUND */
+.main-container {
+    -fx-background-color: #f4f6fb;
+    -fx-padding: 20;
+}
+
+/* KPI CARDS */
+
+.kpi-container {
+    -fx-padding: 10 0 10 0;
+}
+
+.kpi-card {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-background-radius: 15;
+    -fx-spacing: 8;
+    -fx-pref-width: 170;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0.2, 0, 2);
+}
+
+.kpi-title {
+    -fx-text-fill: #8c94b3;
+    -fx-font-size: 13px;
+}
+
+.kpi-value {
+    -fx-text-fill: #1e2a78;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* ACTION BAR */
+
+.action-bar {
+    -fx-padding: 10 0 10 0;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e2a78;
+}
+
+/* SEARCH FIELD */
+
+.search-field {
+    -fx-background-radius: 20;
+    -fx-padding: 6 15 6 15;
+    -fx-border-color: #dce1f2;
+    -fx-border-radius: 20;
+    -fx-background-color: white;
+}
+
+.search-field:focused {
+    -fx-border-color: #3047b5;
+}
+/*------------posts client------------------------*/

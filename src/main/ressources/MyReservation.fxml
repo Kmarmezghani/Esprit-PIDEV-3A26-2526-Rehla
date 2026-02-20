@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.MyReservationsController">
+
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+            <!-- Top Navigation Bar -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <!-- Navigation Menu -->
+                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets left="100.0" />
+                            </padding>
+                            <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
+                            <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Destinations" />
+                            <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Posts" />
+                            <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="About" />
+                        </HBox>
+
+                        <!-- Profile Menu -->
+                        <MenuButton style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 20; -fx-cursor: hand; -fx-background-radius: 25; -fx-padding: 8;" text="👤">
+                            <items>
+                                <MenuItem onAction="#goToMyProfile" style="-fx-font-size: 14;" text="👤 My Profile" />
+                                <MenuItem onAction="#goToMyReservations" style="-fx-font-size: 14;" text="📅 My Reservations" />
+                                <SeparatorMenuItem />
+                                <MenuItem onAction="#handleLogout" style="-fx-font-size: 14;" text="🚪 Logout" />
+                            </items>
+                            <HBox.margin>
+                                <Insets right="20.0" />
+                            </HBox.margin>
+                        </MenuButton>
+
+                        <!-- Window Controls -->
+                        <Button onAction="#minwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@css/styling.css" text="□" />
+                        <Button onAction="#closewindow" prefHeight="11.0" prefWidth="37.0" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button4" stylesheets="@css/styling.css" text="✕">
+                     <HBox.margin>
+                        <Insets top="4.0" />
+                     </HBox.margin></Button>
+                    </children>
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+            </top>
+
+
+            <!-- ================= CENTER CONTENT ================= -->
+            <center>
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #ffffff;">
+
+                    <content>
+                        <VBox spacing="30" style="-fx-background-color: #ffffff;">
+
+                            <padding>
+                                <Insets bottom="40" left="40" right="40" top="30" />
+                            </padding>
+
+                            <!-- ===== TITLE ===== -->
+                            <Label text="📅 My Reservations" textFill="#223f91">
+                                <font>
+                                    <Font name="System Bold" size="32" />
+                                </font>
+                            </Label>
+
+                            <!-- ===== RESERVATION SECTION ===== -->
+                            <VBox spacing="15">
+
+                                <HBox alignment="CENTER_LEFT" spacing="15">
+
+                                    <Label text="Reservations" textFill="#3A5BC7">
+                                        <font>
+                                            <Font name="System Bold" size="20" />
+                                        </font>
+                                    </Label>
+
+                                    <Region HBox.hgrow="ALWAYS" />
+                                </HBox>
+
+                                <TableView fx:id="tableReservation" prefHeight="250" style="-fx-background-radius: 12;                                                   -fx-border-radius: 12;                                                   -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8,0,0,2);">
+
+                                    <columns>
+                                        <TableColumn fx:id="colIdReservation" prefWidth="67.99999237060547" text="ID" />
+                                        <TableColumn fx:id="colDateDebut" prefWidth="143.20001220703125" text="Start Date" />
+                                        <TableColumn fx:id="colDateFin" prefWidth="143.20001220703125" text="End Date" />
+                                        <TableColumn fx:id="colStatut" prefWidth="165.59994506835938" text="Status" />
+                                        <TableColumn fx:id="colCoutTotal" prefWidth="159.20001220703125" text="Total Cost" />
+                              <TableColumn fx:id="colNbrTickets" prefWidth="154.39996337890625" text="Number of Tickets" />
+                                        <TableColumn fx:id="colDeleteReservation" prefWidth="170.39996337890625" text="Actions" />
+                                    </columns>
+                                </TableView>
+
+                            </VBox>
+
+                            <!-- ===== TICKET SECTION ===== -->
+                            <!-- ===== CALENDAR SECTION ===== -->
+                            <VBox spacing="15">
+
+                                <Label text="Calendar View" textFill="#3A5BC7">
+                                    <font>
+                                        <Font name="System Bold" size="20" />
+                                    </font>
+                                </Label>
+
+                                <AnchorPane fx:id="calendarContainer" prefHeight="400" style="-fx-background-color: #f5f7fb;                        -fx-background-radius: 12;                        -fx-border-radius: 12;" />
+                            </VBox>
+
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+
+        </BorderPane>
+    </children>
+</AnchorPane>

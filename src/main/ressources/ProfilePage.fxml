@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProfileController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+                        <Button onAction="#goBack" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="← Back to Home" />
+                    </children>
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+            </top>
+            <center>
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #f5f5f5;" BorderPane.alignment="CENTER">
+                    <content>
+                        <VBox alignment="TOP_CENTER" spacing="25.0" style="-fx-background-color: #f5f5f5; -fx-padding: 40;">
+                            <Label text="My Profile" textFill="#223f91">
+                                <font>
+                                    <Font name="System Bold" size="32.0" />
+                                </font>
+                            </Label>
+
+                            <VBox spacing="12.0" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 2);" maxWidth="500">
+                                <Label text="Personal info" textFill="#223f91">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Nom" />
+                                <TextField fx:id="fieldNom" promptText="Nom" />
+                                <Label text="Prénom" />
+                                <TextField fx:id="fieldPrenom" promptText="Prénom" />
+                                <Label text="Email" />
+                                <TextField fx:id="fieldEmail" promptText="Email" />
+                                <Label text="Password (leave blank to keep current)" />
+                                <TextField fx:id="fieldPassword" promptText="New password" />
+                            </VBox>
+
+                            <VBox spacing="12.0" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 2);" maxWidth="500">
+                                <Label text="Travel preferences" textFill="#223f91">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Budget min" />
+                                <TextField fx:id="fieldBudgetMin" promptText="e.g. 100" />
+                                <Label text="Budget max" />
+                                <TextField fx:id="fieldBudgetMax" promptText="e.g. 5000" />
+                                <Label text="Types de voyage" />
+                                <TextField fx:id="fieldTypesVoyage" promptText="e.g. adventure, relaxation" />
+                                <Label text="Centres d'intérêt" />
+                                <TextField fx:id="fieldCentresInteret" promptText="e.g. history, beaches" />
+                            </VBox>
+
+                            <HBox spacing="15.0" alignment="CENTER">
+                                <Button fx:id="btnSave" onAction="#handleSave" style="-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 12 35; -fx-background-radius: 10; -fx-cursor: hand;" text="Save" />
+                                <Button onAction="#goBack" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-size: 16; -fx-padding: 12 35; -fx-background-radius: 10; -fx-cursor: hand;" text="Cancel" />
+                            </HBox>
+                            <Label text="Danger zone" textFill="#223f91">
+                                <font>
+                                    <Font name="System Bold" size="14.0" />
+                                </font>
+                            </Label>
+                            <Button onAction="#handleDeleteAccount" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 14; -fx-padding: 10 25; -fx-background-radius: 10; -fx-cursor: hand;" text="Delete my account" />
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

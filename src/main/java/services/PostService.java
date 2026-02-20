@@ -3,6 +3,7 @@ package services;
 
 import models.Post;
 import models.Personne;
+import util.DBConnection;
 
 import java.sql.*;
 

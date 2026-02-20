@@ -9,6 +9,7 @@ import java.util.List;
 
 import models.Personne;
 import models.Post;
+import util.DBConnection;
 
 public class LikeService {
     private Connection conn;

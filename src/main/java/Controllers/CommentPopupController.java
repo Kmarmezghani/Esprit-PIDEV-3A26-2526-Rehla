@@ -3,19 +3,27 @@ package Controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import models.Commentaire;
 import models.Personne;
 import models.Post;
+import org.json.JSONObject;
 import services.CommentaireService;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +34,8 @@ public class CommentPopupController {
 
     @FXML
     private VBox commentsContainer;
-
+    @FXML
+    private StackPane root;
     @FXML
     private TextField txtComment;
 
@@ -60,25 +69,90 @@ public class CommentPopupController {
         }
     }
 
+    private double getToxicityScore(String text) {
+        try {
+            URL url = new URL("http://localhost:5000/predict");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            // Encodage JSON sûr
+            String jsonInput = "{\"text\": \"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(jsonInput.getBytes("UTF-8"));
+                os.flush();
+            }
+
+            int status = conn.getResponseCode();
+
+            InputStream is = (status == 200) ? conn.getInputStream() : conn.getErrorStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+
+            if (status != 200) {
+                System.err.println("Erreur Flask: HTTP " + status + " → " + response);
+                return 0;
+            }
+
+            JSONObject obj = new JSONObject(response.toString());
+            return obj.getDouble("score");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
     /** Envoyer un nouveau commentaire */
     @FXML
     private void sendComment() {
         if(post == null) return;
 
         String text = txtComment.getText().trim();
-        if(text.isEmpty()) return;
 
+        // --- Contrôle vide ---
+        if(text.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Commentaire vide !");
+            alert.setContentText("Veuillez écrire un commentaire avant d'envoyer.");
+            alert.showAndWait();
+            return;
+        }
+
+        // --- Contrôle toxicité ---
+        double score = getToxicityScore(text);
+        if(score >= 0.7) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Commentaire refusé !");
+            alert.setContentText("Le contenu ne respecte pas nos règles.");
+            alert.showAndWait();
+            return;
+        }
+
+        if(score >= 0.1) {
+            notifyAdmin(text, score);
+            showToast("Commentaire sensible publié (admin notifié)");
+        } else {
+            showToast("Commentaire publié !");
+        }
+
+        // --- Création et insertion ---
         Commentaire newComment = new Commentaire();
         newComment.setContenu(text);
-        newComment.setDateCommentaire(LocalDateTime.now().toLocalDate()); // date du jour
+        newComment.setDateCommentaire(LocalDateTime.now().toLocalDate());
         newComment.setPost(post);
 
-        // Ici tu peux mettre la vraie personne connectée
         Personne auteur = new Personne();
-        auteur.setId(1); // exemple, remplacer par utilisateur réel
-        auteur.setPrenom("Vous"); // pour l'affichage
-        auteur.setNom("");         // pour l'affichage
+        auteur.setId(1);
+        auteur.setPrenom("Vous");
+        auteur.setNom("");
         newComment.setAuteur(auteur);
 
         commentaireService.add(newComment);
@@ -89,7 +163,34 @@ public class CommentPopupController {
 
         txtComment.clear();
     }
+    private void notifyAdmin(String contenu, double score) {
+        System.out.println("⚠️ ADMIN ALERT");
+        System.out.println("Contenu: " + contenu);
+        System.out.println("Score: " + score);
 
+    }
+    private void showToast(String message) {
+        Label toast = new Label(message);
+        toast.getStyleClass().add("toast");
+        toast.setStyle(
+                "-fx-background-color: rgba(0,0,0,0.7);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-padding: 10px 20px;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-font-size: 14px;"
+        );
+
+        root.getChildren().add(toast);
+        StackPane.setAlignment(toast, Pos.TOP_CENTER);
+
+        // Faire disparaître après 2 secondes
+        new Thread(() -> {
+            try {
+                Thread.sleep(7000);
+            } catch (InterruptedException ignored) {}
+            javafx.application.Platform.runLater(() -> root.getChildren().remove(toast));
+        }).start();
+    }
     /** Ajouter un commentaire dans l'UI */
     private void addComment(String author, String message, String date, Commentaire commentObj) {
         VBox commentBox = new VBox(5);

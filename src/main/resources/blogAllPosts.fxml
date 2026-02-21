@@ -27,7 +27,7 @@
 
 
                 <Button text="✨ Nouveau" styleClass="btn-primary" />
-                <Button text="🔔" styleClass="btn-icon"/>
+                <Button fx:id="btnNotif" text="🔔"  styleClass="btn-icon"/>
                 <Button text="💬" styleClass="btn-icon"/>
                 <Button text="⛶" styleClass="btn-icon" onAction="#handleFullScreen"/>
                 <Button text="✕" styleClass="btn-icon" onAction="#handleClose"/>

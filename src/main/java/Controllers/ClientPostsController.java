@@ -15,7 +15,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.control.MenuItem;
-
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image  ;
 
@@ -25,6 +27,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
+import org.json.JSONObject;
 import services.CommentaireService;
 import services.LikeService;
 import services.PostService;
@@ -445,6 +448,54 @@ public class ClientPostsController {
             showToast("Votre image a été sélectionnée !");
         }
     }
+
+    private double getToxicityScore(String text) {
+        try {
+            URL url = new URL("http://localhost:5000/predict");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            // Encodage JSON sûr
+            String jsonInput = "{\"text\": \"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(jsonInput.getBytes("UTF-8"));
+                os.flush();
+            }
+
+            int status = conn.getResponseCode();
+
+            InputStream is = (status == 200) ? conn.getInputStream() : conn.getErrorStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+
+            if (status != 200) {
+                System.err.println("Erreur Flask: HTTP " + status + " → " + response);
+                return 0;
+            }
+
+            JSONObject obj = new JSONObject(response.toString());
+            return obj.getDouble("score");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    private void notifyAdmin(String contenu, double score) {
+        System.out.println("⚠️ ADMIN ALERT");
+        System.out.println("Contenu: " + contenu);
+        System.out.println("Score: " + score);
+
+    }
     @FXML
     private void handleAddPost() {
 
@@ -458,11 +509,30 @@ public class ClientPostsController {
             return;
         }
 
+        double score = getToxicityScore(contenu);
+        System.out.println("Score toxicité = " + score);
+
+        if (score >= 0.7) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Publication refusée !");
+            alert.setContentText("Votre contenu ne respecte pas nos règles de communauté. Veuillez le modifier avant de publier.");
+            alert.show();
+            return;
+        }
+
+
+        if (score >= 0.1) {
+            System.out.println("Contenu suspect détecté !");
+            notifyAdmin(contenu, score);
+            showToast("Contenu sensible publié (admin notifié)");
+        } else {
+            showToast("Publication publiée !");
+        }
+
         Personne auteur = new Personne();
         auteur.setId(1);
 
         String imagePath = null;
-
         if (selectedImageFile != null) {
             imagePath = selectedImageFile.getAbsolutePath();
         }
@@ -480,15 +550,14 @@ public class ClientPostsController {
         PostService postService = new PostService();
         postService.add(newPost);
 
-
         loadPosts();
 
         txtNewPost.clear();
         selectedImageFile = null;
 
         System.out.println("Post ajouté avec image !");
-        showToast("Publication publiée !");
     }
+
     private void showToast(String message) {
         Label toast = new Label(message);
         toast.getStyleClass().add("toast");
@@ -506,7 +575,7 @@ public class ClientPostsController {
         // Faire disparaître après 2 secondes
         new Thread(() -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(7000);
             } catch (InterruptedException ignored) {}
             javafx.application.Platform.runLater(() -> root.getChildren().remove(toast));
         }).start();

@@ -12,24 +12,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import models.Activite;
-import services.ActiviteService;
-import services.EmailService;
-import services.PersonneService;
-import services.ReservationService;
-import services.Toast;
+import models.Preference;
+import services.*;
 
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ActivitiesPageController {
 
@@ -41,6 +33,16 @@ public class ActivitiesPageController {
     private final PersonneService personneService = new PersonneService();
     private final EmailService emailService = new EmailService();
 
+    // ===== AI =====
+    private final PreferenceService preferenceService = new PreferenceService();
+    private final GeminiRecommendationService geminiService = new GeminiRecommendationService();
+    private Set<Integer> recommendedIds = new HashSet<>();
+
+    // Cache IA (évite lenteur)
+    private long lastAiFetchMs = 0;
+    private static final long AI_CACHE_MS = 5 * 60 * 1000; // 5 minutes
+    // ============
+
     private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMM yyyy • HH:mm");
     private List<Activite> allActivities = new ArrayList<>();
 
@@ -49,6 +51,7 @@ public class ActivitiesPageController {
     @FXML
     public void initialize() {
         reloadFromDB();
+
         if (searchField != null) {
             searchField.textProperty().addListener((obs, oldV, newV) -> applySearchFilter());
         }
@@ -83,7 +86,7 @@ public class ActivitiesPageController {
     }
 
     // ======================
-    // RENDER CARDS
+    // RENDER
     // ======================
     private void renderActivities(List<Activite> list) {
         activitiesFlowPane.getChildren().clear();
@@ -104,43 +107,60 @@ public class ActivitiesPageController {
             -fx-padding: 16;
         """);
 
-        // ================= IMAGE =================
+        // IMAGE
         ImageView img = new ImageView();
-        try {
-            img.setImage(new Image(getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png")));
-        } catch (Exception ignored) {}
+        try { img.setImage(new Image(getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png"))); }
+        catch (Exception ignored) {}
         img.setFitWidth(248);
         img.setFitHeight(140);
         img.setPreserveRatio(false);
         img.setSmooth(true);
 
-        // ================= TITLE =================
+        // TITLE
         Label title = new Label(safe(a.getNom()));
         title.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #223f91;");
 
-        // ================= DESTINATION =================
+        // ===== AI BADGE =====
+        boolean isRecommended = recommendedIds != null && recommendedIds.contains(a.getId());
+
+        Label recommendedBadge = new Label("✅ Recommended");
+        recommendedBadge.setStyle("""
+            -fx-background-color: #dcfce7;
+            -fx-text-fill: #166534;
+            -fx-font-weight: 900;
+            -fx-font-size: 11;
+            -fx-padding: 4 10;
+            -fx-background-radius: 999;
+        """);
+
+        HBox badgeRow = new HBox(recommendedBadge);
+        badgeRow.setAlignment(Pos.CENTER_LEFT);
+        badgeRow.setVisible(isRecommended);
+        badgeRow.setManaged(isRecommended);
+        // ====================
+
+        // DESTINATION
         String dest = activiteService.getDestinationDisplayById(a.getDestinationId());
         Label destination = new Label("📍 " + (dest == null || dest.isBlank() ? "Unknown" : dest));
         destination.setStyle("-fx-font-size: 13; -fx-text-fill: #4a5f88;");
 
-        // ================= DATES =================
+        // DATES
         String start = (a.getDateDebut() != null) ? a.getDateDebut().format(dtf) : "—";
         String end = (a.getDateFin() != null) ? a.getDateFin().format(dtf) : "—";
         Label date = new Label("🕒 " + start + "  →  " + end);
         date.setStyle("-fx-font-size: 12; -fx-text-fill: #5a6b8a;");
 
-        // ================= PRICE =================
+        // PRICE + RATING
         Label price = new Label(String.format("💰 %.2f TND", a.getPrix()));
         price.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #3A5BC7;");
 
-        // ================= RATING =================
         Label rating = new Label("⭐ " + String.format("%.1f", a.getNoteMoyenne()));
         rating.setStyle("-fx-font-size: 13; -fx-text-fill: #223f91;");
 
         HBox infoRow = new HBox(12, price, rating);
         infoRow.setAlignment(Pos.CENTER_LEFT);
 
-        // ================= DETAILS BUTTON =================
+        // DETAILS
         Button detailsBtn = new Button("View details");
         detailsBtn.setStyle("""
             -fx-background-color: #3A5BC7;
@@ -152,31 +172,28 @@ public class ActivitiesPageController {
         """);
         detailsBtn.setOnAction(e -> openActivityDetails(a));
 
-        // ================= LIMIT/PLACES LOGIC =================
+        // LIMIT/PLACES
         Integer guideId = a.getGuideId();
         boolean hasGuide = (guideId != null && guideId > 0);
 
-        Integer max = a.getMaxPlaces(); // null => unlimited
+        Integer max = a.getMaxPlaces();
         boolean isLimited = (max != null);
 
-        int booked = 0;
         int left = -1;
         boolean isFull = false;
 
         if (isLimited) {
             try {
-                booked = reservationService.sumTicketsConfirmedByActiviteId(a.getId());
+                int booked = reservationService.sumTicketsConfirmedByActiviteId(a.getId());
                 left = Math.max(0, max - booked);
                 isFull = (left == 0);
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                booked = 0;
                 left = max;
                 isFull = false;
             }
         }
 
-        // ================= PLACES TEXT =================
         Label placesText = new Label();
         placesText.setVisible(false);
         placesText.setManaged(false);
@@ -191,23 +208,14 @@ public class ActivitiesPageController {
                 placesText.setTextFill(Color.web("#ef4444"));
             } else {
                 placesText.setText(left + " spots left");
-
-                if (left <= 1) {
-                    placesText.setTextFill(Color.web("#ef4444"));
-                } else if (left == 2) {
-                    placesText.setTextFill(Color.web("#f59e0b"));
-                } else {
-                    double ratio = left / (double) max;
-                    if (ratio > 0.50) placesText.setTextFill(Color.web("#002b11"));
-                    else if (ratio > 0.20) placesText.setTextFill(Color.web("#f59e0b"));
-                    else placesText.setTextFill(Color.web("#ef4444"));
-                }
+                if (left <= 1) placesText.setTextFill(Color.web("#ef4444"));
+                else if (left == 2) placesText.setTextFill(Color.web("#f59e0b"));
+                else placesText.setTextFill(Color.web("#002b11"));
             }
         }
 
-        // ================= BOOK BUTTON =================
+        // BOOK (ton code inchangé)
         Button bookBtn = null;
-
         if (hasGuide) {
             bookBtn = new Button("Book");
 
@@ -219,7 +227,6 @@ public class ActivitiesPageController {
                 -fx-padding: 10 18;
                 -fx-cursor: hand;
             """;
-
             String fullStyle = """
                 -fx-background-color: #9ca3af;
                 -fx-text-fill: white;
@@ -234,17 +241,13 @@ public class ActivitiesPageController {
             else bookBtn.setStyle(normalStyle);
 
             Button finalBookBtn = bookBtn;
-
             finalBookBtn.setOnAction(e -> {
-
                 int available = Integer.MAX_VALUE;
 
-                // Re-check availability
                 if (isLimited) {
                     try {
                         int taken = reservationService.sumTicketsConfirmedByActiviteId(a.getId());
                         available = Math.max(0, max - taken);
-
                         if (available == 0) {
                             toastWarn("Sold out", "This activity is fully booked.");
                             reloadFromDB();
@@ -256,14 +259,13 @@ public class ActivitiesPageController {
                     }
                 }
 
-                // ===== Pretty popup (modern) =====
+                // (reste inchangé)...
                 Dialog<Integer> dialog = new Dialog<>();
                 dialog.setTitle("Book tickets");
                 dialog.setHeaderText(null);
 
                 DialogPane pane = dialog.getDialogPane();
                 pane.setPrefWidth(420);
-
                 pane.setStyle("""
                     -fx-background-color: white;
                     -fx-padding: 18;
@@ -289,8 +291,7 @@ public class ActivitiesPageController {
                 pane.getStylesheets().add("data:text/css," + css.replace("\n", "%0A").replace(" ", "%20"));
 
                 Label hTitle = new Label("Book tickets");
-                hTitle.setStyle("-fx-font-size: 18; -fx-font-weight: 800; -fx-text-fill: #111827;");
-
+                hTitle.setStyle("-fx-font-size: 18; -fx-font-weight: 900; -fx-text-fill: #111827;");
                 Label hSub = new Label("Choose how many tickets you want");
                 hSub.setStyle("-fx-font-size: 12.5; -fx-text-fill: #6b7280;");
 
@@ -298,21 +299,20 @@ public class ActivitiesPageController {
                 header.setPadding(new Insets(0, 0, 10, 0));
 
                 Label actName = new Label(safe(a.getNom()));
-                actName.setStyle("-fx-font-size: 15; -fx-font-weight: 800; -fx-text-fill: #0f172a;");
+                actName.setStyle("-fx-font-size: 15; -fx-font-weight: 900; -fx-text-fill: #0f172a;");
 
                 Label priceLbl2 = new Label("Price");
                 priceLbl2.setStyle("-fx-font-size: 11; -fx-text-fill: #6b7280;");
                 Label priceVal2 = new Label(String.format("%.2f TND", a.getPrix()));
-                priceVal2.setStyle("-fx-font-size: 13; -fx-font-weight: 800; -fx-text-fill: #111827;");
+                priceVal2.setStyle("-fx-font-size: 13; -fx-font-weight: 900; -fx-text-fill: #111827;");
 
                 Label availLbl2 = new Label("Available");
                 availLbl2.setStyle("-fx-font-size: 11; -fx-text-fill: #6b7280;");
                 Label availVal2 = new Label(isLimited ? String.valueOf(available) : "Unlimited");
 
-                // badge color depending on availability
                 String badgeStyle = """
                     -fx-font-size: 12;
-                    -fx-font-weight: 800;
+                    -fx-font-weight: 900;
                     -fx-padding: 4 10;
                     -fx-background-radius: 999;
                 """;
@@ -338,7 +338,7 @@ public class ActivitiesPageController {
                 """);
 
                 Label qtyLbl = new Label("Quantity");
-                qtyLbl.setStyle("-fx-font-size: 12; -fx-text-fill: #111827; -fx-font-weight: 800;");
+                qtyLbl.setStyle("-fx-font-size: 12; -fx-text-fill: #111827; -fx-font-weight: 900;");
 
                 int maxSpinner = isLimited ? Math.min(available, 20) : 20;
                 Spinner<Integer> sp = new Spinner<>(1, Math.max(1, maxSpinner), 1);
@@ -350,8 +350,7 @@ public class ActivitiesPageController {
 
                 Runnable updateTotal = () -> {
                     int q = sp.getValue();
-                    double total = a.getPrix() * q;
-                    totalLbl.setText("Total: " + String.format("%.2f TND", total));
+                    totalLbl.setText("Total: " + String.format("%.2f TND", a.getPrix() * q));
                 };
                 updateTotal.run();
                 sp.valueProperty().addListener((obs, ov, nv) -> updateTotal.run());
@@ -421,7 +420,7 @@ public class ActivitiesPageController {
             });
         }
 
-        // ================= ACTIONS LAYOUT =================
+        // ACTIONS LAYOUT
         VBox actionsBox = new VBox(4);
         actionsBox.setFillWidth(true);
 
@@ -444,9 +443,18 @@ public class ActivitiesPageController {
         if (placesText.isManaged()) actionsBox.getChildren().addAll(btnRow, placesRow);
         else actionsBox.getChildren().add(btnRow);
 
-        card.getChildren().addAll(img, title, destination, date, infoRow, actionsBox);
+        // ADD ALL (badgeRow ajouté)
+        card.getChildren().addAll(
+                badgeRow,
+                img,
+                title,
+                destination,
+                date,
+                infoRow,
+                actionsBox
+        );
 
-        // ================= HOVER =================
+        // HOVER
         card.setOnMouseEntered(e ->
                 card.setStyle("""
                     -fx-background-color: #f7fbff;
@@ -491,17 +499,84 @@ public class ActivitiesPageController {
         }
     }
 
-    // ======================
-    // DATA
-    // ======================
+    // ===== DATA (IA rapide + cache) =====
     public void reloadFromDB() {
         allActivities = activiteService.getDisponibles();
+
+        // Affichage immédiat
         applySearchFilter();
+
+        // Cache: si déjà calculé récemment, on ne relance pas l'IA
+        long now = System.currentTimeMillis();
+        if (now - lastAiFetchMs < AI_CACHE_MS) {
+            return;
+        }
+        lastAiFetchMs = now;
+
+        // IA en background
+        new Thread(() -> {
+            try {
+                Preference pref = preferenceService.getByPersonneId(CURRENT_USER_ID);
+                if (pref == null) {
+                    recommendedIds = new HashSet<>();
+                    return;
+                }
+
+                String profileText = buildProfileText(pref);
+
+                // ✅ Préfiltre = plus rapide + plus logique
+                List<Activite> candidates = filterCandidatesByPreference(allActivities, pref);
+
+                List<Integer> ids = geminiService.rankActivityIdsMax3(candidates, profileText);
+                recommendedIds = new HashSet<>(ids);
+
+                Platform.runLater(this::applySearchFilter);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                recommendedIds = new HashSet<>();
+                Platform.runLater(this::applySearchFilter);
+            }
+        }).start();
     }
 
-    // ======================
-    // NAVIGATION
-    // ======================
+    private String buildProfileText(Preference p) {
+        return """
+            budgetMin: %s
+            budgetMax: %s
+            typesVoyage: %s
+            centresInteret: %s
+            """.formatted(
+                String.valueOf(p.getBudgetMin()),
+                String.valueOf(p.getBudgetMax()),
+                safe(p.getTypesVoyage()),
+                safe(p.getCentresInteret())
+        );
+    }
+
+    // ✅ garde seulement des candidats cohérents (rapide)
+    private List<Activite> filterCandidatesByPreference(List<Activite> list, Preference pref) {
+        if (list == null) return List.of();
+
+        Double min = pref.getBudgetMin();
+        Double max = pref.getBudgetMax();
+
+        List<Activite> out = new ArrayList<>();
+        for (Activite a : list) {
+            if (!"DISPONIBLE".equalsIgnoreCase(safe(a.getStatus()))) continue;
+
+            double price = a.getPrix();
+            if (min != null && price < min) continue;
+            if (max != null && price > max) continue;
+
+            out.add(a);
+            if (out.size() >= 18) break; // ✅ même limite que Gemini
+        }
+        return out;
+    }
+    // ====================================
+
+    // NAVIGATION (inchangé)
     private Stage getStageFromEvent(ActionEvent event) {
         Object src = event.getSource();
         if (src instanceof Node n) return (Stage) n.getScene().getWindow();
@@ -578,9 +653,7 @@ public class ActivitiesPageController {
         alert.showAndWait();
     }
 
-    // ======================
     // WINDOW BUTTONS
-    // ======================
     @FXML public void closewindow(ActionEvent event) { getStageFromEvent(event).close(); }
     @FXML public void minwindow(ActionEvent event) { getStageFromEvent(event).setIconified(true); }
     @FXML public void maxwindow(ActionEvent event) {
@@ -588,23 +661,17 @@ public class ActivitiesPageController {
         stage.setMaximized(!stage.isMaximized());
     }
 
-    // ======================
-    // TOAST HELPERS
-    // ======================
+    // TOAST
     private Stage getStage() {
         if (activitiesFlowPane == null || activitiesFlowPane.getScene() == null) return null;
         return (Stage) activitiesFlowPane.getScene().getWindow();
     }
 
-    private void toastSuccess(String title, String msg) { Toast.show(getStage(), Toast.Type.SUCCESS, title, msg); }
     private void toastWarn(String title, String msg) { Toast.show(getStage(), Toast.Type.WARNING, title, msg); }
     private void toastError(String title, String msg) { Toast.show(getStage(), Toast.Type.ERROR, title, msg); }
     private void toastSuccessWithAction(String title, String msg, String actionText, Runnable action) {
         Toast.show(getStage(), Toast.Type.SUCCESS, title, msg, actionText, action);
     }
 
-    // ======================
-    // UTILS
-    // ======================
     private String safe(String s) { return s == null ? "" : s; }
 }

@@ -22,12 +22,12 @@ public class Toast {
 
     public enum Type { SUCCESS, INFO, WARNING, ERROR }
 
-    // ===== Public API =====
+
     public static void show(Stage stage, Type type, String title, String message) {
         show(stage, type, title, message, null, null);
     }
 
-    // Snackbar with action button (ex: "View bookings")
+
     public static void show(Stage stage,
                             Type type,
                             String title,

@@ -422,7 +422,7 @@ public class DashboardController {
             private final Button deleteBtn = new Button();
 
             {
-                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/icons/poubelle.png")));
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Backoffice/icons/poubelle.png")));
                 icon.setFitWidth(20);
                 icon.setFitHeight(20);
 
@@ -527,7 +527,7 @@ public class DashboardController {
             private final Button deleteBtn = new Button();
 
             {
-                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/icons/poubelle.png")));
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Backoffice/icons/poubelle.png")));
                 icon.setFitWidth(20);
                 icon.setFitHeight(20);
                 deleteBtn.setGraphic(icon);
@@ -746,7 +746,7 @@ public class DashboardController {
 
             Stage stage = new Stage();
             stage.setTitle("Add new reservation");
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/logoblue.png")));
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/Backoffice/icons/logoblue.png")));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(((Node) e.getSource()).getScene().getWindow());
             stage.setScene(new Scene(root));
@@ -867,7 +867,7 @@ public class DashboardController {
             private final Button btn = new Button();
 
             {
-                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/icons/poubelle.png")));
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Backoffice/icons/poubelle.png")));
                 icon.setFitWidth(20);
                 icon.setFitHeight(20);
                 btn.setGraphic(icon);
@@ -932,7 +932,7 @@ public class DashboardController {
             private final Button btn = new Button();
 
             {
-                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/icons/poubelle.png")));
+                ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/Backoffice/icons/poubelle.png")));
                 icon.setFitWidth(20);
                 icon.setFitHeight(20);
                 btn.setGraphic(icon);

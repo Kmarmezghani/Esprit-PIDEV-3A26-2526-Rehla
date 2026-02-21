@@ -142,7 +142,7 @@ public class MyReservationsController {
 
             {
                 ImageView icon = new ImageView(new Image(
-                        getClass().getResourceAsStream("/icons/poubelle.png")
+                        getClass().getResourceAsStream("/Backoffice/icons/poubelle.png")
                 ));
                 icon.setFitWidth(18);
                 icon.setFitHeight(18);

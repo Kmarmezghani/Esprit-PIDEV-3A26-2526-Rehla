@@ -240,17 +240,15 @@ public class TicketService implements IService<Ticket> {
         return "Unknown";
     }
 
-    // ✅ UPDATED: pass activiteId and store it
     public void createTicketsBatch(Connection cn, int reservationId, int activiteId,
                                    int qty, double prixUnitaire, Integer destinationId) throws SQLException {
 
         String sql = """
-            INSERT INTO ticket(reservation_id, activite_id, destination_id, type, prix, statut, dateDebut, dateFin)
-            VALUES (?, ?, ?, 'activity', ?, 'reserved', NULL, NULL)
-        """;
+        INSERT INTO ticket(reservation_id, activite_id, destination_id, type, prix, statut, dateDebut, dateFin)
+        VALUES (?, ?, ?, 'activity', ?, 'reserved', NULL, NULL)
+    """;
 
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
-
             for (int i = 0; i < qty; i++) {
                 ps.setInt(1, reservationId);
                 ps.setInt(2, activiteId);
@@ -259,11 +257,50 @@ public class TicketService implements IService<Ticket> {
                 else ps.setInt(3, destinationId);
 
                 ps.setDouble(4, prixUnitaire);
-
                 ps.addBatch();
             }
-
             ps.executeBatch();
+        }
+    }
+    public void addActivityTicket(Connection cn, int reservationId, int activiteId) throws SQLException {
+
+        // On récupère infos de l'activité pour remplir ticket proprement
+        String fetchAct = "SELECT prix, destination_id, date_debut, date_fin FROM activite WHERE id = ?";
+        double prix;
+        Integer destinationId;
+        Date dateDebut;
+        Date dateFin;
+
+        try (PreparedStatement ps = cn.prepareStatement(fetchAct)) {
+            ps.setInt(1, activiteId);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) throw new SQLException("Activite not found for ticket insertion.");
+
+            prix = rs.getDouble("prix");
+            int dest = rs.getInt("destination_id");
+            destinationId = rs.wasNull() ? null : dest;
+
+            dateDebut = rs.getDate("date_debut");
+            dateFin = rs.getDate("date_fin");
+        }
+
+        String insert = """
+        INSERT INTO ticket (reservation_id, activite_id, destination_id, type, prix, statut, dateDebut, dateFin)
+        VALUES (?, ?, ?, 'activity', ?, 'reserved', ?, ?)
+    """;
+
+        try (PreparedStatement ps = cn.prepareStatement(insert)) {
+            ps.setInt(1, reservationId);
+            ps.setInt(2, activiteId);
+
+            if (destinationId == null) ps.setNull(3, Types.INTEGER);
+            else ps.setInt(3, destinationId);
+
+            ps.setDouble(4, prix);
+            ps.setDate(5, dateDebut);
+            ps.setDate(6, dateFin);
+
+            ps.executeUpdate();
         }
     }
 }

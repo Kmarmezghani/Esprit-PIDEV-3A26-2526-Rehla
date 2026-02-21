@@ -110,7 +110,8 @@ public class AjouterReservationController {
                     statut,
                     coutTotal,
                     personneId,
-                    destinationId
+                    destinationId,
+                    0
             );
             reservationService.add(newRes);
         } else {

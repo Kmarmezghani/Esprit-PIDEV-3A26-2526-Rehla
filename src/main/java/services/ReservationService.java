@@ -161,23 +161,19 @@ public class ReservationService implements IService<Reservation> {
     // =========================
 
     public int sumTicketsConfirmedByActiviteId(int activiteId) throws SQLException {
-        // ⚠️ Ici on suppose que le "volume" est dans reservation.nb_tickets
-        // donc on somme reservation.nb_tickets pour les reservations qui contiennent cette activité dans ticket.
         String sql = """
-            SELECT COALESCE(SUM(r.nb_tickets), 0) AS taken
-            FROM ticket t
-            JOIN reservation r ON r.id = t.reservation_id
-            WHERE t.activite_id = ?
-              AND r.statut = 'reserved'
-        """;
-
+        SELECT COALESCE(COUNT(*),0) AS taken
+        FROM ticket t
+        JOIN reservation r ON r.id = t.reservation_id
+        WHERE t.activite_id = ?
+          AND r.statut = 'reserved'
+    """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getInt("taken") : 0;
         }
     }
-
     // =========================
     // Booking (transaction)
     // =========================
@@ -248,8 +244,7 @@ public class ReservationService implements IService<Reservation> {
                 reservationId = keys.getInt(1);
             }
 
-            // 5) Insert ticket line that links reservation <-> activite
-            ticketService.addActivityTicket(conn, reservationId, activiteId);
+            ticketService.createTicketsBatch(conn, reservationId, activiteId, qty, prixUnitaire, destinationId);
 
             conn.commit();
         } catch (SQLException ex) {

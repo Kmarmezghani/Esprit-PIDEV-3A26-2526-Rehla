@@ -141,6 +141,9 @@ PostService postService = new PostService();
         VBox card = new VBox(10);
         card.getStyleClass().addAll("post", "glass");
 
+        // ⭐ ID utilisé pour navigation notification
+        card.setUserData(post.getId());
+
         // ================= HEADER =================
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -564,10 +567,68 @@ PostService postService = new PostService();
                 MenuItem item = new MenuItem(n.getMessage());
                 item.getStyleClass().add("notif-item");
 
+                item.setOnAction(e -> {
+
+                    handleNotificationClick(n);
+
+                });
+
                 notifMenu.getItems().add(item);
             }
+
         }
     }
+    private void handleNotificationClick(notification n){
+
+        loadPosts();
+
+        javafx.application.Platform.runLater(() -> {
+
+            // ⭐ Si notification concerne un post
+            if(n.getPostId() != null){
+
+                VBox postNode = findPostNodeById(n.getPostId());
+
+                if(postNode != null){
+                    scrollToNode(postNode);
+
+                    postNode.setStyle(
+                            "-fx-border-color:red;" +
+                                    "-fx-border-width:3px;"
+                    );
+                }
+            }
+
+        });
+    }
+
+
+    private void scrollToNode(Node node){
+
+        ScrollPane scroll =
+                (ScrollPane) postsContainer
+                        .getScene()
+                        .lookup(".scroll");
+
+        double height = postsContainer.getHeight();
+        double y = node.getLayoutY();
+
+        scroll.setVvalue(y / height);
+    }
+
+    private VBox findPostNodeById(int postId){
+
+        for(Node node : postsContainer.getChildren()){
+
+            if(node.getUserData() != null &&
+                    node.getUserData().equals(postId)){
+                return (VBox) node;
+            }
+        }
+
+        return null;
+    }
+
 
 
     @FXML

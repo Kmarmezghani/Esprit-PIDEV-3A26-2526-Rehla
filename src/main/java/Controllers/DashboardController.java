@@ -205,20 +205,14 @@ public class DashboardController {
         colDateFin.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
 
-        colCoutTotal.setCellValueFactory(cell -> {
-            double total = ticketService.sumPrixByReservation(cell.getValue().getId());
-            return new SimpleDoubleProperty(total).asObject();
-        });
+        colCoutTotal.setCellValueFactory(new PropertyValueFactory<>("coutTotal"));
 
         colDestination.setCellValueFactory(cell -> {
             String nom = reservationService.getDestinationNomById(cell.getValue().getDestinationId());
             return new SimpleStringProperty(nom);
         });
 
-        colNbrTickets.setCellValueFactory(cell -> {
-            int count = ticketService.countTicketsByReservation(cell.getValue().getId());
-            return new SimpleIntegerProperty(count).asObject();
-        });
+        colNbrTickets.setCellValueFactory(new PropertyValueFactory<>("nbTickets"));
 
         tableReservation.setRowFactory(tv -> {
             TableRow<Reservation> row = new TableRow<>();
@@ -404,6 +398,9 @@ public class DashboardController {
             popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
+            if (currentReservationForTickets != null) {
+                reservationService.updateReservationStats(currentReservationForTickets.getId());
+            }
 
             refreshTicketTable();
 
@@ -440,6 +437,9 @@ public class DashboardController {
             popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
+            if (currentReservationForTickets != null) {
+                reservationService.updateReservationStats(currentReservationForTickets.getId());
+            }
 
             // ✅ Refresh
             if (currentReservationForTickets != null) {
@@ -528,6 +528,12 @@ public class DashboardController {
                 btn.setOnAction(e -> {
                     Ticket t = getTableView().getItems().get(getIndex());
                     ticketService.delete(t);
+
+                    // 🔥 ADD THIS
+                    if (t.getReservationId() != null) {
+                        reservationService.updateReservationStats(t.getReservationId());
+                    }
+
                     getTableView().getItems().remove(t);
 
                     if (currentReservationForTickets != null)

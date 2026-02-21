@@ -90,6 +90,7 @@ public class ReservationService implements IService <Reservation>{
                 r.setCoutTotal(rs.getDouble("coutTotal"));
                 r.setPersonneId(rs.getInt("personne_id"));
                 r.setDestinationId(rs.getInt("destination_id"));
+                r.setNbTickets(rs.getInt("nb_tickets"));
 
                 reservations.add(r);
             }
@@ -169,6 +170,37 @@ public class ReservationService implements IService <Reservation>{
         }
 
         return -1;
+    }
+
+
+    public void updateReservationStats(int reservationId) {
+
+        String countSql = "SELECT COUNT(*), COALESCE(SUM(prix),0) FROM ticket WHERE reservation_id=?";
+        String updateSql = "UPDATE reservation SET nb_tickets=?, coutTotal=? WHERE id=?";
+
+        try (
+                PreparedStatement countStmt = conn.prepareStatement(countSql);
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql)
+        ) {
+
+            countStmt.setInt(1, reservationId);
+            ResultSet rs = countStmt.executeQuery();
+
+            if (rs.next()) {
+
+                int nbTickets = rs.getInt(1);
+                double total = rs.getDouble(2);
+
+                updateStmt.setInt(1, nbTickets);
+                updateStmt.setDouble(2, total);
+                updateStmt.setInt(3, reservationId);
+
+                updateStmt.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 

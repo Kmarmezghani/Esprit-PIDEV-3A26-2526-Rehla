@@ -65,16 +65,8 @@ public class MyReservationsController {
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
 
         // Total cost calculated dynamically
-        colCoutTotal.setCellValueFactory(cellData -> {
-            int reservationId = cellData.getValue().getId();
-            double total = ticketService.sumPrixByReservation(reservationId);
-            return new SimpleDoubleProperty(total).asObject();
-        });
-        colNbrTickets.setCellValueFactory(cellData -> {
-            int reservationId = cellData.getValue().getId();
-            int count = ticketService.countTicketsByReservation(reservationId); // méthode à créer si non existante
-            return new SimpleIntegerProperty(count).asObject();
-        });
+        colCoutTotal.setCellValueFactory(new PropertyValueFactory<>("coutTotal"));
+        colNbrTickets.setCellValueFactory(new PropertyValueFactory<>("nbTickets"));
 
 
         // ===== Ticket columns =====
@@ -123,8 +115,24 @@ public class MyReservationsController {
     // ================= LOAD DATA =================
 
     private void refreshReservationTable() {
+        Integer selectedId = null;
+
+        if (selectedReservation != null) {
+            selectedId = selectedReservation.getId();
+        }
+
         reservationList.setAll(reservationService.getAll());
         tableReservation.setItems(reservationList);
+
+        if (selectedId != null) {
+            for (Reservation r : reservationList) {
+                if (r.getId() == selectedId) {
+                    tableReservation.getSelectionModel().select(r);
+                    selectedReservation = r;
+                    break;
+                }
+            }
+        }
     }
 
     private void loadTicketsByReservation(int reservationId) {
@@ -208,11 +216,9 @@ public class MyReservationsController {
             stage.showAndWait();
 
 
-            ticketList.setAll(ticketService.getTicketsByReservation(selectedReservation.getId()));
-
+            refreshReservationTable();   // 🔥 recharge les nouvelles valeurs nbTickets
             loadTicketsByReservation(selectedReservation.getId());
-
-            tableReservation.refresh();
+            showCalendarForReservation(selectedReservation);
 
             showCalendarForReservation(selectedReservation);
 
@@ -321,6 +327,7 @@ public class MyReservationsController {
     }
 
     private void openTicketSelectionPopup(LocalDate selectedDate) {
+        if (selectedReservation == null) return;
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/Frontoffice/NewTicket.fxml")
@@ -341,9 +348,10 @@ public class MyReservationsController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
-            // 🔄 refresh after closing popup
+            reservationService.updateReservationStats(selectedReservation.getId());
+
+            refreshReservationTable();   // 🔥 reload updated nbTickets + coutTotal
             loadTicketsByReservation(selectedReservation.getId());
-            tableReservation.refresh();
             showCalendarForReservation(selectedReservation);
 
         } catch (Exception e) {
@@ -365,49 +373,31 @@ public class MyReservationsController {
 
         Button deleteBtn = new Button("🗑");
         deleteBtn.setStyle("-fx-background-color:transparent; -fx-text-fill:white;");
-        deleteBtn.setOnAction(e -> {
-            ticketService.delete(ticket);
-            loadTicketsByReservation(selectedReservation.getId());
-            tableReservation.refresh();
-            showCalendarForReservation(selectedReservation);
-        });
 
-        // Double-click pour modifier le ticket
-        box.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                openUpdateTicket(ticket);
+        deleteBtn.setOnAction(e -> {
+
+            int reservationId = ticket.getReservationId();
+
+            // 1️⃣ release ticket
+            ticketService.releaseTicket(ticket.getId());
+
+            // 2️⃣ update reservation stats
+            reservationService.updateReservationStats(reservationId);
+
+            // 3️⃣ refresh UI
+            refreshReservationTable();
+
+            if (selectedReservation != null) {
+                loadTicketsByReservation(selectedReservation.getId());
+                showCalendarForReservation(selectedReservation);
             }
         });
+
 
         box.getChildren().addAll(label, spacerTicket, deleteBtn);
         return box;
     }
 
-    private void openUpdateTicket(Ticket ticket) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutTicket.fxml"));
-            Parent root = loader.load();
-
-            TicketController controller = loader.getController();
-            controller.setTicket(ticket);
-
-            Reservation reservation = reservationService.getById(ticket.getReservationId());
-            controller.setReservation(reservation);
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Update Ticket");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-            loadTicketsByReservation(reservation.getId()); // utilisez la réservation récupérée
-            refreshReservationTable();
-            showCalendarForReservation(reservation);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 
     private void openEditReservationPopup(Reservation reservation) {

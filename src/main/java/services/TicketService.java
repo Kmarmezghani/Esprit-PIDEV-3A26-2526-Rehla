@@ -9,6 +9,7 @@ import java.util.List;
 
 public class TicketService implements IService <Ticket>{
     Connection conn;
+    private final ReservationService reservationService = new ReservationService();
 
     public TicketService() {
         this.conn = DBConnection.getInstance().getConn();
@@ -39,10 +40,15 @@ public class TicketService implements IService <Ticket>{
 
             ps.executeUpdate();
             System.out.println("Ticket added successfully!");
+            if (ticket.getReservationId() != null) {
+                int resId = ticket.getReservationId();
+                reservationService.updateReservationStats(resId);
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
     }
 
 
@@ -79,6 +85,12 @@ public class TicketService implements IService <Ticket>{
 
             ps.executeUpdate();
 
+            if (ticket.getReservationId() != null) {
+                int resId = ticket.getReservationId();
+                reservationService.updateReservationStats(resId);
+            }
+
+
             System.out.println("Ticket updated successfully!");
 
         } catch (SQLException e) {
@@ -88,12 +100,18 @@ public class TicketService implements IService <Ticket>{
 
     @Override
     public void delete(Ticket ticket) {
+        Integer resId = ticket.getReservationId();
         String SQL = "DELETE FROM ticket WHERE id = " + ticket.getId();
 
         try {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(SQL);
             System.out.println("Ticket deleted successfully!");
+
+            if (resId != null) {
+                reservationService.updateReservationStats(resId);
+            }
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -261,6 +279,16 @@ public class TicketService implements IService <Ticket>{
         }
 
         return "Unknown";
+    }
+
+    public void releaseTicket(int ticketId) {
+        String sql = "UPDATE ticket SET statut='available', reservation_id=NULL WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ticketId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 

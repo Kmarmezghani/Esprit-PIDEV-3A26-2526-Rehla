@@ -38,6 +38,7 @@
                             <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
                             <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Destinations" />
                             <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Posts" />
+                            <Button onAction="#goToactivities" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Activities" />
                             <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="About" />
                         </HBox>
 

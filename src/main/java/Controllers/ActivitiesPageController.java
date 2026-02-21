@@ -21,9 +21,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import models.Activite;
 import services.ActiviteService;
-import services.InscriptionActiviteService;
 import services.EmailService;
 import services.PersonneService;
+import services.ReservationService;
 import services.Toast;
 
 import java.sql.SQLException;
@@ -37,7 +37,7 @@ public class ActivitiesPageController {
     @FXML private TextField searchField;
 
     private final ActiviteService activiteService = new ActiviteService();
-    private final InscriptionActiviteService inscriptionService = new InscriptionActiviteService();
+    private final ReservationService reservationService = new ReservationService();
     private final PersonneService personneService = new PersonneService();
     private final EmailService emailService = new EmailService();
 
@@ -164,9 +164,16 @@ public class ActivitiesPageController {
         boolean isFull = false;
 
         if (isLimited) {
-            booked = inscriptionService.countConfirmedByActiviteId(a.getId());
-            left = Math.max(0, max - booked);
-            isFull = (left == 0);
+            try {
+                booked = reservationService.sumTicketsConfirmedByActiviteId(a.getId());
+                left = Math.max(0, max - booked);
+                isFull = (left == 0);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                booked = 0;
+                left = max;
+                isFull = false;
+            }
         }
 
         // ================= PLACES TEXT =================
@@ -230,81 +237,185 @@ public class ActivitiesPageController {
 
             finalBookBtn.setOnAction(e -> {
 
-                // If full => toast and stop
+                int available = Integer.MAX_VALUE;
+
+                // Re-check availability
                 if (isLimited) {
-                    int b = inscriptionService.countConfirmedByActiviteId(a.getId());
-                    int l = Math.max(0, max - b);
-                    if (l == 0) {
-                        toastWarn("Sold out", "This activity is fully booked.");
-                        reloadFromDB();
+                    try {
+                        int taken = reservationService.sumTicketsConfirmedByActiviteId(a.getId());
+                        available = Math.max(0, max - taken);
+
+                        if (available == 0) {
+                            toastWarn("Sold out", "This activity is fully booked.");
+                            reloadFromDB();
+                            return;
+                        }
+                    } catch (SQLException ex) {
+                        toastError("Error", ex.getMessage());
                         return;
                     }
                 }
 
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Confirm booking");
-                confirm.setHeaderText("Are you sure you want to book?");
-                confirm.setContentText(
-                        "Activity: " + safe(a.getNom()) + "\n" +
-                                "Price: " + String.format("%.2f TND", a.getPrix()) + "\n\n" +
-                                "Confirm your booking?"
-                );
+                // ===== Pretty popup (modern) =====
+                Dialog<Integer> dialog = new Dialog<>();
+                dialog.setTitle("Book tickets");
+                dialog.setHeaderText(null);
 
-                ButtonType confirmBtn = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
-                ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-                confirm.getButtonTypes().setAll(confirmBtn, cancelBtn);
+                DialogPane pane = dialog.getDialogPane();
+                pane.setPrefWidth(420);
 
-                confirm.showAndWait().ifPresent(response -> {
-                    if (response == confirmBtn) {
-                        try {
-                            // safety re-check before insert
-                            if (isLimited) {
-                                int b2 = inscriptionService.countConfirmedByActiviteId(a.getId());
-                                if (b2 >= max) {
-                                    toastWarn("Sold out", "This activity is fully booked.");
-                                    reloadFromDB();
-                                    return;
+                pane.setStyle("""
+                    -fx-background-color: white;
+                    -fx-padding: 18;
+                    -fx-font-family: "Segoe UI";
+                """);
+
+                String css = """
+                .dialog-pane .button-bar .button {
+                    -fx-background-radius: 10;
+                    -fx-padding: 10 16;
+                    -fx-font-weight: 700;
+                    -fx-cursor: hand;
+                }
+                .dialog-pane .button-bar .button:default {
+                    -fx-background-color: #223f91;
+                    -fx-text-fill: white;
+                }
+                .dialog-pane .button-bar .button:cancel {
+                    -fx-background-color: #eef2ff;
+                    -fx-text-fill: #223f91;
+                }
+                """;
+                pane.getStylesheets().add("data:text/css," + css.replace("\n", "%0A").replace(" ", "%20"));
+
+                Label hTitle = new Label("Book tickets");
+                hTitle.setStyle("-fx-font-size: 18; -fx-font-weight: 800; -fx-text-fill: #111827;");
+
+                Label hSub = new Label("Choose how many tickets you want");
+                hSub.setStyle("-fx-font-size: 12.5; -fx-text-fill: #6b7280;");
+
+                VBox header = new VBox(4, hTitle, hSub);
+                header.setPadding(new Insets(0, 0, 10, 0));
+
+                Label actName = new Label(safe(a.getNom()));
+                actName.setStyle("-fx-font-size: 15; -fx-font-weight: 800; -fx-text-fill: #0f172a;");
+
+                Label priceLbl2 = new Label("Price");
+                priceLbl2.setStyle("-fx-font-size: 11; -fx-text-fill: #6b7280;");
+                Label priceVal2 = new Label(String.format("%.2f TND", a.getPrix()));
+                priceVal2.setStyle("-fx-font-size: 13; -fx-font-weight: 800; -fx-text-fill: #111827;");
+
+                Label availLbl2 = new Label("Available");
+                availLbl2.setStyle("-fx-font-size: 11; -fx-text-fill: #6b7280;");
+                Label availVal2 = new Label(isLimited ? String.valueOf(available) : "Unlimited");
+
+                // badge color depending on availability
+                String badgeStyle = """
+                    -fx-font-size: 12;
+                    -fx-font-weight: 800;
+                    -fx-padding: 4 10;
+                    -fx-background-radius: 999;
+                """;
+                if (isLimited && available <= 2) {
+                    availVal2.setStyle(badgeStyle + "-fx-text-fill: #92400e; -fx-background-color: #ffedd5;");
+                } else {
+                    availVal2.setStyle(badgeStyle + "-fx-text-fill: #065f46; -fx-background-color: #d1fae5;");
+                }
+
+                HBox row1 = new HBox(10, priceLbl2, new Region(), availLbl2);
+                HBox.setHgrow(row1.getChildren().get(1), Priority.ALWAYS);
+
+                HBox row2 = new HBox(10, priceVal2, new Region(), availVal2);
+                HBox.setHgrow(row2.getChildren().get(1), Priority.ALWAYS);
+
+                VBox infoCard = new VBox(8, actName, row1, row2);
+                infoCard.setStyle("""
+                    -fx-background-color: #f8fafc;
+                    -fx-padding: 14;
+                    -fx-background-radius: 14;
+                    -fx-border-radius: 14;
+                    -fx-border-color: #e5e7eb;
+                """);
+
+                Label qtyLbl = new Label("Quantity");
+                qtyLbl.setStyle("-fx-font-size: 12; -fx-text-fill: #111827; -fx-font-weight: 800;");
+
+                int maxSpinner = isLimited ? Math.min(available, 20) : 20;
+                Spinner<Integer> sp = new Spinner<>(1, Math.max(1, maxSpinner), 1);
+                sp.setEditable(true);
+                sp.setPrefWidth(130);
+
+                Label totalLbl = new Label();
+                totalLbl.setStyle("-fx-font-size: 13; -fx-font-weight: 900; -fx-text-fill: #111827;");
+
+                Runnable updateTotal = () -> {
+                    int q = sp.getValue();
+                    double total = a.getPrix() * q;
+                    totalLbl.setText("Total: " + String.format("%.2f TND", total));
+                };
+                updateTotal.run();
+                sp.valueProperty().addListener((obs, ov, nv) -> updateTotal.run());
+
+                HBox qtyRow = new HBox(12, qtyLbl, new Region(), sp);
+                HBox.setHgrow(qtyRow.getChildren().get(1), Priority.ALWAYS);
+                qtyRow.setAlignment(Pos.CENTER_LEFT);
+
+                HBox totalRow = new HBox(totalLbl);
+                totalRow.setAlignment(Pos.CENTER_RIGHT);
+
+                VBox content = new VBox(12, header, infoCard, qtyRow, totalRow);
+                content.setPadding(new Insets(0, 0, 6, 0));
+
+                ButtonType bookType = new ButtonType("Book", ButtonBar.ButtonData.OK_DONE);
+                pane.getButtonTypes().setAll(bookType, ButtonType.CANCEL);
+                pane.setContent(content);
+
+                dialog.setResultConverter(btn -> btn == bookType ? sp.getValue() : null);
+
+                dialog.showAndWait().ifPresent(qty -> {
+                    if (qty == null || qty <= 0) return;
+
+                    try {
+                        reservationService.bookWithQty(
+                                CURRENT_USER_ID,
+                                a.getId(),
+                                qty,
+                                a.getPrix(),
+                                a.getDestinationId()
+                        );
+
+                        toastSuccessWithAction(
+                                "Booked!",
+                                "Reservation created for " + qty + " ticket(s).",
+                                "View my bookings",
+                                this::goToMyReservationsFromToast
+                        );
+
+                        reloadFromDB();
+
+                        String userEmail = personneService.getEmailById(CURRENT_USER_ID);
+                        String userName  = personneService.getFullNameById(CURRENT_USER_ID);
+
+                        if (userEmail != null && !userEmail.isBlank()) {
+                            new Thread(() -> {
+                                try {
+                                    emailService.sendBookingConfirmation(
+                                            userEmail,
+                                            userName,
+                                            safe(a.getNom()),
+                                            a.getPrix() * qty
+                                    );
+                                } catch (Exception mailEx) {
+                                    mailEx.printStackTrace();
+                                    Platform.runLater(() ->
+                                            toastWarn("Email not sent", "Booking done, but email failed.")
+                                    );
                                 }
-                            }
-
-                            // ✅ DB booking
-                            inscriptionService.book(CURRENT_USER_ID, a.getId(), a.getPrix());
-
-                            // ✅ UI feedback (non-blocking)
-                            toastSuccessWithAction(
-                                    "Booked!",
-                                    "Your booking has been confirmed.",
-                                    "View my bookings",
-                                    this::goToMyReservationsFromToast
-                            );
-
-                            reloadFromDB();
-
-                            // ✅ Send email in background (doesn't block UI)
-                            String userEmail = personneService.getEmailById(CURRENT_USER_ID);
-                            String userName  = personneService.getFullNameById(CURRENT_USER_ID);
-
-                            if (userEmail != null && !userEmail.isBlank()) {
-                                new Thread(() -> {
-                                    try {
-                                        emailService.sendBookingConfirmation(
-                                                userEmail,
-                                                userName,
-                                                safe(a.getNom()),
-                                                a.getPrix()
-                                        );
-                                    } catch (Exception mailEx) {
-                                        mailEx.printStackTrace();
-                                        Platform.runLater(() ->
-                                                toastWarn("Email not sent", "Booking done, but email failed.")
-                                        );
-                                    }
-                                }).start();
-                            }
-
-                        } catch (SQLException ex) {
-                            toastError("Booking error", ex.getMessage());
+                            }).start();
                         }
+
+                    } catch (SQLException ex) {
+                        toastError("Booking error", ex.getMessage());
                     }
                 });
             });
@@ -485,18 +596,9 @@ public class ActivitiesPageController {
         return (Stage) activitiesFlowPane.getScene().getWindow();
     }
 
-    private void toastSuccess(String title, String msg) {
-        Toast.show(getStage(), Toast.Type.SUCCESS, title, msg);
-    }
-
-    private void toastWarn(String title, String msg) {
-        Toast.show(getStage(), Toast.Type.WARNING, title, msg);
-    }
-
-    private void toastError(String title, String msg) {
-        Toast.show(getStage(), Toast.Type.ERROR, title, msg);
-    }
-
+    private void toastSuccess(String title, String msg) { Toast.show(getStage(), Toast.Type.SUCCESS, title, msg); }
+    private void toastWarn(String title, String msg) { Toast.show(getStage(), Toast.Type.WARNING, title, msg); }
+    private void toastError(String title, String msg) { Toast.show(getStage(), Toast.Type.ERROR, title, msg); }
     private void toastSuccessWithAction(String title, String msg, String actionText, Runnable action) {
         Toast.show(getStage(), Toast.Type.SUCCESS, title, msg, actionText, action);
     }

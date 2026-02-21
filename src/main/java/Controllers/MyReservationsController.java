@@ -483,6 +483,28 @@ public class MyReservationsController {
             showInfo("Posts", "Posts page loading...");
         }
     }
+    @FXML
+    void goToactivities(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ActivitiesPage.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
+            } else {
+                stage.getScene().setRoot(root);
+            }
+
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 

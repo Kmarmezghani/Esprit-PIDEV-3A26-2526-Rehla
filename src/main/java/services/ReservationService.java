@@ -172,16 +172,13 @@ public class ReservationService implements IService<Reservation> {
         return r;
     }
 
-    // =========================
-    // Places logic: SUM(nb_tickets)
-    // =========================
 
     public int sumTicketsConfirmedByActiviteId(int activiteId) throws SQLException {
         String sql = """
             SELECT COALESCE(SUM(nb_tickets),0) AS taken
             FROM reservation
             WHERE activite_id = ?
-              AND statut IN ('CONFIRMED','CONFIRMEE','PAYEE','APPROUVEE')
+            AND statut = 'reserved'
         """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
@@ -190,34 +187,46 @@ public class ReservationService implements IService<Reservation> {
         }
     }
 
-    // =========================
-    // ✅ BOOKING Option 2: 1 reservation + N tickets (transaction-safe)
-    // =========================
+
     public void bookWithQty(int userId, int activiteId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
 
         try {
             conn.setAutoCommit(false);
 
-            // 1) lock activity row
+            // 1) lock activity row + get max_places + get dates (date_debut/date_fin)
             Integer maxPlaces = null;
+            Date actStartDate;
+            Date actEndDate;
+
             try (PreparedStatement ps = conn.prepareStatement(
-                    "SELECT max_places FROM activite WHERE id = ? FOR UPDATE")) {
+                    "SELECT max_places, date_debut, date_fin FROM activite WHERE id = ? FOR UPDATE")) {
+
                 ps.setInt(1, activiteId);
                 ResultSet rs = ps.executeQuery();
+
                 if (!rs.next()) throw new SQLException("Activity not found.");
+
                 int mp = rs.getInt("max_places");
                 maxPlaces = rs.wasNull() ? null : mp;
+
+                // activite.date_debut/date_fin are DATETIME in DB -> we take DATE part
+                actStartDate = rs.getDate("date_debut");
+                actEndDate = rs.getDate("date_fin");
+
+                if (actStartDate == null || actEndDate == null) {
+                    throw new SQLException("Activity dates are missing (date_debut/date_fin).");
+                }
             }
 
             // 2) sum taken tickets inside transaction
             int taken = 0;
             try (PreparedStatement ps = conn.prepareStatement("""
-                SELECT COALESCE(SUM(nb_tickets),0)
-                FROM reservation
-                WHERE activite_id = ?
-                  AND statut IN ('CONFIRMED','CONFIRMEE','PAYEE','APPROUVEE')
-                FOR UPDATE
-            """)) {
+            SELECT COALESCE(SUM(nb_tickets),0)
+            FROM reservation
+            WHERE activite_id = ?
+              AND statut IN ('CONFIRMED','CONFIRMEE','PAYEE','APPROUVEE')
+            FOR UPDATE
+        """)) {
                 ps.setInt(1, activiteId);
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) taken = rs.getInt(1);
@@ -231,27 +240,30 @@ public class ReservationService implements IService<Reservation> {
                 }
             }
 
-            // 4) insert reservation
+            // 4) insert reservation (dateDebut/dateFin = activity dates)
             double total = prixUnitaire * qty;
             int reservationId;
 
             String insertRes = """
-                INSERT INTO reservation(dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, activite_id, nb_tickets)
-                VALUES (?, NULL, NULL, 'CONFIRMED', ?, ?, ?, ?, ?)
-            """;
+            INSERT INTO reservation(dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, activite_id, nb_tickets)
+            VALUES (?, ?, ?, 'reserved', ?, ?, ?, ?, ?)
+        """;
 
             try (PreparedStatement ps = conn.prepareStatement(insertRes, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setDate(1, Date.valueOf(LocalDate.now()));
-                ps.setDouble(2, total);
-                ps.setInt(3, userId);
+                ps.setDate(2, actStartDate);
+                ps.setDate(3, actEndDate);
+                ps.setDouble(4, total);
+                ps.setInt(5, userId);
 
-                if (destinationId == null) ps.setNull(4, Types.INTEGER);
-                else ps.setInt(4, destinationId);
+                if (destinationId == null) ps.setNull(6, Types.INTEGER);
+                else ps.setInt(6, destinationId);
 
-                ps.setInt(5, activiteId);
-                ps.setInt(6, qty);
+                ps.setInt(7, activiteId);
+                ps.setInt(8, qty);
 
                 ps.executeUpdate();
+
                 ResultSet keys = ps.getGeneratedKeys();
                 if (!keys.next()) throw new SQLException("Failed to create reservation.");
                 reservationId = keys.getInt(1);

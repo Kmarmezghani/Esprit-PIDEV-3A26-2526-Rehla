@@ -244,7 +244,7 @@ public class TicketService implements IService <Ticket>{
         return tickets;
     }
 
-    // Return the name of a destination given its ID
+
     public String getDestinationName(int destinationId) {
         try {
             String query = "SELECT nom FROM destination WHERE id = ?";
@@ -262,23 +262,30 @@ public class TicketService implements IService <Ticket>{
 
         return "Unknown";
     }
-    // ✅ Used by ReservationService inside the same transaction
+
     public void createTicketsBatch(Connection cn, int reservationId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
+
         String sql = """
         INSERT INTO ticket(reservation_id, destination_id, type, prix, statut, dateDebut, dateFin)
-        VALUES (?, ?, 'STANDARD', ?, 'VALID', NULL, NULL)
+        VALUES (?, ?, 'activity', ?, 'reserved', NULL, NULL)
     """;
 
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
+
             for (int i = 0; i < qty; i++) {
+
                 ps.setInt(1, reservationId);
 
-                if (destinationId == null) ps.setNull(2, Types.INTEGER);
-                else ps.setInt(2, destinationId);
+                if (destinationId == null)
+                    ps.setNull(2, Types.INTEGER);
+                else
+                    ps.setInt(2, destinationId);
 
                 ps.setDouble(3, prixUnitaire);
+
                 ps.addBatch();
             }
+
             ps.executeBatch();
         }
     }

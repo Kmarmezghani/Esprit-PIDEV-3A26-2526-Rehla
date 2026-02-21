@@ -2,6 +2,7 @@ package Controllers;
 
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,8 +20,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Reservation;
 import models.Ticket;
+import org.json.JSONObject;
 import services.ReservationService;
 import services.TicketService;
+import services.WeatherService;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -38,6 +41,7 @@ public class MyReservationsController {
     @FXML private TableColumn<Reservation, String> colStatut;
     @FXML private TableColumn<Reservation, Double> colCoutTotal;
     @FXML private TableColumn<Reservation, Integer> colNbrTickets;
+    @FXML private TableColumn<Reservation, String> colDestination;
     @FXML private TableColumn<Reservation, Void> colDeleteReservation;
 
     // ================= TICKET TABLE =================
@@ -45,7 +49,7 @@ public class MyReservationsController {
     @FXML
     private AnchorPane calendarContainer;
 
-
+    private final WeatherService weatherService = new WeatherService();
     private final ReservationService reservationService = new ReservationService();
     private final TicketService ticketService = new TicketService();
 
@@ -67,6 +71,10 @@ public class MyReservationsController {
         // Total cost calculated dynamically
         colCoutTotal.setCellValueFactory(new PropertyValueFactory<>("coutTotal"));
         colNbrTickets.setCellValueFactory(new PropertyValueFactory<>("nbTickets"));
+        colDestination.setCellValueFactory(cell -> {
+            String nom = reservationService.getDestinationNomById(cell.getValue().getDestinationId());
+            return new SimpleStringProperty(nom);
+        });
 
 
         // ===== Ticket columns =====
@@ -81,6 +89,13 @@ public class MyReservationsController {
                     if (newSelection != null) {
                         loadTicketsByReservation(newSelection.getId());
                         showCalendarForReservation(newSelection);
+
+                        // 🔥 Show weather prediction
+                        String city = reservationService.getDestinationNomById(newSelection.getDestinationId());
+                        LocalDate date = newSelection.getDateDebut().toLocalDate();
+                        String forecast = weatherService.getWeatherForecast(city, date);
+                        showInfo("Weather Forecast", forecast);
+
                     } else {
                         calendarContainer.getChildren().clear();
                     }
@@ -281,33 +296,49 @@ public class MyReservationsController {
         int row = 0;
         int col = dayOfWeek - 1;
 
-        for (int day = 1; day <= daysInMonth; day++) {
+        LocalDate reservationStart = reservation.getDateDebut().toLocalDate();
+        LocalDate reservationEnd = reservation.getDateFin().toLocalDate();
 
+        // 🔥 Get city once
+        String city = reservationService.getDestinationNomById(reservation.getDestinationId());
+
+        for (int day = 1; day <= daysInMonth; day++) {
 
             LocalDate currentDate = yearMonth.atDay(day);
 
             VBox dayBox = new VBox(5);
             dayBox.setPrefSize(150, 120);
-            dayBox.setStyle("-fx-padding:5;");
+            dayBox.setStyle("-fx-padding:5; -fx-border-color: #ccc; -fx-border-width:1; -fx-background-radius:5; -fx-border-radius:5;");
 
             Label dayNumber = new Label(String.valueOf(day));
             dayNumber.setStyle("-fx-font-weight:bold;");
             dayBox.getChildren().add(dayNumber);
-            LocalDate selectedDate = currentDate;
 
+            LocalDate selectedDate = currentDate;
             dayBox.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 1) {
                     openTicketSelectionPopup(selectedDate);
                 }
             });
 
-            // ===== afficher les tickets pour cette réservation sur ce jour =====
-            for (Ticket ticket : ticketList) {
+            // ===== Only show buttons & tickets for reservation days =====
+            if (!currentDate.isBefore(reservationStart) && !currentDate.isAfter(reservationEnd)) {
 
-                LocalDate reservationStart = reservation.getDateDebut().toLocalDate();
-                LocalDate reservationEnd = reservation.getDateFin().toLocalDate();
+                // ===== Weather button =====
+                Button weatherBtn = new Button("🌤 Weather");
+                weatherBtn.setStyle("-fx-background-color:#FFD700; -fx-text-fill:black; -fx-padding:3 8 3 8; -fx-background-radius:5;");
+                weatherBtn.setOnAction(e -> {
+                    JSONObject forecast = weatherService.getFullForecastForDate(city, selectedDate);
+                    if (forecast != null) {
+                        showCustomWeatherDialog(selectedDate, city, forecast);
+                    } else {
+                        showInfo("Weather Forecast", "No forecast available for this date.");
+                    }
+                });
+                dayBox.getChildren().add(weatherBtn);
 
-                if (!currentDate.isBefore(reservationStart) && !currentDate.isAfter(reservationEnd)) {
+                // ===== Tickets for this day =====
+                for (Ticket ticket : ticketList) {
                     HBox ticketNode = createTicketNode(ticket);
                     dayBox.getChildren().add(ticketNode);
                 }
@@ -326,6 +357,58 @@ public class MyReservationsController {
         calendarContainer.getChildren().add(mainBox);
     }
 
+    // ===== Custom Weather Dialog for WeatherAPI.com =====
+    private void showCustomWeatherDialog(LocalDate date, String city, JSONObject fullForecast) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Weather Forecast");
+
+        VBox root = new VBox(15);
+        root.setStyle(
+                "-fx-padding:20;" +
+                        "-fx-background-color: #f0f8ff;" +  // light blue background
+                        "-fx-border-color: #3A5BC7;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 15;" +
+                        "-fx-background-radius: 15;"
+        );
+
+        Label title = new Label("Weather Forecast for " + city + " on " + date);
+        title.setStyle("-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill: #3A5BC7;");
+
+        // Extract weather info (WeatherAPI.com format)
+        double avgTemp = fullForecast.getDouble("avgtemp_c");
+        double maxTemp = fullForecast.getDouble("maxtemp_c");
+        double minTemp = fullForecast.getDouble("mintemp_c");
+        double rain = fullForecast.getDouble("totalprecip_mm");
+        double wind = fullForecast.getDouble("maxwind_kph");
+        String condition = fullForecast.getJSONObject("condition").getString("text");
+
+        String contentText = String.format(
+                "Condition: %s\nAverage Temp: %.1f°C\nMax Temp: %.1f°C\nMin Temp: %.1f°C\nRain: %.1f mm\nWind: %.1f kph",
+                condition, avgTemp, maxTemp, minTemp, rain, wind
+        );
+
+        Label content = new Label(contentText);
+        content.setStyle("-fx-font-size:14px; -fx-text-fill:#333333;");
+        content.setWrapText(true);
+
+        Button closeBtn = new Button("Close");
+        closeBtn.setStyle(
+                "-fx-background-color: #3A5BC7; " +
+                        "-fx-text-fill:white; " +
+                        "-fx-padding:8 25 8 25; " +
+                        "-fx-background-radius:8;"
+        );
+        closeBtn.setOnAction(e -> dialog.close());
+
+        root.getChildren().addAll(title, content, closeBtn);
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+
+        Scene scene = new Scene(root, 450, 350); // bigger popup
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
     private void openTicketSelectionPopup(LocalDate selectedDate) {
         if (selectedReservation == null) return;
         try {

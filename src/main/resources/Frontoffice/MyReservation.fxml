@@ -96,10 +96,11 @@
                                     <columns>
                                         <TableColumn fx:id="colDateDebut" prefWidth="143.20001220703125" text="Start Date" />
                                         <TableColumn fx:id="colDateFin" prefWidth="143.20001220703125" text="End Date" />
-                                        <TableColumn fx:id="colStatut" prefWidth="165.59994506835938" text="Status" />
-                                        <TableColumn fx:id="colCoutTotal" prefWidth="159.20001220703125" text="Total Cost" />
-                              <TableColumn fx:id="colNbrTickets" prefWidth="154.39996337890625" text="Number of Tickets" />
-                                        <TableColumn fx:id="colDeleteReservation" prefWidth="170.39996337890625" text="Actions" />
+                                        <TableColumn fx:id="colStatut" prefWidth="134.4000244140625" text="Status" />
+                                        <TableColumn fx:id="colCoutTotal" prefWidth="134.39993286132812" text="Total Cost" />
+                              <TableColumn fx:id="colNbrTickets" prefWidth="132.00006103515625" text="Number of Tickets" />
+                              <TableColumn fx:id="colDestination" minWidth="0.0" prefWidth="144.0" text="Destination" />
+                                        <TableColumn fx:id="colDeleteReservation" prefWidth="163.19989013671875" text="Actions" />
                                     </columns>
                                 </TableView>
 

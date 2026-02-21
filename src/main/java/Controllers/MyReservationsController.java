@@ -33,7 +33,6 @@ public class MyReservationsController {
     // ================= RESERVATION TABLE =================
 
     @FXML private TableView<Reservation> tableReservation;
-    @FXML private TableColumn<Reservation, Integer> colIdReservation;
     @FXML private TableColumn<Reservation, Date> colDateDebut;
     @FXML private TableColumn<Reservation, Date> colDateFin;
     @FXML private TableColumn<Reservation, String> colStatut;
@@ -61,7 +60,6 @@ public class MyReservationsController {
     public void initialize() {
 
         // ===== Reservation columns =====
-        colIdReservation.setCellValueFactory(new PropertyValueFactory<>("id"));
         colDateDebut.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
         colDateFin.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
@@ -158,7 +156,6 @@ public class MyReservationsController {
 
                     reservationService.delete(reservation);
 
-                    // 🔥 If the deleted one is the selected one → clear everything
                     if (selectedReservation != null &&
                             selectedReservation.getId() == reservation.getId()) {
 
@@ -258,14 +255,14 @@ public class MyReservationsController {
         Label monthLabel = new Label(yearMonth.getMonth() + " " + yearMonth.getYear());
         monthLabel.setStyle("-fx-font-size:18px; -fx-font-weight:bold;");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region spacerHeader = new Region();
+        HBox.setHgrow(spacerHeader, Priority.ALWAYS);
 
         Button addTicketBtn = new Button("➕ Add Ticket");
         addTicketBtn.setStyle("-fx-background-color:#3A5BC7; -fx-text-fill:white;");
         addTicketBtn.setOnAction(e -> handleAddTicket(null));
 
-        header.getChildren().addAll(monthLabel, spacer, addTicketBtn);
+        header.getChildren().addAll(monthLabel, spacerHeader, addTicketBtn);
 
         // ===== CALENDAR GRID =====
         GridPane calendarGrid = new GridPane();
@@ -275,11 +272,11 @@ public class MyReservationsController {
         int daysInMonth = yearMonth.lengthOfMonth();
 
         int dayOfWeek = firstOfMonth.getDayOfWeek().getValue(); // 1=Mon
-
         int row = 0;
         int col = dayOfWeek - 1;
 
         for (int day = 1; day <= daysInMonth; day++) {
+
 
             LocalDate currentDate = yearMonth.atDay(day);
 
@@ -290,14 +287,21 @@ public class MyReservationsController {
             Label dayNumber = new Label(String.valueOf(day));
             dayNumber.setStyle("-fx-font-weight:bold;");
             dayBox.getChildren().add(dayNumber);
+            LocalDate selectedDate = currentDate;
 
+            dayBox.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 1) {
+                    openTicketSelectionPopup(selectedDate);
+                }
+            });
+
+            // ===== afficher les tickets pour cette réservation sur ce jour =====
             for (Ticket ticket : ticketList) {
 
-                LocalDate ticketStart = ticket.getDateDebut().toLocalDate();
-                LocalDate ticketEnd = ticket.getDateFin().toLocalDate();
+                LocalDate reservationStart = reservation.getDateDebut().toLocalDate();
+                LocalDate reservationEnd = reservation.getDateFin().toLocalDate();
 
-                if (!currentDate.isBefore(ticketStart) && !currentDate.isAfter(ticketEnd)) {
-
+                if (!currentDate.isBefore(reservationStart) && !currentDate.isAfter(reservationEnd)) {
                     HBox ticketNode = createTicketNode(ticket);
                     dayBox.getChildren().add(ticketNode);
                 }
@@ -316,6 +320,36 @@ public class MyReservationsController {
         calendarContainer.getChildren().add(mainBox);
     }
 
+    private void openTicketSelectionPopup(LocalDate selectedDate) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Frontoffice/NewTicket.fxml")
+            );
+
+            Parent root = loader.load();
+
+            // GET controller of ticket page
+            FrontTicketsController controller = loader.getController();
+
+            // 🔥 send reservation + selected date
+            controller.setReservation(selectedReservation);
+            controller.setSelectedDate(selectedDate);
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Select Ticket");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            // 🔄 refresh after closing popup
+            loadTicketsByReservation(selectedReservation.getId());
+            tableReservation.refresh();
+            showCalendarForReservation(selectedReservation);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private HBox createTicketNode(Ticket ticket) {
 
@@ -326,31 +360,26 @@ public class MyReservationsController {
         Label label = new Label(ticket.getType() + " - " + ticket.getPrix() + "€");
         label.setStyle("-fx-text-fill:white;");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region spacerTicket = new Region(); // rename to avoid duplicate
+        HBox.setHgrow(spacerTicket, Priority.ALWAYS);
 
         Button deleteBtn = new Button("🗑");
         deleteBtn.setStyle("-fx-background-color:transparent; -fx-text-fill:white;");
-
-
         deleteBtn.setOnAction(e -> {
             ticketService.delete(ticket);
-
             loadTicketsByReservation(selectedReservation.getId());
             tableReservation.refresh();
             showCalendarForReservation(selectedReservation);
-
         });
 
-
+        // Double-click pour modifier le ticket
         box.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 openUpdateTicket(ticket);
             }
         });
 
-        box.getChildren().addAll(label, spacer, deleteBtn);
-
+        box.getChildren().addAll(label, spacerTicket, deleteBtn);
         return box;
     }
 

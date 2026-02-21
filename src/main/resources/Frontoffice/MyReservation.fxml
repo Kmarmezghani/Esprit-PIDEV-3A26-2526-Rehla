@@ -94,7 +94,6 @@
                                 <TableView fx:id="tableReservation" prefHeight="250" style="-fx-background-radius: 12;                                                   -fx-border-radius: 12;                                                   -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8,0,0,2);">
 
                                     <columns>
-                                        <TableColumn fx:id="colIdReservation" prefWidth="67.99999237060547" text="ID" />
                                         <TableColumn fx:id="colDateDebut" prefWidth="143.20001220703125" text="Start Date" />
                                         <TableColumn fx:id="colDateFin" prefWidth="143.20001220703125" text="End Date" />
                                         <TableColumn fx:id="colStatut" prefWidth="165.59994506835938" text="Status" />

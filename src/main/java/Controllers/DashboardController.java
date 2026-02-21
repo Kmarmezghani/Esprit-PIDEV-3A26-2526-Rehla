@@ -71,6 +71,7 @@ public class DashboardController {
     @FXML private TableColumn<Ticket, Double> colPrix;
     @FXML private TableColumn<Ticket, String> colType;
     @FXML private TableColumn<Ticket, Void> colDeleteTicket;
+    @FXML private TableColumn<Ticket, Void> colDestinationTicket;
 
 // ======================================================
 // ================= OTHER TABLES ========================
@@ -189,6 +190,7 @@ public class DashboardController {
             colDateDebut1.setPrefWidth(available * 0.15);
             colDateFin1.setPrefWidth(available * 0.15);
             colDeleteTicket.setPrefWidth(available * 0.10);
+            colDestinationTicket.setPrefWidth(available * 0.10);
         });
     }
 
@@ -252,6 +254,7 @@ public class DashboardController {
         colStatut1.setCellValueFactory(new PropertyValueFactory<>("statut"));
         colDateDebut1.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
         colDateFin1.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
+        colDestinationTicket.setCellValueFactory(new PropertyValueFactory<>("destinationNom"));
 
         tableTicket.setRowFactory(tv -> {
             TableRow<Ticket> row = new TableRow<>();
@@ -378,46 +381,7 @@ public class DashboardController {
     }
     private void openEditTicketPopup(Ticket ticket) {
         try {
-            int reservationId = ticket.getReservationId();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutTicket.fxml"));
-            Parent root = loader.load();
 
-            TicketController popupController = loader.getController();
-
-            Reservation reservation = reservationService.getById(ticket.getReservationId());
-
-            popupController.setTicket(ticket);
-            popupController.setReservation(reservation);
-
-            Stage popupStage = new Stage();
-            popupStage.setTitle("Modifier Ticket");
-            popupStage.initModality(Modality.APPLICATION_MODAL);
-            popupStage.setScene(new Scene(root));
-            popupStage.showAndWait();
-
-            loadTicketsByReservation(reservationId);
-            refreshReservationTable();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    @FXML
-    private void openAddTicketPopup(ActionEvent event) {
-
-        // Use selectedReservation if no ticket button clicked
-        if (currentReservationForTickets == null) {
-            if (selectedReservation != null) {
-                currentReservationForTickets = selectedReservation;
-            } else {
-                Alert alert = new Alert(Alert.AlertType.WARNING,
-                        "Veuillez sélectionner une réservation !");
-                alert.showAndWait();
-                return;
-            }
-        }
-
-        try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/Backoffice/ajoutTicket.fxml")
             );
@@ -425,8 +389,51 @@ public class DashboardController {
             Parent root = loader.load();
             TicketController popupController = loader.getController();
 
-            // Pass the reservation
-            popupController.setReservation(currentReservationForTickets);
+            popupController.setTicket(ticket);
+
+            // 🔥 IMPORTANT : vérifier si le ticket a une réservation
+            Integer reservationId = ticket.getReservationId();
+
+            if (reservationId != null) {
+                Reservation reservation = reservationService.getById(reservationId);
+                popupController.setReservation(reservation);
+            }
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Modifier Ticket");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+
+            refreshTicketTable();
+
+
+            refreshReservationTable();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void openAddTicketPopup(ActionEvent event) {
+
+        try {
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Backoffice/formTicketBack.fxml")
+            );
+
+            Parent root = loader.load();
+            TicketController popupController = loader.getController();
+
+            // ✅ Si une réservation est sélectionnée → on la passe
+            if (currentReservationForTickets != null) {
+                popupController.setReservation(currentReservationForTickets);
+            } else if (selectedReservation != null) {
+                popupController.setReservation(selectedReservation);
+            }
+            // Sinon → on n'envoie rien (ticket libre)
 
             Stage popupStage = new Stage();
             popupStage.setTitle("Add Ticket");
@@ -434,13 +441,14 @@ public class DashboardController {
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
 
-            // refresh tickets
-            loadTicketsByReservation(currentReservationForTickets.getId());
+            // ✅ Refresh
+            if (currentReservationForTickets != null) {
+                loadTicketsByReservation(currentReservationForTickets.getId());
+            } else {
+                refreshTicketTable(); // recharge tous les tickets libres
+            }
 
             refreshReservationTable();
-
-
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -536,6 +544,9 @@ public class DashboardController {
             }
         });
     }
+
+
+
     // ======================================================
     // ================= WINDOW CONTROLS =====================
     // ======================================================

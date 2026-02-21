@@ -103,20 +103,7 @@ public class ReservationService implements IService <Reservation>{
         return reservations;
     }
 
-    public int getNombreTickets(int reservationId) {
-        String sql = "SELECT COUNT(*) FROM ticket WHERE reservation_id = " + reservationId;
-        int count = 0;
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return count;
-    }
+
 
     public String getDestinationNomById(int id) {
         String nom = "";
@@ -166,6 +153,23 @@ public class ReservationService implements IService <Reservation>{
         return reservation;
     }
 
+    public int getLastInsertedId() {
+        String sql = "SELECT MAX(id) FROM reservation";
+
+        try {
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
 
 
 }

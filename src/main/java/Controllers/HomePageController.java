@@ -200,10 +200,10 @@ public class HomePageController implements Initializable {
     @FXML
     private void handleAddReservation(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajout.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/FrontTickets.fxml"));
             Parent root = loader.load();
 
-            AjouterReservationController controller = loader.getController();
+            FrontTicketsController controller = loader.getController();
 
             // Création d'un Stage modal
             Stage stage = new Stage();

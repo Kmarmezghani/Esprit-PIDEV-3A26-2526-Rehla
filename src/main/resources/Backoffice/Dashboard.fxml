@@ -277,7 +277,7 @@
                                           <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                              <children>
                                                 <Label text="Activities" textFill="#002b11" />
-                                                <Button mnemonicParsing="false"  prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
+                                                <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="80.0" styleClass="button2" stylesheets="@../css/styling.css" text="Add new" textFill="#002b11" />
                                                 <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="102.0" styleClass="button2" stylesheets="@../css/styling.css" text=" Export(Excel)" textFill="#002b11" />
                                              </children>
                                              <padding>
@@ -452,6 +452,7 @@
                                                 <TableColumn fx:id="colType" prefWidth="143.20001220703125" text="Type" />
                                                 <TableColumn fx:id="colDateDebut1" prefWidth="104.79998779296875" text="Start date" />
                                                 <TableColumn fx:id="colDateFin1" prefWidth="132.0" text="End Date" />
+                                                <TableColumn fx:id="colDestinationTicket" prefWidth="132.0" text="Destination" />
                                                 <TableColumn fx:id="colStatut1" prefWidth="113.5999755859375" text="Status" />
                                                 <TableColumn fx:id="colPrix" prefWidth="126.39990234375" text="Cost" />
                                                 <TableColumn fx:id="colDeleteTicket" minWidth="0.0" prefWidth="112.800048828125" />

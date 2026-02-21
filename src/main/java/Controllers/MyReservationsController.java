@@ -17,14 +17,15 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import models.Activite;
 import models.Reservation;
 import models.Ticket;
-import services.ReservationService;
-import services.TicketService;
+import services.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 
 public class MyReservationsController {
     @FXML
@@ -53,6 +54,9 @@ public class MyReservationsController {
     private final ObservableList<Ticket> ticketList = FXCollections.observableArrayList();
 
     private Reservation selectedReservation;
+    private final EmailService emailService = new EmailService();
+    private final PersonneService personneService = new PersonneService();
+    private final ActiviteService activiteService = new ActiviteService();
 
     // ================= INITIALIZE =================
 
@@ -412,12 +416,13 @@ public class MyReservationsController {
 
     private void openEditReservationPopup(Reservation reservation) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutReservation.fxml")); // ton FXML de formulaire
+
+            String oldStatus = reservation.getStatut();
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutReservation.fxml"));
             Parent root = loader.load();
 
-
             AjouterReservationController controller = loader.getController();
-
             controller.setReservation(reservation);
 
             Stage stage = new Stage();
@@ -426,7 +431,60 @@ public class MyReservationsController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
+            Reservation updated = reservationService.getById(reservation.getId());
             refreshReservationTable();
+
+            if (updated != null) {
+
+                String newStatus = updated.getStatut();
+
+                if (!"CANCELLED".equalsIgnoreCase(oldStatus)
+                        && "CANCELLED".equalsIgnoreCase(newStatus)) {
+
+                    boolean hasActivity = ticketService.hasActivityTicket(updated.getId());
+
+                    if (!hasActivity) {
+                        System.out.println("No activity ticket → no email sent.");
+                        return;
+                    }
+
+                    String userEmail = personneService.getEmailById(updated.getPersonneId());
+                    String userName  = personneService.getFullNameById(updated.getPersonneId());
+
+                    if (userEmail != null && !userEmail.isBlank()) {
+
+                        String startDate = updated.getDateDebut() != null
+                                ? updated.getDateDebut().toString()
+                                : "N/A";
+
+                        String endDate = updated.getDateFin() != null
+                                ? updated.getDateFin().toString()
+                                : "N/A";
+
+                        int ticketCount = ticketService.countTicketsByReservation(updated.getId());
+                        double total = ticketService.sumPrixByReservationSafe(updated.getId());
+
+                        String activityName = ticketService.getActivityNameByReservation(updated.getId());
+
+                        new Thread(() -> {
+                            try {
+                                emailService.sendCancellationConfirmation(
+                                        userEmail,
+                                        userName,
+                                        activityName,
+                                        startDate,
+                                        endDate,
+                                        ticketCount,
+                                        total
+                                );
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }).start();
+                    }
+                }
+            }
+
             if (selectedReservation != null) {
                 loadTicketsByReservation(selectedReservation.getId());
                 showCalendarForReservation(selectedReservation);
@@ -436,7 +494,6 @@ public class MyReservationsController {
             e.printStackTrace();
         }
     }
-
 
     // Window Controls
     @FXML

@@ -303,4 +303,53 @@ public class TicketService implements IService<Ticket> {
             ps.executeUpdate();
         }
     }
+    public String getActivityNameByReservation(int reservationId) {
+        String sql = """
+        SELECT a.nom
+        FROM ticket t
+        JOIN activite a ON a.id = t.activite_id
+        WHERE t.reservation_id = ?
+        LIMIT 1
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("nom");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Your activity";
+    }
+
+    public double sumPrixByReservationSafe(int reservationId) {
+        String sql = "SELECT COALESCE(SUM(prix),0) FROM ticket WHERE reservation_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() ? rs.getDouble(1) : 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    public boolean hasActivityTicket(int reservationId) {
+
+        String sql = """
+        SELECT COUNT(*) 
+        FROM ticket
+        WHERE reservation_id = ?
+          AND LOWER(type) = 'activity'
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

@@ -50,37 +50,64 @@ public class ReservationService implements IService<Reservation> {
 
     @Override
     public void update(Reservation reservation) {
+
         String sql = """
-            UPDATE reservation SET
-              dateReservation = ?,
-              dateDebut = ?,
-              dateFin = ?,
-              statut = ?,
-              coutTotal = ?,
-              personne_id = ?,
-              destination_id = ?,
-              nb_tickets = ?
-            WHERE id = ?
-        """;
+        UPDATE reservation SET
+          dateReservation = ?,
+          dateDebut = ?,
+          dateFin = ?,
+          statut = ?,
+          coutTotal = ?,
+          personne_id = ?,
+          destination_id = ?,
+          nb_tickets = ?
+        WHERE id = ?
+    """;
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, reservation.getDateReservation());
-            ps.setDate(2, reservation.getDateDebut());
-            ps.setDate(3, reservation.getDateFin());
-            ps.setString(4, reservation.getStatut());
-            ps.setDouble(5, reservation.getCoutTotal());
-            ps.setInt(6, reservation.getPersonneId());
+        try {
+            conn.setAutoCommit(false);
 
-            if (reservation.getDestinationId() == null) ps.setNull(7, Types.INTEGER);
-            else ps.setInt(7, reservation.getDestinationId());
+            // 1️⃣ Update reservation
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setDate(1, reservation.getDateReservation());
+                ps.setDate(2, reservation.getDateDebut());
+                ps.setDate(3, reservation.getDateFin());
+                ps.setString(4, reservation.getStatut());
+                ps.setDouble(5, reservation.getCoutTotal());
+                ps.setInt(6, reservation.getPersonneId());
 
-            ps.setInt(8, reservation.getNbTickets());
-            ps.setInt(9, reservation.getId());
+                if (reservation.getDestinationId() == null)
+                    ps.setNull(7, Types.INTEGER);
+                else
+                    ps.setInt(7, reservation.getDestinationId());
 
-            ps.executeUpdate();
+                ps.setInt(8, reservation.getNbTickets());
+                ps.setInt(9, reservation.getId());
+
+                ps.executeUpdate();
+            }
+
+            // 2️⃣ If cancelled → cancel tickets too
+            if ("CANCELLED".equalsIgnoreCase(reservation.getStatut())) {
+
+                try (PreparedStatement ps2 = conn.prepareStatement("""
+                UPDATE ticket
+                SET statut = 'CANCELLED'
+                WHERE reservation_id = ?
+            """)) {
+                    ps2.setInt(1, reservation.getId());
+                    ps2.executeUpdate();
+                }
+            }
+
+            conn.commit();
             System.out.println("Reservation updated successfully!");
+
         } catch (SQLException e) {
+            try { conn.rollback(); } catch (SQLException ignored) {}
             System.out.println(e.getMessage());
+        } finally {
+            try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
         }
     }
 

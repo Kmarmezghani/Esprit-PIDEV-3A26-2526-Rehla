@@ -113,7 +113,92 @@ public class EmailService {
 
         Transport.send(message);
     }
+    public void sendCancellationConfirmation(String toEmail,
+                                             String userName,
+                                             String activityName,
+                                             String startDate,
+                                             String endDate,
+                                             int ticketCount,
+                                             double totalPrice)
+            throws MessagingException, UnsupportedEncodingException {
 
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(FROM_EMAIL, APP_PASSWORD);
+            }
+        });
+
+        String subject = "Booking Cancelled - " + activityName;
+
+        String html = """
+        <!doctype html>
+        <html>
+        <body style="margin:0;padding:0;background:#f3f6ff;font-family:Arial,sans-serif;color:#111827;">
+        <div style="max-width:640px;margin:0 auto;padding:24px;">
+
+            <div style="background:#223f91;border-radius:16px;padding:18px;color:#fff;">
+                <div style="font-size:18px;font-weight:800;">Rehla</div>
+                <div style="opacity:0.9;margin-top:6px;font-size:14px;">Your Travel Companion</div>
+            </div>
+
+            <div style="background:#ffffff;border-radius:16px;padding:22px;margin-top:16px;
+                        box-shadow:0 10px 24px rgba(17,24,39,0.08);border:1px solid #eef2ff;">
+
+                <h2 style="margin-top:0;">Your booking has been cancelled ❌</h2>
+
+                <p>Hello <strong>%s</strong>,</p>
+
+                <p>Your reservation for the following activity has been successfully cancelled:</p>
+
+                <div style="background:#f7fbff;border-radius:12px;padding:14px;margin-top:10px;">
+                    <p><strong>Activity:</strong> %s</p>
+                    <p><strong>Dates:</strong> %s → %s</p>
+                    <p><strong>Tickets:</strong> %d</p>
+                    <p><strong>Total paid:</strong> %.2f TND</p>
+                </div>
+
+                <p style="margin-top:16px;">
+                    The spots are now available again.  
+                    We hope to see you soon on another adventure 🌍
+                </p>
+
+                <p style="margin-top:20px;font-size:13px;color:#6b7280;">
+                    Thank you,<br/>
+                    <strong style="color:#223f91;">Rehla Team</strong>
+                </p>
+            </div>
+
+            <div style="text-align:center;color:#9ca3af;font-size:12px;margin-top:14px;">
+                © 2026 Rehla. All rights reserved.
+            </div>
+
+        </div>
+        </body>
+        </html>
+        """.formatted(
+                userName,
+                activityName,
+                startDate,
+                endDate,
+                ticketCount,
+                totalPrice
+        );
+
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(FROM_EMAIL, FROM_NAME, "UTF-8"));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        message.setSubject(subject);
+        message.setContent(html, "text/html; charset=UTF-8");
+
+        Transport.send(message);
+    }
 
     private String escapeHtml(String s) {
         return s.replace("&", "&amp;")

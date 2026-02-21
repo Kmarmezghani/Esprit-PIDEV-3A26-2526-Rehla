@@ -26,7 +26,7 @@
                     <children>
                         <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@/Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                                <Image url="@../icons/IMG_20260125_122708_191-removebg-preview.png" />
                             </image>
                         </ImageView>
 
@@ -38,7 +38,6 @@
                             <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
                             <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Destinations" />
                             <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Posts" />
-                            <Button onAction="#goToactivities" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Activities" />
                             <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="About" />
                         </HBox>
 
@@ -46,12 +45,12 @@
 
 
                         <!-- Window Controls -->
-                        <Button onAction="#minwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@/Backoffice/css/styling.css" text="−" />
-                        <Button onAction="#maxwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@/Backoffice/css/styling.css" text="□" />
-                        <Button onAction="#closewindow" prefHeight="11.0" prefWidth="37.0" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@/Backoffice/css/styling.css" text="✕">
-                     <HBox.margin>
-                        <Insets top="4.0" />
-                     </HBox.margin></Button>
+                        <Button onAction="#minwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@../css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@../css/styling.css" text="□" />
+                        <Button onAction="#closewindow" prefHeight="11.0" prefWidth="37.0" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@../css/styling.css" text="✕">
+                            <HBox.margin>
+                                <Insets top="4.0" />
+                            </HBox.margin></Button>
                     </children>
                     <padding>
                         <Insets left="30.0" right="30.0" />
@@ -95,12 +94,11 @@
                                 <TableView fx:id="tableReservation" prefHeight="250" style="-fx-background-radius: 12;                                                   -fx-border-radius: 12;                                                   -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8,0,0,2);">
 
                                     <columns>
-                                        <TableColumn fx:id="colIdReservation" prefWidth="67.99999237060547" text="ID" />
                                         <TableColumn fx:id="colDateDebut" prefWidth="143.20001220703125" text="Start Date" />
                                         <TableColumn fx:id="colDateFin" prefWidth="143.20001220703125" text="End Date" />
                                         <TableColumn fx:id="colStatut" prefWidth="165.59994506835938" text="Status" />
                                         <TableColumn fx:id="colCoutTotal" prefWidth="159.20001220703125" text="Total Cost" />
-                              <TableColumn fx:id="colNbrTickets" prefWidth="154.39996337890625" text="Number of Tickets" />
+                                        <TableColumn fx:id="colNbrTickets" prefWidth="154.39996337890625" text="Number of Tickets" />
                                         <TableColumn fx:id="colDeleteReservation" prefWidth="170.39996337890625" text="Actions" />
                                     </columns>
                                 </TableView>

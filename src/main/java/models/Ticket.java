@@ -5,27 +5,33 @@ import java.sql.Date;
 public class Ticket {
 
     private int id;
-    private int reservationId;
+    private Integer reservationId;
     private String type;
     private double prix;
     private String statut;
     private Date dateDebut;
     private Date dateFin;
+    private int destinationId;
+    private String destinationNom;
+    private boolean selected;
+
 
     public Ticket() {}
 
     // CREATE
-    public Ticket(int reservationId, String type, double prix, String statut, Date dateDebut, Date dateFin) {
+    public Ticket(Integer reservationId, int destinationId, String type, double prix, String statut, Date dateDebut, Date dateFin) {
         this.reservationId = reservationId;
+        this.destinationId = destinationId;
         this.type = type;
         this.prix = prix;
         this.statut = statut;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
+
     }
 
     // READ / UPDATE
-    public Ticket(int id, int reservationId, String type, double prix, String statut, Date dateDebut, Date dateFin) {
+    public Ticket(int id,Integer reservationId, String type, double prix, String statut, Date dateDebut, Date dateFin, int destinationId) {
         this.id = id;
         this.reservationId = reservationId;
         this.type = type;
@@ -33,11 +39,12 @@ public class Ticket {
         this.statut = statut;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
+        this.destinationId = destinationId;
     }
 
     public int getId() {return id;}
 
-    public int getReservationId() {return reservationId;}
+    public Integer getReservationId() {return reservationId;}
 
     public String getType() {return type;}
 
@@ -49,10 +56,16 @@ public class Ticket {
 
     public Date getDateFin() {return dateFin;}
 
+    public int getDestinationId() { return destinationId; }
+
+    public String getDestinationNom() { return destinationNom; }
+
+    public boolean isSelected() { return selected;}
+
 
     public void setId(int id) {this.id = id;}
 
-    public void setReservationId(int reservationId) {this.reservationId = reservationId;}
+    public void setReservationId(Integer reservationId) {this.reservationId = reservationId;}
 
     public void setType(String type) {this.type = type;}
 
@@ -64,7 +77,12 @@ public class Ticket {
 
     public void setDateFin(Date dateFin) {this.dateFin = dateFin;}
 
-    @Override
+    public void setDestinationId(int destinationId) { this.destinationId = destinationId; }
+
+    public void setDestinationNom(String destinationNom) { this.destinationNom = destinationNom; }
+
+    public void setSelected(boolean selected) { this.selected = selected;}
+    /*@Override
     public String toString() {
         return "Ticket{" +
                 "id=" + id +
@@ -75,5 +93,10 @@ public class Ticket {
                 ", dateDebut=" + dateDebut +
                 ", dateFin=" + dateFin +
                 '}';
+    }*/
+
+    @Override
+    public String toString() {
+        return destinationNom + " - " + type + " - " + prix + "€";
     }
 }

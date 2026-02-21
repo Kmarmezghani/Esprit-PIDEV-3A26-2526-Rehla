@@ -1,5 +1,6 @@
 package Controllers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,9 +24,7 @@ import services.ActiviteService;
 import services.InscriptionActiviteService;
 import services.EmailService;
 import services.PersonneService;
-
-import jakarta.mail.MessagingException;
-import java.io.UnsupportedEncodingException;
+import services.Toast;
 
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
@@ -39,9 +38,7 @@ public class ActivitiesPageController {
 
     private final ActiviteService activiteService = new ActiviteService();
     private final InscriptionActiviteService inscriptionService = new InscriptionActiviteService();
-
     private final PersonneService personneService = new PersonneService();
-
     private final EmailService emailService = new EmailService();
 
     private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMM yyyy • HH:mm");
@@ -159,7 +156,7 @@ public class ActivitiesPageController {
         Integer guideId = a.getGuideId();
         boolean hasGuide = (guideId != null && guideId > 0);
 
-        Integer max = a.getMaxPlaces(); // null => admin => unlimited (no label)
+        Integer max = a.getMaxPlaces(); // null => unlimited
         boolean isLimited = (max != null);
 
         int booked = 0;
@@ -172,7 +169,7 @@ public class ActivitiesPageController {
             isFull = (left == 0);
         }
 
-        // ================= PLACES TEXT (ENGLISH) =================
+        // ================= PLACES TEXT =================
         Label placesText = new Label();
         placesText.setVisible(false);
         placesText.setManaged(false);
@@ -188,19 +185,15 @@ public class ActivitiesPageController {
             } else {
                 placesText.setText(left + " spots left");
 
-                // ✅ Better rules (fix your 1/3 case)
-                // - 1 spot left => RED (always)
-                // - 2 spots left => ORANGE
-                // - else: ratio based
                 if (left <= 1) {
-                    placesText.setTextFill(Color.web("#ef4444")); // red
+                    placesText.setTextFill(Color.web("#ef4444"));
                 } else if (left == 2) {
-                    placesText.setTextFill(Color.web("#f59e0b")); // orange
+                    placesText.setTextFill(Color.web("#f59e0b"));
                 } else {
                     double ratio = left / (double) max;
-                    if (ratio > 0.50) placesText.setTextFill(Color.web("#002b11"));   // green
-                    else if (ratio > 0.20) placesText.setTextFill(Color.web("#f59e0b")); // orange
-                    else placesText.setTextFill(Color.web("#ef4444"));                // red
+                    if (ratio > 0.50) placesText.setTextFill(Color.web("#002b11"));
+                    else if (ratio > 0.20) placesText.setTextFill(Color.web("#f59e0b"));
+                    else placesText.setTextFill(Color.web("#ef4444"));
                 }
             }
         }
@@ -234,14 +227,15 @@ public class ActivitiesPageController {
             else bookBtn.setStyle(normalStyle);
 
             Button finalBookBtn = bookBtn;
+
             finalBookBtn.setOnAction(e -> {
 
-                // ✅ if full => show alert + do nothing
+                // If full => toast and stop
                 if (isLimited) {
                     int b = inscriptionService.countConfirmedByActiviteId(a.getId());
                     int l = Math.max(0, max - b);
                     if (l == 0) {
-                        showWarn("Sold out", "This activity is fully booked.");
+                        toastWarn("Sold out", "This activity is fully booked.");
                         reloadFromDB();
                         return;
                     }
@@ -267,39 +261,49 @@ public class ActivitiesPageController {
                             if (isLimited) {
                                 int b2 = inscriptionService.countConfirmedByActiviteId(a.getId());
                                 if (b2 >= max) {
-                                    showWarn("Sold out", "This activity is fully booked.");
+                                    toastWarn("Sold out", "This activity is fully booked.");
                                     reloadFromDB();
                                     return;
                                 }
                             }
 
-
+                            // ✅ DB booking
                             inscriptionService.book(CURRENT_USER_ID, a.getId(), a.getPrix());
 
+                            // ✅ UI feedback (non-blocking)
+                            toastSuccessWithAction(
+                                    "Booked!",
+                                    "Your booking has been confirmed.",
+                                    "View my bookings",
+                                    this::goToMyReservationsFromToast
+                            );
 
-                            String userEmail = personneService.getEmailById(CURRENT_USER_ID);
-                            String userName = personneService.getFullNameById(CURRENT_USER_ID);
-
-                            if (userEmail != null && !userEmail.isBlank()) {
-                                try {
-                                    emailService.sendBookingConfirmation(
-                                            userEmail,
-                                            userName,
-                                            safe(a.getNom()),
-                                            a.getPrix()
-                                    );
-                                } catch (MessagingException | UnsupportedEncodingException mailEx) {
-                                    mailEx.printStackTrace();
-                                    // don’t block booking if mail fails
-                                    showWarn("Email not sent", "Booking done, but confirmation email failed.");
-                                }
-                            }
-
-                            showInfo("Success", "Your booking has been confirmed.");
                             reloadFromDB();
 
+                            // ✅ Send email in background (doesn't block UI)
+                            String userEmail = personneService.getEmailById(CURRENT_USER_ID);
+                            String userName  = personneService.getFullNameById(CURRENT_USER_ID);
+
+                            if (userEmail != null && !userEmail.isBlank()) {
+                                new Thread(() -> {
+                                    try {
+                                        emailService.sendBookingConfirmation(
+                                                userEmail,
+                                                userName,
+                                                safe(a.getNom()),
+                                                a.getPrix()
+                                        );
+                                    } catch (Exception mailEx) {
+                                        mailEx.printStackTrace();
+                                        Platform.runLater(() ->
+                                                toastWarn("Email not sent", "Booking done, but email failed.")
+                                        );
+                                    }
+                                }).start();
+                            }
+
                         } catch (SQLException ex) {
-                            showWarn("Booking error", ex.getMessage());
+                            toastError("Booking error", ex.getMessage());
                         }
                     }
                 });
@@ -321,7 +325,6 @@ public class ActivitiesPageController {
         btnRow.getChildren().add(spacer);
         if (bookBtn != null) btnRow.getChildren().add(bookBtn);
 
-        // places text under the book button (right)
         HBox placesRow = new HBox();
         placesRow.setAlignment(Pos.CENTER_RIGHT);
         placesRow.setPadding(new Insets(0, 6, 0, 0));
@@ -330,7 +333,6 @@ public class ActivitiesPageController {
         if (placesText.isManaged()) actionsBox.getChildren().addAll(btnRow, placesRow);
         else actionsBox.getChildren().add(btnRow);
 
-        // ================= ADD EVERYTHING =================
         card.getChildren().addAll(img, title, destination, date, infoRow, actionsBox);
 
         // ================= HOVER =================
@@ -374,7 +376,7 @@ public class ActivitiesPageController {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            showInfo("Error", "Cannot open activity details.");
+            toastError("Error", "Cannot open activity details.");
         }
     }
 
@@ -386,6 +388,9 @@ public class ActivitiesPageController {
         applySearchFilter();
     }
 
+    // ======================
+    // NAVIGATION
+    // ======================
     private Stage getStageFromEvent(ActionEvent event) {
         Object src = event.getSource();
         if (src instanceof Node n) return (Stage) n.getScene().getWindow();
@@ -424,10 +429,30 @@ public class ActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void goToMyReservationsFromToast() {
+        try {
+            Stage stage = (Stage) activitiesFlowPane.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
+            Parent root = loader.load();
+
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -442,6 +467,9 @@ public class ActivitiesPageController {
         alert.showAndWait();
     }
 
+    // ======================
+    // WINDOW BUTTONS
+    // ======================
     @FXML public void closewindow(ActionEvent event) { getStageFromEvent(event).close(); }
     @FXML public void minwindow(ActionEvent event) { getStageFromEvent(event).setIconified(true); }
     @FXML public void maxwindow(ActionEvent event) {
@@ -449,21 +477,32 @@ public class ActivitiesPageController {
         stage.setMaximized(!stage.isMaximized());
     }
 
+    // ======================
+    // TOAST HELPERS
+    // ======================
+    private Stage getStage() {
+        if (activitiesFlowPane == null || activitiesFlowPane.getScene() == null) return null;
+        return (Stage) activitiesFlowPane.getScene().getWindow();
+    }
+
+    private void toastSuccess(String title, String msg) {
+        Toast.show(getStage(), Toast.Type.SUCCESS, title, msg);
+    }
+
+    private void toastWarn(String title, String msg) {
+        Toast.show(getStage(), Toast.Type.WARNING, title, msg);
+    }
+
+    private void toastError(String title, String msg) {
+        Toast.show(getStage(), Toast.Type.ERROR, title, msg);
+    }
+
+    private void toastSuccessWithAction(String title, String msg, String actionText, Runnable action) {
+        Toast.show(getStage(), Toast.Type.SUCCESS, title, msg, actionText, action);
+    }
+
+    // ======================
+    // UTILS
+    // ======================
     private String safe(String s) { return s == null ? "" : s; }
-
-    private void showInfo(String title, String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
-    }
-
-    private void showWarn(String title, String msg) {
-        Alert a = new Alert(Alert.AlertType.WARNING);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
-    }
 }

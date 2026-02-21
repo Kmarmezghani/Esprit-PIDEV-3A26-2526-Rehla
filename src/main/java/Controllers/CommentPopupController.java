@@ -16,8 +16,10 @@ import javafx.scene.shape.Circle;
 import models.Commentaire;
 import models.Personne;
 import models.Post;
+import models.notification;
 import org.json.JSONObject;
 import services.CommentaireService;
+import services.notificationService;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -113,21 +115,20 @@ public class CommentPopupController {
     /** Envoyer un nouveau commentaire */
     @FXML
     private void sendComment() {
+
         if(post == null) return;
 
         String text = txtComment.getText().trim();
 
-        // --- Contrôle vide ---
         if(text.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText("Commentaire vide !");
-            alert.setContentText("Veuillez écrire un commentaire avant d'envoyer.");
             alert.showAndWait();
             return;
         }
 
-        // --- Contrôle toxicité ---
         double score = getToxicityScore(text);
+
         if(score >= 0.7) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Commentaire refusé !");
@@ -136,14 +137,7 @@ public class CommentPopupController {
             return;
         }
 
-        if(score >= 0.1) {
-            notifyAdmin(text, score);
-            showToast("Commentaire sensible publié (admin notifié)");
-        } else {
-            showToast("Commentaire publié !");
-        }
-
-        // --- Création et insertion ---
+        // ✅ Créer commentaire AVANT notification
         Commentaire newComment = new Commentaire();
         newComment.setContenu(text);
         newComment.setDateCommentaire(LocalDateTime.now().toLocalDate());
@@ -155,20 +149,60 @@ public class CommentPopupController {
         auteur.setNom("");
         newComment.setAuteur(auteur);
 
-        commentaireService.add(newComment);
+        // ✅ Sauvegarde DB
+        Commentaire savedComment = commentaireService.addAndReturn(newComment);
 
-        // Ajouter immédiatement à l'UI
-        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
-        addComment(auteur.getPrenom() + " " + auteur.getNom(), text, now, newComment);
+        if(savedComment == null){
+            return;
+        }
+
+
+        // ✅ Notification admin APRES création
+        if(score >= 0.1) {
+            notifyAdmin(text, score, savedComment);
+            showToast("Commentaire sensible publié (admin notifié)");
+        } else {
+            showToast("Commentaire publié !");
+        }
+
+        // ✅ Update UI
+        String now = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
+
+        addComment(
+                auteur.getPrenom() + " " + auteur.getNom(),
+                text,
+                now,
+                newComment
+        );
 
         txtComment.clear();
     }
-    private void notifyAdmin(String contenu, double score) {
-        System.out.println("⚠️ ADMIN ALERT");
-        System.out.println("Contenu: " + contenu);
-        System.out.println("Score: " + score);
 
+    private void notifyAdmin(String contenu, double score, Commentaire comment) {
+
+        Personne auteur = comment.getAuteur();
+
+        String message =
+                "👤 " + auteur.getPrenom() + " " + auteur.getNom() +
+                        " a publié dans le post ID=" + comment.getPost().getId() +
+                        " un commentaire suspect (score: " +
+                        String.format("%.2f", score) + ")";
+
+        notification notif = new notification(
+                message,
+                "COMMENT",
+                comment.getPost().getId(),
+                comment.getId(),
+                auteur.getId(),
+                1   // admin
+        );
+
+        new notificationService().add(notif);
+
+        System.out.println("Notification commentaire enregistrée !");
     }
+
     private void showToast(String message) {
         Label toast = new Label(message);
         toast.getStyleClass().add("toast");

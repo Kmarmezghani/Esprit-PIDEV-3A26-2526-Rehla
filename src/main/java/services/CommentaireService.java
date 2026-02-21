@@ -146,5 +146,36 @@ public class CommentaireService implements IService<Commentaire> {
 
         return count;
     }
+    public Commentaire addAndReturn(Commentaire c){
+
+        String sql =
+                "INSERT INTO commentaire(contenu,dateCommentaire,post_id,personne_id) VALUES(?,?,?,?)";
+
+        try{
+
+            PreparedStatement ps =
+                    conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            ps.setString(1, c.getContenu());
+            ps.setDate(2, Date.valueOf(c.getDateCommentaire()));
+            ps.setInt(3, c.getPost().getId());
+            ps.setInt(4, c.getAuteur().getId());
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if(rs.next()){
+                c.setId(rs.getInt(1));
+            }
+
+            return c;
+
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 }

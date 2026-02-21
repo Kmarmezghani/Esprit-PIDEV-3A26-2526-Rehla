@@ -12,41 +12,15 @@ public class Reservation {
     private double coutTotal;
 
     private int personneId;            // FK personne_id
-    private Integer destinationId;     // FK destination_id (nullable)
-    private Integer activiteId;        // FK activite_id (nullable)
-    private int nbTickets = 0;         // default 0
+    private Integer destinationId;     // FK destination_id (nullable) - optional
+    private int nbTickets = 0;         // optional
 
     public Reservation() {}
 
-    // ✅ Ancien constructeur (gardé pour compatibilité)
-    public Reservation(int id, Date dateReservation, Date dateDebut, Date dateFin,
-                       String statut, double coutTotal, int personneId, int destinationId) {
-        this.id = id;
-        this.dateReservation = dateReservation;
-        this.dateDebut = dateDebut;
-        this.dateFin = dateFin;
-        this.statut = statut;
-        this.coutTotal = coutTotal;
-        this.personneId = personneId;
-        this.destinationId = destinationId;
-    }
-
-    // ✅ Ancien constructeur (gardé pour compatibilité)
-    public Reservation(Date dateReservation, Date dateDebut, Date dateFin,
-                       String statut, double coutTotal, int personneId, int destinationId) {
-        this.dateReservation = dateReservation;
-        this.dateDebut = dateDebut;
-        this.dateFin = dateFin;
-        this.statut = statut;
-        this.coutTotal = coutTotal;
-        this.personneId = personneId;
-        this.destinationId = destinationId;
-    }
-
-    // ✅ Nouveau constructeur (complet)
+    // For READ/UPDATE
     public Reservation(int id, Date dateReservation, Date dateDebut, Date dateFin,
                        String statut, double coutTotal, int personneId,
-                       Integer destinationId, Integer activiteId, int nbTickets) {
+                       Integer destinationId, int nbTickets) {
         this.id = id;
         this.dateReservation = dateReservation;
         this.dateDebut = dateDebut;
@@ -55,14 +29,13 @@ public class Reservation {
         this.coutTotal = coutTotal;
         this.personneId = personneId;
         this.destinationId = destinationId;
-        this.activiteId = activiteId;
         this.nbTickets = nbTickets;
     }
 
-    // ✅ Nouveau constructeur (complet)
+    // For CREATE
     public Reservation(Date dateReservation, Date dateDebut, Date dateFin,
                        String statut, double coutTotal, int personneId,
-                       Integer destinationId, Integer activiteId, int nbTickets) {
+                       Integer destinationId, int nbTickets) {
         this.dateReservation = dateReservation;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
@@ -70,7 +43,6 @@ public class Reservation {
         this.coutTotal = coutTotal;
         this.personneId = personneId;
         this.destinationId = destinationId;
-        this.activiteId = activiteId;
         this.nbTickets = nbTickets;
     }
 
@@ -95,13 +67,8 @@ public class Reservation {
     public int getPersonneId() { return personneId; }
     public void setPersonneId(int personneId) { this.personneId = personneId; }
 
-    // ✅ destination nullable
     public Integer getDestinationId() { return destinationId; }
     public void setDestinationId(Integer destinationId) { this.destinationId = destinationId; }
-
-    // ✅ new fields
-    public Integer getActiviteId() { return activiteId; }
-    public void setActiviteId(Integer activiteId) { this.activiteId = activiteId; }
 
     public int getNbTickets() { return nbTickets; }
     public void setNbTickets(int nbTickets) { this.nbTickets = nbTickets; }
@@ -117,7 +84,6 @@ public class Reservation {
                 ", coutTotal=" + coutTotal +
                 ", personneId=" + personneId +
                 ", destinationId=" + destinationId +
-                ", activiteId=" + activiteId +
                 ", nbTickets=" + nbTickets +
                 '}';
     }

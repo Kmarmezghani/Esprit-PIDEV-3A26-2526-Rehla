@@ -183,8 +183,9 @@ public class TicketController {
         Integer destinationId = destinationMap.get(selectedDestination);
 
         Ticket newTicket = new Ticket(
+                null ,
                 null,
-                destinationId,
+                destinationId ,
                 type,
                 prix,
                 "Available",

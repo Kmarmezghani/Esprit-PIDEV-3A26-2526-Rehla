@@ -18,19 +18,18 @@ public class ReservationService implements IService<Reservation> {
     }
 
     // =========================
-    // CRUD (fixed with PreparedStatement)
+    // CRUD
     // =========================
 
     @Override
     public void add(Reservation reservation) {
         String sql = """
             INSERT INTO reservation
-            (dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, activite_id, nb_tickets)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, nb_tickets)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setDate(1, reservation.getDateReservation());
             ps.setDate(2, reservation.getDateDebut());
             ps.setDate(3, reservation.getDateFin());
@@ -41,13 +40,9 @@ public class ReservationService implements IService<Reservation> {
             if (reservation.getDestinationId() == null) ps.setNull(7, Types.INTEGER);
             else ps.setInt(7, reservation.getDestinationId());
 
-            if (reservation.getActiviteId() == null) ps.setNull(8, Types.INTEGER);
-            else ps.setInt(8, reservation.getActiviteId());
-
-            ps.setInt(9, reservation.getNbTickets());
+            ps.setInt(8, reservation.getNbTickets());
 
             ps.executeUpdate();
-
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -64,13 +59,11 @@ public class ReservationService implements IService<Reservation> {
               coutTotal = ?,
               personne_id = ?,
               destination_id = ?,
-              activite_id = ?,
               nb_tickets = ?
             WHERE id = ?
         """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setDate(1, reservation.getDateReservation());
             ps.setDate(2, reservation.getDateDebut());
             ps.setDate(3, reservation.getDateFin());
@@ -81,15 +74,11 @@ public class ReservationService implements IService<Reservation> {
             if (reservation.getDestinationId() == null) ps.setNull(7, Types.INTEGER);
             else ps.setInt(7, reservation.getDestinationId());
 
-            if (reservation.getActiviteId() == null) ps.setNull(8, Types.INTEGER);
-            else ps.setInt(8, reservation.getActiviteId());
-
-            ps.setInt(9, reservation.getNbTickets());
-            ps.setInt(10, reservation.getId());
+            ps.setInt(8, reservation.getNbTickets());
+            ps.setInt(9, reservation.getId());
 
             ps.executeUpdate();
             System.out.println("Reservation updated successfully!");
-
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -123,20 +112,6 @@ public class ReservationService implements IService<Reservation> {
         }
         return list;
     }
-    public String getDestinationNomById(int id) {
-        String nom = "";
-        String sql = "SELECT nom FROM destination WHERE id = " + id;
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next()) {
-                nom = rs.getString("nom");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return nom;
-    }
 
     public Reservation getById(int id) {
         String sql = "SELECT * FROM reservation WHERE id = ?";
@@ -148,6 +123,18 @@ public class ReservationService implements IService<Reservation> {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getDestinationNomById(int id) {
+        String sql = "SELECT nom FROM destination WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("nom");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     private Reservation map(ResultSet rs) throws SQLException {
@@ -164,22 +151,26 @@ public class ReservationService implements IService<Reservation> {
         int dest = rs.getInt("destination_id");
         r.setDestinationId(rs.wasNull() ? null : dest);
 
-        int act = rs.getInt("activite_id");
-        r.setActiviteId(rs.wasNull() ? null : act);
-
         r.setNbTickets(rs.getInt("nb_tickets"));
 
         return r;
     }
 
+    // =========================
+    // Availability check (NOW from TICKET, not reservation.activite_id)
+    // =========================
 
     public int sumTicketsConfirmedByActiviteId(int activiteId) throws SQLException {
+        // ⚠️ Ici on suppose que le "volume" est dans reservation.nb_tickets
+        // donc on somme reservation.nb_tickets pour les reservations qui contiennent cette activité dans ticket.
         String sql = """
-            SELECT COALESCE(SUM(nb_tickets),0) AS taken
-            FROM reservation
-            WHERE activite_id = ?
-            AND statut = 'reserved'
+            SELECT COALESCE(SUM(r.nb_tickets), 0) AS taken
+            FROM ticket t
+            JOIN reservation r ON r.id = t.reservation_id
+            WHERE t.activite_id = ?
+              AND r.statut = 'reserved'
         """;
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
             ResultSet rs = ps.executeQuery();
@@ -187,14 +178,16 @@ public class ReservationService implements IService<Reservation> {
         }
     }
 
+    // =========================
+    // Booking (transaction)
+    // =========================
 
     public void bookWithQty(int userId, int activiteId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
-
         try {
             conn.setAutoCommit(false);
 
-            // 1) lock activity row + get max_places + get dates (date_debut/date_fin)
-            Integer maxPlaces = null;
+            // 1) Lock activity + read max_places + dates
+            Integer maxPlaces;
             Date actStartDate;
             Date actEndDate;
 
@@ -203,13 +196,11 @@ public class ReservationService implements IService<Reservation> {
 
                 ps.setInt(1, activiteId);
                 ResultSet rs = ps.executeQuery();
-
                 if (!rs.next()) throw new SQLException("Activity not found.");
 
                 int mp = rs.getInt("max_places");
                 maxPlaces = rs.wasNull() ? null : mp;
 
-                // activite.date_debut/date_fin are DATETIME in DB -> we take DATE part
                 actStartDate = rs.getDate("date_debut");
                 actEndDate = rs.getDate("date_fin");
 
@@ -218,21 +209,10 @@ public class ReservationService implements IService<Reservation> {
                 }
             }
 
-            // 2) sum taken tickets inside transaction
-            int taken = 0;
-            try (PreparedStatement ps = conn.prepareStatement("""
-            SELECT COALESCE(SUM(nb_tickets),0)
-            FROM reservation
-            WHERE activite_id = ?
-              AND statut IN ('CONFIRMED','CONFIRMEE','PAYEE','APPROUVEE')
-            FOR UPDATE
-        """)) {
-                ps.setInt(1, activiteId);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) taken = rs.getInt(1);
-            }
+            // 2) Taken spots (based on tickets+reservations)
+            int taken = sumTicketsConfirmedByActiviteId(activiteId);
 
-            // 3) check availability
+            // 3) Availability check
             if (maxPlaces != null) {
                 int available = Math.max(0, maxPlaces - taken);
                 if (qty > available) {
@@ -240,14 +220,14 @@ public class ReservationService implements IService<Reservation> {
                 }
             }
 
-            // 4) insert reservation (dateDebut/dateFin = activity dates)
+            // 4) Insert reservation (NO activite_id here)
             double total = prixUnitaire * qty;
             int reservationId;
 
             String insertRes = """
-            INSERT INTO reservation(dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, activite_id, nb_tickets)
-            VALUES (?, ?, ?, 'reserved', ?, ?, ?, ?, ?)
-        """;
+                INSERT INTO reservation(dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, nb_tickets)
+                VALUES (?, ?, ?, 'reserved', ?, ?, ?, ?)
+            """;
 
             try (PreparedStatement ps = conn.prepareStatement(insertRes, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setDate(1, Date.valueOf(LocalDate.now()));
@@ -259,8 +239,7 @@ public class ReservationService implements IService<Reservation> {
                 if (destinationId == null) ps.setNull(6, Types.INTEGER);
                 else ps.setInt(6, destinationId);
 
-                ps.setInt(7, activiteId);
-                ps.setInt(8, qty);
+                ps.setInt(7, qty);
 
                 ps.executeUpdate();
 
@@ -269,11 +248,10 @@ public class ReservationService implements IService<Reservation> {
                 reservationId = keys.getInt(1);
             }
 
-            // 5) insert N tickets (same transaction)
-            ticketService.createTicketsBatch(conn, reservationId, qty, prixUnitaire, destinationId);
+            // 5) Insert ticket line that links reservation <-> activite
+            ticketService.addActivityTicket(conn, reservationId, activiteId);
 
             conn.commit();
-
         } catch (SQLException ex) {
             conn.rollback();
             throw ex;
@@ -281,7 +259,6 @@ public class ReservationService implements IService<Reservation> {
             conn.setAutoCommit(true);
         }
     }
-
 
     public int getLastInsertedId() {
         String sql = "SELECT MAX(id) FROM reservation";

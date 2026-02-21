@@ -14,26 +14,30 @@ public class Ticket {
     private int destinationId;
     private String destinationNom;
     private boolean selected;
+    private Integer activiteId;
 
 
     public Ticket() {}
 
     // CREATE
-    public Ticket(Integer reservationId, int destinationId, String type, double prix, String statut, Date dateDebut, Date dateFin) {
+    public Ticket(Integer reservationId, Integer activiteId, int destinationId,
+                  String type, double prix, String statut, Date dateDebut, Date dateFin) {
         this.reservationId = reservationId;
+        this.activiteId = activiteId;
         this.destinationId = destinationId;
         this.type = type;
         this.prix = prix;
         this.statut = statut;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
-
     }
 
     // READ / UPDATE
-    public Ticket(int id,Integer reservationId, String type, double prix, String statut, Date dateDebut, Date dateFin, int destinationId) {
+    public Ticket(int id, Integer reservationId, Integer activiteId, String type,
+                  double prix, String statut, Date dateDebut, Date dateFin, int destinationId) {
         this.id = id;
         this.reservationId = reservationId;
+        this.activiteId = activiteId;
         this.type = type;
         this.prix = prix;
         this.statut = statut;
@@ -57,12 +61,12 @@ public class Ticket {
     public Date getDateFin() {return dateFin;}
 
     public int getDestinationId() { return destinationId; }
-
+    public Integer getActiviteId() { return activiteId; }
     public String getDestinationNom() { return destinationNom; }
 
     public boolean isSelected() { return selected;}
 
-
+    public void setActiviteId(Integer activiteId) { this.activiteId = activiteId; }
     public void setId(int id) {this.id = id;}
 
     public void setReservationId(Integer reservationId) {this.reservationId = reservationId;}

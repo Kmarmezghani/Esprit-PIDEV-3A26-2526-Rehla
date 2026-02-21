@@ -406,3 +406,31 @@
 .dock {
     -fx-padding: 20 0 20 15;
 }
+/* ================= NOTIFICATION DROPDOWN ================= */
+
+.notif-dropdown {
+    -fx-background-color: linear-gradient(to bottom, #6C63FF, #4F46E5);
+    -fx-background-radius: 18;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 25, 0.4, 0, 6);
+}
+
+.notif-dropdown .menu-item {
+    -fx-background-color: transparent;
+}
+
+.notif-header {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.notif-item {
+    -fx-text-fill: #E0E7FF;
+    -fx-font-size: 13px;
+}
+
+.notif-dropdown .menu-item:hover {
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-background-radius: 10;
+}

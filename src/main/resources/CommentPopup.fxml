@@ -6,16 +6,18 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.shape.Circle?>
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="Controllers.CommentPopupController"
-      spacing="15"
-      prefWidth="450"
-      prefHeight="500"
-      maxWidth="450"
-      maxHeight="500"
-      alignment="TOP_CENTER"
-      styleClass="comment-popup">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="Controllers.CommentPopupController"
+           fx:id="root">
+
+    <VBox spacing="15"
+          prefWidth="450"
+          prefHeight="500"
+          maxWidth="450"
+          maxHeight="500"
+          alignment="TOP_CENTER"
+          styleClass="comment-popup">
 
 
     <padding>
@@ -55,3 +57,4 @@
     </HBox>
 
 </VBox>
+</StackPane>

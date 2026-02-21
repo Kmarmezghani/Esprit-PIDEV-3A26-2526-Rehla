@@ -152,4 +152,39 @@ public class PostService implements IService<Post> {
         return posts;
     }
 
+
+
+    public Post addPost(Post post) {
+
+        String sql = "INSERT INTO post (titre, contenu, datePublication, popularite, personne_id, image) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            ps.setString(1, post.getTitre());
+            ps.setString(2, post.getContenu());
+            ps.setDate(3, Date.valueOf(post.getDatePublication()));
+            ps.setInt(4, post.getPopularite());
+            ps.setInt(5, post.getAuteur().getId());
+            ps.setString(6, post.getImage());
+
+            ps.executeUpdate();
+
+            // Récupérer ID généré
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                post.setId(rs.getInt(1));
+            }
+
+            System.out.println("Post ajouté !");
+            return post;
+
+        } catch (SQLException e) {
+            System.out.println("Erreur ajout post : " + e.getMessage());
+            return null;
+        }
+    }
+
+
 }

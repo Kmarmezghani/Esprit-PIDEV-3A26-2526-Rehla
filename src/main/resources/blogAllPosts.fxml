@@ -11,6 +11,7 @@
 
     <BorderPane fx:id="mainContent" styleClass="root">
 
+        <!-- ********************************-->
     <!-- HERO / TOP -->
     <top>
         <VBox styleClass="hero" spacing="12">

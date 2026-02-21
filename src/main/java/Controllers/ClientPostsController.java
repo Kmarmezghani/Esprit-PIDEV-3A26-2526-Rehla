@@ -27,6 +27,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
+import models.notification;
 import org.json.JSONObject;
 import services.CommentaireService;
 import services.LikeService;
@@ -34,8 +35,10 @@ import services.PostService;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.List;
 
 import javafx.collections.ListChangeListener;
+import services.notificationService;
 
 
 public class ClientPostsController {
@@ -51,7 +54,6 @@ public class ClientPostsController {
     private TextField txtNewPost;
 
 
-
     private boolean isLiked = false;
 
     private Image heartEmpty;
@@ -60,6 +62,10 @@ public class ClientPostsController {
 
     private Image commentEmpty;
 
+    @FXML
+    private Button btnNotif;
+
+    private ContextMenu notifMenu = new ContextMenu();
 
     @FXML
     private VBox postsContainer;
@@ -71,6 +77,8 @@ public class ClientPostsController {
     private Personne currentUser;
     private File selectedImageFile;
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
+PostService postService = new PostService();
+    notificationService notificationService = new notificationService();
     private LikeService likeService = new LikeService();
     @FXML
     private void initialize() {
@@ -96,8 +104,21 @@ public class ClientPostsController {
 
         loadPosts();
         postsContainer.setFillWidth(true);
+        btnNotif.setOnAction(e -> toggleNotifications());
+
 
     }
+    private void toggleNotifications() {
+
+        if (notifMenu.isShowing()) {
+            notifMenu.hide();
+            return;
+        }
+
+        loadNotifications();
+        notifMenu.show(btnNotif, Side.BOTTOM, 0, 8);
+    }
+
 
     private void loadPosts() {
 
@@ -490,12 +511,65 @@ public class ClientPostsController {
             return 0;
         }
     }
-    private void notifyAdmin(String contenu, double score) {
-        System.out.println("⚠️ ADMIN ALERT");
-        System.out.println("Contenu: " + contenu);
-        System.out.println("Score: " + score);
+    private void notifyAdmin(String contenu, double score, Post post) {
 
+        Personne auteur = post.getAuteur();
+
+        String typeContenu = (post.getId() != 0) ? "post" : "contenu";
+
+        String message =
+                "👤 " + auteur.getNom() + " " + auteur.getPrenom() +
+                        " a publié un " + typeContenu +
+                        " jugé suspect (score: " + String.format("%.2f", score) + ")" +
+                        " | Post ID: " + post.getId();
+
+        notification notif = new notification(
+                message,
+                "POST",
+                post.getId(),
+                null,
+                auteur.getId(),
+                1   // admin
+        );
+
+        notificationService.add(notif);
     }
+
+
+    private void loadNotifications() {
+
+        List<notification> list = notificationService.getByReceiver(1); // admin
+
+        notifMenu.getItems().clear();
+        notifMenu.getStyleClass().add("notif-dropdown");
+
+        MenuItem header = new MenuItem("Notifications");
+        header.setDisable(true);
+        header.getStyleClass().add("notif-header");
+
+        notifMenu.getItems().add(header);
+        notifMenu.getItems().add(new SeparatorMenuItem());
+
+        if (list.isEmpty()) {
+
+            MenuItem empty = new MenuItem("Aucune notification");
+            empty.setDisable(true);
+            empty.getStyleClass().add("notif-item");
+            notifMenu.getItems().add(empty);
+
+        } else {
+
+            for (notification n : list) {
+
+                MenuItem item = new MenuItem(n.getMessage());
+                item.getStyleClass().add("notif-item");
+
+                notifMenu.getItems().add(item);
+            }
+        }
+    }
+
+
     @FXML
     private void handleAddPost() {
 
@@ -504,7 +578,6 @@ public class ClientPostsController {
         if (contenu == null || contenu.isBlank()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText("Contenu vide !");
-            alert.setContentText("Veuillez écrire quelque chose.");
             alert.show();
             return;
         }
@@ -515,22 +588,13 @@ public class ClientPostsController {
         if (score >= 0.7) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Publication refusée !");
-            alert.setContentText("Votre contenu ne respecte pas nos règles de communauté. Veuillez le modifier avant de publier.");
+            alert.setContentText("Contenu non autorisé.");
             alert.show();
             return;
         }
 
-
-        if (score >= 0.1) {
-            System.out.println("Contenu suspect détecté !");
-            notifyAdmin(contenu, score);
-            showToast("Contenu sensible publié (admin notifié)");
-        } else {
-            showToast("Publication publiée !");
-        }
-
         Personne auteur = new Personne();
-        auteur.setId(1);
+        auteur.setId(1); // utilisateur connecté idéalement
 
         String imagePath = null;
         if (selectedImageFile != null) {
@@ -548,15 +612,29 @@ public class ClientPostsController {
         );
 
         PostService postService = new PostService();
-        postService.add(newPost);
+
+        // ✅ Sauvegarde UNE seule fois
+        Post savedPost = postService.addPost(newPost);
+
+        if (savedPost == null) {
+            System.out.println("Erreur sauvegarde post");
+            return;
+        }
+
+        // ✅ Notification admin après sauvegarde
+        if (score >= 0.1) {
+            notifyAdmin(contenu, score, savedPost);
+            showToast("Contenu sensible publié (admin notifié)");
+        } else {
+            showToast("Publication publiée !");
+        }
 
         loadPosts();
 
         txtNewPost.clear();
         selectedImageFile = null;
-
-        System.out.println("Post ajouté avec image !");
     }
+
 
     private void showToast(String message) {
         Label toast = new Label(message);

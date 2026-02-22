@@ -20,6 +20,7 @@ import models.notification;
 import org.json.JSONObject;
 import services.CommentaireService;
 import services.notificationService;
+import util.Session;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -46,6 +47,8 @@ public class CommentPopupController {
     private Runnable onClose;
 
     private CommentaireService commentaireService = new CommentaireService();
+    private Personne currentUser = Session.getCurrentUser();
+
 
     public void setOnClose(Runnable onClose) {
         this.onClose = onClose;
@@ -112,7 +115,6 @@ public class CommentPopupController {
             return 0;
         }
     }
-    /** Envoyer un nouveau commentaire */
     @FXML
     private void sendComment() {
 
@@ -137,27 +139,20 @@ public class CommentPopupController {
             return;
         }
 
-        // ✅ Créer commentaire AVANT notification
+        if(currentUser == null) return;
+
         Commentaire newComment = new Commentaire();
         newComment.setContenu(text);
         newComment.setDateCommentaire(LocalDateTime.now().toLocalDate());
         newComment.setPost(post);
+        newComment.setAuteur(currentUser);
 
-        Personne auteur = new Personne();
-        auteur.setId(1);
-        auteur.setPrenom("Vous");
-        auteur.setNom("");
-        newComment.setAuteur(auteur);
-
-        // ✅ Sauvegarde DB
         Commentaire savedComment = commentaireService.addAndReturn(newComment);
 
         if(savedComment == null){
             return;
         }
 
-
-        // ✅ Notification admin APRES création
         if(score >= 0.1) {
             notifyAdmin(text, score, savedComment);
             showToast("Commentaire sensible publié (admin notifié)");
@@ -165,12 +160,11 @@ public class CommentPopupController {
             showToast("Commentaire publié !");
         }
 
-        // ✅ Update UI
         String now = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
 
         addComment(
-                auteur.getPrenom() + " " + auteur.getNom(),
+                currentUser.getPrenom() + " " + currentUser.getNom(),
                 text,
                 now,
                 newComment
@@ -178,6 +172,7 @@ public class CommentPopupController {
 
         txtComment.clear();
     }
+
 
     private void notifyAdmin(String contenu, double score, Commentaire comment) {
 
@@ -256,36 +251,50 @@ public class CommentPopupController {
         // ================= ACTIONS =================
         HBox actionBox = new HBox(10);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
+        if(currentUser != null &&
+                commentObj.getAuteur() != null &&
+                commentObj.getAuteur().getId() == currentUser.getId()) {
 
-// Image Update
-        ImageView updateImg = new ImageView(new Image(getClass().getResourceAsStream("/icons/editblue.png")));
-        updateImg.setFitWidth(20);
-        updateImg.setFitHeight(20);
-        updateImg.setPreserveRatio(true);
-        updateImg.setSmooth(true);
-        updateImg.setStyle("-fx-cursor: hand;");
-        updateImg.setOnMouseClicked(e -> {
-            String newContent = promptForUpdate(commentObj.getContenu());
-            if (newContent != null && !newContent.isBlank()) {
-                commentObj.setContenu(newContent);
-                commentaireService.update(commentObj);
-                lblMessage.setText(newContent);
-            }
-        });
+            // Image Update
+            ImageView updateImg = new ImageView(
+                    new Image(getClass().getResourceAsStream("/icons/editblue.png"))
+            );
 
-// Image Delete
-        ImageView deleteImg = new ImageView(new Image(getClass().getResourceAsStream("/icons/delete.png")));
-        deleteImg.setFitWidth(20);
-        deleteImg.setFitHeight(20);
-        deleteImg.setPreserveRatio(true);
-        deleteImg.setSmooth(true);
-        deleteImg.setStyle("-fx-cursor: hand;");
-        deleteImg.setOnMouseClicked(e -> {
-            commentaireService.delete(commentObj);
-            commentsContainer.getChildren().remove(commentBox);
-        });
+            updateImg.setFitWidth(20);
+            updateImg.setFitHeight(20);
+            updateImg.setPreserveRatio(true);
+            updateImg.setSmooth(true);
+            updateImg.setStyle("-fx-cursor: hand;");
 
-        actionBox.getChildren().addAll(updateImg, deleteImg);
+            updateImg.setOnMouseClicked(e -> {
+                String newContent = promptForUpdate(commentObj.getContenu());
+
+                if (newContent != null && !newContent.isBlank()) {
+                    commentObj.setContenu(newContent);
+                    commentaireService.update(commentObj);
+                    lblMessage.setText(newContent);
+                }
+            });
+
+            // Image Delete
+            ImageView deleteImg = new ImageView(
+                    new Image(getClass().getResourceAsStream("/icons/delete.png"))
+            );
+
+            deleteImg.setFitWidth(20);
+            deleteImg.setFitHeight(20);
+            deleteImg.setPreserveRatio(true);
+            deleteImg.setSmooth(true);
+            deleteImg.setStyle("-fx-cursor: hand;");
+
+            deleteImg.setOnMouseClicked(e -> {
+                commentaireService.delete(commentObj);
+                commentsContainer.getChildren().remove(commentBox);
+            });
+
+            actionBox.getChildren().addAll(updateImg, deleteImg);
+        }
+
         commentBox.getChildren().addAll(header, lblMessage, actionBox);
         commentsContainer.getChildren().add(commentBox);
     }

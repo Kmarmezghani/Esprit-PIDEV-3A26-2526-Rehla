@@ -159,18 +159,16 @@ public class BlogProfileController {
         profileAvatar.setImage(avatarImage);
         currentUserAvatar.setImage(smallAvatar);
         composerAvatar.setImage(smallAvatar);
-
-        profileName.setText(currentUser.getNom() + " " + currentUser.getPrenom());
-
         profileHeadline.setText(
                 currentUser.getRole() != null
                         ? currentUser.getRole()
                         : "Utilisateur"
         );
+        profileName.setText(currentUser.getNom() + " " + currentUser.getPrenom());
+
+
 
         currentUserName.setText(currentUser.getPrenom());
-        profileHeadline.setText("Développeuse Full-Stack • Tech Blogger • Cloud & IA Enthusiast");
-        currentUserName.setText("Yosr");
         postsCountLabel.setText("18");
         followersCountLabel.setText("1.2K");
         favoritesCountLabel.setText("87");

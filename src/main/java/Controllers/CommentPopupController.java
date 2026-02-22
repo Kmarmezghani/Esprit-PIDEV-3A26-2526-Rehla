@@ -100,7 +100,7 @@ public class CommentPopupController {
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setDoOutput(true);
 
-            // Encodage JSON sûr
+            // Encodage JSON
             String jsonInput = "{\"text\": \"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"}";
 
             try (OutputStream os = conn.getOutputStream()) {

@@ -39,6 +39,7 @@ import services.LikeService;
 import services.PostService;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -434,13 +435,14 @@ private PostService postService = new PostService();
 
         ImageView shareIcon = new ImageView(shareImage);
 
-        shareIcon.setFitWidth(20);
-        shareIcon.setFitHeight(20);
+        shareIcon.setFitWidth(30);
+        shareIcon.setFitHeight(30);
         shareIcon.setPreserveRatio(true);
 
         shareBtn.setGraphic(shareIcon);
 
         shareBox.getChildren().add(shareBtn);
+        shareBtn.setOnAction(e -> sharePost(post));
 
 
         footer.getChildren().addAll(likeBox, commentBox, starBox, footerSpacer,shareBox);
@@ -448,6 +450,209 @@ private PostService postService = new PostService();
         card.getChildren().add(footer);
 
         return card;
+    }
+
+    private void sharePost(Post post){
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+
+                try{
+
+                    URL url = new URL("https://api.ayrshare.com/api/post");
+
+                    HttpURLConnection conn =
+                            (HttpURLConnection) url.openConnection();
+
+                    conn.setRequestMethod("POST");
+
+                    conn.setRequestProperty(
+                            "Authorization",
+                            "Bearer FC9BE493-5E8E44EF-90E07EA9-447554F5"
+                    );
+
+                    conn.setRequestProperty(
+                            "Content-Type",
+                            "application/json"
+                    );
+
+                    conn.setDoOutput(true);
+
+                    // -------- Construire JSON --------
+
+                    StringBuilder json = new StringBuilder();
+
+                    json.append("{");
+
+                    // Post text
+                    json.append("\"post\":\"")
+                            .append(post.getContenu()
+                                    .replace("\"","\\\"")
+                                    .replace("\n"," "))
+                            .append("\",");
+
+                    // Platforms
+                    json.append("\"platforms\":[\"twitter\",\"facebook\"]");
+                    System.out.println("Post ID = " + post.getId());
+                    System.out.println("Image = " + post.getImage());
+
+
+                    // Image upload vers Cloudinary
+                    if(post.getImage() != null && !post.getImage().isBlank()){
+
+                        File file = new File(post.getImage());
+
+                        String imageUrl = uploadToCloudinary(file);
+                        System.out.println("Image URL retournée: " + imageUrl);
+
+                        if(imageUrl != null){
+                            json.append(",\"mediaUrls\":[\"")
+                                    .append(imageUrl)
+                                    .append("\"]");
+                        }
+                    }
+
+                    json.append("}");
+
+                    try(OutputStream os = conn.getOutputStream()){
+                        os.write(json.toString().getBytes("UTF-8"));
+                    }
+
+                    int code = conn.getResponseCode();
+
+                    System.out.println("Ayrshare HTTP Code: " + code);
+
+                    InputStream is;
+
+                    if(code >= 200 && code < 300){
+                        is = conn.getInputStream();
+                    } else {
+                        is = conn.getErrorStream();
+                    }
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while((line = br.readLine()) != null){
+                        response.append(line);
+                    }
+
+                    System.out.println("Ayrshare Response: " + response.toString());
+                    System.out.println("JSON envoyé à Ayrshare:");
+                    System.out.println(json.toString());
+
+                    if(code == 200 || code == 201){
+                        Platform.runLater(() ->
+                                showToast("Partagé avec succès 🚀"));
+                    }else{
+                        Platform.runLater(() ->
+                                showToast("Erreur partage ❌"));
+                    }
+
+
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        };
+
+        new Thread(task).start();
+    }
+    private String uploadToCloudinary(File file){
+
+        try{
+
+            System.out.println("===== UPLOAD CLOUDINARY START =====");
+
+            if(file == null){
+                System.out.println("File is NULL !");
+                return null;
+            }
+
+            System.out.println("File path: " + file.getAbsolutePath());
+            System.out.println("File exists: " + file.exists());
+
+            String cloudName = "duz53i6eh"; // ton cloud name
+            String uploadPreset = "xbfnsoct";
+
+            URL url = new URL("https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            String boundary = "Boundary-" + System.currentTimeMillis();
+
+            conn.setRequestProperty(
+                    "Content-Type",
+                    "multipart/form-data; boundary=" + boundary
+            );
+
+            OutputStream os = conn.getOutputStream();
+            PrintWriter writer = new PrintWriter(
+                    new OutputStreamWriter(os, "UTF-8"), true);
+
+            // ---- upload_preset ----
+            writer.append("--").append(boundary).append("\r\n");
+            writer.append("Content-Disposition: form-data; name=\"upload_preset\"\r\n\r\n");
+            writer.append(uploadPreset).append("\r\n");
+            writer.flush();
+
+            // ---- file ----
+            writer.append("--").append(boundary).append("\r\n");
+            writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"")
+                    .append(file.getName()).append("\"\r\n");
+            writer.append("Content-Type: application/octet-stream\r\n\r\n");
+            writer.flush();
+
+            Files.copy(file.toPath(), os);
+            os.flush();
+
+            writer.append("\r\n").flush();
+            writer.append("--").append(boundary).append("--").append("\r\n");
+            writer.close();
+
+            int status = conn.getResponseCode();
+            System.out.println("HTTP Status: " + status);
+
+            InputStream is;
+
+            if (status >= 200 && status < 300) {
+                is = conn.getInputStream();
+            } else {
+                is = conn.getErrorStream();
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while((line = br.readLine()) != null){
+                response.append(line);
+            }
+
+            System.out.println("Cloudinary Response: " + response.toString());
+
+            if(status >= 200 && status < 300){
+                JSONObject json = new JSONObject(response.toString());
+                String secureUrl = json.getString("secure_url");
+                System.out.println("Uploaded Image URL: " + secureUrl);
+                System.out.println("===== UPLOAD SUCCESS =====");
+                return secureUrl;
+            }else{
+                System.out.println("===== UPLOAD FAILED =====");
+                return null;
+            }
+
+        }catch(Exception e){
+            System.out.println("===== EXCEPTION IN UPLOAD =====");
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

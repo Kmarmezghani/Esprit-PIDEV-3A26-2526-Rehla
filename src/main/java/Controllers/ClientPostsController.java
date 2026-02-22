@@ -36,9 +36,11 @@ import services.PostService;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import javafx.collections.ListChangeListener;
 import services.notificationService;
+import util.Session;
 
 
 public class ClientPostsController {
@@ -74,7 +76,7 @@ public class ClientPostsController {
 
     private Image starEmpty;
     private Image starFull;
-    private Personne currentUser;
+    Personne currentUser = Session.getCurrentUser();
     private File selectedImageFile;
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
 PostService postService = new PostService();
@@ -92,9 +94,6 @@ PostService postService = new PostService();
 
         starEmpty = new Image(getClass().getResourceAsStream("/icons/whiteStar.png"));
         starFull = new Image(getClass().getResourceAsStream("/icons/yellowStar.png"));
-
-        currentUser = new Personne();
-        currentUser.setId(1);
 
 
         postsList.addListener((ListChangeListener<Post>) change -> {
@@ -148,32 +147,35 @@ PostService postService = new PostService();
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
+// Avatar
         ImageView avatar = new ImageView(
-                new Image(getClass().getResource("/icons/usericon.png").toExternalForm())
+                new Image(getClass()
+                        .getResource("/icons/usericon.png")
+                        .toExternalForm())
         );
         avatar.setFitWidth(40);
         avatar.setFitHeight(40);
         avatar.getStyleClass().add("avatar");
 
+// User info
         VBox userInfo = new VBox(2);
-        System.out.println("auteeeeeee" +post.getAuteur().getPrenom());
 
-        // Nom auteur
-        Label name = new Label(
-                post.getAuteur().getPrenom() + " " +
-                        post.getAuteur().getNom()
-        );
+// Nom auteur (avec sécurité null)
+        String fullName = (post.getAuteur() != null)
+                ? post.getAuteur().getPrenom() + " " + post.getAuteur().getNom()
+                : "Utilisateur inconnu";
 
+        Label name = new Label(fullName);
         name.getStyleClass().add("name");
 
-        // Date + Public (statique)
+// Date
         Label date = new Label(post.getDatePublication() + " • Public");
         date.getStyleClass().add("muted");
 
+// Tags
         HBox tagsRow = new HBox(6);
         tagsRow.setAlignment(Pos.CENTER_LEFT);
 
-        // TAGS STATIQUES
         Label tag1 = new Label("#Design");
         tag1.getStyleClass().add("tag");
 
@@ -189,14 +191,28 @@ PostService postService = new PostService();
 
         userInfo.getChildren().addAll(name, date, tagsRow);
 
+// Spacer
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button btnOptions = new Button("⋯");
-        btnOptions.getStyleClass().add("btn-icon");
-        btnOptions.setOnAction(e -> showMenu(btnOptions, post));
+// Ajouter les éléments au header (IMPORTANT ⭐)
+        header.getChildren().addAll(avatar, userInfo, spacer);
 
-        header.getChildren().addAll(avatar, userInfo, spacer, btnOptions);
+// Bouton options (Seulement si c’est mon post)
+        if (currentUser != null &&
+                post.getAuteur() != null &&
+                Objects.equals(post.getAuteur().getId(), currentUser.getId())) {
+
+            Button btnOptions = new Button("⋯");
+            btnOptions.getStyleClass().add("btn-icon");
+
+            btnOptions.setOnAction(e -> showMenu(btnOptions, post));
+
+            header.getChildren().add(btnOptions);
+        }
+
+
+
 
         // ================= CONTENU =================
         Label contenu = new Label(post.getContenu());
@@ -654,8 +670,15 @@ PostService postService = new PostService();
             return;
         }
 
-        Personne auteur = new Personne();
-        auteur.setId(1); // utilisateur connecté idéalement
+
+
+        if (currentUser == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Utilisateur non authentifié !");
+            alert.show();
+            return;
+        }
+
 
         String imagePath = null;
         if (selectedImageFile != null) {
@@ -668,21 +691,18 @@ PostService postService = new PostService();
                 contenu,
                 LocalDate.now(),
                 0,
-                auteur,
+                currentUser,
                 imagePath
         );
 
         PostService postService = new PostService();
 
-        // ✅ Sauvegarde UNE seule fois
         Post savedPost = postService.addPost(newPost);
 
         if (savedPost == null) {
             System.out.println("Erreur sauvegarde post");
             return;
         }
-
-        // ✅ Notification admin après sauvegarde
         if (score >= 0.1) {
             notifyAdmin(contenu, score, savedPost);
             showToast("Contenu sensible publié (admin notifié)");

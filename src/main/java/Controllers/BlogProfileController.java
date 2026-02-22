@@ -20,6 +20,7 @@ import models.Post;
 import services.CommentaireService;
 import services.LikeService;
 import services.PostService;
+import util.Session;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,13 +65,33 @@ public class BlogProfileController {
     @FXML
     private StackPane stackRoot;   // racine pour overlay
     private LikeService likeService = new LikeService();
-    private Personne currentUser; // utilisateur connecté
+    Personne currentUser = Session.getCurrentUser();// utilisateur connecté
     @FXML
     private Button imageButton;
        // ton contenu principal
     private final DateTimeFormatter dateFormatter =
             DateTimeFormatter.ofPattern("dd MMM yyyy");
     private String selectedImagePath = null;
+    private static final Image ICON_LIKE_EMPTY =
+            new Image(BlogProfileController.class.getResource("/icons/blackHeart.png").toExternalForm());
+
+    private static final Image ICON_LIKE_FULL =
+            new Image(BlogProfileController.class.getResource("/icons/HeartRed.png").toExternalForm());
+
+    private static final Image ICON_COMMENT =
+            new Image(BlogProfileController.class.getResource("/icons/commentB.png").toExternalForm());
+
+    private static final Image ICON_FAV_EMPTY =
+            new Image(BlogProfileController.class.getResource("/icons/blackStar.png").toExternalForm());
+
+    private static final Image ICON_FAV_FULL =
+            new Image(BlogProfileController.class.getResource("/icons/yellowStar.png").toExternalForm());
+
+    private static final Image ICON_EDIT =
+            new Image(BlogProfileController.class.getResource("/icons/editblue.png").toExternalForm());
+
+    private static final Image ICON_DELETE =
+            new Image(BlogProfileController.class.getResource("/icons/delete.png").toExternalForm());
 
 
     @FXML
@@ -94,21 +115,25 @@ public class BlogProfileController {
         publishButton.setOnAction(e -> handlePublish());
         followButton.setOnAction(e -> toggleFollow());
         initTabs();
-        currentUser = new Personne();
-        currentUser.setId(1);
+
         loadPostsFromDatabase();
 
     }
     private void loadPostsFromDatabase() {
-        allPosts.clear();
 
-        List<Post> postsFromDB = postService.getAll();
+        if (currentUser == null) return;
+
+        allPosts.clear();
+        List<Post> postsFromDB =
+                postService.getPostsByPersonne(currentUser);
+
         allPosts.addAll(postsFromDB);
 
         renderPosts(allPosts);
 
         postsCountLabel.setText(String.valueOf(allPosts.size()));
     }
+
 
     private void initProfileInfo() {
         // Tu peux remplacer par tes vraies images
@@ -125,7 +150,15 @@ public class BlogProfileController {
         currentUserAvatar.setImage(smallAvatar);
         composerAvatar.setImage(smallAvatar);
 
-        profileName.setText("Yosr Amamou");
+        profileName.setText(currentUser.getNom() + " " + currentUser.getPrenom());
+
+        profileHeadline.setText(
+                currentUser.getRole() != null
+                        ? currentUser.getRole()
+                        : "Utilisateur"
+        );
+
+        currentUserName.setText(currentUser.getPrenom());
         profileHeadline.setText("Développeuse Full-Stack • Tech Blogger • Cloud & IA Enthusiast");
         currentUserName.setText("Yosr");
         postsCountLabel.setText("18");
@@ -181,21 +214,30 @@ public class BlogProfileController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // HBox pour Update/Delete
+// HBox pour Update/Delete
         HBox buttonsBox = new HBox(4);
         buttonsBox.setAlignment(Pos.CENTER_RIGHT);
 
-        if (post.getAuteur() != null && post.getAuteur().getId() == currentUser.getId()) {
+        if (post.getAuteur() != null && currentUser != null &&
+                post.getAuteur().getId() == currentUser.getId()) {
+
             Button updateButton = new Button();
             updateButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
-            updateButton.setGraphic(getIcon("editblue.png", 18));
+            updateButton.setPadding(Insets.EMPTY);
+            updateButton.setGraphic(getIcon(ICON_EDIT, 18));
             updateButton.setOnAction(e -> handleUpdatePost(post));
 
             Button deleteButton = new Button();
             deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
-            deleteButton.setGraphic(getIcon("delete.png", 18));
+            deleteButton.setPadding(Insets.EMPTY);
+            deleteButton.setGraphic(getIcon(ICON_DELETE, 18));
             deleteButton.setOnAction(e -> {
-                boolean confirm = confirmDialog("Supprimer le post", "Voulez-vous vraiment supprimer ce post ?");
+
+                boolean confirm = confirmDialog(
+                        "Supprimer le post",
+                        "Voulez-vous vraiment supprimer ce post ?"
+                );
+
                 if (confirm) {
                     postService.delete(post);
                     allPosts.remove(post);
@@ -206,9 +248,12 @@ public class BlogProfileController {
 
             buttonsBox.getChildren().addAll(updateButton, deleteButton);
         }
+
         Button moreButton = new Button("⋮");
         moreButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #757575;");
-        // Ajouter tous au header
+        moreButton.setPadding(Insets.EMPTY);
+
+// Ajouter tous au header
         header.getChildren().addAll(avatar, authorBox, spacer, buttonsBox, moreButton);
 
 
@@ -269,68 +314,80 @@ public class BlogProfileController {
         Button likeButton = new Button();
         likeButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         likeButton.setPadding(Insets.EMPTY);
-        ImageView likeEmpty = getIcon("blackHeart.png", 24);
-        ImageView likeFull = getIcon("HeartRed.png", 24);
 
-        likeEmpty.setPreserveRatio(true);
-        likeFull.setPreserveRatio(true);
+// 🔥 On crée les ImageView UNE seule fois
+        ImageView likeEmpty = getIcon(ICON_LIKE_EMPTY, 24);
+        ImageView likeFull  = getIcon(ICON_LIKE_FULL, 24);
+
         boolean isLiked = likeService.isLikedByUser(currentUser, post);
         likeButton.setGraphic(isLiked ? likeFull : likeEmpty);
+
         int nbLikes = likeService.getNbLikes(post);
 
         Label likesLabel = new Label(String.valueOf(nbLikes));
         likesLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
         likesLabel.setPadding(Insets.EMPTY);
+
         HBox likeContainer = new HBox(4, likeButton, likesLabel);
         likeContainer.setAlignment(Pos.CENTER_LEFT);
+
+// 🔥 Gestion du clic propre
         likeButton.setOnAction(e -> {
 
-            if (likeButton.getGraphic() == likeEmpty) {
-                likeService.addLike(currentUser, post);
-                likeButton.setGraphic(likeFull);
-            } else {
+            boolean currentlyLiked = likeButton.getGraphic() == likeFull;
+
+            if (currentlyLiked) {
                 likeService.deleteLike(currentUser, post);
                 likeButton.setGraphic(likeEmpty);
+            } else {
+                likeService.addLike(currentUser, post);
+                likeButton.setGraphic(likeFull);
             }
 
-            // Refresh compteur
             int newCount = likeService.getNbLikes(post);
             likesLabel.setText(String.valueOf(newCount));
         });
+
 // ================= COMMENT =================
 
         Button commentButton = new Button();
         commentButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        commentButton.setPadding(Insets.EMPTY);
 
-        ImageView commentIcon = getIcon("commentB.png", 22);
-        commentIcon.setPreserveRatio(true);
+// 🔥 Utilise l'image statique déjà chargée
+        ImageView commentIcon = getIcon(ICON_COMMENT, 22);
 
         commentButton.setGraphic(commentIcon);
 
-       int nbCommentaires = commentaireService.countByPost(post.getId());
+// Nombre de commentaires
+        int nbCommentaires = commentaireService.countByPost(post.getId());
 
-       Label commentsLabel = new Label(String.valueOf(nbCommentaires));
+        Label commentsLabel = new Label(String.valueOf(nbCommentaires));
         commentsLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
 
-      HBox commentContainer = new HBox(4, commentButton, commentsLabel);
+        HBox commentContainer = new HBox(4, commentButton, commentsLabel);
         commentContainer.setAlignment(Pos.CENTER_LEFT);
 
-      commentButton.setOnAction(e -> handleComment(post));
+// Action
+        commentButton.setOnAction(e -> handleComment(post));
+
 
 // ================= FAVORIS =================
         Button favButton = new Button();
         favButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        favButton.setPadding(Insets.EMPTY);
 
-        ImageView favEmpty = getIcon("blackStar.png", 28 );
-        favEmpty.setPreserveRatio(true);
-        favEmpty.setSmooth(true);
-        ImageView favFull = getIcon("yellowStar.png", 23);
+// 🔥 ImageView créés à partir des images statiques
+        ImageView favEmpty = getIcon(ICON_FAV_EMPTY, 24);
+        ImageView favFull  = getIcon(ICON_FAV_FULL, 24);
 
         favButton.setGraphic(favEmpty);
 
-        final boolean[] favorited = {false};
+// Etat local (à remplacer plus tard par un vrai service si besoin)
+        final boolean[] favorited = { false };
 
         favButton.setOnAction(e -> {
+
             favorited[0] = !favorited[0];
 
             if (favorited[0]) {
@@ -340,7 +397,7 @@ public class BlogProfileController {
             }
         });
 
-        // Hover effect
+// Hover effect
         likeButton.setOnMouseEntered(e -> likeButton.setOpacity(0.7));
         likeButton.setOnMouseExited(e -> likeButton.setOpacity(1));
 
@@ -355,6 +412,7 @@ public class BlogProfileController {
 
         VBox.setMargin(card, new Insets(0, 4, 0, 4));
         return card;
+
     }
 
 
@@ -467,19 +525,14 @@ public class BlogProfileController {
             postsContainer.getChildren().add(box);
         });
     }
-    private ImageView getIcon(String name, double size) {
-        InputStream is = getClass().getResourceAsStream("/icons/" + name);
-        if (is == null) {
-            System.err.println("Icon non trouvée: " + name);
-            return new ImageView(); // retour d'un ImageView vide pour éviter le crash
-        }
-        Image img = new Image(is);
-        ImageView iv = new ImageView(img);
+    private ImageView getIcon(Image image, double size) {
+        ImageView iv = new ImageView(image);
         iv.setFitWidth(size);
         iv.setFitHeight(size);
         iv.setPreserveRatio(true);
         return iv;
     }
+
 
     private void handleUpdatePost(Post post) {
         try {

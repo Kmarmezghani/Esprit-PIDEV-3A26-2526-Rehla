@@ -33,7 +33,10 @@ public class FavorisService {
                 post.setId(rs.getInt("id"));
                 post.setTitre(rs.getString("titre"));
                 post.setContenu(rs.getString("contenu"));
-                post.setDatePublication(rs.getDate("datePublication").toLocalDate());
+                post.setDatePublication(
+                        rs.getTimestamp("datePublication").toLocalDateTime()
+                );
+
                 post.setPopularite(rs.getInt("popularite"));
                 // TODO: récupérer l'auteur si nécessaire
                 posts.add(post);

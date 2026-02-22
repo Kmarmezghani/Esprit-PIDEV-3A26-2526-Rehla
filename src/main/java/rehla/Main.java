@@ -5,6 +5,7 @@ import models.Post;
 import services.PostService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Main {
     public static void main(String[] args) {
@@ -13,7 +14,7 @@ public class Main {
         Post post = new Post();
         post.setTitre("esaiiiiiiiiiiiiii");
         post.setContenu("esssssssss du post...");
-        post.setDatePublication(LocalDate.now());
+        post.setDatePublication(LocalDateTime.now());
         post.setPopularite(0);
         post.setAuteur(user1);
         PostService ps1 = new PostService();
@@ -22,7 +23,7 @@ public class Main {
         Post post2 = new Post();
         post.setTitre("Mon eeeeeeeee post");
         post.setContenu("essai du post...");
-        post.setDatePublication(LocalDate.now());
+        post.setDatePublication(LocalDateTime.now());
         post.setPopularite(12);
         post.setAuteur(user1);
 

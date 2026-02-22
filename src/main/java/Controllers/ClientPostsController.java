@@ -35,6 +35,7 @@ import services.PostService;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -84,6 +85,13 @@ PostService postService = new PostService();
     private LikeService likeService = new LikeService();
     @FXML
     private void initialize() {
+        if(currentUser == null ||
+                currentUser.getRole() == null ||
+                !currentUser.getRole().equalsIgnoreCase("admin")) {
+
+            btnNotif.setVisible(false);
+            btnNotif.setManaged(false);
+        }
 
         heartEmpty = new Image(getClass().getResourceAsStream("/icons/heartwhite.png"));
         heartFull = new Image(getClass().getResourceAsStream("/icons/HeartRed.png"));
@@ -122,10 +130,20 @@ PostService postService = new PostService();
     private void loadPosts() {
 
         PostService postService = new PostService();
-        postsList.setAll(postService.getAll());
+
+        postsList.setAll(
+                postService.getAll()
+                        .stream()
+                        .sorted((p1, p2) ->
+                                p2.getDatePublication()
+                                        .compareTo(p1.getDatePublication())
+                        )
+                        .toList()
+        );
 
         refreshUI();
     }
+
     private void refreshUI() {
 
         postsContainer.getChildren().clear();
@@ -689,7 +707,7 @@ PostService postService = new PostService();
                 0,
                 "",
                 contenu,
-                LocalDate.now(),
+                LocalDateTime.now(),
                 0,
                 currentUser,
                 imagePath
@@ -744,10 +762,8 @@ PostService postService = new PostService();
             // Charger le FXML du popup
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/UpdatePostPopup.fxml"));
             Parent popup = loader.load();
-
-            // Récupérer le controller pour lui passer le post à éditer
             UpdatePostPopupController controller = loader.getController();
-            controller.setPost(post); // méthode à créer dans le controller pour initialiser les champs
+            controller.setPost(post);
 
             // 🔥 Blur sur le blog
             GaussianBlur blur = new GaussianBlur(20);

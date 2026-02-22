@@ -28,7 +28,7 @@ public class PostService implements IService<Post> {
 
             ps.setString(1, post.getTitre());
             ps.setString(2, post.getContenu());
-            ps.setDate(3, Date.valueOf(post.getDatePublication()));
+            ps.setTimestamp(3, Timestamp.valueOf(post.getDatePublication()));
             ps.setInt(4, post.getPopularite());
             ps.setInt(5, post.getAuteur().getId());
             ps.setString(6, post.getImage());
@@ -50,7 +50,7 @@ public class PostService implements IService<Post> {
 
             ps.setString(1, post.getTitre());
             ps.setString(2, post.getContenu());
-            ps.setDate(3, Date.valueOf(post.getDatePublication()));
+            ps.setTimestamp(3, Timestamp.valueOf(post.getDatePublication()));
             ps.setInt(4, post.getPopularite());
             ps.setInt(5, post.getAuteur().getId());
             ps.setString(6, post.getImage());
@@ -101,7 +101,7 @@ public class PostService implements IService<Post> {
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("contenu"),
-                        rs.getDate("datePublication").toLocalDate(),
+                        rs.getTimestamp("datePublication").toLocalDateTime(),
                         rs.getInt("popularite"),
                         auteur,
                         rs.getString("image")
@@ -134,8 +134,9 @@ public class PostService implements IService<Post> {
                 post.setTitre(rs.getString("titre"));
                 post.setContenu(rs.getString("contenu"));
                 post.setDatePublication(
-                        rs.getDate("datePublication").toLocalDate()
+                        rs.getTimestamp("datePublication").toLocalDateTime()
                 );
+
                 post.setPopularite(rs.getInt("popularite"));
                 post.setAuteur(p);
 
@@ -164,7 +165,10 @@ public class PostService implements IService<Post> {
 
             ps.setString(1, post.getTitre());
             ps.setString(2, post.getContenu());
-            ps.setDate(3, Date.valueOf(post.getDatePublication()));
+            ps.setTimestamp(3,
+                    Timestamp.valueOf(post.getDatePublication())
+            );
+
             ps.setInt(4, post.getPopularite());
             ps.setInt(5, post.getAuteur().getId());
             ps.setString(6, post.getImage());

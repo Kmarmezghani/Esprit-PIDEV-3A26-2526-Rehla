@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -124,15 +125,24 @@ public class BlogProfileController {
         if (currentUser == null) return;
 
         allPosts.clear();
+
         List<Post> postsFromDB =
                 postService.getPostsByPersonne(currentUser);
 
-        allPosts.addAll(postsFromDB);
+        // 🔥 Tri par date publication + heure (le plus récent en premier)
+        allPosts.addAll(
+                postsFromDB.stream()
+                        .sorted((p1, p2) ->
+                                p2.getDatePublication()
+                                        .compareTo(p1.getDatePublication()))
+                        .toList()
+        );
 
         renderPosts(allPosts);
 
         postsCountLabel.setText(String.valueOf(allPosts.size()));
     }
+
 
 
     private void initProfileInfo() {
@@ -446,7 +456,7 @@ public class BlogProfileController {
             Post post = new Post();
             post.setTitre(title);
             post.setContenu(content);
-            post.setDatePublication(LocalDate.now());
+            post.setDatePublication(LocalDateTime.now());
             post.setAuteur(currentUser);   // important si tu utilises la DB
 
             // Si une image a été choisie

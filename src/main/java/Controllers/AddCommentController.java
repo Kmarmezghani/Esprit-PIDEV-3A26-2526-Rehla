@@ -12,6 +12,7 @@ import services.PersonneService;
 import services.PostService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class AddCommentController {
 
@@ -93,7 +94,7 @@ public class AddCommentController {
             //  Création du commentaire
             Commentaire c = new Commentaire();
             c.setContenu(txtContenu.getText().trim());
-            c.setDateCommentaire(LocalDate.now());
+            c.setDateCommentaire(LocalDateTime.now());
             c.setAuteur(cbAuteur.getValue());
             c.setPost(cbPost.getValue());
 

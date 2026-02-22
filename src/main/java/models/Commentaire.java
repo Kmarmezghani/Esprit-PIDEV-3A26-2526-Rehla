@@ -1,19 +1,20 @@
 package models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Commentaire {
 
     private int id;
     private String contenu;
-    private LocalDate dateCommentaire;
+    private LocalDateTime dateCommentaire;
     private Personne auteur;
     private Post post;
 
     public Commentaire() {}
 
     public Commentaire(int id, String contenu,
-                       LocalDate dateCommentaire,
+                       LocalDateTime dateCommentaire,
                        Personne auteur, Post post) {
         this.id = id;
         this.contenu = contenu;
@@ -38,11 +39,11 @@ public class Commentaire {
         this.contenu = contenu;
     }
 
-    public LocalDate getDateCommentaire() {
+    public LocalDateTime getDateCommentaire() {
         return dateCommentaire;
     }
 
-    public void setDateCommentaire(LocalDate dateCommentaire) {
+    public void setDateCommentaire(LocalDateTime dateCommentaire) {
         this.dateCommentaire = dateCommentaire;
     }
 

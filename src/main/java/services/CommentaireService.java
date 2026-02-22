@@ -23,7 +23,7 @@ public class CommentaireService implements IService<Commentaire> {
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, c.getContenu());
-            ps.setDate(2, Date.valueOf(c.getDateCommentaire()));
+            ps.setTimestamp(2, Timestamp.valueOf(c.getDateCommentaire()));
             ps.setInt(3, c.getAuteur().getId());
             ps.setInt(4, c.getPost().getId());
             ps.executeUpdate();
@@ -39,7 +39,7 @@ public class CommentaireService implements IService<Commentaire> {
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, c.getContenu());
-            ps.setDate(2, Date.valueOf(c.getDateCommentaire()));
+            ps.setTimestamp(2, Timestamp.valueOf(c.getDateCommentaire()));
             ps.setInt(3, c.getAuteur().getId());
             ps.setInt(4, c.getPost().getId());
             ps.setInt(5, c.getId());
@@ -74,7 +74,10 @@ public class CommentaireService implements IService<Commentaire> {
                 Commentaire c = new Commentaire();
                 c.setId(rs.getInt("id"));
                 c.setContenu(rs.getString("contenu"));
-                c.setDateCommentaire(rs.getDate("dateCommentaire").toLocalDate());
+                c.setDateCommentaire(
+                        rs.getTimestamp("dateCommentaire").toLocalDateTime()
+                );
+
 
                 // Auteur
                 Personne auteur = new Personne();
@@ -108,7 +111,10 @@ public class CommentaireService implements IService<Commentaire> {
                 Commentaire c = new Commentaire();
                 c.setId(rs.getInt("id"));
                 c.setContenu(rs.getString("contenu"));
-                c.setDateCommentaire(rs.getDate("dateCommentaire").toLocalDate());
+                c.setDateCommentaire(
+                        rs.getTimestamp("dateCommentaire").toLocalDateTime()
+                );
+
 
                 // Auteur complet
                 Personne auteur = new Personne();
@@ -157,7 +163,10 @@ public class CommentaireService implements IService<Commentaire> {
                     conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setString(1, c.getContenu());
-            ps.setDate(2, Date.valueOf(c.getDateCommentaire()));
+            ps.setTimestamp(2,
+                    Timestamp.valueOf(c.getDateCommentaire())
+            );
+
             ps.setInt(3, c.getPost().getId());
             ps.setInt(4, c.getAuteur().getId());
 

@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class AddPostController {
@@ -131,7 +132,7 @@ public class AddPostController {
             Post post = new Post();
             post.setTitre(txtTitre.getText().trim());
             post.setContenu(txtContenu.getText().trim());
-            post.setDatePublication(LocalDate.now());
+            post.setDatePublication(LocalDateTime.now());
             post.setPopularite(popularite);
             post.setAuteur(auteur);
 

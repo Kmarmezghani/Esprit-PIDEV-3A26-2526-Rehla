@@ -54,18 +54,35 @@ public class CommentPopupController {
         this.onClose = onClose;
     }
 
-    /** Initialiser le popup avec un post existant */
     public void setPost(Post post) {
         this.post = post;
 
-        // Récupérer tous les commentaires depuis la base
-        List<Commentaire> comments = commentaireService.getCommentairesByPost(post);
+        List<Commentaire> comments =
+                commentaireService.getCommentairesByPost(post);
+
         commentsContainer.getChildren().clear();
-        for (Commentaire c : comments) {
-            String auteur = (c.getAuteur() != null ? c.getAuteur().getPrenom() + " " + c.getAuteur().getNom() : "Inconnu");
-            addComment(auteur, c.getContenu(), c.getDateCommentaire().toString(), c);
-        }
+
+        comments.stream()
+                .sorted((c1, c2) ->
+                        c2.getDateCommentaire().compareTo(c1.getDateCommentaire())
+                )
+                .forEach(c -> {
+
+                    String auteur = (c.getAuteur() != null
+                            ? c.getAuteur().getPrenom() + " " + c.getAuteur().getNom()
+                            : "Inconnu");
+
+                    addComment(
+                            auteur,
+                            c.getContenu(),
+                            c.getDateCommentaire()
+                                    .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")),
+                            c
+                    );
+                });
     }
+
+
 
     @FXML
     private void closePopup() {
@@ -143,7 +160,8 @@ public class CommentPopupController {
 
         Commentaire newComment = new Commentaire();
         newComment.setContenu(text);
-        newComment.setDateCommentaire(LocalDateTime.now().toLocalDate());
+        newComment.setDateCommentaire(LocalDateTime.now());
+
         newComment.setPost(post);
         newComment.setAuteur(currentUser);
 
@@ -160,16 +178,8 @@ public class CommentPopupController {
             showToast("Commentaire publié !");
         }
 
-        String now = LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
 
-        addComment(
-                currentUser.getPrenom() + " " + currentUser.getNom(),
-                text,
-                now,
-                newComment
-        );
-
+        setPost(post);
         txtComment.clear();
     }
 
@@ -296,7 +306,8 @@ public class CommentPopupController {
         }
 
         commentBox.getChildren().addAll(header, lblMessage, actionBox);
-        commentsContainer.getChildren().add(commentBox);
+        commentsContainer.getChildren().add(0, commentBox);
+
     }
     private String promptForUpdate(String currentContent) {
         TextInputDialog dialog = new TextInputDialog(currentContent);

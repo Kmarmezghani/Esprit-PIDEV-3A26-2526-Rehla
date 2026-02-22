@@ -1,13 +1,14 @@
 package models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Post {
 
     private int id;
     private String titre;
     private String contenu;
-    private LocalDate datePublication;
+    private LocalDateTime datePublication;
     private int popularite;
     private Personne auteur;
     private int nbLikes;
@@ -17,7 +18,7 @@ public class Post {
     }
 
     public Post(int id, String titre, String contenu,
-                LocalDate datePublication, int popularite,
+                LocalDateTime  datePublication, int popularite,
                 Personne auteur, String image) {
         this.id = id;
         this.titre = titre;
@@ -59,11 +60,11 @@ public class Post {
         this.contenu = contenu;
     }
 
-    public LocalDate getDatePublication() {
+    public LocalDateTime  getDatePublication() {
         return datePublication;
     }
 
-    public void setDatePublication(LocalDate datePublication) {
+    public void setDatePublication(LocalDateTime  datePublication) {
         this.datePublication = datePublication;
     }
 

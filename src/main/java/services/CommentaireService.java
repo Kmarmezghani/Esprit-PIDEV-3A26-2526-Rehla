@@ -7,7 +7,10 @@ import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CommentaireService implements IService<Commentaire> {
 
@@ -186,5 +189,38 @@ public class CommentaireService implements IService<Commentaire> {
         }
     }
 
+    public Map<Integer, Integer> countByPosts(List<Post> posts) {
+
+        Map<Integer, Integer> counts = new HashMap<>();
+
+        if (posts == null || posts.isEmpty()) {
+            return counts;
+        }
+
+        String ids = posts.stream()
+                .map(p -> String.valueOf(p.getId()))
+                .collect(Collectors.joining(","));
+
+        String query = "SELECT post_id, COUNT(*) as total " +
+                "FROM commentaire " +
+                "WHERE post_id IN (" + ids + ") " +
+                "GROUP BY post_id";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                counts.put(
+                        rs.getInt("post_id"),
+                        rs.getInt("total")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return counts;
+    }
 
 }

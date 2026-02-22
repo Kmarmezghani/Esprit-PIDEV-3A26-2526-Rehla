@@ -1,7 +1,11 @@
 package Controllers;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,6 +29,7 @@ import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import models.Personne;
 import models.Post;
 import models.notification;
@@ -36,7 +41,9 @@ import services.PostService;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javafx.collections.ListChangeListener;
@@ -69,6 +76,7 @@ public class ClientPostsController {
     private Button btnNotif;
 
     private ContextMenu notifMenu = new ContextMenu();
+    private boolean isLoadingPosts = false;
 
     @FXML
     private VBox postsContainer;
@@ -80,9 +88,15 @@ public class ClientPostsController {
     Personne currentUser = Session.getCurrentUser();
     private File selectedImageFile;
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
-PostService postService = new PostService();
-    notificationService notificationService = new notificationService();
+private PostService postService = new PostService();
+   private notificationService notificationService = new notificationService();
     private LikeService likeService = new LikeService();
+   private CommentaireService commentService = new CommentaireService();
+    private Image avatarImage;
+    private Image shareImage;
+    private Image editImage;
+    private Image deleteImage;
+
     @FXML
     private void initialize() {
         if(currentUser == null ||
@@ -103,10 +117,23 @@ PostService postService = new PostService();
         starEmpty = new Image(getClass().getResourceAsStream("/icons/whiteStar.png"));
         starFull = new Image(getClass().getResourceAsStream("/icons/yellowStar.png"));
 
+        avatarImage = new Image(
+                Objects.requireNonNull(getClass().getResource("/icons/usericon.png")).toExternalForm()
+        );
 
-        postsList.addListener((ListChangeListener<Post>) change -> {
-            refreshUI();
-        });
+        shareImage = new Image(
+                Objects.requireNonNull(getClass().getResource("/icons/share.png")).toExternalForm()
+        );
+
+        editImage = new Image(
+                Objects.requireNonNull(getClass().getResource("/icons/edit2.png")).toExternalForm()
+        );
+
+        deleteImage = new Image(
+                Objects.requireNonNull(getClass().getResource("/icons/delete.png")).toExternalForm()
+        );
+
+
 
 
         loadPosts();
@@ -127,35 +154,51 @@ PostService postService = new PostService();
     }
 
 
-    private void loadPosts() {
+    private void loadPosts(){
 
-        PostService postService = new PostService();
+        if(isLoadingPosts) return;
+        isLoadingPosts = true;
 
-        postsList.setAll(
-                postService.getAll()
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+
+                List<Post> posts = postService.getAll()
                         .stream()
                         .sorted((p1, p2) ->
                                 p2.getDatePublication()
-                                        .compareTo(p1.getDatePublication())
-                        )
-                        .toList()
-        );
+                                        .compareTo(p1.getDatePublication()))
+                        .toList();
 
-        refreshUI();
+                Map<Integer,Integer> commentCounts =
+                        commentService.countByPosts(posts);
+
+                Platform.runLater(() -> {
+
+                    postsContainer.getChildren().clear();
+
+                    for(Post post : posts){
+                        postsContainer.getChildren()
+                                .add(createPostCard(post, commentCounts));
+                    }
+
+                    isLoadingPosts = false;
+                });
+
+                return null;
+            }
+        };
+
+        new Thread(task).start();
     }
 
-    private void refreshUI() {
 
-        postsContainer.getChildren().clear();
 
-        for (Post post : postsList) {
-            postsContainer.getChildren().add(createPostCard(post));
-        }
-    }
+    private VBox createPostCard(Post post,
+                                Map<Integer, Integer> commentCounts){
 
-    private VBox createPostCard(Post post) {
 
-        VBox card = new VBox(10);
+    VBox card = new VBox(10);
         card.getStyleClass().addAll("post", "glass");
 
         // ⭐ ID utilisé pour navigation notification
@@ -166,11 +209,8 @@ PostService postService = new PostService();
         header.setAlignment(Pos.CENTER_LEFT);
 
 // Avatar
-        ImageView avatar = new ImageView(
-                new Image(getClass()
-                        .getResource("/icons/usericon.png")
-                        .toExternalForm())
-        );
+        ImageView avatar = new ImageView(avatarImage);
+
         avatar.setFitWidth(40);
         avatar.setFitHeight(40);
         avatar.getStyleClass().add("avatar");
@@ -249,9 +289,16 @@ PostService postService = new PostService();
                 StackPane mediaPane = new StackPane();
                 mediaPane.getStyleClass().add("media");
 
-                ImageView postImg = new ImageView(
-                        new Image(file.toURI().toString())
+                Image img = new Image(
+                        file.toURI().toString(),
+                        680,
+                        0,
+                        true,
+                        true,
+                        true
                 );
+                ImageView postImg = new ImageView(img);
+
 
                 postImg.setFitWidth(680);
                 postImg.setFitHeight(320);
@@ -341,8 +388,10 @@ PostService postService = new PostService();
 
         commentBtn.setOnAction(e -> handleComment(post));
 
-        CommentaireService commentService = new CommentaireService();
-        int nbCommentaires = commentService.countByPost(post.getId());
+
+        int nbCommentaires =
+                commentCounts.getOrDefault(post.getId(), 0);
+
 
         Label comments = new Label(String.valueOf(nbCommentaires));
         comments.getStyleClass().add("muted");
@@ -376,10 +425,25 @@ PostService postService = new PostService();
         Region footerSpacer = new Region();
         HBox.setHgrow(footerSpacer, Priority.ALWAYS);
 
-        Label views = new Label("Vue par 128 personnes");
-        views.getStyleClass().add("muted");
+// SHARE -----------------------------------------
+        HBox shareBox = new HBox();
+        shareBox.setAlignment(Pos.CENTER_RIGHT);
 
-        footer.getChildren().addAll(likeBox, commentBox, starBox, footerSpacer, views);
+        Button shareBtn = new Button();
+        shareBtn.setStyle("-fx-background-color: transparent;");
+
+        ImageView shareIcon = new ImageView(shareImage);
+
+        shareIcon.setFitWidth(20);
+        shareIcon.setFitHeight(20);
+        shareIcon.setPreserveRatio(true);
+
+        shareBtn.setGraphic(shareIcon);
+
+        shareBox.getChildren().add(shareBtn);
+
+
+        footer.getChildren().addAll(likeBox, commentBox, starBox, footerSpacer,shareBox);
 
         card.getChildren().add(footer);
 
@@ -445,10 +509,6 @@ PostService postService = new PostService();
         confirm.showAndWait().ifPresent(response -> {
 
             if (response == ButtonType.OK) {
-
-                PostService postService = new PostService();
-
-                // 🔥 Suppression en base
                 postService.delete(post);
 
                 // 🔥 Suppression de la liste observable
@@ -462,17 +522,14 @@ PostService postService = new PostService();
 
         ContextMenu menu = new ContextMenu();
 
-        ImageView editIcon = new ImageView(
-                new Image(getClass().getResourceAsStream("/icons/edit2.png"))
-        );
+        ImageView editIcon = new ImageView(editImage);
         editIcon.setFitWidth(16);
         editIcon.setFitHeight(16);
 
-        ImageView deleteIcon = new ImageView(
-                new Image(getClass().getResourceAsStream("/icons/delete.png"))
-        );
+        ImageView deleteIcon = new ImageView(deleteImage);
         deleteIcon.setFitWidth(16);
         deleteIcon.setFitHeight(16);
+
 
         MenuItem updateItem = new MenuItem("Modifier", editIcon);
         MenuItem deleteItem = new MenuItem("Supprimer", deleteIcon);
@@ -616,22 +673,28 @@ PostService postService = new PostService();
 
         loadPosts();
 
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
 
-            // ⭐ Si notification concerne un post
-            if(n.getPostId() != null){
+            Timeline timeline = new Timeline(
+                    new KeyFrame(Duration.millis(300),
+                            e -> {
 
-                VBox postNode = findPostNodeById(n.getPostId());
+                                VBox postNode = findPostNodeById(n.getPostId());
 
-                if(postNode != null){
-                    scrollToNode(postNode);
+                                if(postNode != null){
 
-                    postNode.setStyle(
-                            "-fx-border-color:red;" +
-                                    "-fx-border-width:3px;"
-                    );
-                }
-            }
+                                    scrollToNode(postNode);
+
+                                    postNode.setStyle(
+                                            "-fx-border-color:red;" +
+                                                    "-fx-border-width:3px;" +
+                                                    "-fx-border-radius:10;"
+                                    );
+                                }
+                            })
+            );
+
+            timeline.play();
 
         });
     }
@@ -664,7 +727,6 @@ PostService postService = new PostService();
     }
 
 
-
     @FXML
     private void handleAddPost() {
 
@@ -677,19 +739,6 @@ PostService postService = new PostService();
             return;
         }
 
-        double score = getToxicityScore(contenu);
-        System.out.println("Score toxicité = " + score);
-
-        if (score >= 0.7) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("Publication refusée !");
-            alert.setContentText("Contenu non autorisé.");
-            alert.show();
-            return;
-        }
-
-
-
         if (currentUser == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Utilisateur non authentifié !");
@@ -697,11 +746,42 @@ PostService postService = new PostService();
             return;
         }
 
+        Task<Double> task = new Task<>() {
+            @Override
+            protected Double call() {
+                return getToxicityScore(contenu);
+            }
+        };
 
-        String imagePath = null;
-        if (selectedImageFile != null) {
-            imagePath = selectedImageFile.getAbsolutePath();
-        }
+        task.setOnSucceeded(event -> {
+
+            double score = task.getValue();
+            System.out.println("Score toxicité = " + score);
+
+            if (score >= 0.7) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("Publication refusée !");
+                alert.setContentText("Contenu non autorisé.");
+                alert.show();
+                return;
+            }
+
+            savePost(contenu, score);
+        });
+
+        task.setOnFailed(event -> {
+            System.out.println("Erreur appel IA");
+            task.getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void savePost(String contenu, double score) {
+
+        String imagePath = selectedImageFile != null
+                ? selectedImageFile.getAbsolutePath()
+                : null;
 
         Post newPost = new Post(
                 0,
@@ -713,14 +793,13 @@ PostService postService = new PostService();
                 imagePath
         );
 
-        PostService postService = new PostService();
-
         Post savedPost = postService.addPost(newPost);
 
         if (savedPost == null) {
             System.out.println("Erreur sauvegarde post");
             return;
         }
+
         if (score >= 0.1) {
             notifyAdmin(contenu, score, savedPost);
             showToast("Contenu sensible publié (admin notifié)");
@@ -728,7 +807,13 @@ PostService postService = new PostService();
             showToast("Publication publiée !");
         }
 
-        loadPosts();
+        Map<Integer, Integer> singleCount = new HashMap<>();
+        singleCount.put(savedPost.getId(), 0);
+
+        postsContainer.getChildren()
+                .add(0, createPostCard(savedPost, singleCount));
+
+
 
         txtNewPost.clear();
         selectedImageFile = null;
@@ -749,13 +834,13 @@ PostService postService = new PostService();
         root.getChildren().add(toast);
         StackPane.setAlignment(toast, Pos.TOP_CENTER);
 
-        // Faire disparaître après 2 secondes
-        new Thread(() -> {
-            try {
-                Thread.sleep(7000);
-            } catch (InterruptedException ignored) {}
-            javafx.application.Platform.runLater(() -> root.getChildren().remove(toast));
-        }).start();
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(7),
+                        e -> root.getChildren().remove(toast))
+        );
+
+        timeline.setCycleCount(1);
+        timeline.play();
     }
     private void handleUpdatePost(Post post) {
         try {
@@ -778,12 +863,13 @@ PostService postService = new PostService();
 
             root.getChildren().add(overlay);
 
-            // 🔥 Fermeture
             controller.setOnClose(() -> {
                 mainContent.setEffect(null);
                 root.getChildren().remove(overlay);
-                loadPosts(); // rafraîchir la liste après modification
+
+                loadPosts();
             });
+
 
         } catch (Exception e) {
             e.printStackTrace();

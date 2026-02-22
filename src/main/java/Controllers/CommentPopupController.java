@@ -306,7 +306,7 @@ public class CommentPopupController {
         }
 
         commentBox.getChildren().addAll(header, lblMessage, actionBox);
-        commentsContainer.getChildren().add(0, commentBox);
+        commentsContainer.getChildren().add(commentBox);
 
     }
     private String promptForUpdate(String currentContent) {

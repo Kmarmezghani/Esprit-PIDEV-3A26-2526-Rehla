@@ -19,6 +19,7 @@ import models.Post;
 import models.notification;
 import org.json.JSONObject;
 import services.CommentaireService;
+import services.PersonneService;
 import services.notificationService;
 import util.Session;
 
@@ -49,7 +50,7 @@ public class CommentPopupController {
     private CommentaireService commentaireService = new CommentaireService();
     private Personne currentUser = Session.getCurrentUser();
 
-
+    private PersonneService personneService = new PersonneService();
     public void setOnClose(Runnable onClose) {
         this.onClose = onClose;
     }
@@ -193,6 +194,7 @@ public class CommentPopupController {
                         " a publié dans le post ID=" + comment.getPost().getId() +
                         " un commentaire suspect (score: " +
                         String.format("%.2f", score) + ")";
+        Personne admin = personneService.findByRole("admin");
 
         notification notif = new notification(
                 message,
@@ -200,7 +202,7 @@ public class CommentPopupController {
                 comment.getPost().getId(),
                 comment.getId(),
                 auteur.getId(),
-                1   // admin
+                admin.getId()  // admin
         );
 
         new notificationService().add(notif);

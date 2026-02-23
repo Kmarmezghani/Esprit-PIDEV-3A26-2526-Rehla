@@ -161,4 +161,27 @@ public class PersonneService implements IService<Personne> {
         if ("SUSPENDU".equals(d)) return "suspendu";
         return "actif";
     }
+
+    public Personne findByRole(String role) {
+
+        String sql = "SELECT * FROM `personne` WHERE `role` = ? LIMIT 1";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, toDbRole(role)); // utilise ta méthode existante 🔥
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapRow(rs); // 🔥 réutilise ton mapper propre
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[DB] PersonneService findByRole: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 }

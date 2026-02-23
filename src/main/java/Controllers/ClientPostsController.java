@@ -34,9 +34,7 @@ import models.Personne;
 import models.Post;
 import models.notification;
 import org.json.JSONObject;
-import services.CommentaireService;
-import services.LikeService;
-import services.PostService;
+import services.*;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -48,7 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import javafx.collections.ListChangeListener;
-import services.notificationService;
 import util.Session;
 
 
@@ -91,6 +88,7 @@ public class ClientPostsController {
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
 private PostService postService = new PostService();
    private notificationService notificationService = new notificationService();
+    private PersonneService personneService = new PersonneService();
     private LikeService likeService = new LikeService();
    private CommentaireService commentService = new CommentaireService();
     private Image avatarImage;
@@ -715,11 +713,10 @@ private PostService postService = new PostService();
 
             if (response == ButtonType.OK) {
                 postService.delete(post);
-
-                // 🔥 Suppression de la liste observable
                 postsList.remove(post);
 
                 System.out.println("Post supprimé avec succès !");
+                loadPosts();
             }
         });
     }
@@ -821,6 +818,7 @@ private PostService postService = new PostService();
                         " a publié un " + typeContenu +
                         " jugé suspect (score: " + String.format("%.2f", score) + ")" +
                         " | Post ID: " + post.getId();
+        Personne admin = personneService.findByRole("admin");
 
         notification notif = new notification(
                 message,
@@ -828,7 +826,8 @@ private PostService postService = new PostService();
                 post.getId(),
                 null,
                 auteur.getId(),
-                1   // admin
+                admin.getId()
+
         );
 
         notificationService.add(notif);
@@ -837,7 +836,10 @@ private PostService postService = new PostService();
 
     private void loadNotifications() {
 
-        List<notification> list = notificationService.getByReceiver(1); // admin
+        if (currentUser == null) return;
+
+        List<notification> list =
+                notificationService.getByReceiver(currentUser.getId()); // admin
 
         notifMenu.getItems().clear();
         notifMenu.getStyleClass().add("notif-dropdown");

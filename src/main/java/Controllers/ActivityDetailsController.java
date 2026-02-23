@@ -1,5 +1,6 @@
 package Controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -9,9 +10,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
@@ -20,6 +23,8 @@ import models.Review;
 import services.ActiviteService;
 import services.ReviewService;
 
+import java.io.File;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -31,12 +36,18 @@ public class ActivityDetailsController {
 
     private static final int CURRENT_USER_ID = 1;
 
+    // ===== Header labels =====
     @FXML private Label LBLtitle;
     @FXML private Label LBLdestination;
     @FXML private Label LBLdates;
     @FXML private Label LBLprice;
     @FXML private Label LBLrating;
     @FXML private Label LBLtype;
+
+    // ✅ header nodes (your FXML ids)
+    @FXML private StackPane headerPane;
+    @FXML private Rectangle overlayRect;
+    @FXML private ImageView IMGactivity;
 
     // ===== Reviews summary (left) =====
     @FXML private Label LBLavgBig;
@@ -47,13 +58,9 @@ public class ActivityDetailsController {
     @FXML private ProgressBar PB5, PB4, PB3, PB2, PB1;
     @FXML private Label LBLc5, LBLc4, LBLc3, LBLc2, LBLc1;
 
-    @FXML private javafx.scene.image.ImageView IMGactivity;
-
     @FXML private ListView<Review> reviewsList;
 
-    // stars box
     @FXML private HBox starBox;
-
     @FXML private TextArea TAreview;
     @FXML private Button BTNdeleteMyReview;
 
@@ -63,15 +70,26 @@ public class ActivityDetailsController {
     private Activite activity;
     private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMM yyyy • HH:mm");
 
-    // ===== Editing state =====
     private Review editingReview = null;
-
-    // star rating state
     private int selectedRating = 5;
     private int hoverRating = 0;
 
     @FXML
     public void initialize() {
+
+        // ✅ make image really full header size + overlay covers it
+        Platform.runLater(() -> {
+            if (headerPane != null && IMGactivity != null) {
+                IMGactivity.fitWidthProperty().bind(headerPane.widthProperty());
+                IMGactivity.fitHeightProperty().bind(headerPane.heightProperty());
+                IMGactivity.setPreserveRatio(false);
+                IMGactivity.setSmooth(true);
+            }
+            if (headerPane != null && overlayRect != null) {
+                overlayRect.widthProperty().bind(headerPane.widthProperty());
+                overlayRect.heightProperty().bind(headerPane.heightProperty());
+            }
+        });
 
         BTNdeleteMyReview.setDisable(true);
 
@@ -82,10 +100,7 @@ public class ActivityDetailsController {
             BTNdeleteMyReview.setDisable(!canDelete);
         });
 
-        // IMPORTANT: refresh to show/hide edit icon on selection
-        reviewsList.getSelectionModel().selectedIndexProperty().addListener((obs, o, n) -> {
-            reviewsList.refresh();
-        });
+        reviewsList.getSelectionModel().selectedIndexProperty().addListener((obs, o, n) -> reviewsList.refresh());
 
         reviewsList.setStyle("""
             -fx-background-color: transparent;
@@ -110,15 +125,19 @@ public class ActivityDetailsController {
         LBLdestination.setText("📍 " + (dest == null || dest.isBlank() ? "Unknown" : dest));
 
         String start = (activity.getDateDebut() != null) ? activity.getDateDebut().format(dtf) : "—";
-        String end = (activity.getDateFin() != null) ? activity.getDateFin().format(dtf) : "—";
+        String end   = (activity.getDateFin()   != null) ? activity.getDateFin().format(dtf)   : "—";
         LBLdates.setText("🕒 " + start + "  →  " + end);
 
         LBLprice.setText(String.format("💰 %.2f TND", activity.getPrix()));
         LBLtype.setText("Type: " + (activity.getTypeActivite() == null ? "" : activity.getTypeActivite()));
 
-        try {
-            IMGactivity.setImage(new Image(getClass().getResourceAsStream("/icons/activity_placeholder.png")));
-        } catch (Exception ignored) {}
+        // ✅✅✅ SAME LOGIC AS ActivitiesPageController
+        Image real = loadActivityImage(activity.getImage());
+        if (real != null) IMGactivity.setImage(real);
+        else {
+            Image ph = loadPlaceholder();
+            if (ph != null) IMGactivity.setImage(ph);
+        }
     }
 
     private void loadReviewsAndRating() {
@@ -165,10 +184,8 @@ public class ActivityDetailsController {
     private String starsFromAverage(double avg) {
         avg = Math.max(0, Math.min(5, avg));
         StringBuilder sb = new StringBuilder();
-
         for (int i = 1; i <= 5; i++) {
             double diff = avg - (i - 1);
-
             if (diff >= 1) sb.append("★");
             else if (diff >= 0.75) sb.append("★");
             else if (diff >= 0.5) sb.append("⯨");
@@ -178,7 +195,10 @@ public class ActivityDetailsController {
         return sb.toString();
     }
 
+    // =========================
     // Stars rating UI
+    // =========================
+
     private void initStarRating() {
         if (starBox == null) return;
 
@@ -218,13 +238,15 @@ public class ActivityDetailsController {
         }
     }
 
-    // Start editing
+    // =========================
+    // CRUD Reviews
+    // =========================
+
     private void startEdit(Review r) {
         if (r == null) return;
         if (r.getPersonneId() != CURRENT_USER_ID) return;
 
         editingReview = r;
-
         TAreview.setText(r.getCommentaire() == null ? "" : r.getCommentaire());
 
         selectedRating = Math.max(1, Math.min(5, r.getNote()));
@@ -237,7 +259,6 @@ public class ActivityDetailsController {
     private void exitEditMode() {
         editingReview = null;
         TAreview.clear();
-
         selectedRating = 5;
         updateStars(selectedRating);
     }
@@ -277,7 +298,6 @@ public class ActivityDetailsController {
         loadReviewsAndRating();
     }
 
-    // confirmation dialog for delete
     private boolean confirmDelete() {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete review");
@@ -316,8 +336,9 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    // NAVIGATION (KEEP FULLSCREEN)
+    // NAVIGATION
     // =========================
+
     @FXML
     public void backToActivities(ActionEvent event) {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
@@ -328,10 +349,7 @@ public class ActivityDetailsController {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/HomePage.fxml");
     }
 
-    @FXML
-    public void goToDestinations(ActionEvent event) {
-        // TODO
-    }
+    @FXML public void goToDestinations(ActionEvent event) { }
 
     @FXML
     public void goToPosts(ActionEvent event) {
@@ -343,23 +361,17 @@ public class ActivityDetailsController {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
     }
 
-    // ✅ THIS IS THE FIX
     private void switchSceneKeepSize(Node anyNodeOnScene, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
             Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
-
-            if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
-            } else {
-                stage.getScene().setRoot(root); // ✅ keeps fullscreen/size
-            }
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
 
             root.applyCss();
             root.layout();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -374,8 +386,70 @@ public class ActivityDetailsController {
     }
 
     // =========================
+    // ✅✅✅ SAME IMAGE LOADER AS ActivitiesPageController
+    // =========================
+
+    private Image loadActivityImage(String path) {
+        if (path == null || path.isBlank()) return null;
+
+        try {
+            String p = path.trim();
+
+            if (p.startsWith("http://") || p.startsWith("https://")) {
+                return new Image(p, true);
+            }
+
+            if (p.startsWith("file:/")) {
+                return new Image(p, true);
+            }
+
+            if (p.startsWith("/")) {
+                InputStream is = getClass().getResourceAsStream(p);
+                if (is != null) return new Image(is);
+
+                Image fs = loadFromFileSmart(p.substring(1));
+                if (fs != null) return fs;
+
+                return null;
+            }
+
+            Image fs = loadFromFileSmart(p);
+            if (fs != null) return fs;
+
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    private Image loadFromFileSmart(String p) {
+        try {
+            File file = new File(p);
+
+            if (!file.exists()) {
+                file = new File(System.getProperty("user.dir"), p);
+            }
+
+            if (file.exists()) {
+                return new Image(file.toURI().toString(), true);
+            }
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    private Image loadPlaceholder() {
+        try {
+            InputStream is = getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png");
+            return is != null ? new Image(is) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // =========================
     //  CUSTOM REVIEW CARD CELL
     // =========================
+
     private class ReviewCardCell extends ListCell<Review> {
 
         @Override
@@ -435,7 +509,6 @@ public class ActivityDetailsController {
             boolean showEdit = isYou && isSelected();
             editBtn.setVisible(showEdit);
             editBtn.setManaged(showEdit);
-
             editBtn.setOnAction(e -> ActivityDetailsController.this.startEdit(r));
 
             VBox ratingBox = new VBox(2);

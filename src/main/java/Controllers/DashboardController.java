@@ -16,6 +16,8 @@ import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Activite;
@@ -25,15 +27,9 @@ import models.Ticket;
 import models.stats.AvgNoteRow;
 import models.stats.NoteDistributionRow;
 import models.stats.TopActiviteRow;
-import services.ActiviteService;
-import services.ReservationService;
-import services.ReviewService;
-import services.TicketService;
-import services.StatsService;
+import services.*;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-
+import java.io.File;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
@@ -43,12 +39,7 @@ import java.util.Map;
 
 public class DashboardController {
 
-    // ✅ CHANGE #1 (DATE FORMAT)
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
-    // ======================================================
-    // ======================= TABS =========================
-    // ======================================================
 
     @FXML private Tab activitetab;
     @FXML private Tab admintab;
@@ -62,21 +53,16 @@ public class DashboardController {
     @FXML private Tab usertab;
     @FXML private Tab statstab;
 
-    // ======================= TAB PANES ====================
-
     @FXML private TabPane activitetabpanmain;
     @FXML private TabPane destinationtabpanmain;
     @FXML private TabPane posttabpanmain;
     @FXML private TabPane reservationtabpanmain;
     @FXML private TabPane usertabpanmain;
 
-    // ======================================================
-    // ================== ACTIVITE TABLE ====================
-    // ======================================================
-
     @FXML private TableView<Activite> tableactivite;
 
     @FXML private TableColumn<Activite, String> colnameactivite;
+    @FXML private TableColumn<Activite, String> colimagectivite;
     @FXML private TableColumn<Activite, String> coldescriptionactivite;
     @FXML private TableColumn<Activite, Double> colpriceactivite;
     @FXML private TableColumn<Activite, String> coltypeactivite;
@@ -88,25 +74,14 @@ public class DashboardController {
     @FXML private TableColumn<Activite, Void> colDeleteactivite;
     @FXML private TableColumn<Activite, String> colMaxPlaces;
 
-
-    // ======================================================
-    // ==================== REVIEW TABLE ====================
-    // ======================================================
-
     @FXML private TableView<Review> tableReview;
-
     @FXML private TableColumn<Review, String> coluserReview;
     @FXML private TableColumn<Review, String> colcommentReview;
     @FXML private TableColumn<Review, Double> colnoteReview;
     @FXML private TableColumn<Review, String> coldateReview;
     @FXML private TableColumn<Review, Void> colDeleteReview;
 
-    // ======================================================
-    // ================= RESERVATION TABLE ===================
-    // ======================================================
-
     @FXML private TableView<Reservation> tableReservation;
-
     @FXML private TableColumn<Reservation, Date> colDateReservation;
     @FXML private TableColumn<Reservation, Date> colDateDebut;
     @FXML private TableColumn<Reservation, Date> colDateFin;
@@ -117,31 +92,18 @@ public class DashboardController {
     @FXML private TableColumn<Reservation, Void> colDeleteReservation;
     @FXML private TableColumn<Reservation, Void> colTicketReservation;
 
-    // ======================================================
-    // ===================== TICKET TABLE ====================
-    // ======================================================
-
     @FXML private TableView<Ticket> tableTicket;
-
     @FXML private TableColumn<Ticket, Date> colDateDebut1;
     @FXML private TableColumn<Ticket, Date> colDateFin1;
     @FXML private TableColumn<Ticket, String> colStatut1;
     @FXML private TableColumn<Ticket, Double> colPrix;
     @FXML private TableColumn<Ticket, String> colType;
     @FXML private TableColumn<Ticket, Void> colDeleteTicket;
-    @FXML private TableColumn<Ticket, Void> colDestinationTicket;
-
-    // ======================================================
-    // ================= OTHER TABLES =======================
-    // ======================================================
+    @FXML private TableColumn<Ticket, String> colDestinationTicket;
 
     @FXML private TableView<?> tabledestination;
     @FXML private TableView<?> tablepost;
     @FXML private TableView<?> tableuser;
-
-    // ======================================================
-    // ================= STATISTICS NODES ===================
-    // ======================================================
 
     @FXML private BarChart<String, Number> barTopActivities;
     @FXML private CategoryAxis xTopActivities;
@@ -154,19 +116,11 @@ public class DashboardController {
     @FXML private TableColumn<AvgNoteRow, Double> colAvg;
     @FXML private TableColumn<AvgNoteRow, Integer> colCount;
 
-    // ======================================================
-    // ================= DASHBOARD BUTTONS ==================
-    // ======================================================
-
     @FXML private ToggleButton dashactbut;
     @FXML private ToggleButton dashdesbut;
     @FXML private ToggleButton dashpostbut;
     @FXML private ToggleButton dashresbut;
     @FXML private ToggleButton dashuserbut;
-
-    // ======================================================
-    // ===================== SERVICES =======================
-    // ======================================================
 
     private final ToggleGroup dashboardGroup = new ToggleGroup();
 
@@ -191,9 +145,6 @@ public class DashboardController {
     @FXML
     public void initialize() {
 
-        // =========================
-        // DASHBOARD TOGGLE GROUP
-        // =========================
         dashuserbut.setToggleGroup(dashboardGroup);
         dashdesbut.setToggleGroup(dashboardGroup);
         dashresbut.setToggleGroup(dashboardGroup);
@@ -201,9 +152,7 @@ public class DashboardController {
         dashpostbut.setToggleGroup(dashboardGroup);
 
         dashboardGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
-            if (newT == null) {
-                Platform.runLater(() -> dashboardGroup.selectToggle(oldT));
-            }
+            if (newT == null) Platform.runLater(() -> dashboardGroup.selectToggle(oldT));
             applySelectedStyles();
         });
 
@@ -213,9 +162,6 @@ public class DashboardController {
         dashboardGroup.selectToggle(dashuserbut);
         applySelectedStyles();
 
-        // =========================
-        // TABLE INIT
-        // =========================
         initActiviteTable();
         initReviewTable();
         initReservationTable();
@@ -227,23 +173,15 @@ public class DashboardController {
 
         initStatsTables();
 
-        // =========================
-        // SELECTION LISTENERS
-        // =========================
         ticketstab.setOnSelectionChanged(event -> {
             if (ticketstab.isSelected()) {
-                if (currentReservationForTickets == null) {
-                    refreshTicketTable();
-                } else {
-                    loadTicketsByReservation(currentReservationForTickets.getId());
-                }
+                if (currentReservationForTickets == null) refreshTicketTable();
+                else loadTicketsByReservation(currentReservationForTickets.getId());
             }
         });
 
         reservationstab.setOnSelectionChanged(event -> {
-            if (reservationstab.isSelected()) {
-                currentReservationForTickets = null;
-            }
+            if (reservationstab.isSelected()) currentReservationForTickets = null;
         });
 
         tableactivite.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -251,39 +189,23 @@ public class DashboardController {
         });
 
         reviewtab.setOnSelectionChanged(event -> {
-            if (reviewtab.isSelected()) {
-                loadReviewsForSelectedActivite();
-            }
+            if (reviewtab.isSelected()) loadReviewsForSelectedActivite();
         });
 
         if (statstab != null) {
             statstab.setOnSelectionChanged(e -> {
-                if (statstab.isSelected()) {
-                    refreshActivityStats(null);
-                }
+                if (statstab.isSelected()) refreshActivityStats(null);
             });
         }
 
-        // =========================
-        // DOUBLE CLICK ROW = EDIT
-        // =========================
         tableactivite.setRowFactory(tv -> {
             TableRow<Activite> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    openEditPopup(row.getItem());
-                }
+                if (event.getClickCount() == 2 && !row.isEmpty()) openEditPopup(row.getItem());
             });
             return row;
         });
-        tableactivite.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            selectedActivite = newSelection;
-        });
 
-
-        // =========================
-        // COLUMN RESIZING (RESERVATION)
-        // =========================
         tableReservation.widthProperty().addListener((obs, o, n) -> {
             double available = n.doubleValue() - 20;
             colDateReservation.setPrefWidth(available * 0.15);
@@ -308,8 +230,9 @@ public class DashboardController {
         tableactivite.widthProperty().addListener((obs, oldW, newW) -> {
             double available = newW.doubleValue() - 20;
 
-            colnameactivite.setPrefWidth(available * 0.11);
-            coldescriptionactivite.setPrefWidth(available * 0.22);
+            colnameactivite.setPrefWidth(available * 0.10);
+            colimagectivite.setPrefWidth(available * 0.08);
+            coldescriptionactivite.setPrefWidth(available * 0.20);
             coldateDactivite.setPrefWidth(available * 0.10);
             coldateFactivite.setPrefWidth(available * 0.10);
             colpriceactivite.setPrefWidth(available * 0.08);
@@ -317,18 +240,12 @@ public class DashboardController {
             colavgratactivite.setPrefWidth(available * 0.09);
             colDestinationactivite.setPrefWidth(available * 0.10);
             colguideactivite.setPrefWidth(available * 0.09);
-            colDeleteactivite.setPrefWidth(available * 0.02);
             colMaxPlaces.setPrefWidth(available * 0.07);
+            colDeleteactivite.setPrefWidth(available * 0.02);
         });
 
-
-
-        // =========================
-        // COLUMN RESIZING (REVIEW)
-        // =========================
         tableReview.widthProperty().addListener((obs, oldW, newW) -> {
             double available = newW.doubleValue() - 20;
-
             coluserReview.setPrefWidth(available * 0.15);
             colcommentReview.setPrefWidth(available * 0.45);
             colnoteReview.setPrefWidth(available * 0.10);
@@ -336,20 +253,15 @@ public class DashboardController {
             colDeleteReview.setPrefWidth(available * 0.10);
         });
 
-        // =========================
-        // COLUMN RESIZING (STATS TABLE)
-        // =========================
-        tableAvgNotes.widthProperty().addListener((obs, oldW, newW) -> {
-            double available = newW.doubleValue() - 20;
+        if (tableAvgNotes != null) {
+            tableAvgNotes.widthProperty().addListener((obs, oldW, newW) -> {
+                double available = newW.doubleValue() - 20;
+                colNom.setPrefWidth(available * 0.60);
+                colAvg.setPrefWidth(available * 0.20);
+                colCount.setPrefWidth(available * 0.20);
+            });
+        }
 
-            colNom.setPrefWidth(available * 0.60);
-            colAvg.setPrefWidth(available * 0.20);
-            colCount.setPrefWidth(available * 0.20);
-        });
-
-        // =========================
-        // WINDOW SHORTCUT
-        // =========================
         Platform.runLater(() -> {
             Scene scene = dashuserbut.getScene();
             Stage stage = (Stage) scene.getWindow();
@@ -362,9 +274,9 @@ public class DashboardController {
         });
     }
 
-    // ===========================
-    // ===== ACTIVITY-RELATED =====
-    // ===========================
+    // =========================
+    // ACTIVITES
+    // =========================
 
     private void initActiviteTable() {
         colnameactivite.setCellValueFactory(new PropertyValueFactory<>("nom"));
@@ -372,6 +284,66 @@ public class DashboardController {
         colpriceactivite.setCellValueFactory(new PropertyValueFactory<>("prix"));
         coltypeactivite.setCellValueFactory(new PropertyValueFactory<>("typeActivite"));
         colavgratactivite.setCellValueFactory(new PropertyValueFactory<>("noteMoyenne"));
+
+        // ✅✅✅ IMAGE COLUMN (comme ton ami) + support resources + relatif + absolu
+        colimagectivite.setCellValueFactory(new PropertyValueFactory<>("image"));
+
+        colimagectivite.setCellFactory(param -> new TableCell<>() {
+
+            private final ImageView imageView = new ImageView();
+
+            {
+                imageView.setFitWidth(80);
+                imageView.setFitHeight(60);
+                imageView.setPreserveRatio(true);
+                imageView.setSmooth(true);
+            }
+
+            @Override
+            protected void updateItem(String imagePath, boolean empty) {
+                super.updateItem(imagePath, empty);
+
+                if (empty || imagePath == null || imagePath.trim().isEmpty()) {
+                    setGraphic(null);
+                    return;
+                }
+
+                try {
+                    Image img = null;
+
+                    // 1) resources: "/images/activities/.."
+                    if (imagePath.startsWith("/")) {
+                        var is = getClass().getResourceAsStream(imagePath);
+                        if (is != null) img = new Image(is);
+                    } else {
+                        // 2) file system (comme ton ami)
+                        File file = new File(imagePath);
+
+                        // si relatif, essayer depuis user.dir
+                        if (!file.exists()) {
+                            file = new File(System.getProperty("user.dir"), imagePath);
+                        }
+
+                        if (file.exists()) {
+                            img = new Image(file.toURI().toString());
+                        }
+                    }
+
+                    // placeholder si pas trouvé
+                    if (img == null) {
+                        var is2 = getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png");
+                        if (is2 != null) img = new Image(is2);
+                    }
+
+                    imageView.setImage(img);
+                    setGraphic(imageView);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    setGraphic(null);
+                }
+            }
+        });
 
         colguideactivite.setCellValueFactory(cellData -> {
             Activite a = cellData.getValue();
@@ -391,20 +363,18 @@ public class DashboardController {
             return new ReadOnlyStringWrapper(v);
         });
 
-
         coldateFactivite.setCellValueFactory(cellData -> {
             Activite a = cellData.getValue();
             String v = (a.getDateFin() != null) ? a.getDateFin().format(DT) : "";
             return new ReadOnlyStringWrapper(v);
         });
+
         colMaxPlaces.setCellValueFactory(cellData -> {
             Activite a = cellData.getValue();
             Integer mp = a.getMaxPlaces();
             String v = (mp == null) ? "No limit" : String.valueOf(mp);
             return new ReadOnlyStringWrapper(v);
         });
-
-
 
         tableactivite.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
@@ -433,7 +403,6 @@ public class DashboardController {
                     -fx-cursor: hand;
                 """);
 
-                // ✅ CHANGE #2 (CONFIRMATION)
                 deleteBtn.setOnAction(e -> {
                     Activite a = getTableView().getItems().get(getIndex());
 
@@ -501,7 +470,9 @@ public class DashboardController {
         }
     }
 
-    // ------------------- Review Methods -------------------
+    // =========================
+    // REVIEWS
+    // =========================
 
     private void initReviewTable() {
         coluserReview.setCellValueFactory(cellData ->
@@ -510,7 +481,6 @@ public class DashboardController {
         colcommentReview.setCellValueFactory(new PropertyValueFactory<>("commentaire"));
         colnoteReview.setCellValueFactory(new PropertyValueFactory<>("note"));
 
-        // ✅ CHANGE #1 (DATE FORMAT) - si dateAvis = LocalDateTime
         coldateReview.setCellValueFactory(cellData -> {
             Review r = cellData.getValue();
             String dateStr = r.getDateAvis() != null ? r.getDateAvis().format(DT) : "";
@@ -533,7 +503,6 @@ public class DashboardController {
                 deleteBtn.setGraphic(icon);
                 deleteBtn.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
 
-                // ✅ CHANGE #2 (CONFIRMATION)
                 deleteBtn.setOnAction(e -> {
                     Review review = getTableView().getItems().get(getIndex());
 
@@ -567,12 +536,11 @@ public class DashboardController {
         reviewList.setAll(reviewService.getReviewsByActiviteId(selectedActivite.getId()));
     }
 
-    // ======================================================
-    // ================= RESERVATION METHODS =================
-    // ======================================================
+    // =========================
+    // RESERVATIONS
+    // =========================
 
     private void initReservationTable() {
-
         colDateReservation.setCellValueFactory(new PropertyValueFactory<>("dateReservation"));
         colDateDebut.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
         colDateFin.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
@@ -596,9 +564,7 @@ public class DashboardController {
         tableReservation.setRowFactory(tv -> {
             TableRow<Reservation> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2 && !row.isEmpty()) {
-                    openEditPopup(row.getItem());
-                }
+                if (e.getClickCount() == 2 && !row.isEmpty()) openEditPopup(row.getItem());
             });
             return row;
         });
@@ -616,12 +582,11 @@ public class DashboardController {
         tableReservation.setItems(reservationList);
     }
 
-    // ======================================================
-    // ==================== TICKET METHODS ===================
-    // ======================================================
+    // =========================
+    // TICKETS
+    // =========================
 
     private void initTicketTable() {
-
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         colPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
         colStatut1.setCellValueFactory(new PropertyValueFactory<>("statut"));
@@ -632,9 +597,7 @@ public class DashboardController {
         tableTicket.setRowFactory(tv -> {
             TableRow<Ticket> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2 && !row.isEmpty()) {
-                    openEditTicketPopup(row.getItem());
-                }
+                if (e.getClickCount() == 2 && !row.isEmpty()) openEditTicketPopup(row.getItem());
             });
             return row;
         });
@@ -652,13 +615,12 @@ public class DashboardController {
         tableTicket.setItems(ticketList);
     }
 
-    // ======================================================
-    // ==================== STATISTICS =======================
-    // ======================================================
+    // =========================
+    // STATS
+    // =========================
 
     private void initStatsTables() {
         if (tableAvgNotes == null) return;
-
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colAvg.setCellValueFactory(new PropertyValueFactory<>("avgNote"));
         colCount.setCellValueFactory(new PropertyValueFactory<>("nbAvis"));
@@ -668,7 +630,6 @@ public class DashboardController {
     private void refreshActivityStats(ActionEvent event) {
         try {
             if (barTopActivities != null) {
-
                 List<TopActiviteRow> top = statsService.getTopActivitiesByInscriptions(7);
 
                 barTopActivities.getData().clear();
@@ -677,13 +638,9 @@ public class DashboardController {
                 for (TopActiviteRow r : top) {
                     s.getData().add(new XYChart.Data<>(r.nom(), r.nbAvis()));
                 }
-
                 barTopActivities.getData().add(s);
 
-                int max = top.stream()
-                        .mapToInt(TopActiviteRow::nbAvis)
-                        .max()
-                        .orElse(1);
+                int max = top.stream().mapToInt(TopActiviteRow::nbAvis).max().orElse(1);
 
                 yTopActivities.setAutoRanging(false);
                 yTopActivities.setLowerBound(0);
@@ -701,9 +658,8 @@ public class DashboardController {
                 List<NoteDistributionRow> dist = statsService.getNoteDistribution();
 
                 Map<Integer, Integer> map = new HashMap<>();
-                for (NoteDistributionRow row : dist) {
-                    map.put(row.getNote(), row.getNb());
-                }
+                for (NoteDistributionRow row : dist) map.put(row.getNote(), row.getNb());
+
                 ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
                 for (int note = 1; note <= 5; note++) {
                     int nb = map.getOrDefault(note, 0);
@@ -724,9 +680,9 @@ public class DashboardController {
         }
     }
 
-    // ======================================================
-    // ======================= UI HELPERS ====================
-    // ======================================================
+    // =========================
+    // UI + POPUPS
+    // =========================
 
     private void applySelectedStyles() {
         styleToggle(dashuserbut);
@@ -736,9 +692,6 @@ public class DashboardController {
         styleToggle(dashpostbut);
     }
 
-    // ======================================================
-    // ======================= POPUPS ========================
-    // ======================================================
     @FXML
     private void openAddPopup(ActionEvent e) {
         try {
@@ -753,7 +706,6 @@ public class DashboardController {
             stage.showAndWait();
 
             refreshReservationTable();
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -764,10 +716,7 @@ public class DashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutReservation.fxml"));
             Parent root = loader.load();
 
-            // Récupérer le controller du popup
             AjouterReservationController popupController = loader.getController();
-
-            // Pré-remplir les champs
             popupController.setReservation(reservation);
 
             Stage popupStage = new Stage();
@@ -776,28 +725,21 @@ public class DashboardController {
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
 
-            // Après fermeture, refresh TableView
             refreshReservationTable();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     private void openEditTicketPopup(Ticket ticket) {
         try {
-
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/Backoffice/ajoutTicket.fxml")
-            );
-
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/ajoutTicket.fxml"));
             Parent root = loader.load();
-            TicketController popupController = loader.getController();
 
+            TicketController popupController = loader.getController();
             popupController.setTicket(ticket);
 
-            // 🔥 IMPORTANT : vérifier si le ticket a une réservation
             Integer reservationId = ticket.getReservationId();
-
             if (reservationId != null) {
                 Reservation reservation = reservationService.getById(reservationId);
                 popupController.setReservation(reservation);
@@ -810,8 +752,6 @@ public class DashboardController {
             popupStage.showAndWait();
 
             refreshTicketTable();
-
-
             refreshReservationTable();
 
         } catch (Exception e) {
@@ -821,23 +761,14 @@ public class DashboardController {
 
     @FXML
     private void openAddTicketPopup(ActionEvent event) {
-
         try {
-
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/Backoffice/formTicketBack.fxml")
-            );
-
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/formTicketBack.fxml"));
             Parent root = loader.load();
+
             TicketController popupController = loader.getController();
 
-            // ✅ Si une réservation est sélectionnée → on la passe
-            if (currentReservationForTickets != null) {
-                popupController.setReservation(currentReservationForTickets);
-            } else if (selectedReservation != null) {
-                popupController.setReservation(selectedReservation);
-            }
-            // Sinon → on n'envoie rien (ticket libre)
+            if (currentReservationForTickets != null) popupController.setReservation(currentReservationForTickets);
+            else if (selectedReservation != null) popupController.setReservation(selectedReservation);
 
             Stage popupStage = new Stage();
             popupStage.setTitle("Add Ticket");
@@ -845,12 +776,8 @@ public class DashboardController {
             popupStage.setScene(new Scene(root));
             popupStage.showAndWait();
 
-            // ✅ Refresh
-            if (currentReservationForTickets != null) {
-                loadTicketsByReservation(currentReservationForTickets.getId());
-            } else {
-                refreshTicketTable(); // recharge tous les tickets libres
-            }
+            if (currentReservationForTickets != null) loadTicketsByReservation(currentReservationForTickets.getId());
+            else refreshTicketTable();
 
             refreshReservationTable();
 
@@ -858,9 +785,10 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
-    // ======================================================
-    // ================= BUTTON FACTORIES ====================
-    // ======================================================
+
+    // =========================
+    // BUTTONS FACTORY
+    // =========================
 
     private void addDeleteReservationButton() {
         colDeleteReservation.setCellFactory(param -> new TableCell<>() {
@@ -873,7 +801,6 @@ public class DashboardController {
                 btn.setGraphic(icon);
                 btn.setStyle("-fx-background-color: transparent;");
 
-                // ✅ CHANGE #2 (CONFIRMATION)
                 btn.setOnAction(e -> {
                     Reservation r = getTableView().getItems().get(getIndex());
 
@@ -894,6 +821,7 @@ public class DashboardController {
                 });
             }
 
+            @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
@@ -920,6 +848,7 @@ public class DashboardController {
                 });
             }
 
+            @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
@@ -938,7 +867,6 @@ public class DashboardController {
                 btn.setGraphic(icon);
                 btn.setStyle("-fx-background-color: transparent;");
 
-                // ✅ CHANGE #2 (CONFIRMATION)
                 btn.setOnAction(e -> {
                     Ticket t = getTableView().getItems().get(getIndex());
 
@@ -952,10 +880,8 @@ public class DashboardController {
                             ticketService.delete(t);
                             getTableView().getItems().remove(t);
 
-                            if (currentReservationForTickets != null)
-                                loadTicketsByReservation(currentReservationForTickets.getId());
-                            else
-                                refreshTicketTable();
+                            if (currentReservationForTickets != null) loadTicketsByReservation(currentReservationForTickets.getId());
+                            else refreshTicketTable();
 
                             refreshReservationTable();
                         }
@@ -963,6 +889,7 @@ public class DashboardController {
                 });
             }
 
+            @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : btn);
@@ -970,7 +897,9 @@ public class DashboardController {
         });
     }
 
-    // ------------------- Dashboard / Tab Methods -------------------
+    // =========================
+    // NAVIGATION PANES
+    // =========================
 
     private void hideAllPanes() {
         hidePane(usertabpanmain);
@@ -1014,17 +943,11 @@ public class DashboardController {
     void dashboardButtonClicked(ActionEvent event) {
         ToggleButton clicked = (ToggleButton) event.getSource();
 
-        if (clicked == dashuserbut) {
-            showPane(usertabpanmain);
-        } else if (clicked == dashactbut) {
-            showPane(activitetabpanmain);
-        } else if (clicked == dashdesbut) {
-            showPane(destinationtabpanmain);
-        } else if (clicked == dashresbut) {
-            showPane(reservationtabpanmain);
-        } else if (clicked == dashpostbut) {
-            showPane(posttabpanmain);
-        }
+        if (clicked == dashuserbut) showPane(usertabpanmain);
+        else if (clicked == dashactbut) showPane(activitetabpanmain);
+        else if (clicked == dashdesbut) showPane(destinationtabpanmain);
+        else if (clicked == dashresbut) showPane(reservationtabpanmain);
+        else if (clicked == dashpostbut) showPane(posttabpanmain);
     }
 
     @FXML
@@ -1047,5 +970,6 @@ public class DashboardController {
 
     @FXML
     private void FXaddActivite(ActionEvent event) {
+        // empty (ton code)
     }
 }

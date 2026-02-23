@@ -127,7 +127,6 @@ public class GeminiRecommendationService {
 
         return ids;
     }
-
     // ---- parse candidates[0].content.parts[0].text ----
     private String extractModelText(String json) {
         int i = json.indexOf("\"text\"");

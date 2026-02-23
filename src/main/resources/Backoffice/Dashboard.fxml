@@ -454,6 +454,7 @@
                                                         <TableView fx:id="tableactivite" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
                                                             <columns>
                                                                 <TableColumn fx:id="colnameactivite" prefWidth="75.0" text="Name" />
+                                                <TableColumn fx:id="colimagectivite" prefWidth="75.0" text="Image" />
                                                                 <TableColumn fx:id="coldescriptionactivite" prefWidth="91.199951171875" text="Description" />
                                                                 <TableColumn fx:id="colpriceactivite" prefWidth="59.20001220703125" text="Price" />
                                                                 <TableColumn fx:id="coldateDactivite" prefWidth="75.0" text="Start Date" />

@@ -5,10 +5,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.Activite;
 import services.ActiviteService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,6 +44,9 @@ public class AjouterActiviteController {
     @FXML private Label LBLmaxPlaces;
     @FXML private Spinner<Integer> SPmaxPlaces;
 
+    @FXML private Label LBLimageName;
+    @FXML private ImageView imagePreview;   // ✅ preview comme ton partenaire
+
     private Map<String, Integer> destinationMap;
 
     private Activite activiteToEdit = null;
@@ -45,6 +54,9 @@ public class AjouterActiviteController {
 
     private Integer fixedGuideId = null;
     private boolean adminMode = false;
+
+    private File selectedImageFile = null;      // ✅ comme ton partenaire
+    private String selectedImagePath = null;    // chemin final sauvegardé (après copie)
 
     public void setGuideId(int guideId) {
         this.fixedGuideId = guideId;
@@ -85,6 +97,8 @@ public class AjouterActiviteController {
             SPmaxPlaces.setEditable(true);
         }
 
+        if (LBLimageName != null) LBLimageName.setText("Aucun fichier");
+
         updateMaxPlacesVisibility();
     }
 
@@ -93,15 +107,53 @@ public class AjouterActiviteController {
 
         boolean isGuideCreating = (fixedGuideId != null) && !adminMode;
 
-        // ✅ hide/show Spinner
         SPmaxPlaces.setVisible(isGuideCreating);
         SPmaxPlaces.setManaged(isGuideCreating);
 
-        // ✅ hide/show Label too (THIS WAS MISSING)
         if (LBLmaxPlaces != null) {
             LBLmaxPlaces.setVisible(isGuideCreating);
             LBLmaxPlaces.setManaged(isGuideCreating);
         }
+    }
+
+    // ✅ EXACTEMENT comme ton partenaire
+    @FXML
+    private void choisirImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir une image");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        selectedImageFile = fileChooser.showOpenDialog(null);
+
+        if (selectedImageFile != null) {
+            if (LBLimageName != null) LBLimageName.setText(selectedImageFile.getName());
+
+            if (imagePreview != null) {
+                imagePreview.setImage(new Image(selectedImageFile.toURI().toString()));
+            }
+        }
+    }
+
+    // ✅ EXACTEMENT comme ton partenaire (dossier HOME)
+    private String copierImagePath(File imageFile) throws IOException {
+
+        String dossier = System.getProperty("user.home") + "/myapp/uploads/activities/";
+        Files.createDirectories(Paths.get(dossier));
+
+        String extension = imageFile.getName().substring(imageFile.getName().lastIndexOf("."));
+        String fileName = "activity_" + System.currentTimeMillis() + extension;
+
+        Path destination = Paths.get(dossier + fileName);
+
+        Files.copy(
+                imageFile.toPath(),
+                destination,
+                StandardCopyOption.REPLACE_EXISTING
+        );
+
+        return destination.toAbsolutePath().toString(); // ✅ chemin absolu
     }
 
     @FXML
@@ -122,24 +174,22 @@ public class AjouterActiviteController {
                 ? destinationMap.get(destNom)
                 : 0;
 
-        // ========= VALIDATIONS =========
-        if (nom == null || nom.isBlank()) { showWarn("Missing name", "Please enter the activity name."); return; }
-        if (description == null || description.isBlank()) { showWarn("Missing description", "Please enter the activity description."); return; }
-        if (type == null || type.isBlank()) { showWarn("Missing type", "Please enter the activity type."); return; }
-        if (price == null || price <= 0) { showWarn("Invalid price", "Price must be greater than 0."); return; }
+        if (nom == null || nom.isBlank()) { showWarn("Nom manquant", "Veuillez saisir le nom."); return; }
+        if (description == null || description.isBlank()) { showWarn("Description manquante", "Veuillez saisir la description."); return; }
+        if (type == null || type.isBlank()) { showWarn("Type manquant", "Veuillez saisir le type."); return; }
+        if (price == null || price <= 0) { showWarn("Prix invalide", "Le prix doit être > 0."); return; }
 
-        if (destinationId == 0) { showWarn("Missing destination", "Please select a destination."); return; }
-        if (dateDebut == null) { showWarn("Missing start date", "Please select a start date and time."); return; }
-        if (dateFin == null) { showWarn("Missing end date", "Please select an end date and time."); return; }
+        if (destinationId == 0) { showWarn("Destination manquante", "Veuillez choisir une destination."); return; }
+        if (dateDebut == null) { showWarn("Date début manquante", "Veuillez choisir la date début."); return; }
+        if (dateFin == null) { showWarn("Date fin manquante", "Veuillez choisir la date fin."); return; }
 
         LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
 
-        if (dateDebut.toLocalDate().isBefore(today)) { showWarn("Invalid start date", "Start date cannot be before today."); return; }
-        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) { showWarn("Invalid start time", "Start time cannot be earlier than the current time."); return; }
-        if (dateFin.isBefore(dateDebut)) { showWarn("Invalid dates", "End date must be after start date."); return; }
+        if (dateDebut.toLocalDate().isBefore(today)) { showWarn("Date début invalide", "La date début ne peut pas être avant aujourd'hui."); return; }
+        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) { showWarn("Heure début invalide", "L'heure début ne peut pas être avant maintenant."); return; }
+        if (dateFin.isBefore(dateDebut)) { showWarn("Dates invalides", "La date fin doit être après la date début."); return; }
 
-        // ========= GUIDE ID LOGIC =========
         Integer guideIdToUse = null;
 
         if (editMode && activiteToEdit != null) {
@@ -151,22 +201,29 @@ public class AjouterActiviteController {
             guideIdToUse = null;
         }
 
-        // ✅ max places logic
         Integer maxPlacesToUse = null;
         boolean isGuideActivity = (guideIdToUse != null);
 
         if (isGuideActivity) {
             Integer v = (SPmaxPlaces != null) ? SPmaxPlaces.getValue() : null;
             if (v == null || v <= 0) {
-                showWarn("Missing max places", "Please choose a maximum number of participants.");
+                showWarn("Max places manquant", "Veuillez choisir un max de participants.");
                 return;
             }
             maxPlacesToUse = v;
-        } else {
-            maxPlacesToUse = null;
         }
 
-        // ========= SAVE =========
+        // ✅ si image choisie : copier vers HOME/myapp/uploads/activities/
+        if (selectedImageFile != null) {
+            try {
+                selectedImagePath = copierImagePath(selectedImageFile);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                showWarn("Erreur image", "Impossible de copier l'image.");
+                return;
+            }
+        }
+
         if (editMode && activiteToEdit != null) {
 
             activiteToEdit.setNom(nom);
@@ -175,15 +232,17 @@ public class AjouterActiviteController {
             activiteToEdit.setTypeActivite(type);
             activiteToEdit.setDestinationId(destinationId);
 
-            if (guideIdToUse != null) {
-                activiteToEdit.setGuideId(guideIdToUse);
-            }
+            if (guideIdToUse != null) activiteToEdit.setGuideId(guideIdToUse);
 
             activiteToEdit.setStatus(status);
             activiteToEdit.setDateDebut(dateDebut);
             activiteToEdit.setDateFin(dateFin);
-
             activiteToEdit.setMaxPlaces(maxPlacesToUse);
+
+            // ✅ seulement si une nouvelle image a été choisie
+            if (selectedImagePath != null && !selectedImagePath.isBlank()) {
+                activiteToEdit.setImage(selectedImagePath);
+            }
 
             activiteService.update(activiteToEdit);
 
@@ -204,6 +263,8 @@ public class AjouterActiviteController {
             a.setNoteMoyenne(0);
 
             a.setMaxPlaces(maxPlacesToUse);
+
+            a.setImage(selectedImagePath); // ممكن تكون null
 
             activiteService.add(a);
         }
@@ -245,16 +306,39 @@ public class AjouterActiviteController {
             SPminuteFin.getValueFactory().setValue(activite.getDateFin().getMinute());
         }
 
-        // ✅ keep same visibility logic (admin hide)
         updateMaxPlacesVisibility();
 
-        // ✅ if editing a guide activity, set value
         if (SPmaxPlaces != null && activite.getGuideId() != 0) {
             Integer mp = activite.getMaxPlaces();
             if (mp != null && mp > 0) {
                 SPmaxPlaces.getValueFactory().setValue(mp);
             }
         }
+
+        // ✅ afficher image existante dans preview
+        if (activite.getImage() != null && !activite.getImage().isBlank()) {
+
+            if (LBLimageName != null) {
+                File f = new File(activite.getImage());
+                LBLimageName.setText(f.getName());
+            }
+
+            if (imagePreview != null) {
+                try {
+                    File f = new File(activite.getImage());
+                    if (f.exists()) {
+                        imagePreview.setImage(new Image(f.toURI().toString()));
+                    }
+                } catch (Exception ignored) {}
+            }
+        } else {
+            if (LBLimageName != null) LBLimageName.setText("Aucun fichier");
+            if (imagePreview != null) imagePreview.setImage(null);
+        }
+
+        // ✅ reset new selection
+        selectedImageFile = null;
+        selectedImagePath = null;
     }
 
     private LocalDateTime buildDateTime(DatePicker dp, Spinner<Integer> h, Spinner<Integer> m) {

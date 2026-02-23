@@ -20,8 +20,9 @@ public class ActiviteService implements IService<Activite> {
     @Override
     public void add(Activite activite) {
         activite.setNoteMoyenne(0);
-        String sql = "INSERT INTO activite (nom, description, prix, typeActivite, noteMoyenne, guide_id, destination_id, date_debut, date_fin, status, max_places) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String sql = "INSERT INTO activite (nom, description, prix, typeActivite, noteMoyenne, guide_id, destination_id, date_debut, date_fin, status, max_places, image) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, activite.getNom());
@@ -49,6 +50,9 @@ public class ActiviteService implements IService<Activite> {
             if (mp != null && mp > 0) ps.setInt(11, mp);
             else ps.setNull(11, Types.INTEGER);
 
+            if (activite.getImage() != null && !activite.getImage().isBlank()) ps.setString(12, activite.getImage());
+            else ps.setNull(12, Types.VARCHAR);
+
             ps.executeUpdate();
             System.out.println("Activite added successfully!");
         } catch (SQLException e) {
@@ -58,7 +62,7 @@ public class ActiviteService implements IService<Activite> {
 
     @Override
     public void update(Activite activite) {
-        String sql = "UPDATE activite SET nom=?, description=?, prix=?, typeActivite=?, noteMoyenne=?, guide_id=?, destination_id=?, date_debut=?, date_fin=?, status=?, max_places=? " +
+        String sql = "UPDATE activite SET nom=?, description=?, prix=?, typeActivite=?, noteMoyenne=?, guide_id=?, destination_id=?, date_debut=?, date_fin=?, status=?, max_places=?, image=? " +
                 "WHERE id=?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -87,7 +91,10 @@ public class ActiviteService implements IService<Activite> {
             if (mp != null && mp > 0) ps.setInt(11, mp);
             else ps.setNull(11, Types.INTEGER);
 
-            ps.setInt(12, activite.getId());
+            if (activite.getImage() != null && !activite.getImage().isBlank()) ps.setString(12, activite.getImage());
+            else ps.setNull(12, Types.VARCHAR);
+
+            ps.setInt(13, activite.getId());
 
             ps.executeUpdate();
             System.out.println("Activite updated successfully!");
@@ -142,6 +149,8 @@ public class ActiviteService implements IService<Activite> {
 
                 int mp = rs.getInt("max_places");
                 a.setMaxPlaces(rs.wasNull() ? null : mp);
+
+                a.setImage(rs.getString("image"));
 
                 activites.add(a);
             }
@@ -257,9 +266,10 @@ public class ActiviteService implements IService<Activite> {
 
                     a.setStatus(rs.getString("status"));
 
-                    // ✅ lire max_places
                     int mp = rs.getInt("max_places");
                     a.setMaxPlaces(rs.wasNull() ? null : mp);
+
+                    a.setImage(rs.getString("image"));
 
                     activites.add(a);
                 }
@@ -302,9 +312,10 @@ public class ActiviteService implements IService<Activite> {
 
                 a.setStatus(rs.getString("status"));
 
-                // ✅ lire max_places
                 int mp = rs.getInt("max_places");
                 a.setMaxPlaces(rs.wasNull() ? null : mp);
+
+                a.setImage(rs.getString("image"));
 
                 activites.add(a);
             }
@@ -314,6 +325,49 @@ public class ActiviteService implements IService<Activite> {
         }
 
         return activites;
+    }
+    public Activite getById(int id) {
+        String sql = "SELECT * FROM activite WHERE id = ? LIMIT 1";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+
+                Activite a = new Activite();
+                a.setId(rs.getInt("id"));
+                a.setNom(rs.getString("nom"));
+                a.setDescription(rs.getString("description"));
+                a.setPrix(rs.getDouble("prix"));
+                a.setTypeActivite(rs.getString("typeActivite"));
+                a.setNoteMoyenne(rs.getDouble("noteMoyenne"));
+
+                int gid = rs.getInt("guide_id");
+                a.setGuideId(rs.wasNull() ? 0 : gid);
+
+                int did = rs.getInt("destination_id");
+                a.setDestinationId(rs.wasNull() ? 0 : did);
+
+                Timestamp td = rs.getTimestamp("date_debut");
+                a.setDateDebut(td != null ? td.toLocalDateTime() : null);
+
+                Timestamp tf = rs.getTimestamp("date_fin");
+                a.setDateFin(tf != null ? tf.toLocalDateTime() : null);
+
+                a.setStatus(rs.getString("status"));
+
+                int mp = rs.getInt("max_places");
+                a.setMaxPlaces(rs.wasNull() ? null : mp);
+
+                a.setImage(rs.getString("image"));
+
+                return a;
+            }
+        } catch (SQLException e) {
+            System.out.println("getById error: " + e.getMessage());
+            return null;
+        }
     }
 
     public void markExpiredActivitiesAsUnavailable() {

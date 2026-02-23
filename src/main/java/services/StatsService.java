@@ -67,29 +67,40 @@ public class StatsService {
         }
         return res;
     }
+
     public List<TopActiviteRow> getTopActivitiesByInscriptions(int limit) throws SQLException {
 
         String sql = """
-        SELECT a.id, a.nom, COUNT(i.id) AS nbInscriptions
+        SELECT a.id, a.nom,
+               COUNT(r.id) AS nbInscriptions
         FROM activite a
-        LEFT JOIN inscription_activite i ON i.activite_id = a.id
+        LEFT JOIN ticket t
+               ON t.activite_id = a.id
+              AND UPPER(IFNULL(t.type, '')) IN ('ACTIVITY','ACTIVITE')
+        LEFT JOIN reservation r
+               ON r.id = t.reservation_id
+              AND UPPER(IFNULL(r.statut, '')) = 'RESERVED'
         GROUP BY a.id, a.nom
         ORDER BY nbInscriptions DESC
         LIMIT ?
     """;
 
         List<TopActiviteRow> res = new ArrayList<>();
+
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, limit);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                res.add(new TopActiviteRow(
-                        rs.getInt("id"),
-                        rs.getString("nom"),
-                        rs.getInt("nbInscriptions")
-                ));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    res.add(new TopActiviteRow(
+                            rs.getInt("id"),
+                            rs.getString("nom"),
+                            rs.getInt("nbInscriptions")
+                    ));
+                }
             }
         }
+
         return res;
     }
 }

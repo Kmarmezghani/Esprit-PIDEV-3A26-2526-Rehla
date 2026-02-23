@@ -16,11 +16,13 @@ public class Activite {
     private LocalDateTime dateFin;
     private String status;
     private Integer maxPlaces;
+    private String image;
 
     public Activite() {}
 
     public Activite(String nom, String description, double prix, String typeActivite,
-                    int guideId, int destinationId, LocalDateTime dateDebut, LocalDateTime dateFin, String status) {
+                    int guideId, int destinationId, LocalDateTime dateDebut, LocalDateTime dateFin, String status,
+                    String image) {
         this.nom = nom;
         this.description = description;
         this.prix = prix;
@@ -30,10 +32,12 @@ public class Activite {
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
         this.status = status;
+        this.image = image;
     }
 
     public Activite(int id, String nom, String description, double prix, String typeActivite, double noteMoyenne,
-                    int guideId, int destinationId, LocalDateTime dateDebut, LocalDateTime dateFin, String status) {
+                    int guideId, int destinationId, LocalDateTime dateDebut, LocalDateTime dateFin, String status,
+                    String image) {
         this.id = id;
         this.nom = nom;
         this.description = description;
@@ -45,6 +49,7 @@ public class Activite {
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
         this.status = status;
+        this.image = image;
     }
 
     @Override
@@ -98,4 +103,11 @@ public class Activite {
     public void setStatus(String status) { this.status = status; }
     public Integer getMaxPlaces() { return maxPlaces; }
     public void setMaxPlaces(Integer maxPlaces) { this.maxPlaces = maxPlaces; }
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 }

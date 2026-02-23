@@ -41,34 +41,63 @@
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
                     </columnConstraints>
 
+                    <!-- ✅ Ajout d'une row pour le preview -->
                     <rowConstraints>
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" /> <!-- ✅ NEW row for max places -->
-                        <RowConstraints minHeight="55.0" vgrow="NEVER" />
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 0 Image + bouton -->
+                        <RowConstraints minHeight="90.0" vgrow="NEVER" />  <!-- 1 Preview -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 2 Name -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 3 Description -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 4 Price -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 5 Type -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 6 Date debut -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 7 Date fin -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 8 Destination -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 9 Status -->
+                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 10 Max places -->
+                        <RowConstraints minHeight="55.0" vgrow="NEVER" />  <!-- 11 Buttons -->
                     </rowConstraints>
 
                     <children>
-                        <Label text="Name" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="0" />
-                        <TextField fx:id="TFnameactivite" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <!-- Image choose -->
+                        <Label text="Image" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="0" />
+                        <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <children>
+                                <!-- ✅ même nom que ton partenaire -->
+                                <Button text="Choisir" onAction="#choisirImage" />
+                                <Label fx:id="LBLimageName" text="Aucun fichier" />
+                            </children>
+                        </HBox>
 
-                        <Label text="Description" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-                        <TextField fx:id="TFdescriptionactivite" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <!-- ✅ Preview -->
+                        <Label text="Preview" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+                        <ImageView fx:id="imagePreview"
+                                   fitWidth="220.0"
+                                   fitHeight="90.0"
+                                   preserveRatio="true"
+                                   smooth="true"
+                                   pickOnBounds="true"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="1" />
 
-                        <Label text="Price" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
-                        <Spinner fx:id="pricespinneractivite" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <!-- Name -->
+                        <Label text="Name" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
+                        <TextField fx:id="TFnameactivite" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                        <Label text="Type" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
-                        <TextField fx:id="TFtypeactivite" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <!-- Description -->
+                        <Label text="Description" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
+                        <TextField fx:id="TFdescriptionactivite" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                        <Label text="Date début" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
-                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <!-- Price -->
+                        <Label text="Price" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
+                        <Spinner fx:id="pricespinneractivite" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                        <!-- Type -->
+                        <Label text="Type" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
+                        <TextField fx:id="TFtypeactivite" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                        <!-- Date début -->
+                        <Label text="Date début" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
+                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                             <children>
                                 <DatePicker fx:id="DPdateDebut" prefWidth="130.0" />
                                 <Spinner fx:id="SPheureDebut" prefWidth="62.0" style="-fx-font-size: 13px;" />
@@ -76,8 +105,9 @@
                             </children>
                         </HBox>
 
-                        <Label text="Date fin" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
-                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                        <!-- Date fin -->
+                        <Label text="Date fin" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
+                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                             <children>
                                 <DatePicker fx:id="DPdateFin" prefWidth="130.0" />
                                 <Spinner fx:id="SPheureFin" prefWidth="62.0" style="-fx-font-size: 13px;" />
@@ -85,24 +115,27 @@
                             </children>
                         </HBox>
 
-                        <Label text="Destination" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
-                        <ComboBox fx:id="CBdestination" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <!-- Destination -->
+                        <Label text="Destination" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="8" />
+                        <ComboBox fx:id="CBdestination" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
 
-                        <Label text="Status" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
-                        <ComboBox fx:id="CBstatus" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <!-- Status -->
+                        <Label text="Status" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="9" />
+                        <ComboBox fx:id="CBstatus" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
 
+                        <!-- Max places -->
                         <Label fx:id="LBLmaxPlaces" text="Max places"
                                GridPane.columnIndex="0"
                                GridPane.halignment="LEFT"
-                               GridPane.rowIndex="8" />
+                               GridPane.rowIndex="10" />
 
                         <Spinner fx:id="SPmaxPlaces"
                                  prefWidth="120.0"
                                  GridPane.columnIndex="1"
-                                 GridPane.rowIndex="8" />
+                                 GridPane.rowIndex="10" />
 
-                        <!-- Buttons moved to row 9 -->
-                        <HBox alignment="CENTER" spacing="40.0" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9">
+                        <!-- Buttons -->
+                        <HBox alignment="CENTER" spacing="40.0" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11">
                             <children>
                                 <Button mnemonicParsing="false" onAction="#ajouterActivite" prefHeight="30.0" prefWidth="130.0" styleClass="button2" stylesheets="@css/styling.css" text="Save" />
                                 <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="30.0" prefWidth="130.0" styleClass="button5" stylesheets="@css/styling.css" text="Cancel" />

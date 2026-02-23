@@ -56,7 +56,7 @@ public class ClientPostsController {
     private BorderPane mainContent;
 
     @FXML
-    private StackPane root;   // ajoute fx:id="root" au StackPane
+    private StackPane root;   
 
     @FXML
     private TextField txtNewPost;
@@ -774,8 +774,6 @@ private PostService postService = new PostService();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setDoOutput(true);
-
-            // Encodage JSON sûr
             String jsonInput = "{\"text\": \"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"}";
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -1057,11 +1055,10 @@ private PostService postService = new PostService();
             UpdatePostPopupController controller = loader.getController();
             controller.setPost(post);
 
-            // 🔥 Blur sur le blog
+
             GaussianBlur blur = new GaussianBlur(20);
             mainContent.setEffect(blur);
 
-            // 🔥 Fond sombre
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
 

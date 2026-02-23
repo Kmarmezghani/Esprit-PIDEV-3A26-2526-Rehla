@@ -56,7 +56,7 @@ public class ClientPostsController {
     private BorderPane mainContent;
 
     @FXML
-    private StackPane root;   
+    private StackPane root;
 
     @FXML
     private TextField txtNewPost;

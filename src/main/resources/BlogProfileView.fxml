@@ -156,6 +156,7 @@
                                              -fx-border-color: transparent transparent #1E88E5 transparent;
                                              -fx-border-width: 0 0 3 0;"/>
                         <ToggleButton fx:id="tabFavorites" text="Favoris"
+
                                       style="-fx-background-color: transparent;
                                              -fx-text-fill: #616161; -fx-font-size: 13px;
                                              -fx-padding: 10 25; -fx-border-width: 0;"/>
@@ -229,10 +230,10 @@
                     </VBox>
 
                     <!-- ====== COLONNE DROITE : CRÉER + FEED ====== -->
-                    <VBox spacing="12" HBox.hgrow="ALWAYS">
+                    <VBox spacing="12" HBox.hgrow="ALWAYS" fx:id="contentArea">
 
                         <!-- Carte créer un nouvel article -->
-                        <VBox spacing="8"
+                        <VBox spacing="8" fx:id="newPostBox"
                               style="-fx-background-color: white; -fx-background-radius: 10;
                                      -fx-padding: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 12,0,0,2);">
                             <HBox spacing="8" alignment="CENTER_LEFT">

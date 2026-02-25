@@ -15,33 +15,33 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.FileChooser;
+
 import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
 import services.CommentaireService;
-import services.FavorisService;
 import services.LikeService;
 import services.PostService;
 import util.Session;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-public class BlogProfileController {
+public class FavorisViewPostController {
+    @FXML
+    private ToggleButton tabFavorites;
 
+    @FXML
+    private ToggleButton tabPosts;
     @FXML private BorderPane root;
 
     @FXML private ImageView profileAvatar;
     @FXML private ImageView currentUserAvatar;
-    @FXML private ImageView composerAvatar;
+
 
     @FXML private Label profileName;
     @FXML private Label profileHeadline;
@@ -50,22 +50,14 @@ public class BlogProfileController {
     @FXML private Label favoritesCountLabel;
     @FXML private Label currentUserName;
 
-    @FXML private TextField searchField;
-    @FXML private ToggleButton tabPosts;
-    @FXML private ToggleButton tabFavorites;
     @FXML private ToggleButton tabAbout;
 
-    @FXML private TextField newPostTitleField;
-    @FXML private TextArea newPostContentArea;
-    @FXML private Button publishButton;
     @FXML private VBox postsContainer;
     @FXML private Button followButton;
-    @FXML
-    private VBox contentArea;
+
     private final List<Post> allPosts = new ArrayList<>();
     private PostService postService = new PostService();
     private CommentaireService commentaireService = new CommentaireService();
-    private FavorisService favorisService = new FavorisService();
     @FXML private Button fullscreenButton;
     @FXML private Button closeButton;
     @FXML
@@ -74,9 +66,7 @@ public class BlogProfileController {
     Personne currentUser = Session.getCurrentUser();// utilisateur connecté
     @FXML
     private Button imageButton;
-    @FXML
-    private VBox newPostBox;
-       // ton contenu principal
+    // ton contenu principal
     private final DateTimeFormatter dateFormatter =
             DateTimeFormatter.ofPattern("dd MMM yyyy");
     private String selectedImagePath = null;
@@ -120,7 +110,6 @@ public class BlogProfileController {
 
         renderPosts(allPosts);
 
-        publishButton.setOnAction(e -> handlePublish());
         followButton.setOnAction(e -> toggleFollow());
         initTabs();
 
@@ -146,7 +135,7 @@ public class BlogProfileController {
         );
 
         renderPosts(allPosts);
-        System.out.println("renderPosts called, children in postsContainer: " + postsContainer.getChildren().size());
+
         postsCountLabel.setText(String.valueOf(allPosts.size()));
     }
 
@@ -165,7 +154,6 @@ public class BlogProfileController {
 
         profileAvatar.setImage(avatarImage);
         currentUserAvatar.setImage(smallAvatar);
-        composerAvatar.setImage(smallAvatar);
         profileHeadline.setText(
                 currentUser.getRole() != null
                         ? currentUser.getRole()
@@ -392,27 +380,26 @@ public class BlogProfileController {
         favButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         favButton.setPadding(Insets.EMPTY);
 
+// 🔥 ImageView créés à partir des images statiques
         ImageView favEmpty = getIcon(ICON_FAV_EMPTY, 24);
         ImageView favFull  = getIcon(ICON_FAV_FULL, 24);
 
-        boolean isFav = favorisService.isFavori(currentUser, post);
+        favButton.setGraphic(favEmpty);
 
-        favButton.setGraphic(isFav ? favFull : favEmpty);
+// Etat local (à remplacer plus tard par un vrai service si besoin)
+        final boolean[] favorited = { false };
 
         favButton.setOnAction(e -> {
 
-            boolean current = favorisService.isFavori(currentUser, post);
+            favorited[0] = !favorited[0];
 
-            if(current){
-                favorisService.removeFavori(currentUser, post);
-                favButton.setGraphic(favEmpty);
-            }else{
-                favorisService.addFavori(currentUser, post);
+            if (favorited[0]) {
                 favButton.setGraphic(favFull);
+            } else {
+                favButton.setGraphic(favEmpty);
             }
-
-
         });
+
 // Hover effect
         likeButton.setOnMouseEntered(e -> likeButton.setOpacity(0.7));
         likeButton.setOnMouseExited(e -> likeButton.setOpacity(1));
@@ -442,50 +429,6 @@ public class BlogProfileController {
         return alert.showAndWait().filter(response -> response == ButtonType.OK).isPresent();
     }
 
-    private void handlePublish() {
-
-        String title = newPostTitleField.getText() != null
-                ? newPostTitleField.getText().trim()
-                : "";
-
-        String content = newPostContentArea.getText() != null
-                ? newPostContentArea.getText().trim()
-                : "";
-
-        if (title.isEmpty() || content.isEmpty()) {
-            showInfoDialog("Publication", "Merci de remplir le titre et le contenu.");
-            return;
-        }
-
-        try {
-
-            Post post = new Post();
-            post.setTitre(title);
-            post.setContenu(content);
-            post.setDatePublication(LocalDateTime.now());
-            post.setAuteur(currentUser);   // important si tu utilises la DB
-
-            // Si une image a été choisie
-            if (selectedImagePath != null) {
-                post.setImage(selectedImagePath);
-            }
-
-            // Sauvegarde en base
-            postService.add(post);
-
-            // Recharge depuis la DB (plus propre que allPosts.add)
-            loadPostsFromDatabase();
-
-            // Reset champs
-            newPostTitleField.clear();
-            newPostContentArea.clear();
-            selectedImagePath = null;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            showInfoDialog("Erreur", "Une erreur est survenue lors de la publication.");
-        }
-    }
 
 
     private void toggleFollow() {
@@ -501,29 +444,39 @@ public class BlogProfileController {
     }
 
     private void initTabs() {
-        tabPosts.setOnAction(e -> switchTab("posts"));
-        tabFavorites.setOnAction(e -> switchTab("favorites"));
-        tabAbout.setOnAction(e -> switchTab("about"));
+        tabPosts.setOnAction(e -> {
+            tabPosts.setSelected(true);
+            tabFavorites.setSelected(false);
+            tabAbout.setSelected(false);
+            renderPosts(allPosts);
+        });
 
-        // onglet par défaut
-        switchTab("posts");
+
+        tabAbout.setOnAction(e -> {
+            tabAbout.setSelected(true);
+            tabPosts.setSelected(false);
+            tabFavorites.setSelected(false);
+            postsContainer.getChildren().clear();
+
+            Label aboutTitle = new Label("À propos de ce blog");
+            aboutTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+            Text aboutText = new Text(
+                    "Bienvenue sur mon univers de blogs ! Ici je partage mes expériences en développement " +
+                            "Full-Stack, mes projets Java/JavaFX, mes découvertes en IA, ainsi que des conseils " +
+                            "pour les étudiants en informatique.\n\n" +
+                            "N’hésitez pas à liker, commenter et ajouter en favoris les articles qui vous inspirent."
+            );
+            aboutText.setWrappingWidth(520);
+            aboutText.setStyle("-fx-font-size: 13px;");
+
+            VBox box = new VBox(10, aboutTitle, aboutText);
+            box.setPadding(new Insets(12));
+            box.setStyle("-fx-background-color: white; -fx-background-radius: 10;"
+                    + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12,0,0,2);");
+            postsContainer.getChildren().add(box);
+        });
     }
-    private void showPosts() {
-        renderPosts(allPosts);
-    }
-
-    private void showFavorites() {
-
-        List<Post> favPosts = favorisService.getFavorisPosts(currentUser.getId());
-
-        renderPosts(favPosts);
-    }
-
-    private void showAbout() {
-        Label aboutLabel = new Label("Section About");
-        contentArea.getChildren().add(aboutLabel);
-    }
-
     private ImageView getIcon(Image image, double size) {
         ImageView iv = new ImageView(image);
         iv.setFitWidth(size);
@@ -571,16 +524,6 @@ public class BlogProfileController {
         }
     }
 
-
-    private void showInfoDialog(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.initOwner(root.getScene().getWindow());
-        alert.showAndWait();
-    }
-
     private void handleComment(Post post) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/CommentPopup.fxml"));
@@ -612,65 +555,49 @@ public class BlogProfileController {
             e.printStackTrace();
         }
     }
-    @FXML
-    private void handleChooseImage() {
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choisir une image");
+//    public void setActiveTab(String tab) {
+//
+//        tabFavorites.setSelected(false);
+//        tabPosts.setSelected(false);
+//
+//        switch (tab) {
+//            case "favorites":
+//                tabFavorites.setSelected(true);
+//                break;
+//
+//            case "posts":
+//                tabPosts.setSelected(true);
+//                break;
+//        }
+//    }
 
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif")
-        );
-
-        Stage stage = (Stage) root.getScene().getWindow();
-        File file = fileChooser.showOpenDialog(stage);
-
-        if (file != null) {
-            selectedImagePath = file.getAbsolutePath();
-            System.out.println("Image sélectionnée : " + selectedImagePath);
-
-            showInfoDialog("Image", "Image sélectionnée avec succès !");
-        }
-    }
-    private void switchTab(String tab) {
-
-        tabPosts.setSelected(false);
-        tabFavorites.setSelected(false);
-        tabAbout.setSelected(false);
-        postsContainer.setVisible(false);
-        newPostTitleField.setVisible(false);
-        newPostContentArea.setVisible(false);
-        publishButton.setVisible(false);
-
-        switch (tab) {
-            case "posts":
-                tabPosts.setSelected(true);
-                postsContainer.setVisible(true);
-                newPostTitleField.setVisible(true);
-                newPostContentArea.setVisible(true);
-                publishButton.setVisible(true);
-                showPosts();
-                break;
-
-            case "favorites":
-                tabFavorites.setSelected(true);
-                tabPosts.setSelected(false);
-
-                newPostBox.setVisible(true);
-                newPostTitleField.setVisible(true);
-                newPostContentArea.setVisible(true);
-                publishButton.setVisible(true);
-                postsContainer.setVisible(true);
-
-               this.showFavorites();
-
-                break;
-
-            case "about":
-                tabAbout.setSelected(true);
-                showAbout();
-                break;
-        }
-    }
-
+//    @FXML
+//    private void goToBlogProfile() {
+//        System.out.println("clicckkkkkkkk");
+//
+//        tabFavorites.setSelected(false);
+//        tabPosts.setSelected(true);
+//        tabAbout.setSelected(false);
+//
+//        try {
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BlogProfileView.fxml"));
+//            Parent root = loader.load();
+//
+//            BlogProfileController controller = loader.getController();
+//            Platform.runLater(() -> controller.setActiveTab2("posts"));
+//
+//            Stage stage = (Stage) tabFavorites.getScene().getWindow();
+//            Scene scene = new Scene(root);
+//
+//            scene.getStylesheets().add(
+//                    getClass().getResource("/css/blog_styles.css").toExternalForm()
+//            );
+//
+//            stage.setScene(scene);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

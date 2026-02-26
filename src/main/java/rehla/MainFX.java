@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import models.NotificationScheduler;
 
 public class MainFX extends Application {
 
@@ -14,6 +15,9 @@ public class MainFX extends Application {
     @Override
     public void start(Stage stage) {
         try {
+
+            NotificationScheduler scheduler = new NotificationScheduler();
+            scheduler.start();
             primaryStage = stage;
 
             Parent root = FXMLLoader.load(MainFX.class.getResource("/loginPage.fxml"));

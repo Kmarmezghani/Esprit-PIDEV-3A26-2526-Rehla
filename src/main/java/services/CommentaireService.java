@@ -3,6 +3,7 @@ package services;
 import models.Commentaire;
 import models.Personne;
 import models.Post;
+import models.notification;
 import util.DBConnection;
 
 import java.sql.*;
@@ -12,31 +13,58 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CommentaireService implements IService<Commentaire> {
+public class CommentaireService  {
 
     private Connection conn;
-
+    notificationService notificationService = new notificationService();
     public CommentaireService() {
         conn = DBConnection.getInstance().getConn();
     }
 
-    @Override
-    public void add(Commentaire c) {
-        String sql = "INSERT INTO commentaire (contenu, dateCommentaire, personne_id, post_id) VALUES (?, ?, ?, ?)";
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, c.getContenu());
-            ps.setTimestamp(2, Timestamp.valueOf(c.getDateCommentaire()));
-            ps.setInt(3, c.getAuteur().getId());
-            ps.setInt(4, c.getPost().getId());
-            ps.executeUpdate();
-            System.out.println("Commentaire ajouté !");
-        } catch (SQLException e) {
-            System.out.println("Erreur ajout commentaire : " + e.getMessage());
-        }
-    }
+//    @Override
+//    public void add(Commentaire c) {
+//        String sql = "INSERT INTO commentaire (contenu, dateCommentaire, personne_id, post_id) VALUES (?, ?, ?, ?)";
+//
+//        try {
+//            PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+//
+//            ps.setString(1, c.getContenu());
+//            ps.setTimestamp(2, Timestamp.valueOf(c.getDateCommentaire()));
+//            ps.setInt(3, c.getAuteur().getId());
+//            ps.setInt(4, c.getPost().getId());
+//
+//            ps.executeUpdate();
+//
+//            ResultSet rs = ps.getGeneratedKeys();
+//            int commentId = -1;
+//            if (rs.next()) {
+//                commentId = rs.getInt(1);
+//            }
+//
+//            System.out.println("Commentaire ajouté !");
+//
+//            // 🔥 Création notification
+//            if (c.getPost().getAuteur().getId() != c.getAuteur().getId()) {
+//
+//                notification notif = new notification(
+//                        c.getAuteur().getPrenom() + " a commenté votre post",
+//                        "COMMENT",
+//                        c.getPost().getId(),
+//                        commentId,
+//                        c.getAuteur().getId(),
+//                        c.getPost().getAuteur().getId()
+//                );
+//
+//                notificationService.add(notif);
+//            }
+//
+//        } catch (SQLException e) {
+//            System.out.println("Erreur ajout commentaire : " + e.getMessage());
+//        }
+//    }
 
-    @Override
+
+
     public void update(Commentaire c) {
         String sql = "UPDATE commentaire SET contenu=?, dateCommentaire=?, personne_id=?, post_id=? WHERE id=?";
         try {
@@ -53,7 +81,6 @@ public class CommentaireService implements IService<Commentaire> {
         }
     }
 
-    @Override
     public void delete(Commentaire c) {
         String sql = "DELETE FROM commentaire WHERE id=?";
         try {
@@ -66,7 +93,6 @@ public class CommentaireService implements IService<Commentaire> {
         }
     }
 
-    @Override
     public List<Commentaire> getAll() {
         List<Commentaire> commentaires = new ArrayList<>();
         String sql = "SELECT * FROM commentaire";
@@ -177,8 +203,26 @@ public class CommentaireService implements IService<Commentaire> {
 
             ResultSet rs = ps.getGeneratedKeys();
 
+            int commentId = -1;
+
             if(rs.next()){
-                c.setId(rs.getInt(1));
+                commentId = rs.getInt(1);
+                c.setId(commentId);
+            }
+
+            // 🔥 Notification après récupération ID
+            if (c.getPost().getAuteur().getId() != c.getAuteur().getId()) {
+
+                notification notif = new notification(
+                        c.getAuteur().getPrenom() + " "+ c.getAuteur().getNom()  +" a commenté votre post ",
+                        "COMMENT",
+                        c.getPost().getId(),
+                        commentId,
+                        c.getAuteur().getId(),
+                        c.getPost().getAuteur().getId()
+                );
+
+                notificationService.add(notif);
             }
 
             return c;
@@ -188,6 +232,7 @@ public class CommentaireService implements IService<Commentaire> {
             return null;
         }
     }
+
 
     public Map<Integer, Integer> countByPosts(List<Post> posts) {
 

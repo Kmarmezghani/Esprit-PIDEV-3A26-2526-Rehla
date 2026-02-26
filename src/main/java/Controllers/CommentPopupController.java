@@ -202,7 +202,7 @@ public class CommentPopupController {
                 comment.getPost().getId(),
                 comment.getId(),
                 auteur.getId(),
-                admin.getId()  // admin
+                admin.getId()
         );
 
         new notificationService().add(notif);

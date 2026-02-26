@@ -1,10 +1,12 @@
 package models;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * Entity matching the database table `personne`.
- * Each user has: id, nom, prenom, email, motDePasse, dateInscription, role, statutCompte.
+ * Each user has: id, nom, prenom, email, motDePasse, dateInscription, role, statutCompte,
+ * plus telephone and heureNotif for SMS notifications.
  */
 public class Personne {
 
@@ -18,10 +20,15 @@ public class Personne {
     private String statutCompte;
     private Favoris favoris;
 
+    // NOUVEAUX CHAMPS
+    private String telephone;
+    private LocalTime heureNotif;
+
     public Personne() {}
 
     public Personne(int id, String nom, String prenom, String email, String motDePasse,
-                    LocalDateTime dateInscription, String role, String statutCompte) {
+                    LocalDateTime dateInscription, String role, String statutCompte,
+                    String telephone, LocalTime heureNotif) {
         this.id = id;
         this.nom = nom;
         this.prenom = prenom;
@@ -30,17 +37,11 @@ public class Personne {
         this.dateInscription = dateInscription;
         this.role = role;
         this.statutCompte = statutCompte;
+        this.telephone = telephone;
+        this.heureNotif = heureNotif;
     }
 
-    public Personne(String nom, String prenom, String email, String motDePasse,
-                    LocalDateTime dateInscription, String role, String statutCompte) {
-        this.nom = nom;
-        this.prenom = prenom;
-        this.email = email;
-        this.motDePasse = motDePasse;
-        this.dateInscription = dateInscription;
-        this.role = role;
-        this.statutCompte = statutCompte;
+    public Personne(String nom, String prenom, String email, String password, LocalDateTime now, String role, String actif) {
     }
 
     public int getId() { return id; }
@@ -67,25 +68,15 @@ public class Personne {
     public String getStatutCompte() { return statutCompte; }
     public void setStatutCompte(String statutCompte) { this.statutCompte = statutCompte; }
 
-    public Personne(int id, Favoris favoris, String statutCompte, String role, LocalDateTime dateInscription, String motDePasse, String email, String prenom, String nom) {
-        this.id = id;
-        this.favoris = favoris;
-        this.statutCompte = statutCompte;
-        this.role = role;
-        this.dateInscription = dateInscription;
-        this.motDePasse = motDePasse;
-        this.email = email;
-        this.prenom = prenom;
-        this.nom = nom;
-    }
+    public Favoris getFavoris() { return favoris; }
+    public void setFavoris(Favoris favoris) { this.favoris = favoris; }
 
-    public Favoris getFavoris() {
-        return favoris;
-    }
+    // GETTERS / SETTERS pour SMS
+    public String getTelephone() { return telephone; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
 
-    public void setFavoris(Favoris favoris) {
-        this.favoris = favoris;
-    }
+    public LocalTime getHeureNotif() { return heureNotif; }
+    public void setHeureNotif(LocalTime heureNotif) { this.heureNotif = heureNotif; }
 
     @Override
     public String toString() {

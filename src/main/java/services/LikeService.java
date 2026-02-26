@@ -9,11 +9,12 @@ import java.util.List;
 
 import models.Personne;
 import models.Post;
+import models.notification;
 import util.DBConnection;
 
 public class LikeService {
     private Connection conn;
-
+    notificationService notificationService = new notificationService();
     public LikeService() {
         conn = DBConnection.getInstance().getConn();
     }
@@ -26,6 +27,19 @@ public class LikeService {
             ps.setInt(3, 1); // 1 = like actif
             ps.executeUpdate();
             System.out.println("Like ajouté !");
+            if(post.getAuteur().getId() != personne.getId()) {
+
+                notification notif = new notification(
+                        personne.getPrenom()+ " " + personne.getNom() + " a aimé votre post"  ,
+                        "LIKE",
+                        post.getId(),
+                        null,
+                        personne.getId(),
+                        post.getAuteur().getId()
+                );
+
+                notificationService.add(notif);
+            }
         } catch (SQLException e) {
             System.out.println("Erreur ajout like : " + e.getMessage());
         }

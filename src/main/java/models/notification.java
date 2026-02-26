@@ -7,26 +7,27 @@ public class notification {
     private int id;
 
     private String message;
-
-
     private String type;
 
-    private Integer postId;        // nullable
-    private Integer commentId;     // nullable
+    private Integer postId;
+    private Integer commentId;
+    private Integer activiteId;
 
-    private int senderId;          // auteur contenu suspect
-    private int receiverId;        // admin
+    private int senderId;
+    private int receiverId;
 
     private boolean isRead;
+
+
+    private boolean isSentSms;
 
     private LocalDateTime createdAt;
 
     // ================= CONSTRUCTORS =================
 
-    public notification() {
-    }
+    public notification() {}
 
-    // Pour insertion
+    // 👉 Pour insertion simple
     public notification(String message, String type,
                         Integer postId, Integer commentId,
                         int senderId, int receiverId) {
@@ -37,25 +38,29 @@ public class notification {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.isRead = false;
+        this.isSentSms = false; // 🔥 important
     }
 
-
+    // 👉 Constructeur complet
     public notification(int id, String message, String type,
-                        Integer postId, Integer commentId,
+                        Integer postId, Integer commentId, Integer activiteId,
                         int senderId, int receiverId,
-                        boolean isRead, LocalDateTime createdAt) {
+                        boolean isRead, boolean isSentSms,
+                        LocalDateTime createdAt) {
         this.id = id;
         this.message = message;
         this.type = type;
         this.postId = postId;
         this.commentId = commentId;
+        this.activiteId = activiteId;
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.isRead = isRead;
+        this.isSentSms = isSentSms;
         this.createdAt = createdAt;
     }
 
-    // ================= GETTERS & SETTERS =================
+    // ================= GETTERS =================
 
     public int getId() {
         return id;
@@ -77,6 +82,10 @@ public class notification {
         return commentId;
     }
 
+    public Integer getActiviteId() {
+        return activiteId;
+    }
+
     public int getSenderId() {
         return senderId;
     }
@@ -89,15 +98,57 @@ public class notification {
         return isRead;
     }
 
+    public boolean isSentSms() {
+        return isSentSms;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    // ================= SETTERS =================
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setPostId(Integer postId) {
+        this.postId = postId;
+    }
+
+    public void setCommentId(Integer commentId) {
+        this.commentId = commentId;
+    }
+
+    public void setActiviteId(Integer activiteId) {
+        this.activiteId = activiteId;
+    }
+
+    public void setSenderId(int senderId) {
+        this.senderId = senderId;
+    }
+
+    public void setReceiverId(int receiverId) {
+        this.receiverId = receiverId;
     }
 
     public void setRead(boolean read) {
         isRead = read;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setSentSms(boolean sentSms) {
+        isSentSms = sentSms;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

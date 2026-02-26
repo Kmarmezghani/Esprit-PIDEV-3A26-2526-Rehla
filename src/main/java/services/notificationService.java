@@ -20,12 +20,11 @@ public class notificationService {
         cnx = DBConnection.getInstance().getConn();
     }
 
-    // ================= AJOUT =================
     public void add(notification n) {
 
         String sql = "INSERT INTO notification " +
-                "(message, type, post_id, comment_id, sender_id, receiver_id, is_read, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, 0, NOW())";
+                "(message, type, post_id, comment_id, activite_id, sender_id, receiver_id, is_read, is_sent_sms, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
@@ -33,8 +32,9 @@ public class notificationService {
             ps.setString(2, n.getType());
             ps.setObject(3, n.getPostId());
             ps.setObject(4, n.getCommentId());
-            ps.setInt(5, n.getSenderId());
-            ps.setInt(6, n.getReceiverId());
+            ps.setObject(5, n.getActiviteId());
+            ps.setInt(6, n.getSenderId());
+            ps.setInt(7, n.getReceiverId());
 
             ps.executeUpdate();
 
@@ -43,7 +43,7 @@ public class notificationService {
         }
     }
 
-    // ================= GET ADMIN NOTIFS =================
+    // ================= GET NOTIFICATIONS =================
     public List<notification> getByReceiver(int receiverId) {
 
         List<notification> list = new ArrayList<>();
@@ -64,9 +64,11 @@ public class notificationService {
                         rs.getString("type"),
                         (Integer) rs.getObject("post_id"),
                         (Integer) rs.getObject("comment_id"),
+                        (Integer) rs.getObject("activite_id"), // 🔥 ajouté
                         rs.getInt("sender_id"),
                         rs.getInt("receiver_id"),
                         rs.getBoolean("is_read"),
+                        rs.getBoolean("is_sent_sms"), // 🔥 ajouté
                         rs.getTimestamp("created_at").toLocalDateTime()
                 );
 
@@ -79,4 +81,69 @@ public class notificationService {
 
         return list;
     }
+    // Récupérer les notifications non encore envoyées par SMS pour un utilisateur
+    public List<notification> getPendingSmsNotifications(int receiverId) {
+        List<notification> list = new ArrayList<>();
+        String sql = "SELECT * FROM notification WHERE receiver_id = ? AND is_sent_sms = 0 ORDER BY created_at ASC";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, receiverId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                notification n = new notification(
+                        rs.getInt("id"),
+                        rs.getString("message"),
+                        rs.getString("type"),
+                        (Integer) rs.getObject("post_id"),
+                        (Integer) rs.getObject("comment_id"),
+                        (Integer) rs.getObject("activite_id"),
+                        rs.getInt("sender_id"),
+                        rs.getInt("receiver_id"),
+                        rs.getBoolean("is_read"),
+                        rs.getBoolean("is_sent_sms"),
+                        rs.getTimestamp("created_at").toLocalDateTime()
+                );
+                list.add(n);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+
+    // Marquer plusieurs notifications comme envoyées
+    public void markAllAsSmsSent(List<notification> notifications) {
+
+        String sql = "UPDATE notification SET is_sent_sms = 1 WHERE id = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+
+            for(notification n : notifications){
+                ps.setInt(1, n.getId());
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // Méthode pour générer un message récapitulatif SMS pour un utilisateur
+    public String buildDailySmsMessage(List<notification> notifications) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("📢 Notifications du jour :\n");
+        int count = 0;
+        for (notification n : notifications) {
+            if (count >= 10) break; // max 10 notifications par SMS
+            sb.append("• ").append(n.getMessage()).append("\n");
+            count++;
+        }
+        return sb.toString();
+    }
+
+
+
 }

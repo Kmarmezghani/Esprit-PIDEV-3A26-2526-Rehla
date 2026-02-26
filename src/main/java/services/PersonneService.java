@@ -173,7 +173,7 @@ public class PersonneService implements IService<Personne> {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return mapRow(rs); // 🔥 réutilise ton mapper propre
+                return mapRow(rs);
             }
 
         } catch (SQLException e) {
@@ -182,6 +182,44 @@ public class PersonneService implements IService<Personne> {
         }
 
         return null;
+    }
+
+    // Récupérer toutes les personnes avec notifications SMS activées
+    public List<Personne> findAllWithSmsActive() {
+        List<Personne> users = new ArrayList<>();
+
+        String sql = "SELECT id, nom, prenom, email, telephone, heureNotif, role, statutCompte " +
+                "FROM personne " +
+                "WHERE telephone IS NOT NULL AND heureNotif IS NOT NULL";
+
+        try (PreparedStatement ps = this.conn.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Personne p = new Personne();
+                p.setId(rs.getInt("id"));
+                p.setNom(rs.getString("nom"));
+                p.setPrenom(rs.getString("prenom"));
+                p.setEmail(rs.getString("email"));
+                p.setTelephone(rs.getString("telephone"));
+
+                Time t = rs.getTime("heureNotif");
+                if(t != null) {
+                    p.setHeureNotif(t.toLocalTime());
+                }
+
+                p.setRole(rs.getString("role"));
+                p.setStatutCompte(rs.getString("statutCompte"));
+
+                users.add(p);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
     }
 
 }

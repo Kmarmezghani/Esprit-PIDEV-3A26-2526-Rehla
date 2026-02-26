@@ -98,7 +98,7 @@ public class AddCommentController {
             c.setAuteur(cbAuteur.getValue());
             c.setPost(cbPost.getValue());
 
-            commentaireService.add(c);
+            commentaireService.addAndReturn(c);
 
             new Alert(Alert.AlertType.INFORMATION,
                     "Commentaire ajouté avec succès !")

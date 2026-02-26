@@ -1,0 +1,280 @@
+package Controllers;
+
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import models.Activite;
+import services.ActiviteService;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Map;
+
+public class AjouterActiviteController {
+
+    private final ActiviteService activiteService = new ActiviteService();
+
+    @FXML private TextField TFdescriptionactivite;
+    @FXML private TextField TFnameactivite;
+    @FXML private TextField TFtypeactivite;
+
+    @FXML private Spinner<Double> pricespinneractivite;
+
+    @FXML private DatePicker DPdateDebut;
+    @FXML private DatePicker DPdateFin;
+
+    @FXML private Spinner<Integer> SPheureDebut;
+    @FXML private Spinner<Integer> SPminuteDebut;
+    @FXML private Spinner<Integer> SPheureFin;
+    @FXML private Spinner<Integer> SPminuteFin;
+
+    @FXML private ComboBox<String> CBstatus;
+    @FXML private ComboBox<String> CBdestination;
+
+    @FXML private Label LBLmaxPlaces;
+    @FXML private Spinner<Integer> SPmaxPlaces;
+
+    private Map<String, Integer> destinationMap;
+
+    private Activite activiteToEdit = null;
+    private boolean editMode = false;
+
+    private Integer fixedGuideId = null;
+    private boolean adminMode = false;
+
+    public void setGuideId(int guideId) {
+        this.fixedGuideId = guideId;
+        updateMaxPlacesVisibility();
+    }
+
+    public void setAdminMode(boolean adminMode) {
+        this.adminMode = adminMode;
+        updateMaxPlacesVisibility();
+    }
+
+    @FXML
+    public void initialize() {
+
+        pricespinneractivite.setValueFactory(
+                new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 100000.0, 1.0, 5.0)
+        );
+        pricespinneractivite.setEditable(true);
+
+        SPheureDebut.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 9, 1));
+        SPminuteDebut.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0, 1));
+        SPheureFin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 10, 1));
+        SPminuteFin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0, 1));
+
+        SPheureDebut.setEditable(true);
+        SPminuteDebut.setEditable(true);
+        SPheureFin.setEditable(true);
+        SPminuteFin.setEditable(true);
+
+        CBstatus.setItems(FXCollections.observableArrayList("DISPONIBLE", "INDISPONIBLE"));
+        CBstatus.getSelectionModel().selectFirst();
+
+        destinationMap = activiteService.getDestinationsMap();
+        CBdestination.setItems(FXCollections.observableArrayList(destinationMap.keySet()));
+
+        if (SPmaxPlaces != null) {
+            SPmaxPlaces.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 10, 1));
+            SPmaxPlaces.setEditable(true);
+        }
+
+        updateMaxPlacesVisibility();
+    }
+
+    private void updateMaxPlacesVisibility() {
+        if (SPmaxPlaces == null) return;
+
+        boolean isGuideCreating = (fixedGuideId != null) && !adminMode;
+
+        // ✅ hide/show Spinner
+        SPmaxPlaces.setVisible(isGuideCreating);
+        SPmaxPlaces.setManaged(isGuideCreating);
+
+        // ✅ hide/show Label too (THIS WAS MISSING)
+        if (LBLmaxPlaces != null) {
+            LBLmaxPlaces.setVisible(isGuideCreating);
+            LBLmaxPlaces.setManaged(isGuideCreating);
+        }
+    }
+
+    @FXML
+    void ajouterActivite(ActionEvent event) {
+
+        String nom = TFnameactivite.getText();
+        String description = TFdescriptionactivite.getText();
+        String type = TFtypeactivite.getText();
+
+        Double price = pricespinneractivite.getValue();
+        String status = CBstatus.getValue();
+
+        LocalDateTime dateDebut = buildDateTime(DPdateDebut, SPheureDebut, SPminuteDebut);
+        LocalDateTime dateFin = buildDateTime(DPdateFin, SPheureFin, SPminuteFin);
+
+        String destNom = CBdestination.getValue();
+        int destinationId = (destNom != null && destinationMap.containsKey(destNom))
+                ? destinationMap.get(destNom)
+                : 0;
+
+        // ========= VALIDATIONS =========
+        if (nom == null || nom.isBlank()) { showWarn("Missing name", "Please enter the activity name."); return; }
+        if (description == null || description.isBlank()) { showWarn("Missing description", "Please enter the activity description."); return; }
+        if (type == null || type.isBlank()) { showWarn("Missing type", "Please enter the activity type."); return; }
+        if (price == null || price <= 0) { showWarn("Invalid price", "Price must be greater than 0."); return; }
+
+        if (destinationId == 0) { showWarn("Missing destination", "Please select a destination."); return; }
+        if (dateDebut == null) { showWarn("Missing start date", "Please select a start date and time."); return; }
+        if (dateFin == null) { showWarn("Missing end date", "Please select an end date and time."); return; }
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (dateDebut.toLocalDate().isBefore(today)) { showWarn("Invalid start date", "Start date cannot be before today."); return; }
+        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) { showWarn("Invalid start time", "Start time cannot be earlier than the current time."); return; }
+        if (dateFin.isBefore(dateDebut)) { showWarn("Invalid dates", "End date must be after start date."); return; }
+
+        // ========= GUIDE ID LOGIC =========
+        Integer guideIdToUse = null;
+
+        if (editMode && activiteToEdit != null) {
+            int existing = activiteToEdit.getGuideId();
+            guideIdToUse = (existing == 0 ? null : existing);
+        } else if (fixedGuideId != null) {
+            guideIdToUse = fixedGuideId;
+        } else if (adminMode) {
+            guideIdToUse = null;
+        }
+
+        // ✅ max places logic
+        Integer maxPlacesToUse = null;
+        boolean isGuideActivity = (guideIdToUse != null);
+
+        if (isGuideActivity) {
+            Integer v = (SPmaxPlaces != null) ? SPmaxPlaces.getValue() : null;
+            if (v == null || v <= 0) {
+                showWarn("Missing max places", "Please choose a maximum number of participants.");
+                return;
+            }
+            maxPlacesToUse = v;
+        } else {
+            maxPlacesToUse = null;
+        }
+
+        // ========= SAVE =========
+        if (editMode && activiteToEdit != null) {
+
+            activiteToEdit.setNom(nom);
+            activiteToEdit.setDescription(description);
+            activiteToEdit.setPrix(price);
+            activiteToEdit.setTypeActivite(type);
+            activiteToEdit.setDestinationId(destinationId);
+
+            if (guideIdToUse != null) {
+                activiteToEdit.setGuideId(guideIdToUse);
+            }
+
+            activiteToEdit.setStatus(status);
+            activiteToEdit.setDateDebut(dateDebut);
+            activiteToEdit.setDateFin(dateFin);
+
+            activiteToEdit.setMaxPlaces(maxPlacesToUse);
+
+            activiteService.update(activiteToEdit);
+
+        } else {
+
+            Activite a = new Activite();
+            a.setNom(nom);
+            a.setDescription(description);
+            a.setPrix(price);
+            a.setTypeActivite(type);
+            a.setDestinationId(destinationId);
+
+            if (guideIdToUse != null) a.setGuideId(guideIdToUse);
+
+            a.setStatus(status);
+            a.setDateDebut(dateDebut);
+            a.setDateFin(dateFin);
+            a.setNoteMoyenne(0);
+
+            a.setMaxPlaces(maxPlacesToUse);
+
+            activiteService.add(a);
+        }
+
+        closeStage(event);
+    }
+
+    @FXML
+    void handleCancel(ActionEvent event) {
+        closeStage(event);
+    }
+
+    public void setActiviteToEdit(Activite activite) {
+        this.activiteToEdit = activite;
+        this.editMode = true;
+
+        TFnameactivite.setText(activite.getNom());
+        TFdescriptionactivite.setText(activite.getDescription());
+        TFtypeactivite.setText(activite.getTypeActivite());
+
+        pricespinneractivite.getValueFactory().setValue(activite.getPrix());
+
+        if (activite.getStatus() != null) {
+            CBstatus.getSelectionModel().select(activite.getStatus());
+        }
+
+        String nomDest = activiteService.getDestinationNameById(activite.getDestinationId());
+        if (nomDest != null && !nomDest.isBlank()) CBdestination.setValue(nomDest);
+
+        if (activite.getDateDebut() != null) {
+            DPdateDebut.setValue(activite.getDateDebut().toLocalDate());
+            SPheureDebut.getValueFactory().setValue(activite.getDateDebut().getHour());
+            SPminuteDebut.getValueFactory().setValue(activite.getDateDebut().getMinute());
+        }
+
+        if (activite.getDateFin() != null) {
+            DPdateFin.setValue(activite.getDateFin().toLocalDate());
+            SPheureFin.getValueFactory().setValue(activite.getDateFin().getHour());
+            SPminuteFin.getValueFactory().setValue(activite.getDateFin().getMinute());
+        }
+
+        // ✅ keep same visibility logic (admin hide)
+        updateMaxPlacesVisibility();
+
+        // ✅ if editing a guide activity, set value
+        if (SPmaxPlaces != null && activite.getGuideId() != 0) {
+            Integer mp = activite.getMaxPlaces();
+            if (mp != null && mp > 0) {
+                SPmaxPlaces.getValueFactory().setValue(mp);
+            }
+        }
+    }
+
+    private LocalDateTime buildDateTime(DatePicker dp, Spinner<Integer> h, Spinner<Integer> m) {
+        if (dp == null || dp.getValue() == null) return null;
+        LocalDate d = dp.getValue();
+        int hh = (h != null && h.getValue() != null) ? h.getValue() : 0;
+        int mm = (m != null && m.getValue() != null) ? m.getValue() : 0;
+        return LocalDateTime.of(d, LocalTime.of(hh, mm));
+    }
+
+    private void closeStage(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.close();
+    }
+
+    private void showWarn(String title, String msg) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+}

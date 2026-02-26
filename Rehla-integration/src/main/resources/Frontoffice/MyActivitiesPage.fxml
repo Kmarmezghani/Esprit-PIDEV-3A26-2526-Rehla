@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.MyActivitiesPageController">
+
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+            <!-- TOP NAV BAR (same style) -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
+                            <padding><Insets left="100.0" /></padding>
+
+                            <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
+
+                            <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Destinations" />
+
+                            <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Posts" />
+
+                            <Button onAction="#goToactivities" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Activities" />
+
+                            <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="About" />
+                        </HBox>
+
+                        <MenuButton style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 20; -fx-cursor: hand; -fx-background-radius: 25; -fx-padding: 8;" text="👤">
+                            <items>
+                                <MenuItem onAction="#goToMyProfile" style="-fx-font-size: 14;" text="👤 My Profile" />
+                                <MenuItem onAction="#goToMyPosts" style="-fx-font-size: 14;" text="✍ My Posts" />
+                                <MenuItem onAction="#goToMyReservations" style="-fx-font-size: 14;" text="📅 My Reservations" />
+                                <MenuItem onAction="#goToMyActivities" style="-fx-font-size: 14;" text="📍 My Activities" />
+                                <SeparatorMenuItem />
+                                <MenuItem onAction="#handleLogout" style="-fx-font-size: 14;" text="⇦ Logout" />
+                            </items>
+                            <HBox.margin><Insets right="20.0" /></HBox.margin>
+                        </MenuButton>
+
+                        <Button onAction="#minwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@../Backoffice/css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@../Backoffice/css/styling.css" text="□" />
+                        <Button onAction="#closewindow" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@../Backoffice/css/styling.css" text="✕">
+                     <HBox.margin>
+                        <Insets top="4.0" />
+                     </HBox.margin></Button>
+                    </children>
+
+                    <padding><Insets left="30.0" right="30.0" /></padding>
+                </HBox>
+            </top>
+
+            <center>
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #ffffff;">
+                    <content>
+                        <VBox spacing="25" style="-fx-background-color: #ffffff;">
+
+                            <!-- HERO -->
+                            <VBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91); -fx-padding: 45;">
+                                <Label text="My Activities" textFill="WHITE">
+                                    <font><Font name="System Bold" size="40" /></font>
+                                </Label>
+                                <Label text="Manage the activities you created as a guide" textFill="#EAF0FF">
+                                    <font><Font size="16" /></font>
+                                </Label>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10 0 0 0;">
+                                    <TextField fx:id="searchField" prefWidth="360" promptText="Search in my activities..." style="-fx-background-radius: 14; -fx-border-radius: 14; -fx-border-color: transparent;" />
+                                    <Button onAction="#handleSearch" style="-fx-background-color: white; -fx-text-fill: #223f91; -fx-font-weight: bold; -fx-background-radius: 14; -fx-cursor: hand;" text="Search" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#createActivity" style="-fx-background-color: rgba(255,255,255,0.25); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 14; -fx-cursor: hand;" text="+ Create Activity" />
+                                </HBox>
+                            </VBox>
+
+                            <!-- LIST -->
+                            <VBox spacing="10">
+                                <padding><Insets bottom="30" left="40" right="40" top="10" /></padding>
+
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="Your activities" textFill="#223f91">
+                                        <font><Font name="System Bold" size="26" /></font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="LBLcount" text="0" textFill="#4a5f88">
+                                        <font><Font size="14" /></font>
+                                    </Label>
+                                </HBox>
+
+                                <FlowPane fx:id="myActivitiesFlowPane" hgap="25" prefWrapLength="900" vgap="25" />
+                            </VBox>
+
+                            <!-- Footer -->
+                            <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-padding: 20;">
+                                <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                    <font><Font name="System Bold" size="16.0" /></font>
+                                </Label>
+                                <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                    <font><Font size="12.0" /></font>
+                                </Label>
+                            </VBox>
+
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" stylesheets="@css/reviews.css"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.ActivityDetailsController">
+
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+            <!-- TOP NAV BAR -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" preserveRatio="true">
+                            <image>
+                                <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
+                            <padding><Insets left="100.0" /></padding>
+                            <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Home" />
+                            <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Destinations" />
+                            <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Posts" />
+                            <Button onAction="#goToactivities" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Activities" />
+                            <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="About" />
+                        </HBox>
+
+                        <Button onAction="#backToActivities" style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 14; -fx-background-radius: 12; -fx-padding: 8 14;" text="← Back" />
+                    </children>
+                    <padding><Insets left="30.0" right="30.0" /></padding>
+                </HBox>
+            </top>
+
+            <center>
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #ffffff;">
+                    <content>
+                        <VBox spacing="0" style="-fx-background-color: #ffffff;">
+
+                            <!-- HEADER DETAILS (ONE TIME ONLY) -->
+                            <VBox spacing="12" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91); -fx-padding: 34;">
+                                <Label fx:id="LBLtitle" text="Activity name" textFill="WHITE">
+                                    <font><Font name="System Bold" size="40.0" /></font>
+                                </Label>
+
+                                <VBox spacing="6">
+                                    <Label fx:id="LBLdestination" style="-fx-font-size: 15;" text="📍 Destination" textFill="#EAF0FF" />
+                                    <Label fx:id="LBLtype" style="-fx-font-size: 14;" text="Type: ..." textFill="#EAF0FF" />
+                                    <Label fx:id="LBLdates" style="-fx-font-size: 14;" text="🕒 Dates" textFill="#EAF0FF" />
+                                </VBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="18">
+                                    <Label fx:id="LBLrating" style="-fx-font-size: 16; -fx-font-weight: bold;" text="⭐ 0.0" textFill="WHITE" />
+                                    <Label fx:id="LBLprice" style="-fx-font-size: 16; -fx-font-weight: bold;" text="💰 0.00 TND" textFill="WHITE" />
+                                </HBox>
+                            </VBox>
+
+                            <!-- BODY -->
+                            <VBox spacing="18" style="-fx-background-color: #ffffff;">
+                                <padding><Insets bottom="28" left="40" right="40" top="24" /></padding>
+
+                                <!-- Reviews Card -->
+                                <VBox spacing="16"
+                                      style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;
+                                      -fx-border-color: #eef2ff; -fx-border-radius: 18;
+                                      -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 4);"
+                                      styleClass="card">
+
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label style="-fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827;" styleClass="h2" text="Reviews" />
+                                    </HBox>
+
+                                    <!-- Summary row -->
+                                    <HBox alignment="CENTER_LEFT" spacing="30" HBox.hgrow="ALWAYS">
+
+                                        <!-- Left: Average block -->
+                                        <VBox minWidth="180" prefWidth="180" spacing="8">
+                                            <Label fx:id="LBLavgBig" style="-fx-font-size: 56; -fx-font-weight: 900; -fx-text-fill: #111827;" styleClass="avgBig" text="4.0" />
+                                            <Label fx:id="LBLstarsText" styleClass="starsBig" text="★★★★★" />
+                                            <Label fx:id="LBLcountText" styleClass="muted" text="35K ratings" />
+                                        </VBox>
+
+                                        <Separator orientation="VERTICAL" prefHeight="110" styleClass="vSep" />
+
+                                        <!-- Right: Distribution bars -->
+                                        <VBox minWidth="600" spacing="12" HBox.hgrow="ALWAYS">
+
+                                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                                <ProgressBar fx:id="PB5" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="LBLc5" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="5.0  14K reviews" />
+                                            </HBox>
+
+                                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                                <ProgressBar fx:id="PB4" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="LBLc4" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="4.0  6K reviews" />
+                                            </HBox>
+
+                                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                                <ProgressBar fx:id="PB3" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="LBLc3" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="3.0  4K reviews" />
+                                            </HBox>
+
+                                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                                <ProgressBar fx:id="PB2" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="LBLc2" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="2.0  800 reviews" />
+                                            </HBox>
+
+                                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                                <ProgressBar fx:id="PB1" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="LBLc1" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="1.0  9K reviews" />
+                                            </HBox>
+
+                                        </VBox>
+                                    </HBox>
+
+                                    <Separator />
+
+                                    <!-- Reviews list -->
+                                    <ListView fx:id="reviewsList" prefHeight="260" styleClass="reviewsList" />
+
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Button fx:id="BTNdeleteMyReview" disable="true" onAction="#deleteMyReview" styleClass="dangerBtn" text="Delete my review" />
+                                    </HBox>
+
+                                    <Separator />
+
+                                    <!-- Write review -->
+                                    <VBox spacing="10">
+                                        <Label styleClass="h3" text="Write a review" />
+
+                                        <!-- ✅ CHANGED: Spinner -> stars -->
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <Label styleClass="muted" text="Rating:" />
+                                            <HBox fx:id="starBox" spacing="6" alignment="CENTER_LEFT"/>
+                                        </HBox>
+
+                                        <TextArea fx:id="TAreview" prefRowCount="5" promptText="Share your experience..." styleClass="reviewArea" wrapText="true" />
+
+                                        <Button onAction="#addReview" styleClass="primaryBtn" text="Submit review" />
+                                    </VBox>
+                                </VBox>
+
+                                <!-- Footer -->
+                                <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-padding: 20; -fx-background-radius: 14;">
+                                    <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                        <font><Font name="System Bold" size="16.0" /></font>
+                                    </Label>
+                                    <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                        <font><Font size="12.0" /></font>
+                                    </Label>
+                                </VBox>
+
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+
+        </BorderPane>
+    </children>
+</AnchorPane>

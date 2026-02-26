@@ -7,10 +7,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -24,6 +21,9 @@ public class HomePageController implements Initializable {
 
     @FXML
     private FlowPane countriesFlowPane;
+    @FXML private Button btnNotif, btnProfile;
+    @FXML private ContextMenu profileMenu;
+
 
     @FXML
     private FlowPane popularCitiesFlowPane;
@@ -61,7 +61,7 @@ public class HomePageController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/PostsPage.fxml"));
             Parent root = loader.load();
-            
+
             Stage stage = (Stage) searchField.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (Exception e) {
@@ -123,7 +123,7 @@ public class HomePageController implements Initializable {
         alert.setTitle("Logout");
         alert.setHeaderText("Are you sure you want to logout?");
         alert.setContentText("You will be returned to the login screen.");
-        
+
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 System.out.println("✅ User logged out");
@@ -144,24 +144,11 @@ public class HomePageController implements Initializable {
     @FXML
     private void handleAddReservation(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/FrontTickets.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/BookingType.fxml"));
             Parent root = loader.load();
 
-            FrontTicketsController controller = loader.getController();
-
-            // Création d'un Stage modal
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Add Reservation");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-            // Après fermeture du popup, naviguer vers MyReservations
-            FXMLLoader myResLoader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
-            Parent myResRoot = myResLoader.load();
-
-            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            currentStage.setScene(new Scene(myResRoot));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -170,14 +157,14 @@ public class HomePageController implements Initializable {
 
     @FXML
     void frontofficeActivite(ActionEvent event) {
-        
-        showInfo("Module Activités", 
+
+        showInfo("Module Activités",
                 "Équipe Activités:\n\n" +
-                "1. Créer ActivityForm.fxml\n" +
-                "2. Créer ActivityController.java\n" +
-                "3. Décommenter le code dans frontofficeActivite()\n" +
-                "4. Cliquer ce bouton pour tester!\n\n" +
-                "Plus tard: Montrera les activités pour chaque ville");
+                        "1. Créer ActivityForm.fxml\n" +
+                        "2. Créer ActivityController.java\n" +
+                        "3. Décommenter le code dans frontofficeActivite()\n" +
+                        "4. Cliquer ce bouton pour tester!\n\n" +
+                        "Plus tard: Montrera les activités pour chaque ville");
     }
     @FXML
     void goToactivities(ActionEvent event) {
@@ -220,5 +207,17 @@ public class HomePageController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    public void openNotifications(ActionEvent event) {
+        // TODO: ouvrir notifications (page/popup)
+    }
+
+    @FXML
+    public void openProfileMenu(ActionEvent e) {
+        if (profileMenu == null || btnProfile == null) return;
+        if (profileMenu.isShowing()) profileMenu.hide();
+        else profileMenu.show(btnProfile, javafx.geometry.Side.BOTTOM, 0, 6);
     }
 }

@@ -38,7 +38,6 @@
                             <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
                             <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Destinations" />
                             <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Posts" />
-                            <Button onAction="#goToactivities" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Activities" />
                             <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="About" />
                         </HBox>
 
@@ -95,12 +94,14 @@
                                 <TableView fx:id="tableReservation" prefHeight="250" style="-fx-background-radius: 12;                                                   -fx-border-radius: 12;                                                   -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8,0,0,2);">
 
                                     <columns>
-                                        <TableColumn fx:id="colDateDebut" prefWidth="143.20001220703125" text="Start Date" />
-                                        <TableColumn fx:id="colDateFin" prefWidth="143.20001220703125" text="End Date" />
-                                        <TableColumn fx:id="colStatut" prefWidth="165.59994506835938" text="Status" />
-                                        <TableColumn fx:id="colCoutTotal" prefWidth="159.20001220703125" text="Total Cost" />
-                                        <TableColumn fx:id="colNbrTickets" prefWidth="154.39996337890625" text="Number of Tickets" />
-                                        <TableColumn fx:id="colDeleteReservation" prefWidth="170.39996337890625" text="Actions" />
+                                        <TableColumn fx:id="colDateDebut" prefWidth="160.79998016357422" text="Start Date" />
+                                        <TableColumn fx:id="colDateFin" prefWidth="152.00003051757812" text="End Date" />
+                                        <TableColumn fx:id="colStatut" prefWidth="134.39996337890625" text="Status" />
+                                        <TableColumn fx:id="colCoutTotal" prefWidth="143.19992065429688" text="Total Cost" />
+                                        <TableColumn fx:id="colNbrTickets" prefWidth="157.5999755859375" text="Number of Tickets" />
+                                        <TableColumn fx:id="colDestination" minWidth="0.0" prefWidth="157.5999755859375" text="Destination" />
+                                        <TableColumn fx:id="colDeleteReservation" prefWidth="55.0" />
+                                        <TableColumn fx:id="colPdf" prefWidth="55.0" />
                                     </columns>
                                 </TableView>
 
@@ -108,7 +109,7 @@
 
                             <!-- ===== TICKET SECTION ===== -->
                             <!-- ===== CALENDAR SECTION ===== -->
-                            <VBox spacing="15">
+                            <VBox spacing="15" VBox.vgrow="ALWAYS">
 
                                 <Label text="Calendar View" textFill="#3A5BC7">
                                     <font>
@@ -116,9 +117,9 @@
                                     </font>
                                 </Label>
 
-                                <AnchorPane fx:id="calendarContainer" prefHeight="400" style="-fx-background-color: #f5f7fb;                        -fx-background-radius: 12;                        -fx-border-radius: 12;" />
-                            </VBox>
+                                <AnchorPane fx:id="calendarContainer" style="-fx-background-color: #f5f7fb;                        -fx-background-radius: 12;                        -fx-border-radius: 12;" VBox.vgrow="ALWAYS" />
 
+                            </VBox>
                         </VBox>
                     </content>
                 </ScrollPane>

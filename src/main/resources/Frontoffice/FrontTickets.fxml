@@ -1,58 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="700" prefWidth="1000" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91);" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.FrontTicketsController">
+<AnchorPane prefHeight="700" prefWidth="1000"
+            xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.FrontTicketsController"
+            style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91);">
 
     <children>
 
-        <VBox alignment="CENTER" spacing="30" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+        <VBox alignment="CENTER" spacing="30"
+              AnchorPane.topAnchor="0"
+              AnchorPane.bottomAnchor="0"
+              AnchorPane.leftAnchor="0"
+              AnchorPane.rightAnchor="0">
 
-            <!-- Title -->
-            <Label text="🎟 Available Tickets" textFill="WHITE">
-                <font>
-                    <Font name="System Bold" size="36" />
-                </font>
+            <Label fx:id="titleLabel" text="Tickets" textFill="WHITE">
+                <font><Font size="34"/></font>
             </Label>
 
-            <!-- White Card Container -->
-            <VBox spacing="20" style="-fx-background-color: white;                          -fx-background-radius: 20;                          -fx-padding: 30;                          -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 8);">
+            <VBox spacing="20"
+                  style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 30;">
 
-                <TableView fx:id="ticketTable" prefHeight="400" prefWidth="850" style="-fx-background-radius: 15;">
+                <TableView fx:id="ticketTable" prefWidth="850" prefHeight="400">
 
                     <columns>
-                        <TableColumn fx:id="colType" prefWidth="150" text="Type" />
-                        <TableColumn fx:id="colPrice" prefWidth="120" text="Price" />
-                        <TableColumn fx:id="colDestination" prefWidth="200" text="Destination" />
-                        <TableColumn fx:id="colSelect" prefWidth="120" text="Select" />
+                        <TableColumn fx:id="colType" text="Type" prefWidth="150"/>
+                        <TableColumn fx:id="colDestination" text="Destination" prefWidth="200"/>
+                        <TableColumn fx:id="colPrice" text="Price" prefWidth="120"/>
+                        <TableColumn fx:id="colSelect" text="Select" prefWidth="100"/>
                     </columns>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
 
                 </TableView>
 
-                <!-- Back Button -->
-                <HBox alignment="CENTER_RIGHT">
-                    <Button text="Next ➡"
-                            onAction="#handleNext"
-                            style="-fx-background-color: #3A5BC7;
-               -fx-text-fill: white;
-               -fx-font-weight: bold;
-               -fx-background-radius: 10;
-               -fx-padding: 10 25;"/>
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Button text="Back"
+                            onAction="#handleBack"
+                            style="-fx-background-color: gray; -fx-text-fill:white;"/>
+                    <Button text="Book Now"
+                            onAction="#handleBookTicket"
+                            style="-fx-background-color:#3A5BC7; -fx-text-fill:white;"/>
                 </HBox>
-            <VBox.margin>
-               <Insets left="10.0" right="10.0" />
-            </VBox.margin>
 
             </VBox>
 

@@ -25,6 +25,8 @@ public class MyActivitiesPageController {
     @FXML private FlowPane myActivitiesFlowPane;
     @FXML private TextField searchField;
     @FXML private Label LBLcount;
+    @FXML private Button btnNotif, btnProfile;
+    @FXML private ContextMenu profileMenu;
 
     private final ActiviteService activiteService = new ActiviteService();
 
@@ -295,4 +297,20 @@ public class MyActivitiesPageController {
             ex.printStackTrace();
         }
     }
+
+
+
+
+        @FXML
+        public void openNotifications(ActionEvent event) {
+            // TODO: ouvrir notifications (page/popup)
+        }
+
+    @FXML
+    public void openProfileMenu(ActionEvent e) {
+        if (profileMenu == null || btnProfile == null) return;
+        if (profileMenu.isShowing()) profileMenu.hide();
+        else profileMenu.show(btnProfile, javafx.geometry.Side.BOTTOM, 0, 6);
+    }
+
 }

@@ -1,5 +1,6 @@
 package Controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,6 +12,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.Activite;
 import services.ActiviteService;
+import services.AiDescriptionService;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,11 +20,13 @@ import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 public class AjouterActiviteController {
 
     private final ActiviteService activiteService = new ActiviteService();
+    private final AiDescriptionService aiDescriptionService = new AiDescriptionService();
 
     @FXML private TextField TFdescriptionactivite;
     @FXML private TextField TFnameactivite;
@@ -45,7 +49,12 @@ public class AjouterActiviteController {
     @FXML private Spinner<Integer> SPmaxPlaces;
 
     @FXML private Label LBLimageName;
-    @FXML private ImageView imagePreview;   // ✅ preview comme ton partenaire
+    @FXML private ImageView imagePreview;
+
+    @FXML private Button BTNaiDesc;
+
+    @FXML private Label LBLformTitle;
+    @FXML private Button BTNprimary;
 
     private Map<String, Integer> destinationMap;
 
@@ -55,17 +64,20 @@ public class AjouterActiviteController {
     private Integer fixedGuideId = null;
     private boolean adminMode = false;
 
-    private File selectedImageFile = null;      // ✅ comme ton partenaire
-    private String selectedImagePath = null;    // chemin final sauvegardé (après copie)
+    private File selectedImageFile = null;
+    private String selectedImagePath = null;
+
+    private LocalDateTime originalStart = null;
+    private LocalDateTime originalEnd = null;
 
     public void setGuideId(int guideId) {
         this.fixedGuideId = guideId;
-        updateMaxPlacesVisibility();
+        refreshRoleVisibility();
     }
 
     public void setAdminMode(boolean adminMode) {
         this.adminMode = adminMode;
-        updateMaxPlacesVisibility();
+        refreshRoleVisibility();
     }
 
     @FXML
@@ -97,98 +109,180 @@ public class AjouterActiviteController {
             SPmaxPlaces.setEditable(true);
         }
 
-        if (LBLimageName != null) LBLimageName.setText("Aucun fichier");
+        if (LBLimageName != null) LBLimageName.setText("No file selected");
 
-        updateMaxPlacesVisibility();
+        setCreateModeUI();
+        refreshRoleVisibility();
     }
 
-    private void updateMaxPlacesVisibility() {
-        if (SPmaxPlaces == null) return;
+    private void setCreateModeUI() {
+        if (LBLformTitle != null) LBLformTitle.setText("Create activity");
+        if (BTNprimary != null) BTNprimary.setText("Save");
+    }
 
-        boolean isGuideCreating = (fixedGuideId != null) && !adminMode;
+    private void setUpdateModeUI() {
+        if (LBLformTitle != null) LBLformTitle.setText("Update activity");
+        if (BTNprimary != null) BTNprimary.setText("Update");
+    }
 
-        SPmaxPlaces.setVisible(isGuideCreating);
-        SPmaxPlaces.setManaged(isGuideCreating);
+    private boolean isGuideCreating() {
+        return fixedGuideId != null && !adminMode;
+    }
 
+    private void refreshRoleVisibility() {
+
+        boolean guideCreating = isGuideCreating();
+
+        if (SPmaxPlaces != null) {
+            SPmaxPlaces.setVisible(guideCreating);
+            SPmaxPlaces.setManaged(guideCreating);
+        }
         if (LBLmaxPlaces != null) {
-            LBLmaxPlaces.setVisible(isGuideCreating);
-            LBLmaxPlaces.setManaged(isGuideCreating);
+            LBLmaxPlaces.setVisible(guideCreating);
+            LBLmaxPlaces.setManaged(guideCreating);
+        }
+
+        if (BTNaiDesc != null) {
+            boolean showAi = guideCreating && !editMode; // ✅ AI only for guide + only in create
+            BTNaiDesc.setVisible(showAi);
+            BTNaiDesc.setManaged(showAi);
         }
     }
 
-    // ✅ EXACTEMENT comme ton partenaire
     @FXML
     private void choisirImage() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choisir une image");
+        fileChooser.setTitle("Select an image");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp")
         );
 
-        selectedImageFile = fileChooser.showOpenDialog(null);
+        Stage stage = getStageSafe();
+        selectedImageFile = fileChooser.showOpenDialog(stage);
 
         if (selectedImageFile != null) {
             if (LBLimageName != null) LBLimageName.setText(selectedImageFile.getName());
-
-            if (imagePreview != null) {
-                imagePreview.setImage(new Image(selectedImageFile.toURI().toString()));
-            }
+            if (imagePreview != null) imagePreview.setImage(new Image(selectedImageFile.toURI().toString(), true));
         }
     }
 
-    // ✅ EXACTEMENT comme ton partenaire (dossier HOME)
-    private String copierImagePath(File imageFile) throws IOException {
+    private String copyImageToUploads(File imageFile) throws IOException {
+        String folder = System.getProperty("user.home") + "/myapp/uploads/activities/";
+        Files.createDirectories(Paths.get(folder));
 
-        String dossier = System.getProperty("user.home") + "/myapp/uploads/activities/";
-        Files.createDirectories(Paths.get(dossier));
+        String name = imageFile.getName();
+        int dot = name.lastIndexOf('.');
+        String extension = (dot >= 0) ? name.substring(dot) : ".jpg";
 
-        String extension = imageFile.getName().substring(imageFile.getName().lastIndexOf("."));
         String fileName = "activity_" + System.currentTimeMillis() + extension;
+        Path destination = Paths.get(folder + fileName);
 
-        Path destination = Paths.get(dossier + fileName);
+        Files.copy(imageFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+        return destination.toAbsolutePath().toString();
+    }
 
-        Files.copy(
-                imageFile.toPath(),
-                destination,
-                StandardCopyOption.REPLACE_EXISTING
-        );
+    @FXML
+    public void generateDescriptionAi(ActionEvent event) {
 
-        return destination.toAbsolutePath().toString(); // ✅ chemin absolu
+        if (!isGuideCreating()) return;
+
+        String name = safe(TFnameactivite.getText());
+        String type = safe(TFtypeactivite.getText());
+        String dest = (CBdestination != null) ? CBdestination.getValue() : null;
+
+        if (name.isBlank() || type.isBlank() || dest == null || dest.isBlank()) {
+            showWarn("Missing info", "Please fill Name, Type, and Destination first.");
+            return;
+        }
+
+        String duration = buildDurationText();
+
+        TFdescriptionactivite.setDisable(true);
+        if (BTNaiDesc != null) BTNaiDesc.setDisable(true);
+        TFdescriptionactivite.setText("Generating...");
+
+        new Thread(() -> {
+            try {
+                String text = aiDescriptionService.generate(name, type, dest, duration);
+
+                Platform.runLater(() -> {
+                    TFdescriptionactivite.setText(text == null ? "" : text.trim());
+                    TFdescriptionactivite.setDisable(false);
+                    if (BTNaiDesc != null) BTNaiDesc.setDisable(false);
+                });
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Platform.runLater(() -> {
+                    TFdescriptionactivite.setText("");
+                    TFdescriptionactivite.setDisable(false);
+                    if (BTNaiDesc != null) BTNaiDesc.setDisable(false);
+
+                    String msg = ex.getMessage() == null ? "Erreur inconnue" : ex.getMessage();
+                    showWarn("AI error", msg);
+                });
+            }
+        }).start();
+    }
+
+    private String buildDurationText() {
+        LocalDate sd = DPdateDebut != null ? DPdateDebut.getValue() : null;
+        LocalDate ed = DPdateFin != null ? DPdateFin.getValue() : null;
+
+        if (sd == null || ed == null) return "Not specified";
+
+        LocalTime st = LocalTime.of(val(SPheureDebut), val(SPminuteDebut));
+        LocalTime et = LocalTime.of(val(SPheureFin), val(SPminuteFin));
+
+        LocalDateTime start = LocalDateTime.of(sd, st);
+        LocalDateTime end = LocalDateTime.of(ed, et);
+
+        if (!end.isAfter(start)) return "Not specified";
+
+        long mins = ChronoUnit.MINUTES.between(start, end);
+        long days = mins / (60 * 24);
+        long hours = (mins % (60 * 24)) / 60;
+        long remMins = mins % 60;
+
+        if (days >= 2) return days + " days";
+        if (days == 1) return (hours > 0) ? "1 day " + hours + " hours" : "1 day";
+        if (hours >= 1) return (remMins > 0) ? hours + " hours " + remMins + " min" : hours + " hours";
+        return mins + " minutes";
     }
 
     @FXML
     void ajouterActivite(ActionEvent event) {
 
-        String nom = TFnameactivite.getText();
-        String description = TFdescriptionactivite.getText();
-        String type = TFtypeactivite.getText();
+        String nom = safe(TFnameactivite.getText());
+        String description = safe(TFdescriptionactivite.getText());
+        String type = safe(TFtypeactivite.getText());
 
         Double price = pricespinneractivite.getValue();
-        String status = CBstatus.getValue();
+        String status = (CBstatus != null) ? CBstatus.getValue() : null;
 
         LocalDateTime dateDebut = buildDateTime(DPdateDebut, SPheureDebut, SPminuteDebut);
         LocalDateTime dateFin = buildDateTime(DPdateFin, SPheureFin, SPminuteFin);
 
-        String destNom = CBdestination.getValue();
-        int destinationId = (destNom != null && destinationMap.containsKey(destNom))
+        String destNom = (CBdestination != null) ? CBdestination.getValue() : null;
+        int destinationId = (destNom != null && destinationMap != null && destinationMap.containsKey(destNom))
                 ? destinationMap.get(destNom)
                 : 0;
 
-        if (nom == null || nom.isBlank()) { showWarn("Nom manquant", "Veuillez saisir le nom."); return; }
-        if (description == null || description.isBlank()) { showWarn("Description manquante", "Veuillez saisir la description."); return; }
-        if (type == null || type.isBlank()) { showWarn("Type manquant", "Veuillez saisir le type."); return; }
-        if (price == null || price <= 0) { showWarn("Prix invalide", "Le prix doit être > 0."); return; }
+        if (nom.isBlank()) { showWarn("Missing name", "Please enter the activity name."); return; }
+        if (description.isBlank()) { showWarn("Missing description", "Please enter a description."); return; }
+        if (type.isBlank()) { showWarn("Missing type", "Please enter the activity type."); return; }
+        if (price == null || price <= 0) { showWarn("Invalid price", "Price must be greater than 0."); return; }
 
-        if (destinationId == 0) { showWarn("Destination manquante", "Veuillez choisir une destination."); return; }
-        if (dateDebut == null) { showWarn("Date début manquante", "Veuillez choisir la date début."); return; }
-        if (dateFin == null) { showWarn("Date fin manquante", "Veuillez choisir la date fin."); return; }
+        if (destinationId == 0) { showWarn("Missing destination", "Please select a destination."); return; }
+        if (dateDebut == null) { showWarn("Missing start date", "Please select a start date."); return; }
+        if (dateFin == null) { showWarn("Missing end date", "Please select an end date."); return; }
 
         LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
 
-        if (dateDebut.toLocalDate().isBefore(today)) { showWarn("Date début invalide", "La date début ne peut pas être avant aujourd'hui."); return; }
-        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) { showWarn("Heure début invalide", "L'heure début ne peut pas être avant maintenant."); return; }
-        if (dateFin.isBefore(dateDebut)) { showWarn("Dates invalides", "La date fin doit être après la date début."); return; }
+        if (dateDebut.toLocalDate().isBefore(today)) { showWarn("Invalid start date", "Start date cannot be before today."); return; }
+        if (dateDebut.toLocalDate().isEqual(today) && dateDebut.isBefore(now)) { showWarn("Invalid start time", "Start time cannot be before now."); return; }
+        if (!dateFin.isAfter(dateDebut)) { showWarn("Invalid dates", "End date must be after start date."); return; }
 
         Integer guideIdToUse = null;
 
@@ -202,29 +296,34 @@ public class AjouterActiviteController {
         }
 
         Integer maxPlacesToUse = null;
-        boolean isGuideActivity = (guideIdToUse != null);
+        boolean guideActivity = (guideIdToUse != null);
 
-        if (isGuideActivity) {
+        if (guideActivity) {
             Integer v = (SPmaxPlaces != null) ? SPmaxPlaces.getValue() : null;
             if (v == null || v <= 0) {
-                showWarn("Max places manquant", "Veuillez choisir un max de participants.");
+                showWarn("Missing max places", "Please choose a maximum number of participants.");
                 return;
             }
             maxPlacesToUse = v;
         }
 
-        // ✅ si image choisie : copier vers HOME/myapp/uploads/activities/
         if (selectedImageFile != null) {
             try {
-                selectedImagePath = copierImagePath(selectedImageFile);
+                selectedImagePath = copyImageToUploads(selectedImageFile);
             } catch (IOException ex) {
                 ex.printStackTrace();
-                showWarn("Erreur image", "Impossible de copier l'image.");
+                showWarn("Image error", "Unable to copy the image.");
                 return;
             }
         }
 
         if (editMode && activiteToEdit != null) {
+
+            boolean datesChanged =
+                    (originalStart != null && !originalStart.equals(dateDebut)) ||
+                            (originalEnd != null && !originalEnd.equals(dateFin));
+
+            boolean statusNotAvailable = (status != null && !"DISPONIBLE".equalsIgnoreCase(status));
 
             activiteToEdit.setNom(nom);
             activiteToEdit.setDescription(description);
@@ -239,9 +338,13 @@ public class AjouterActiviteController {
             activiteToEdit.setDateFin(dateFin);
             activiteToEdit.setMaxPlaces(maxPlacesToUse);
 
-            // ✅ seulement si une nouvelle image a été choisie
             if (selectedImagePath != null && !selectedImagePath.isBlank()) {
                 activiteToEdit.setImage(selectedImagePath);
+            }
+
+            if (datesChanged || statusNotAvailable) {
+                activiteToEdit.setFlashPrice(null);
+                activiteToEdit.setFlashExpiresAt(null);
             }
 
             activiteService.update(activiteToEdit);
@@ -263,8 +366,7 @@ public class AjouterActiviteController {
             a.setNoteMoyenne(0);
 
             a.setMaxPlaces(maxPlacesToUse);
-
-            a.setImage(selectedImagePath); // ممكن تكون null
+            a.setImage(selectedImagePath);
 
             activiteService.add(a);
         }
@@ -281,9 +383,14 @@ public class AjouterActiviteController {
         this.activiteToEdit = activite;
         this.editMode = true;
 
-        TFnameactivite.setText(activite.getNom());
-        TFdescriptionactivite.setText(activite.getDescription());
-        TFtypeactivite.setText(activite.getTypeActivite());
+        setUpdateModeUI();
+
+        originalStart = activite.getDateDebut();
+        originalEnd = activite.getDateFin();
+
+        TFnameactivite.setText(safe(activite.getNom()));
+        TFdescriptionactivite.setText(safe(activite.getDescription()));
+        TFtypeactivite.setText(safe(activite.getTypeActivite()));
 
         pricespinneractivite.getValueFactory().setValue(activite.getPrix());
 
@@ -306,52 +413,53 @@ public class AjouterActiviteController {
             SPminuteFin.getValueFactory().setValue(activite.getDateFin().getMinute());
         }
 
-        updateMaxPlacesVisibility();
-
-        if (SPmaxPlaces != null && activite.getGuideId() != 0) {
+        if (activite.getGuideId() != 0 && SPmaxPlaces != null) {
             Integer mp = activite.getMaxPlaces();
-            if (mp != null && mp > 0) {
-                SPmaxPlaces.getValueFactory().setValue(mp);
-            }
+            if (mp != null && mp > 0) SPmaxPlaces.getValueFactory().setValue(mp);
         }
 
-        // ✅ afficher image existante dans preview
         if (activite.getImage() != null && !activite.getImage().isBlank()) {
-
             if (LBLimageName != null) {
                 File f = new File(activite.getImage());
                 LBLimageName.setText(f.getName());
             }
-
             if (imagePreview != null) {
-                try {
-                    File f = new File(activite.getImage());
-                    if (f.exists()) {
-                        imagePreview.setImage(new Image(f.toURI().toString()));
-                    }
-                } catch (Exception ignored) {}
+                File f = new File(activite.getImage());
+                if (f.exists()) imagePreview.setImage(new Image(f.toURI().toString(), true));
             }
         } else {
-            if (LBLimageName != null) LBLimageName.setText("Aucun fichier");
+            if (LBLimageName != null) LBLimageName.setText("No file selected");
             if (imagePreview != null) imagePreview.setImage(null);
         }
 
-        // ✅ reset new selection
         selectedImageFile = null;
         selectedImagePath = null;
+
+        refreshRoleVisibility();
     }
 
     private LocalDateTime buildDateTime(DatePicker dp, Spinner<Integer> h, Spinner<Integer> m) {
         if (dp == null || dp.getValue() == null) return null;
         LocalDate d = dp.getValue();
-        int hh = (h != null && h.getValue() != null) ? h.getValue() : 0;
-        int mm = (m != null && m.getValue() != null) ? m.getValue() : 0;
+        int hh = val(h);
+        int mm = val(m);
         return LocalDateTime.of(d, LocalTime.of(hh, mm));
+    }
+
+    private int val(Spinner<Integer> sp) {
+        if (sp == null) return 0;
+        Integer v = sp.getValue();
+        return v == null ? 0 : v;
     }
 
     private void closeStage(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
+    }
+
+    private Stage getStageSafe() {
+        if (TFnameactivite == null || TFnameactivite.getScene() == null) return null;
+        return (Stage) TFnameactivite.getScene().getWindow();
     }
 
     private void showWarn(String title, String msg) {
@@ -360,5 +468,9 @@ public class AjouterActiviteController {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
     }
 }

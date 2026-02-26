@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -17,6 +18,7 @@ import services.TicketService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FrontTicketsController {
 
@@ -26,19 +28,38 @@ public class FrontTicketsController {
     @FXML private TableColumn<Ticket, String> colDestination;
     @FXML private TableColumn<Ticket, Boolean> colSelect;
 
+    @FXML private Label titleLabel;
+
     private TicketService ticketService = new TicketService();
+
     private Reservation reservation;
     private LocalDate selectedDate;
+    private String ticketType; // ✅ NEW
+    private boolean addMode = false;
 
+    public void setAddMode(boolean addMode) {
+        this.addMode = addMode;
+    }
+
+
+
+    // ===============================
+    // INIT
+    // ===============================
     @FXML
     public void initialize() {
 
-        colType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getType()));
-        colPrice.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getPrix()));
-        colDestination.setCellValueFactory(data -> new SimpleStringProperty(
-                ticketService.getDestinationName(data.getValue().getDestinationId()) // fetch destination name
-        ));
+        colType.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getType()));
 
+        colPrice.setCellValueFactory(data ->
+                new SimpleObjectProperty<>(data.getValue().getPrix()));
+
+        // ✅ FIXED (NO DB CALL)
+        colDestination.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getDestinationNom()));
+
+        // ✅ CHECKBOX COLUMN
         colSelect.setCellFactory(tc -> new TableCell<>() {
 
             private final CheckBox checkBox = new CheckBox();
@@ -63,15 +84,47 @@ public class FrontTicketsController {
                 }
             }
         });
-
-        ticketTable.getItems().addAll(ticketService.getAvailableTickets());
-
-        // Populate table
-        List<Ticket> tickets = ticketService.getAvailableTickets();
-        ObservableList<Ticket> ticketList = FXCollections.observableArrayList(tickets);
-        ticketTable.setItems(ticketList);
     }
 
+    // ===============================
+    // LOAD DATA WITH FILTER
+    // ===============================
+    public void setTicketType(String type) {
+        this.ticketType = type;
+
+        // 🔥 dynamic title
+        switch (type.toLowerCase()) {
+            case "flight":
+                titleLabel.setText("✈ Available Flights");
+                break;
+            case "hotel":
+                titleLabel.setText("🏨 Available Hotels");
+                break;
+            case "transport":
+                titleLabel.setText("🚗 Available Transport");
+                break;
+            default:
+                titleLabel.setText("Tickets");
+        }
+
+        loadTickets();
+    }
+
+    private void loadTickets() {
+        List<Ticket> all = ticketService.getAvailableTickets();
+
+        // ✅ FILTER BY TYPE
+        List<Ticket> filtered = all.stream()
+                .filter(t -> t.getType().equalsIgnoreCase(ticketType))
+                .collect(Collectors.toList());
+
+        ObservableList<Ticket> list = FXCollections.observableArrayList(filtered);
+        ticketTable.setItems(list);
+    }
+
+    // ===============================
+    // SETTERS FROM OTHER PAGES
+    // ===============================
     public void setReservation(Reservation reservation) {
         this.reservation = reservation;
     }
@@ -80,29 +133,9 @@ public class FrontTicketsController {
         this.selectedDate = date;
     }
 
-
-
-    private void openReservationPopup(Ticket ticket) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/CreateReservation.fxml"));
-            Parent root = loader.load();
-
-            CreateReservationController controller = loader.getController();
-            ObservableList<Ticket> selectedTickets =
-                    ticketTable.getSelectionModel().getSelectedItems();
-
-// ✅ PASS THEM
-            controller.setSelectedTickets(selectedTickets);
-
-            Stage stage = new Stage();
-            stage.setTitle("Create Reservation");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // ===============================
+    // NEXT BUTTON (MULTI SELECT)
+    // ===============================
     @FXML
     void handleNext(ActionEvent event) {
 
@@ -134,30 +167,60 @@ public class FrontTicketsController {
         }
     }
 
+    // ===============================
+    // QUICK BOOK (SINGLE)
+    // ===============================
+    @FXML
+    private void handleBack(ActionEvent event) {
+        // Close the current window
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.close();
+    }
     @FXML
     private void handleBookTicket() {
 
-        Ticket selectedTicket = ticketTable.getSelectionModel().getSelectedItem();
+        List<Ticket> selectedTickets = ticketTable.getItems()
+                .stream()
+                .filter(Ticket::isSelected)
+                .toList();
 
-        if (selectedTicket == null) {
-            System.out.println("Select a ticket");
+        if (selectedTickets.isEmpty()) {
+            System.out.println("Select at least one ticket");
             return;
         }
 
         try {
-            // 🔥 attach ticket to reservation
-            selectedTicket.setReservationId(reservation.getId());
 
-            // optional: assign date (if you add date field later)
-            // selectedTicket.setDate(...);
+            // ✅ CASE 1: ADD TO EXISTING RESERVATION
+            if (addMode && reservation != null) {
 
-            selectedTicket.setStatut("Reserved");
+                for (Ticket t : selectedTickets) {
+                    t.setReservationId(reservation.getId());
+                    t.setStatut("Reserved");
 
-            TicketService ticketService = new TicketService();
-            ticketService.update(selectedTicket);
+                    ticketService.update(t);
+                }
 
-            // close popup
-            ((Stage) ticketTable.getScene().getWindow()).close();
+                System.out.println("Tickets added to existing reservation ✅");
+
+                // 🔥 CLOSE WINDOW
+                ((Stage) ticketTable.getScene().getWindow()).close();
+            }
+
+            // ✅ CASE 2: NORMAL FLOW (CREATE RESERVATION)
+            else {
+
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/CreateReservation.fxml"));
+                Parent root = loader.load();
+
+                CreateReservationController controller = loader.getController();
+                controller.setSelectedTickets(selectedTickets);
+
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+                stage.setTitle("Create Reservation");
+                stage.show();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

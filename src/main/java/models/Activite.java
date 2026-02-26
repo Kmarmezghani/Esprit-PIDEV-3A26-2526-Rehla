@@ -110,4 +110,16 @@ public class Activite {
     public void setImage(String image) {
         this.image = image;
     }
+    private boolean flashSale;
+    private Double flashPrice;
+    private LocalDateTime flashExpiresAt;
+
+    public boolean isFlashSale() { return flashSale; }
+    public void setFlashSale(boolean flashSale) { this.flashSale = flashSale; }
+
+    public Double getFlashPrice() { return flashPrice; }
+    public void setFlashPrice(Double flashPrice) { this.flashPrice = flashPrice; }
+
+    public LocalDateTime getFlashExpiresAt() { return flashExpiresAt; }
+    public void setFlashExpiresAt(LocalDateTime flashExpiresAt) { this.flashExpiresAt = flashExpiresAt; }
 }

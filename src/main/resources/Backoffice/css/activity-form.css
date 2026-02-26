@@ -1,0 +1,227 @@
+/* =========================
+   BASE
+   ========================= */
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #F6F8FF;
+}
+
+.topBar { -fx-background-color: #223f91; }
+
+.topTitle {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 900;
+}
+
+.page { -fx-background-color: #F6F8FF; }
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 22;
+    -fx-padding: 22;
+    -fx-border-color: #EEF2FF;
+    -fx-border-radius: 22;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 18, 0, 0, 8);
+}
+
+.sectionTitle {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 22px;
+    -fx-font-weight: 900;
+}
+
+.fieldLabel {
+    -fx-text-fill: #0f172a;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+}
+
+.muted {
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 700;
+}
+
+/* =========================
+   INPUTS (TextField / ComboBox / DatePicker)
+   ========================= */
+.field {
+    -fx-pref-height: 38px;
+    -fx-min-height: 38px;
+
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #E5E7EB;
+
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+
+    -fx-padding: 0 12;
+    -fx-font-size: 13px;
+}
+
+/* focus */
+.text-field.field:focused,
+.combo-box-base.field:focused,
+.date-picker.field:focused {
+    -fx-border-color: #3A5BC7;
+    -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.22), 10, 0, 0, 0);
+}
+
+/* =========================
+   DATEPICKER (remove Windows look)
+   ========================= */
+.date-picker.field {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #E5E7EB;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+}
+
+/* remove inner box */
+.date-picker.field > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 10;
+}
+
+/* remove grey button */
+.date-picker.field > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0 10;
+}
+
+/* calendar icon */
+.date-picker.field > .arrow-button > .arrow {
+    -fx-background-color: #475569;
+}
+
+/* =========================
+   PREVIEW
+   ========================= */
+.preview {
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #E5E7EB;
+    -fx-background-color: #F8FAFC;
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+.primaryBtn {
+    -fx-background-color: #223f91;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-background-radius: 14;
+    -fx-padding: 10 18;
+    -fx-cursor: hand;
+}
+
+.secondaryBtn {
+    -fx-background-color: #EEF2FF;
+    -fx-text-fill: #223f91;
+    -fx-font-weight: 900;
+    -fx-background-radius: 14;
+    -fx-padding: 10 18;
+    -fx-cursor: hand;
+}
+
+.ghostBtn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #223f91;
+    -fx-font-weight: 900;
+    -fx-background-radius: 14;
+    -fx-border-color: #C7D2FE;
+    -fx-border-radius: 14;
+    -fx-padding: 10 16;
+    -fx-cursor: hand;
+}
+
+.aiBtn {
+    -fx-background-color: #fff7ed;
+    -fx-text-fill: #c2410c;
+    -fx-font-weight: 900;
+    -fx-background-radius: 14;
+    -fx-border-color: #fdba74;
+    -fx-border-radius: 14;
+    -fx-padding: 10 14;
+    -fx-cursor: hand;
+}
+
+/* =========================
+   SPINNER (clean + rounded, no Windows box)
+   IMPORTANT: apply styleClass="premiumSpinner"
+   ========================= */
+.premiumSpinner {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* target spinner editor (most reliable) */
+.premiumSpinner .text-field,
+.premiumSpinner .editor {
+    -fx-pref-height: 38px;
+    -fx-min-height: 38px;
+
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #E5E7EB;
+
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+
+    -fx-padding: 0 12;
+    -fx-font-size: 13px;
+}
+
+/* focus */
+.premiumSpinner:focused .text-field,
+.premiumSpinner .text-field:focused,
+.premiumSpinner:focused .editor,
+.premiumSpinner .editor:focused {
+    -fx-border-color: #3A5BC7;
+    -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.22), 10, 0, 0, 0);
+}
+
+/* kill grey arrow buttons */
+.premiumSpinner .increment-arrow-button,
+.premiumSpinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0 12;
+}
+
+/* arrow glyph */
+.premiumSpinner .increment-arrow,
+.premiumSpinner .decrement-arrow {
+    -fx-background-color: #475569;
+}
+
+/* hover */
+.premiumSpinner .increment-arrow-button:hover,
+.premiumSpinner .decrement-arrow-button:hover {
+    -fx-background-color: rgba(99,102,241,0.10);
+    -fx-background-radius: 14;
+}
+
+/* =========================
+   TIME SPINNER (more readable)
+   apply styleClass="premiumSpinner timeSpinner"
+   ========================= */
+.timeSpinner .text-field,
+.timeSpinner .editor {
+    -fx-alignment: CENTER;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+}

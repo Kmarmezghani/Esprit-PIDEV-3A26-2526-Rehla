@@ -1,12 +1,12 @@
 package services;
 
 import models.Activite;
-import models.Preference; // (pas utilisé ici, juste au cas)
 import models.WaitlistEntry;
 import util.DBConnection;
 
 import java.security.SecureRandom;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -14,60 +14,40 @@ public class WaitlistService {
 
     private final Connection cnx;
 
-    // Dépendances déjà existantes chez toi
     private final ActiviteService activiteService = new ActiviteService();
-    private final ReservationService reservationService = new ReservationService();
     private final PersonneService personneService = new PersonneService();
     private final EmailService emailService = new EmailService();
+    private final NotificationService notificationService = new NotificationService();
+    private final TicketService ticketService = new TicketService();
 
-    // HOLD duration
     private static final int HOLD_MINUTES = 20;
 
     public WaitlistService() {
         cnx = DBConnection.getInstance().getConn();
     }
 
-    // =========================
-    // 1) JOIN WAITLIST
-    // =========================
+    // ✅ IMPORTANT: pour ON DUPLICATE KEY, il faut un UNIQUE(activite_id, personne_id)
     public void joinWaitlist(int personneId, int activiteId) throws SQLException {
-        // éviter doublons (WAITING ou HOLD)
-        String check = """
-            SELECT id
-            FROM waitlist
-            WHERE activite_id = ? AND personne_id = ?
-              AND status IN ('WAITING','HOLD')
-            LIMIT 1
+        String sql = """
+            INSERT INTO waitlist (activite_id, personne_id, status, created_at, hold_token, hold_expires_at)
+            VALUES (?, ?, 'WAITING', NOW(), NULL, NULL)
+            ON DUPLICATE KEY UPDATE
+                status = IF(status IN ('WAITING','HOLD'), status, 'WAITING'),
+                created_at = IF(status IN ('WAITING','HOLD'), created_at, NOW()),
+                hold_token = IF(status IN ('WAITING','HOLD'), hold_token, NULL),
+                hold_expires_at = IF(status IN ('WAITING','HOLD'), hold_expires_at, NULL)
         """;
-
-        try (PreparedStatement ps = cnx.prepareStatement(check)) {
-            ps.setInt(1, activiteId);
-            ps.setInt(2, personneId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                // déjà dans waitlist
-                return;
-            }
-        }
-
-        String insert = """
-            INSERT INTO waitlist (activite_id, personne_id, status, created_at)
-            VALUES (?, ?, 'WAITING', NOW())
-        """;
-        try (PreparedStatement ps = cnx.prepareStatement(insert)) {
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
             ps.setInt(2, personneId);
             ps.executeUpdate();
         }
     }
 
-    // =========================
-    // 2) LEAVE WAITLIST
-    // =========================
     public void leaveWaitlist(int personneId, int activiteId) throws SQLException {
         String sql = """
             UPDATE waitlist
-            SET status = 'CANCELLED'
+            SET status = 'CANCELLED', hold_token=NULL, hold_expires_at=NULL
             WHERE activite_id = ? AND personne_id = ?
               AND status IN ('WAITING','HOLD')
         """;
@@ -78,83 +58,71 @@ public class WaitlistService {
         }
     }
 
-    // =========================
-    // 3) EXPIRE HOLDS (global)
-    // =========================
     public int expireAllHolds() throws SQLException {
         String sql = """
             UPDATE waitlist
             SET status = 'EXPIRED', hold_token = NULL, hold_expires_at = NULL
-            WHERE status = 'HOLD' AND hold_expires_at IS NOT NULL AND hold_expires_at < NOW()
+            WHERE status = 'HOLD'
+              AND hold_expires_at IS NOT NULL
+              AND hold_expires_at < NOW()
         """;
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             return ps.executeUpdate();
         }
     }
 
-    // =========================
-    // 4) PROMOTE NEXT (if seat available)
-    // Appelée après annulation / suppression ticket
-    // =========================
     public void promoteNextIfSeatAvailable(int activiteId) throws SQLException {
-        // 1) expirer les anciens HOLD pour éviter blocage
         expireAllHolds();
-
-        // 2) si pas de place, stop
         if (!hasFreeSeat(activiteId)) return;
 
-        // 3) prendre le premier WAITING
         Optional<WaitlistEntry> next = getNextWaiting(activiteId);
         if (next.isEmpty()) return;
 
-        // 4) créer un HOLD + envoyer mail
         WaitlistEntry holdEntry = createHold(next.get().getId(), HOLD_MINUTES);
 
-        // ✅✅✅ ONLY CHANGE: email template like your others (HTML + activity details)
+        // notif
+        try {
+            int userId = holdEntry.getPersonneId();
+            Activite a = activiteService.getById(activiteId);
+            String activityName = (a != null && a.getNom() != null) ? a.getNom() : ("Activité #" + activiteId);
+
+            Integer senderId = null;
+            try {
+                if (a != null && a.getGuideId() > 0) {
+                    senderId = a.getGuideId();
+                }
+            } catch (Exception ignored) {}
+
+            notificationService.createWaitlistHoldNotif(
+                    senderId == null ? 0 : senderId,
+                    userId,
+                    activiteId,
+                    "Une place s’est libérée pour \"" + activityName + "\". Réserve dans " + HOLD_MINUTES + " minutes."
+            );
+        } catch (Exception ignored) {}
+
+        // email (optionnel)
         try {
             int userId = holdEntry.getPersonneId();
             String email = personneService.getEmailById(userId);
-            String name  = personneService.getFullNameById(userId);
+            String name = personneService.getFullNameById(userId);
 
             if (email != null && !email.isBlank()) {
-
-                // récupérer activité
                 Activite a = activiteService.getById(activiteId);
                 String activityName = (a != null && a.getNom() != null) ? a.getNom() : ("Activité #" + activiteId);
 
-                // destination display (nom, pays)
-                String destinationDisplay = "";
-                if (a != null) {
-                    destinationDisplay = activiteService.getDestinationDisplayById(a.getDestinationId());
-                }
-
-                // dates (string simple)
+                String destinationDisplay = (a != null) ? activiteService.getDestinationDisplayById(a.getDestinationId()) : "";
                 String startDate = (a != null && a.getDateDebut() != null) ? a.getDateDebut().toString() : "—";
                 String endDate   = (a != null && a.getDateFin() != null) ? a.getDateFin().toString() : "—";
 
-                // si tu as une page confirm (sinon garde vide et le mail affichera juste le token)
-                String confirmUrl = ""; // ex: "http://localhost:8080/waitlist/confirm?token=" + holdEntry.getHoldToken();
-
                 emailService.sendWaitlistHoldEmail(
-                        email,
-                        name,
-                        activityName,
-                        destinationDisplay,
-                        startDate,
-                        endDate,
-                        holdEntry.getHoldToken(),
-                        HOLD_MINUTES,
-                        confirmUrl
+                        email, name, activityName, destinationDisplay, startDate, endDate,
+                        holdEntry.getHoldToken(), HOLD_MINUTES, ""
                 );
             }
-        } catch (Exception ignored) {
-            // si l’email fail, on garde le hold (ou tu peux revert si tu veux)
-        }
+        } catch (Exception ignored) {}
     }
 
-    // =========================
-    // 5) GET NEXT WAITING
-    // =========================
     public Optional<WaitlistEntry> getNextWaiting(int activiteId) throws SQLException {
         String sql = """
             SELECT id, activite_id, personne_id, status, created_at, hold_expires_at, hold_token
@@ -165,20 +133,14 @@ public class WaitlistService {
         """;
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) return Optional.empty();
-            return Optional.of(map(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return Optional.empty();
+                return Optional.of(map(rs));
+            }
         }
     }
 
-    // =========================
-    // 6) CREATE HOLD
-    // =========================
     public WaitlistEntry createHold(int waitlistId, int minutes) throws SQLException {
-        // récupère l’entrée
-        WaitlistEntry e = getById(waitlistId)
-                .orElseThrow(() -> new SQLException("Waitlist entry not found: " + waitlistId));
-
         String token = generateToken();
         String sql = """
             UPDATE waitlist
@@ -192,108 +154,153 @@ public class WaitlistService {
             ps.setInt(2, minutes);
             ps.setInt(3, waitlistId);
             int updated = ps.executeUpdate();
-            if (updated == 0) {
-                throw new SQLException("Cannot create hold. Entry is not WAITING anymore.");
-            }
+            if (updated == 0) throw new SQLException("Cannot create hold. Entry is not WAITING anymore.");
         }
-
-        // reload
-        return getById(waitlistId)
-                .orElseThrow(() -> new SQLException("Waitlist entry not found after hold: " + waitlistId));
+        return getById(waitlistId).orElseThrow(() -> new SQLException("Waitlist entry not found after hold."));
     }
 
-    // =========================
-    // 7) CONFIRM HOLD
-    // Token venant de l’email / UI
-    // Crée réservation + tickets (qty=1 ici)
-    // =========================
-    public void confirmHold(String token) throws SQLException {
-        if (token == null || token.isBlank()) throw new SQLException("Token is empty.");
+    // ✅✅✅ CONFIRM SANS TOKEN (ta demande)
+    public void confirmHold(int personneId, int activiteId) throws SQLException {
 
-        boolean oldAutoCommit = cnx.getAutoCommit();
+        boolean oldAuto = cnx.getAutoCommit();
         cnx.setAutoCommit(false);
 
         try {
-            // 1) lock row
-            String lockSql = """
-                SELECT id, activite_id, personne_id, status, hold_expires_at
+            // 1) lock waitlist row
+            String lockWait = """
+                SELECT id, hold_expires_at, status
                 FROM waitlist
-                WHERE hold_token = ?
+                WHERE activite_id = ?
+                  AND personne_id = ?
+                  AND status = 'HOLD'
                 LIMIT 1
                 FOR UPDATE
             """;
-            int waitlistId;
-            int activiteId;
-            int personneId;
-            String status;
+
+            int waitId;
             Timestamp holdExp;
+            String status;
 
-            try (PreparedStatement ps = cnx.prepareStatement(lockSql)) {
-                ps.setString(1, token);
-                ResultSet rs = ps.executeQuery();
-                if (!rs.next()) {
-                    throw new SQLException("Invalid token.");
+            try (PreparedStatement ps = cnx.prepareStatement(lockWait)) {
+                ps.setInt(1, activiteId);
+                ps.setInt(2, personneId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) throw new SQLException("Aucun HOLD actif (expiré ou déjà utilisé).");
+                    waitId = rs.getInt("id");
+                    holdExp = rs.getTimestamp("hold_expires_at");
+                    status = rs.getString("status");
                 }
-                waitlistId = rs.getInt("id");
-                activiteId = rs.getInt("activite_id");
-                personneId = rs.getInt("personne_id");
-                status = rs.getString("status");
-                holdExp = rs.getTimestamp("hold_expires_at");
             }
 
-            if (!"HOLD".equalsIgnoreCase(status)) {
-                throw new SQLException("This token is not in HOLD status.");
-            }
+            if (!"HOLD".equalsIgnoreCase(status)) throw new SQLException("HOLD invalide.");
             if (holdExp == null || holdExp.before(new Timestamp(System.currentTimeMillis()))) {
-                // expire
-                markExpired(waitlistId);
+                markExpired(waitId);
                 cnx.commit();
-                throw new SQLException("Hold expired.");
+                throw new SQLException("HOLD expiré.");
             }
 
-            // 2) vérifier place dispo
-            if (!hasFreeSeat(activiteId)) {
-                // garder HOLD ? ici on expire pour éviter blocage
-                markExpired(waitlistId);
-                cnx.commit();
-                throw new SQLException("No seat available anymore.");
+            // 2) lock activity row
+            Integer maxPlaces;
+            Date actStart;
+            Date actEnd;
+            double prix;
+            Integer destinationId;
+
+            String lockAct = "SELECT max_places, date_debut, date_fin, prix, destination_id FROM activite WHERE id=? FOR UPDATE";
+            try (PreparedStatement ps = cnx.prepareStatement(lockAct)) {
+                ps.setInt(1, activiteId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) throw new SQLException("Activité introuvable.");
+                    int mp = rs.getInt("max_places");
+                    maxPlaces = rs.wasNull() ? null : mp;
+
+                    actStart = rs.getDate("date_debut");
+                    actEnd   = rs.getDate("date_fin");
+                    prix     = rs.getDouble("prix");
+
+                    int dest = rs.getInt("destination_id");
+                    destinationId = rs.wasNull() ? null : dest;
+                }
             }
 
-            // 3) créer réservation/ticket (1 place)
-            Activite a = activiteService.getById(activiteId);
-            if (a == null) throw new SQLException("Activite not found.");
+            if (actStart == null || actEnd == null) throw new SQLException("Dates activité manquantes.");
 
-            reservationService.bookWithQty(
-                    personneId,
-                    activiteId,
-                    1,
-                    a.getPrix(),
-                    a.getDestinationId()
-            );
+            // 3) check seats (sur la même connexion)
+            int taken = countReservedTicketsForActivity(activiteId);
+            if (maxPlaces != null && taken >= maxPlaces) {
+                markExpired(waitId);
+                cnx.commit();
+                throw new SQLException("Plus de place disponible.");
+            }
 
-            // 4) statut CONFIRMED
+            // 4) create reservation
+            int reservationId;
+            String insertRes = """
+                INSERT INTO reservation(dateReservation, dateDebut, dateFin, statut, coutTotal, personne_id, destination_id, nb_tickets)
+                VALUES (?, ?, ?, 'reserved', ?, ?, ?, ?)
+            """;
+            try (PreparedStatement ps = cnx.prepareStatement(insertRes, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setDate(1, Date.valueOf(LocalDate.now()));
+                ps.setDate(2, actStart);
+                ps.setDate(3, actEnd);
+                ps.setDouble(4, prix); // qty=1
+                ps.setInt(5, personneId);
+                if (destinationId == null) ps.setNull(6, Types.INTEGER); else ps.setInt(6, destinationId);
+                ps.setInt(7, 1);
+                ps.executeUpdate();
+
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (!keys.next()) throw new SQLException("Création réservation échouée.");
+                    reservationId = keys.getInt(1);
+                }
+            }
+
+            // 5) create ticket (qty=1) - même transaction
+            ticketService.createTicketsBatch(cnx, reservationId, activiteId, 1, prix, destinationId);
+
+            // 6) confirm waitlist
             String okSql = """
                 UPDATE waitlist
                 SET status='CONFIRMED', hold_token=NULL, hold_expires_at=NULL
                 WHERE id = ?
             """;
             try (PreparedStatement ps = cnx.prepareStatement(okSql)) {
-                ps.setInt(1, waitlistId);
+                ps.setInt(1, waitId);
                 ps.executeUpdate();
             }
 
             cnx.commit();
+
         } catch (SQLException ex) {
-            cnx.rollback();
+            // ✅ rollback safe
+            try {
+                if (!cnx.getAutoCommit()) cnx.rollback();
+            } catch (SQLException ignored) {}
             throw ex;
         } finally {
-            cnx.setAutoCommit(oldAutoCommit);
+            try { cnx.setAutoCommit(oldAuto); } catch (SQLException ignored) {}
         }
     }
 
-    // =========================
-    // Helpers DB
-    // =========================
+    // ---- helpers ----
+
+    private int countReservedTicketsForActivity(int activiteId) throws SQLException {
+        String sql = """
+            SELECT COALESCE(COUNT(*),0) AS taken
+            FROM ticket t
+            JOIN reservation r ON r.id = t.reservation_id
+            WHERE t.activite_id = ?
+              AND LOWER(IFNULL(t.type,'')) IN ('activity','activite')
+              AND LOWER(IFNULL(r.statut,'')) = 'reserved'
+        """;
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, activiteId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt("taken") : 0;
+            }
+        }
+    }
+
     public Optional<WaitlistEntry> getById(int id) throws SQLException {
         String sql = """
             SELECT id, activite_id, personne_id, status, created_at, hold_expires_at, hold_token
@@ -302,9 +309,27 @@ public class WaitlistService {
         """;
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) return Optional.empty();
-            return Optional.of(map(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return Optional.empty();
+                return Optional.of(map(rs));
+            }
+        }
+    }
+
+    public boolean isUserWaiting(int personneId, int activiteId) throws SQLException {
+        String sql = """
+            SELECT 1
+            FROM waitlist
+            WHERE activite_id = ? AND personne_id = ?
+              AND status IN ('WAITING','HOLD')
+            LIMIT 1
+        """;
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, activiteId);
+            ps.setInt(2, personneId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         }
     }
 
@@ -335,66 +360,22 @@ public class WaitlistService {
         );
     }
 
-    // =========================
-    // Seats check
-    // =========================
     private boolean hasFreeSeat(int activiteId) {
         try {
             Activite a = activiteService.getById(activiteId);
             if (a == null) return false;
-
             Integer max = a.getMaxPlaces();
-            if (max == null) return true; // unlimited
-
-            int booked = reservationService.sumTicketsConfirmedByActiviteId(activiteId);
+            if (max == null) return true;
+            int booked = countReservedTicketsForActivity(activiteId);
             return booked < max;
         } catch (Exception e) {
             return false;
         }
     }
 
-    // =========================
-    // Token generator
-    // =========================
     private String generateToken() {
         byte[] bytes = new byte[24];
         new SecureRandom().nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    // =========================
-    // 0) CHECK IF USER IS WAITING/HOLD
-    // =========================
-    public boolean isUserWaiting(int personneId, int activiteId) throws SQLException {
-        String sql = """
-            SELECT 1
-            FROM waitlist
-            WHERE activite_id = ? AND personne_id = ?
-              AND status IN ('WAITING','HOLD')
-            LIMIT 1
-        """;
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-            ps.setInt(1, activiteId);
-            ps.setInt(2, personneId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-        }
-    }
-
-    // (optionnel mais utile) récupérer le statut exact
-    public String getUserWaitlistStatus(int personneId, int activiteId) throws SQLException {
-        String sql = """
-            SELECT status
-            FROM waitlist
-            WHERE activite_id = ? AND personne_id = ?
-            ORDER BY created_at DESC
-            LIMIT 1
-        """;
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-            ps.setInt(1, activiteId);
-            ps.setInt(2, personneId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next() ? rs.getString("status") : null;
-        }
     }
 }

@@ -1,152 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="515.0" prefWidth="518.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AjouterActiviteController">
+<AnchorPane prefHeight="520.0" prefWidth="760.0"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.AjouterActiviteController"
+            stylesheets="@css/activity-form.css">
+
     <children>
-        <BorderPane prefHeight="540.0" prefWidth="416.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <BorderPane AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0">
+
             <top>
-                <HBox alignment="CENTER_LEFT" prefHeight="48.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                <HBox alignment="CENTER_LEFT" prefHeight="54.0" styleClass="topBar">
                     <children>
-                        <ImageView fitHeight="38.0" fitWidth="101.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="38.0" fitWidth="110.0" pickOnBounds="true" preserveRatio="true">
                             <image>
                                 <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
                             </image>
                         </ImageView>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="LBLformTitle" text="Create activity" styleClass="topTitle"/>
                     </children>
-                    <padding>
-                        <Insets left="30.0" />
-                    </padding>
+                    <padding><Insets left="22.0" right="22.0"/></padding>
                 </HBox>
             </top>
 
             <center>
-                <GridPane alignment="CENTER" hgap="14.0" vgap="12.0" BorderPane.alignment="CENTER">
-                    <columnConstraints>
-                        <ColumnConstraints halignment="LEFT" minWidth="140.0" prefWidth="140.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-                    </columnConstraints>
+                <VBox spacing="12" styleClass="page" BorderPane.alignment="CENTER">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
 
-                    <!-- ✅ Ajout d'une row pour le preview -->
-                    <rowConstraints>
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 0 Image + bouton -->
-                        <RowConstraints minHeight="90.0" vgrow="NEVER" />  <!-- 1 Preview -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 2 Name -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 3 Description -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 4 Price -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 5 Type -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 6 Date debut -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 7 Date fin -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 8 Destination -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 9 Status -->
-                        <RowConstraints minHeight="28.0" vgrow="NEVER" />  <!-- 10 Max places -->
-                        <RowConstraints minHeight="55.0" vgrow="NEVER" />  <!-- 11 Buttons -->
-                    </rowConstraints>
+                    <VBox spacing="14" styleClass="card">
 
-                    <children>
-                        <!-- Image choose -->
-                        <Label text="Image" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="0" />
-                        <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <children>
-                                <!-- ✅ même nom que ton partenaire -->
-                                <Button text="Choisir" onAction="#choisirImage" />
-                                <Label fx:id="LBLimageName" text="Aucun fichier" />
-                            </children>
+                        <HBox alignment="CENTER_LEFT">
+                            <Label text="Details" styleClass="sectionTitle"/>
                         </HBox>
 
-                        <!-- ✅ Preview -->
-                        <Label text="Preview" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-                        <ImageView fx:id="imagePreview"
-                                   fitWidth="220.0"
-                                   fitHeight="90.0"
-                                   preserveRatio="true"
-                                   smooth="true"
-                                   pickOnBounds="true"
-                                   GridPane.columnIndex="1"
-                                   GridPane.rowIndex="1" />
+                        <GridPane hgap="18" vgap="14">
 
-                        <!-- Name -->
-                        <Label text="Name" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
-                        <TextField fx:id="TFnameactivite" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="110" prefWidth="110" halignment="LEFT"/>
+                                <ColumnConstraints minWidth="240" prefWidth="280" hgrow="ALWAYS"/>
+                                <ColumnConstraints minWidth="110" prefWidth="110" halignment="LEFT"/>
+                                <ColumnConstraints minWidth="240" prefWidth="280" hgrow="ALWAYS"/>
+                            </columnConstraints>
 
-                        <!-- Description -->
-                        <Label text="Description" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
-                        <TextField fx:id="TFdescriptionactivite" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            <!-- Row 0: Image -->
+                            <Label text="Image" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="fieldLabel"/>
+                            <HBox spacing="12" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3" alignment="CENTER_LEFT">
+                                <children>
+                                    <Button text="Choose" onAction="#choisirImage" styleClass="ghostBtn"/>
+                                    <Label fx:id="LBLimageName" text="No file selected" styleClass="muted"/>
+                                </children>
+                            </HBox>
 
-                        <!-- Price -->
-                        <Label text="Price" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
-                        <Spinner fx:id="pricespinneractivite" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                            <!-- Row 1: Preview -->
+                            <Label text="Preview" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="fieldLabel"/>
+                            <ImageView fx:id="imagePreview"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="3"
+                                       fitWidth="520" fitHeight="110"
+                                       preserveRatio="true" smooth="true" pickOnBounds="true"
+                                       styleClass="preview"/>
 
-                        <!-- Type -->
-                        <Label text="Type" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
-                        <TextField fx:id="TFtypeactivite" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                            <!-- Row 2: Name | Type -->
+                            <Label text="Name" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="fieldLabel"/>
+                            <TextField fx:id="TFnameactivite" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="field"/>
 
-                        <!-- Date début -->
-                        <Label text="Date début" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
-                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-                            <children>
-                                <DatePicker fx:id="DPdateDebut" prefWidth="130.0" />
-                                <Spinner fx:id="SPheureDebut" prefWidth="62.0" style="-fx-font-size: 13px;" />
-                                <Spinner fx:id="SPminuteDebut" prefWidth="62.0" style="-fx-font-size: 13px;" />
-                            </children>
+                            <Label text="Type" GridPane.columnIndex="2" GridPane.rowIndex="2" styleClass="fieldLabel"/>
+                            <TextField fx:id="TFtypeactivite" GridPane.columnIndex="3" GridPane.rowIndex="2"
+                                       styleClass="field" promptText="Hiking, Museum..."/>
+
+                            <!-- Row 3: Description + AI -->
+                            <Label text="Description" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="fieldLabel"/>
+                            <HBox spacing="12" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3" alignment="CENTER_LEFT">
+                                <children>
+                                    <TextField fx:id="TFdescriptionactivite" HBox.hgrow="ALWAYS"
+                                               styleClass="field" promptText="Short description..." />
+                                    <Button fx:id="BTNaiDesc" text="✨ AI" onAction="#generateDescriptionAi" styleClass="aiBtn"/>
+                                </children>
+                            </HBox>
+
+                            <!-- Row 4: Price | Status -->
+                            <Label text="Price" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="fieldLabel"/>
+                            <!-- ⚠️ pas de styleClass="field" ici pour éviter double cadre -->
+                            <Spinner fx:id="pricespinneractivite" GridPane.columnIndex="1" GridPane.rowIndex="4"
+                                     styleClass="premiumSpinner"/>
+
+                            <Label text="Status" GridPane.columnIndex="2" GridPane.rowIndex="4" styleClass="fieldLabel"/>
+                            <ComboBox fx:id="CBstatus" GridPane.columnIndex="3" GridPane.rowIndex="4" styleClass="field"/>
+
+                            <!-- Row 5: Start | End -->
+                            <Label text="Start" GridPane.columnIndex="0" GridPane.rowIndex="5" styleClass="fieldLabel"/>
+
+                            <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5" alignment="CENTER_LEFT">
+                                <children>
+                                    <DatePicker fx:id="DPdateDebut" prefWidth="160" styleClass="field"/>
+                                    <HBox spacing="6" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Spinner fx:id="SPheureDebut" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                            <Label text=":" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #64748b;"/>
+                                            <Spinner fx:id="SPminuteDebut" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+
+                            <Label text="End" GridPane.columnIndex="2" GridPane.rowIndex="5" styleClass="fieldLabel"/>
+                            <HBox spacing="10" GridPane.columnIndex="3" GridPane.rowIndex="5" alignment="CENTER_LEFT">
+                                <children>
+                                    <DatePicker fx:id="DPdateFin" prefWidth="160" styleClass="field"/>
+                                    <HBox spacing="6" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Spinner fx:id="SPheureFin" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                            <Label text=":" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #64748b;"/>
+                                            <Spinner fx:id="SPminuteFin" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+
+                            <!-- Row 6: Destination | Max places -->
+                            <Label text="Destination" GridPane.columnIndex="0" GridPane.rowIndex="6" styleClass="fieldLabel"/>
+                            <ComboBox fx:id="CBdestination" GridPane.columnIndex="1" GridPane.rowIndex="6" styleClass="field"/>
+
+                            <Label fx:id="LBLmaxPlaces" text="Max places" GridPane.columnIndex="2" GridPane.rowIndex="6" styleClass="fieldLabel"/>
+                            <!-- ⚠️ pas de field ici aussi -->
+                            <Spinner fx:id="SPmaxPlaces" GridPane.columnIndex="3" GridPane.rowIndex="6"
+                                     styleClass="premiumSpinner"/>
+
+                        </GridPane>
+
+                        <HBox alignment="CENTER_RIGHT" spacing="12">
+                            <Button text="Cancel" onAction="#handleCancel" styleClass="secondaryBtn"/>
+                            <Button fx:id="BTNprimary" text="Save" onAction="#ajouterActivite" styleClass="primaryBtn"/>
                         </HBox>
 
-                        <!-- Date fin -->
-                        <Label text="Date fin" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
-                        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                            <children>
-                                <DatePicker fx:id="DPdateFin" prefWidth="130.0" />
-                                <Spinner fx:id="SPheureFin" prefWidth="62.0" style="-fx-font-size: 13px;" />
-                                <Spinner fx:id="SPminuteFin" prefWidth="62.0" style="-fx-font-size: 13px;" />
-                            </children>
-                        </HBox>
-
-                        <!-- Destination -->
-                        <Label text="Destination" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="8" />
-                        <ComboBox fx:id="CBdestination" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-
-                        <!-- Status -->
-                        <Label text="Status" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.rowIndex="9" />
-                        <ComboBox fx:id="CBstatus" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-
-                        <!-- Max places -->
-                        <Label fx:id="LBLmaxPlaces" text="Max places"
-                               GridPane.columnIndex="0"
-                               GridPane.halignment="LEFT"
-                               GridPane.rowIndex="10" />
-
-                        <Spinner fx:id="SPmaxPlaces"
-                                 prefWidth="120.0"
-                                 GridPane.columnIndex="1"
-                                 GridPane.rowIndex="10" />
-
-                        <!-- Buttons -->
-                        <HBox alignment="CENTER" spacing="40.0" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11">
-                            <children>
-                                <Button mnemonicParsing="false" onAction="#ajouterActivite" prefHeight="30.0" prefWidth="130.0" styleClass="button2" stylesheets="@css/styling.css" text="Save" />
-                                <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="30.0" prefWidth="130.0" styleClass="button5" stylesheets="@css/styling.css" text="Cancel" />
-                            </children>
-                        </HBox>
-                    </children>
-
-                    <padding>
-                        <Insets bottom="20.0" left="40.0" right="40.0" top="20.0" />
-                    </padding>
-                </GridPane>
+                    </VBox>
+                </VBox>
             </center>
         </BorderPane>
     </children>

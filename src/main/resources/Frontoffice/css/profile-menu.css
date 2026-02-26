@@ -1,0 +1,167 @@
+/* only for notif/profile icons */
+.iconBtn {
+    -fx-background-color: rgba(255,255,255,0.18);
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-cursor: hand;
+    -fx-background-radius: 999;
+    -fx-padding: 8;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-background-insets: 0;
+}
+.iconBtn:hover { -fx-background-color: rgba(255,255,255,0.28); }
+.iconBtn:pressed { -fx-background-color: rgba(255,255,255,0.35); }
+
+/* ===== BADGE NOTIF (fix overflow) ===== */
+.notifBadge {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: 900;
+
+    -fx-min-width: 16px;
+    -fx-pref-width: 16px;
+    -fx-min-height: 16px;
+    -fx-pref-height: 16px;
+
+    -fx-alignment: center;
+    -fx-background-radius: 999px;
+    -fx-padding: 0;
+}
+
+/* ===== BEAUTIFUL dropdown (NO transparency) ===== */
+.profileMenu {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+    -fx-border-color: rgba(0,0,0,0.10);
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 16, 0, 0, 6);
+}
+
+/* important: style the popup region (JavaFX structure) */
+.profileMenu .context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+}
+
+/* menu items */
+.profileMenu .menu-item {
+    -fx-padding: 10 14;
+    -fx-background-radius: 10;
+}
+.profileMenu .menu-item .label {
+    -fx-font-size: 14px;
+    -fx-font-weight: 400;
+    -fx-text-fill: #0f172a;
+}
+
+/* hover */
+.profileMenu .menu-item:hover,
+.profileMenu .menu-item:focused {
+    -fx-background-color: #eef2ff;
+}
+.profileMenu .menu-item:hover .label,
+.profileMenu .menu-item:focused .label {
+    -fx-text-fill: #223f91;
+}
+
+/* separator */
+.profileMenu .separator *.line {
+    -fx-border-color: #e5e7eb;
+}
+
+/* ===== SVG icons in menu ===== */
+.menuIcon{
+    -fx-fill: #374151;
+    -fx-scale-x: 0.92;
+    -fx-scale-y: 0.92;
+    -fx-opacity: 0.95;
+}
+.menuIconLogout{
+    -fx-fill: #dc2626;
+    -fx-scale-x: 0.92;
+    -fx-scale-y: 0.92;
+    -fx-opacity: 0.98;
+}
+.profileMenu .menu-item:hover .menuIcon,
+.profileMenu .menu-item:focused .menuIcon{
+    -fx-fill: #223f91;
+    -fx-opacity: 1.0;
+}
+.profileMenu .menu-item .graphic-container{
+    -fx-padding: 0 10 0 2;
+}
+
+/* ===== NOTIFICATIONS MENU (same design as profile) ===== */
+.notifMenu {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+    -fx-border-color: rgba(0,0,0,0.10);
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 16, 0, 0, 6);
+}
+
+.notifMenu .context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+}
+
+.notifMenu .menu-item {
+    -fx-padding: 10 14;
+    -fx-background-radius: 10;
+}
+
+.notifMenu .menu-item .label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #0f172a;
+}
+
+.notifMenu .menu-item:hover,
+.notifMenu .menu-item:focused {
+    -fx-background-color: #f3f4f6;
+}
+
+.notifMenu .separator *.line {
+    -fx-border-color: #e5e7eb;
+}
+
+/* special for "Mark all as read" */
+.notifAction {
+    -fx-text-fill: #223f91;
+    -fx-font-weight: 700;
+}
+.notifBadge{
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+
+    -fx-alignment: center;
+
+    /* taille minimum “pastille” */
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+
+    /* pour 2 chiffres (10, 12, 99...) */
+    -fx-padding: 0 6 0 6;
+
+    -fx-background-radius: 999;
+}
+
+.notifMenu {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-padding: 8;
+    -fx-border-color: rgba(0,0,0,0.10);
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 16, 0, 0, 6);
+}
+.notifMenu .menu-item { -fx-padding: 10 14; -fx-background-radius: 10; }
+.notifMenu .menu-item .label{ -fx-font-size: 13px; -fx-text-fill: #0f172a; }
+.notifMenu .menu-item:hover, .notifMenu .menu-item:focused{ -fx-background-color: #eef2ff; }
+.notifMenu .separator *.line{ -fx-border-color: #e5e7eb; }

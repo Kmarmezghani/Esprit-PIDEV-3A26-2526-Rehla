@@ -17,10 +17,6 @@ public class ReservationService implements IService<Reservation> {
         this.conn = DBConnection.getInstance().getConn();
     }
 
-    // =========================
-    // CRUD
-    // =========================
-
     @Override
     public void add(Reservation reservation) {
         String sql = """
@@ -41,8 +37,8 @@ public class ReservationService implements IService<Reservation> {
             else ps.setInt(7, reservation.getDestinationId());
 
             ps.setInt(8, reservation.getNbTickets());
-
             ps.executeUpdate();
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -51,24 +47,29 @@ public class ReservationService implements IService<Reservation> {
     @Override
     public void update(Reservation reservation) {
 
-        String sql = """
-        UPDATE reservation SET
-          dateReservation = ?,
-          dateDebut = ?,
-          dateFin = ?,
-          statut = ?,
-          coutTotal = ?,
-          personne_id = ?,
-          destination_id = ?,
-          nb_tickets = ?
-        WHERE id = ?
-    """;
+        String updateSql = """
+            UPDATE reservation SET
+              dateReservation = ?,
+              dateDebut = ?,
+              dateFin = ?,
+              statut = ?,
+              coutTotal = ?,
+              personne_id = ?,
+              destination_id = ?,
+              nb_tickets = ?
+            WHERE id = ?
+        """;
+
+        boolean wantCancelled = "CANCELLED".equalsIgnoreCase(reservation.getStatut());
+        boolean wasCancelledBefore = false;
+        List<Integer> activiteIdsToPromote = new ArrayList<>();
 
         try {
             conn.setAutoCommit(false);
 
-            // 1️⃣ Update reservation
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            wasCancelledBefore = isReservationAlreadyCancelled(conn, reservation.getId());
+
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
                 ps.setDate(1, reservation.getDateReservation());
                 ps.setDate(2, reservation.getDateDebut());
                 ps.setDate(3, reservation.getDateFin());
@@ -76,52 +77,141 @@ public class ReservationService implements IService<Reservation> {
                 ps.setDouble(5, reservation.getCoutTotal());
                 ps.setInt(6, reservation.getPersonneId());
 
-                if (reservation.getDestinationId() == null)
-                    ps.setNull(7, Types.INTEGER);
-                else
-                    ps.setInt(7, reservation.getDestinationId());
+                if (reservation.getDestinationId() == null) ps.setNull(7, Types.INTEGER);
+                else ps.setInt(7, reservation.getDestinationId());
 
                 ps.setInt(8, reservation.getNbTickets());
                 ps.setInt(9, reservation.getId());
-
                 ps.executeUpdate();
             }
 
-            // 2️⃣ If cancelled → cancel tickets too
-            if ("CANCELLED".equalsIgnoreCase(reservation.getStatut())) {
+            if (wantCancelled && !wasCancelledBefore) {
+
+                activiteIdsToPromote = getActivityIdsFromReservationForWaitlist(conn, reservation.getId());
 
                 try (PreparedStatement ps2 = conn.prepareStatement("""
-                UPDATE ticket
-                SET statut = 'CANCELLED'
-                WHERE reservation_id = ?
-            """)) {
+                    UPDATE ticket
+                    SET statut = 'CANCELLED'
+                    WHERE reservation_id = ?
+                      AND UPPER(IFNULL(type,'')) IN ('ACTIVITY','ACTIVITE')
+                """)) {
                     ps2.setInt(1, reservation.getId());
                     ps2.executeUpdate();
                 }
             }
 
             conn.commit();
-            System.out.println("Reservation updated successfully!");
 
         } catch (SQLException e) {
             try { conn.rollback(); } catch (SQLException ignored) {}
             System.out.println(e.getMessage());
+            return;
+
         } finally {
             try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+        }
+
+
+        if (wantCancelled && !wasCancelledBefore && activiteIdsToPromote != null && !activiteIdsToPromote.isEmpty()) {
+            List<Integer> finalIds = new ArrayList<>(activiteIdsToPromote);
+            new Thread(() -> {
+                WaitlistService waitlistService = new WaitlistService();
+                for (Integer activiteId : finalIds) {
+                    if (activiteId == null) continue;
+                    try {
+                        waitlistService.promoteNextIfSeatAvailable(activiteId);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }).start();
         }
     }
 
     @Override
     public void delete(Reservation reservation) {
-        String sql = "DELETE FROM reservation WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, reservation.getId());
-            ps.executeUpdate();
-            System.out.println("Reservation deleted successfully!");
+
+        List<Integer> activiteIdsToPromote = new ArrayList<>();
+
+        try {
+            conn.setAutoCommit(false);
+
+            activiteIdsToPromote = getActivityIdsFromReservationForWaitlist(conn, reservation.getId());
+
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM ticket WHERE reservation_id = ?")) {
+                ps.setInt(1, reservation.getId());
+                ps.executeUpdate();
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM reservation WHERE id = ?")) {
+                ps.setInt(1, reservation.getId());
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+
         } catch (SQLException e) {
+            try { conn.rollback(); } catch (SQLException ignored) {}
             System.out.println(e.getMessage());
+            return;
+
+        } finally {
+            try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+        }
+
+        if (activiteIdsToPromote != null && !activiteIdsToPromote.isEmpty()) {
+            List<Integer> finalIds = new ArrayList<>(activiteIdsToPromote);
+            new Thread(() -> {
+                WaitlistService waitlistService = new WaitlistService();
+                for (Integer activiteId : finalIds) {
+                    if (activiteId == null) continue;
+                    try {
+                        waitlistService.promoteNextIfSeatAvailable(activiteId);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }).start();
         }
     }
+
+
+    private boolean isReservationAlreadyCancelled(Connection c, int reservationId) throws SQLException {
+        String sql = "SELECT statut FROM reservation WHERE id = ? LIMIT 1";
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+                String st = rs.getString(1);
+                return "CANCELLED".equalsIgnoreCase(st);
+            }
+        }
+    }
+
+    private List<Integer> getActivityIdsFromReservationForWaitlist(Connection c, int reservationId) throws SQLException {
+        String sql = """
+            SELECT DISTINCT t.activite_id
+            FROM ticket t
+            WHERE t.reservation_id = ?
+              AND t.activite_id IS NOT NULL
+              AND UPPER(IFNULL(t.type,'')) IN ('ACTIVITY','ACTIVITE')
+        """;
+        List<Integer> ids = new ArrayList<>();
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt(1);
+                    if (!rs.wasNull()) ids.add(id);
+                }
+            }
+        }
+        return ids;
+    }
+
+    // =========================
+    // Getters
+    // =========================
 
     public List<Reservation> getAll() {
         String sql = "SELECT * FROM reservation";
@@ -179,37 +269,30 @@ public class ReservationService implements IService<Reservation> {
         r.setDestinationId(rs.wasNull() ? null : dest);
 
         r.setNbTickets(rs.getInt("nb_tickets"));
-
         return r;
     }
 
-    // =========================
-    // Availability check (NOW from TICKET, not reservation.activite_id)
-    // =========================
+
 
     public int sumTicketsConfirmedByActiviteId(int activiteId) throws SQLException {
         String sql = """
-        SELECT COALESCE(COUNT(*),0) AS taken
-        FROM ticket t
-        JOIN reservation r ON r.id = t.reservation_id
-        WHERE t.activite_id = ?
-          AND r.statut = 'reserved'
-    """;
+            SELECT COALESCE(COUNT(*),0) AS taken
+            FROM ticket t
+            JOIN reservation r ON r.id = t.reservation_id
+            WHERE t.activite_id = ?
+              AND UPPER(IFNULL(r.statut,'')) = 'RESERVED'
+        """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, activiteId);
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getInt("taken") : 0;
         }
     }
-    // =========================
-    // Booking (transaction)
-    // =========================
 
     public void bookWithQty(int userId, int activiteId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
         try {
             conn.setAutoCommit(false);
 
-            // 1) Lock activity + read max_places + dates
             Integer maxPlaces;
             Date actStartDate;
             Date actEndDate;
@@ -232,18 +315,13 @@ public class ReservationService implements IService<Reservation> {
                 }
             }
 
-            // 2) Taken spots (based on tickets+reservations)
             int taken = sumTicketsConfirmedByActiviteId(activiteId);
 
-            // 3) Availability check
             if (maxPlaces != null) {
                 int available = Math.max(0, maxPlaces - taken);
-                if (qty > available) {
-                    throw new SQLException("Not enough spots. Only " + available + " left.");
-                }
+                if (qty > available) throw new SQLException("Not enough spots. Only " + available + " left.");
             }
 
-            // 4) Insert reservation (NO activite_id here)
             double total = prixUnitaire * qty;
             int reservationId;
 
@@ -290,6 +368,35 @@ public class ReservationService implements IService<Reservation> {
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
+        }
+    }
+    public void updateReservationStats(int reservationId) {
+
+        String countSql = "SELECT COUNT(*), COALESCE(SUM(prix),0) FROM ticket WHERE reservation_id=?";
+        String updateSql = "UPDATE reservation SET nb_tickets=?, coutTotal=? WHERE id=?";
+
+        try (
+                PreparedStatement countStmt = conn.prepareStatement(countSql);
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql)
+        ) {
+
+            countStmt.setInt(1, reservationId);
+            ResultSet rs = countStmt.executeQuery();
+
+            if (rs.next()) {
+
+                int nbTickets = rs.getInt(1);
+                double total = rs.getDouble(2);
+
+                updateStmt.setInt(1, nbTickets);
+                updateStmt.setDouble(2, total);
+                updateStmt.setInt(3, reservationId);
+
+                updateStmt.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

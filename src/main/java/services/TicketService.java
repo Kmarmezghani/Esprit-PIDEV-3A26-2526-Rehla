@@ -9,6 +9,7 @@ import java.util.List;
 
 public class TicketService implements IService<Ticket> {
     private final Connection conn;
+    private ReservationService reservationService;
 
     public TicketService() {
         this.conn = DBConnection.getInstance().getConn();
@@ -25,11 +26,9 @@ public class TicketService implements IService<Ticket> {
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // reservation_id nullable
             if (ticket.getReservationId() == null) ps.setNull(1, Types.INTEGER);
             else ps.setInt(1, ticket.getReservationId());
 
-            // ✅ activite_id (required usually)
             if (ticket.getActiviteId() == null) ps.setNull(2, Types.INTEGER);
             else ps.setInt(2, ticket.getActiviteId());
 
@@ -69,7 +68,6 @@ public class TicketService implements IService<Ticket> {
             if (ticket.getReservationId() == null) ps.setNull(1, Types.INTEGER);
             else ps.setInt(1, ticket.getReservationId());
 
-            // ✅ activite_id
             if (ticket.getActiviteId() == null) ps.setNull(2, Types.INTEGER);
             else ps.setInt(2, ticket.getActiviteId());
 
@@ -91,11 +89,25 @@ public class TicketService implements IService<Ticket> {
 
     @Override
     public void delete(Ticket ticket) {
+        Integer resId = ticket.getReservationId();
         String sql = "DELETE FROM ticket WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticket.getId());
             ps.executeUpdate();
             System.out.println("Ticket deleted successfully!");
+
+            if (resId != null) {
+                reservationService.updateReservationStats(resId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void releaseTicket(int ticketId) {
+        String sql = "UPDATE ticket SET statut='available', reservation_id=NULL WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ticketId);
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -336,20 +348,45 @@ public class TicketService implements IService<Ticket> {
     public boolean hasActivityTicket(int reservationId) {
 
         String sql = """
-        SELECT COUNT(*) 
+        SELECT 1
         FROM ticket
         WHERE reservation_id = ?
-          AND LOWER(type) = 'activity'
+          AND UPPER(IFNULL(type,'')) IN ('ACTIVITY','ACTIVITE')
+        LIMIT 1
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, reservationId);
             ResultSet rs = ps.executeQuery();
-            return rs.next() && rs.getInt(1) > 0;
+            return rs.next();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return false;
+    }
+    public Integer getActivityIdByReservation(int reservationId) {
+
+        String sql = """
+        SELECT activite_id
+        FROM ticket
+        WHERE reservation_id = ?
+          AND UPPER(IFNULL(type,'')) IN ('ACTIVITY','ACTIVITE')
+          AND activite_id IS NOT NULL
+        LIMIT 1
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("activite_id");
+                    return rs.wasNull() ? null : id;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

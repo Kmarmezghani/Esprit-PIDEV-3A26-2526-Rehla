@@ -96,7 +96,22 @@
                             <!-- BODY -->
                             <VBox spacing="18" style="-fx-background-color: #ffffff;">
                                 <padding><Insets bottom="28" left="40" right="40" top="24" /></padding>
+                                <!-- Description Card -->
+                                <VBox spacing="10"
+                                      style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;
+             -fx-border-color: #eef2ff; -fx-border-radius: 18;
+             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 4);">
 
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Label text="📝" style="-fx-font-size: 18;" />
+                                        <Label text="Description"
+                                               style="-fx-font-size: 24; -fx-font-weight: 900; -fx-text-fill: #111827;" />
+                                    </HBox>
+
+                                    <Label fx:id="LBLdescription"
+                                           wrapText="true"
+                                           style="-fx-font-size: 13.5; -fx-text-fill: #475569; -fx-line-spacing: 2;" />
+                                </VBox>
                                 <!-- Reviews Card -->
                                 <VBox spacing="16"
                                       style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;

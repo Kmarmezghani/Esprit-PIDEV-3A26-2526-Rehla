@@ -63,6 +63,7 @@ public class ActivityDetailsController {
     @FXML private HBox starBox;
     @FXML private TextArea TAreview;
     @FXML private Button BTNdeleteMyReview;
+    @FXML private Label LBLdescription;
 
     private final ActiviteService activiteService = new ActiviteService();
     private final ReviewService reviewService = new ReviewService();
@@ -130,6 +131,12 @@ public class ActivityDetailsController {
 
         LBLprice.setText(String.format("💰 %.2f TND", activity.getPrix()));
         LBLtype.setText("Type: " + (activity.getTypeActivite() == null ? "" : activity.getTypeActivite()));
+        String desc = activity.getDescription();
+        if (LBLdescription != null) {
+            LBLdescription.setText((desc == null || desc.isBlank())
+                    ? "No description provided."
+                    : desc.trim());
+        }
 
         // ✅✅✅ SAME LOGIC AS ActivitiesPageController
         Image real = loadActivityImage(activity.getImage());

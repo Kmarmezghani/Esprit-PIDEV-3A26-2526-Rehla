@@ -279,15 +279,6 @@ public class EmailService {
                   </a>
                 </div>
 
-                <div style="margin-top:14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;">
-                  <div style="font-size:12px;color:#92400e;font-weight:800;margin-bottom:6px;">
-                    Si tu n’as pas de bouton, utilise ce token dans l’app :
-                  </div>
-                  <div style="font-family:Consolas,monospace;font-size:13px;color:#111827;">
-                    %s
-                  </div>
-                </div>
-
                 <hr style="border:none;border-top:1px solid #eef2ff;margin:18px 0;" />
 
                 <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">

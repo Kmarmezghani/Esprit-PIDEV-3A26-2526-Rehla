@@ -80,7 +80,7 @@ public class HomePageController implements Initializable {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
         nameLabel.setTextFill(Color.web("#223f91"));
 
-        Label continentLabel = new Label(pays.getContinent());
+        Label continentLabel = new Label("Explore");
         continentLabel.setFont(Font.font("System", 14));
         continentLabel.setTextFill(Color.GRAY);
 
@@ -117,9 +117,8 @@ public class HomePageController implements Initializable {
     private void loadPopularCities() {
         List<Ville> villes = villeService.getAll();
         
-        // Sort by popularity and take top 6
+        // Take top 6 (random or first 6 since popularity is removed)
         List<Ville> topCities = villes.stream()
-                .sorted(Comparator.comparingInt(Ville::getPopularite).reversed())
                 .limit(6)
                 .collect(Collectors.toList());
 
@@ -158,10 +157,6 @@ public class HomePageController implements Initializable {
         typeLabel.setFont(Font.font("System", 12));
         typeLabel.setStyle("-fx-background-color: #e3f2fd; -fx-padding: 5 10; -fx-background-radius: 10;");
 
-        Label popularityLabel = new Label("⭐ " + ville.getPopularite() + "/100");
-        popularityLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        popularityLabel.setTextFill(Color.web("#3A5BC7"));
-
         // Book button
         Button bookButton = new Button("Book Now");
         bookButton.setStyle("-fx-background-color: #3A5BC7; " +
@@ -186,7 +181,7 @@ public class HomePageController implements Initializable {
             handleBookCity(ville);
         });
 
-        card.getChildren().addAll(nameLabel, countryLabel, typeLabel, popularityLabel, bookButton);
+        card.getChildren().addAll(nameLabel, countryLabel, typeLabel, bookButton);
 
         // Hover effect
         card.setOnMouseEntered(e -> {

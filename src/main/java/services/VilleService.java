@@ -16,15 +16,13 @@ public class VilleService implements IService<Ville> {
 
     @Override
     public void add(Ville ville) {
-        String SQL = "INSERT INTO ville (nom, pays_id, region, typeTourisme, saison, popularite) VALUES (?, ?, ?, ?, ?, ?)";
+        String SQL = "INSERT INTO ville (nom, pays_id, typeTourisme, saison) VALUES (?, ?, ?, ?)";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, ville.getNom());
             pstmt.setInt(2, ville.getPaysId());
-            pstmt.setString(3, ville.getRegion());
-            pstmt.setString(4, ville.getTypeTourisme());
-            pstmt.setString(5, ville.getSaison());
-            pstmt.setInt(6, ville.getPopularite());
+            pstmt.setString(3, ville.getTypeTourisme());
+            pstmt.setString(4, ville.getSaison());
             pstmt.executeUpdate();
             System.out.println("Ville added successfully!");
         } catch (SQLException e) {
@@ -34,16 +32,14 @@ public class VilleService implements IService<Ville> {
 
     @Override
     public void update(Ville ville) {
-        String SQL = "UPDATE ville SET nom = ?, pays_id = ?, region = ?, typeTourisme = ?, saison = ?, popularite = ? WHERE id = ?";
+        String SQL = "UPDATE ville SET nom = ?, pays_id = ?, typeTourisme = ?, saison = ? WHERE id = ?";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, ville.getNom());
             pstmt.setInt(2, ville.getPaysId());
-            pstmt.setString(3, ville.getRegion());
-            pstmt.setString(4, ville.getTypeTourisme());
-            pstmt.setString(5, ville.getSaison());
-            pstmt.setInt(6, ville.getPopularite());
-            pstmt.setInt(7, ville.getId());
+            pstmt.setString(3, ville.getTypeTourisme());
+            pstmt.setString(4, ville.getSaison());
+            pstmt.setInt(5, ville.getId());
             pstmt.executeUpdate();
             System.out.println("Ville updated successfully!");
         } catch (SQLException e) {
@@ -76,10 +72,8 @@ public class VilleService implements IService<Ville> {
                 ville.setId(rs.getInt("id"));
                 ville.setNom(rs.getString("nom"));
                 ville.setPaysId(rs.getInt("pays_id"));
-                ville.setRegion(rs.getString("region"));
                 ville.setTypeTourisme(rs.getString("typeTourisme"));
                 ville.setSaison(rs.getString("saison"));
-                ville.setPopularite(rs.getInt("popularite"));
                 villes.add(ville);
             }
         } catch (SQLException e) {
@@ -100,10 +94,8 @@ public class VilleService implements IService<Ville> {
                 ville.setId(rs.getInt("id"));
                 ville.setNom(rs.getString("nom"));
                 ville.setPaysId(rs.getInt("pays_id"));
-                ville.setRegion(rs.getString("region"));
                 ville.setTypeTourisme(rs.getString("typeTourisme"));
                 ville.setSaison(rs.getString("saison"));
-                ville.setPopularite(rs.getInt("popularite"));
                 villes.add(ville);
             }
         } catch (SQLException e) {

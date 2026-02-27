@@ -19,17 +19,14 @@ double x,y =0;
             // SWITCH BETWEEN VIEWS - Uncomment the one you want to test:
             
             // Option 1: ADMIN DASHBOARD (Backoffice) - Manage data with tables
-            // FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
-            // primaryStage.setTitle("Rehla - Admin Dashboard");
+             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
+             primaryStage.setTitle("Rehla - Admin Dashboard");
             
             // Option 2: CLIENT FRONTOFFICE (Multi-page user interface) ✨ RECOMMENDED
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
-            primaryStage.setTitle("Rehla - Your Travel Companion");
+            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
+          // primaryStage.setTitle("Rehla - Your Travel Companion");
             
-            // Option 3: OLD CLIENT VIEW (Single page with all cards)
-            // FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/ClientDashboard.fxml"));
-            // primaryStage.setTitle("Rehla - Explore Destinations");
-            
+
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root, 1000, 700);
             primaryStage.initStyle(StageStyle.UNDECORATED);

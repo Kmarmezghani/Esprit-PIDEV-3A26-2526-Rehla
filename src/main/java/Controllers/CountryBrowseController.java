@@ -98,7 +98,7 @@ public class CountryBrowseController implements Initializable {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
         nameLabel.setTextFill(Color.web("#223f91"));
 
-        Label continentLabel = new Label(pays.getContinent());
+        Label continentLabel = new Label("Explore");
         continentLabel.setFont(Font.font("System", 14));
         continentLabel.setTextFill(Color.GRAY);
 
@@ -168,7 +168,6 @@ public class CountryBrowseController implements Initializable {
 
         List<Pays> filtered = allCountries.stream()
                 .filter(p -> p.getNom().toLowerCase().contains(searchText) ||
-                             p.getContinent().toLowerCase().contains(searchText) ||
                              p.getDescription().toLowerCase().contains(searchText))
                 .collect(Collectors.toList());
 

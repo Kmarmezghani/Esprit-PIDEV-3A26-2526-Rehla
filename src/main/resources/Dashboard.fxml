@@ -287,7 +287,6 @@
                                           <TableView fx:id="tablePays" stylesheets="@css/styling.css" BorderPane.alignment="CENTER">
                                              <columns>
                                                 <TableColumn fx:id="colNomPays" prefWidth="150.0" text="Name" />
-                                                <TableColumn fx:id="colContinentPays" prefWidth="150.0" text="Continent" />
                                                 <TableColumn fx:id="colDescriptionPays" prefWidth="250.0" text="Description" />
                                                 <TableColumn fx:id="colActionsPays" prefWidth="120.0" text="Actions" />
                                              </columns>
@@ -323,10 +322,8 @@
                                              <columns>
                                                 <TableColumn fx:id="colNomVille" prefWidth="120.0" text="City Name" />
                                                 <TableColumn fx:id="colPaysVille" prefWidth="100.0" text="Country" />
-                                                <TableColumn fx:id="colRegionVille" prefWidth="100.0" text="Region" />
                                                 <TableColumn fx:id="colTypeTourismeVille" prefWidth="120.0" text="Tourism Type" />
                                                 <TableColumn fx:id="colSaisonVille" prefWidth="80.0" text="Season" />
-                                                <TableColumn fx:id="colPopulariteVille" prefWidth="80.0" text="Popularity" />
                                                 <TableColumn fx:id="colActionsVille" prefWidth="120.0" text="Actions" />
                                              </columns>
                                              <columnResizePolicy>

@@ -49,25 +49,30 @@
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="98.0" text="Continent" GridPane.rowIndex="1">
-                            <GridPane.margin>
-                                <Insets left="10.0" />
-                            </GridPane.margin>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="101.0" text="Description" GridPane.rowIndex="2">
+                        <Label prefHeight="18.0" prefWidth="101.0" text="Description" GridPane.rowIndex="1">
                             <GridPane.margin>
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
                         <TextField fx:id="TFnomPays" GridPane.columnIndex="1" />
-                        <TextField fx:id="TFcontinent" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <TextArea fx:id="TAdescription" prefHeight="80.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Button mnemonicParsing="false" onAction="#updatePays" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@css/styling.css" text="Update" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                        <Label fx:id="nomError" style="-fx-font-size: 10; -fx-text-fill: gray;" text="" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.valignment="BOTTOM">
+                            <GridPane.margin>
+                                <Insets bottom="-18.0" />
+                            </GridPane.margin>
+                        </Label>
+
+                        <TextArea fx:id="TAdescription" prefHeight="80.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label fx:id="descriptionCounter" style="-fx-font-size: 10; -fx-text-fill: gray;" text="0 / 500" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
+                            <GridPane.margin>
+                                <Insets bottom="-18.0" />
+                            </GridPane.margin>
+                        </Label>
+                        <Button mnemonicParsing="false" onAction="#updatePays" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@css/styling.css" text="Update" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                             <GridPane.margin>
                                 <Insets right="20.0" />
                             </GridPane.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@css/styling.css" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="3">
+                        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@css/styling.css" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2">
                             <GridPane.margin>
                                 <Insets left="20.0" />
                             </GridPane.margin>

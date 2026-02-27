@@ -15,6 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.beans.property.SimpleStringProperty;
 import models.Pays;
 import models.Ville;
 import models.Attraction;
@@ -84,17 +85,14 @@ public class DashboardController {
 
     // Pays Columns
     @FXML private TableColumn<Pays, String> colNomPays;
-    @FXML private TableColumn<Pays, String> colContinentPays;
     @FXML private TableColumn<Pays, String> colDescriptionPays;
     @FXML private TableColumn<Pays, Void> colActionsPays;
 
     // Ville Columns
     @FXML private TableColumn<Ville, String> colNomVille;
-    @FXML private TableColumn<Ville, Integer> colPaysVille;
-    @FXML private TableColumn<Ville, String> colRegionVille;
+    @FXML private TableColumn<Ville, String> colPaysVille;
     @FXML private TableColumn<Ville, String> colTypeTourismeVille;
     @FXML private TableColumn<Ville, String> colSaisonVille;
-    @FXML private TableColumn<Ville, Integer> colPopulariteVille;
     @FXML private TableColumn<Ville, Void> colActionsVille;
 
     // Attraction Columns
@@ -103,7 +101,7 @@ public class DashboardController {
     @FXML private TableColumn<Attraction, String> colTypeAttraction;
     @FXML private TableColumn<Attraction, Double> colPrixAttraction;
     @FXML private TableColumn<Attraction, String> colHorairesAttraction;
-    @FXML private TableColumn<Attraction, Integer> colVilleAttraction;
+    @FXML private TableColumn<Attraction, String> colVilleAttraction;
     @FXML private TableColumn<Attraction, Void> colActionsAttraction;
 
 
@@ -281,7 +279,6 @@ public class DashboardController {
     // --- PAYS (Country) Methods ---
     private void initPaysTable() {
         colNomPays.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        colContinentPays.setCellValueFactory(new PropertyValueFactory<>("continent"));
         colDescriptionPays.setCellValueFactory(new PropertyValueFactory<>("description"));
 
         addPaysActionButtons();
@@ -311,6 +308,8 @@ public class DashboardController {
                     Pays pays = getTableView().getItems().get(getIndex());
                     paysService.delete(pays);
                     refreshPaysTable();
+                    refreshVilleTable(); // Refresh child table
+                    refreshAttractionTable(); // Refresh grandchild table
                 });
             }
 
@@ -359,11 +358,17 @@ public class DashboardController {
     // --- VILLE (City) Methods ---
     private void initVilleTable() {
         colNomVille.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        colPaysVille.setCellValueFactory(new PropertyValueFactory<>("paysId"));
-        colRegionVille.setCellValueFactory(new PropertyValueFactory<>("region"));
+        colPaysVille.setCellValueFactory(cellData -> {
+            int paysId = cellData.getValue().getPaysId();
+            String paysName = paysList.stream()
+                    .filter(p -> p.getId() == paysId)
+                    .map(Pays::getNom)
+                    .findFirst()
+                    .orElse("Unknown ID: " + paysId);
+            return new SimpleStringProperty(paysName);
+        });
         colTypeTourismeVille.setCellValueFactory(new PropertyValueFactory<>("typeTourisme"));
         colSaisonVille.setCellValueFactory(new PropertyValueFactory<>("saison"));
-        colPopulariteVille.setCellValueFactory(new PropertyValueFactory<>("popularite"));
 
         addVilleActionButtons();
         refreshVilleTable();
@@ -392,6 +397,7 @@ public class DashboardController {
                     Ville ville = getTableView().getItems().get(getIndex());
                     villeService.delete(ville);
                     refreshVilleTable();
+                    refreshAttractionTable(); // Refresh child table
                 });
             }
 
@@ -443,8 +449,25 @@ public class DashboardController {
         colDescriptionAttraction.setCellValueFactory(new PropertyValueFactory<>("description"));
         colTypeAttraction.setCellValueFactory(new PropertyValueFactory<>("type"));
         colPrixAttraction.setCellValueFactory(new PropertyValueFactory<>("prix"));
-        colHorairesAttraction.setCellValueFactory(new PropertyValueFactory<>("horaires"));
-        colVilleAttraction.setCellValueFactory(new PropertyValueFactory<>("villeId"));
+        colHorairesAttraction.setCellValueFactory(cellData -> {
+            Attraction a = cellData.getValue();
+            if (a.isEstFerme()) {
+                return new SimpleStringProperty("Closed");
+            } else {
+                String start = (a.getHeureOuverture() != null) ? a.getHeureOuverture().toString().substring(0, 5) : "?";
+                String end = (a.getHeureFermeture() != null) ? a.getHeureFermeture().toString().substring(0, 5) : "?";
+                return new SimpleStringProperty(start + " - " + end);
+            }
+        });
+        colVilleAttraction.setCellValueFactory(cellData -> {
+            int villeId = cellData.getValue().getVilleId();
+            String villeName = villeList.stream()
+                    .filter(v -> v.getId() == villeId)
+                    .map(Ville::getNom)
+                    .findFirst()
+                    .orElse("Unknown ID: " + villeId);
+            return new SimpleStringProperty(villeName);
+        });
 
         addAttractionActionButtons();
         refreshAttractionTable();

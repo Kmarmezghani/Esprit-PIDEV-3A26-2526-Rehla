@@ -2,65 +2,111 @@ package Controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.Pays;
 import services.PaysService;
 
-public class AjouterPaysController {
+import java.net.URL;
+import java.util.ResourceBundle;
+import java.util.function.UnaryOperator;
 
-    @FXML
-    private TextField TFnomPays;
+public class AjouterPaysController implements Initializable {
 
-    @FXML
-    private TextField TFcontinent;
+    // ===== FXML Fields =====
+    @FXML private TextField TFnomPays;
+    @FXML private TextArea TAdescription;
 
-    @FXML
-    private TextArea TAdescription;
+    @FXML private Label nomError;
+    @FXML private Label descriptionCounter;
 
     private final PaysService paysService = new PaysService();
 
+    // ===== Constants =====
+    private static final int MAX_NAME = 50;
+    private static final int MAX_DESC = 500;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        setupFilters();
+        setupListeners();
+    }
+
+    // ===== Filters =====
+    private void setupFilters() {
+        UnaryOperator<TextFormatter.Change> textFilter = c -> 
+            c.getControlNewText().matches("[a-zA-ZÀ-ÿ \\-']*") ? c : null;
+
+        TFnomPays.setTextFormatter(new TextFormatter<>(textFilter));
+    }
+
+    // ===== Listeners =====
+    private void setupListeners() {
+        TFnomPays.textProperty().addListener((obs, oldVal, newVal) -> validateLength(TFnomPays, nomError, newVal, 3, MAX_NAME));
+
+        TAdescription.textProperty().addListener((obs, oldVal, newVal) -> {
+            descriptionCounter.setText(newVal.length() + " / " + MAX_DESC);
+            if (newVal.isEmpty() || newVal.length() > MAX_DESC)
+                TAdescription.setStyle("-fx-border-color: red; -fx-border-width: 2;");
+            else
+                TAdescription.setStyle("-fx-border-color: green; -fx-border-width: 2;");
+        });
+    }
+
+    // ===== Validation Helpers =====
+    private void validateLength(TextField field, Label label, String value, int min, int max) {
+        if (value.isEmpty()) setFieldError(field, label, "❌ Required", "red");
+        else if (value.length() < min) setFieldError(field, label, "⚠ Min " + min, "orange");
+        else if (value.length() > max) setFieldError(field, label, "❌ Max " + max, "red");
+        else setFieldError(field, label, "✅ Valid", "green");
+    }
+
+    private void setFieldError(TextField field, Label label, String message, String color) {
+        if (label != null) {
+            label.setText(message);
+            label.setStyle("-fx-text-fill: " + color + ";");
+        }
+        field.setStyle("-fx-border-color: " + color + "; -fx-border-width: 2;");
+    }
+
+    // ===== Save =====
     @FXML
     void ajouterPays(ActionEvent event) {
-        // Validation
-        if (TFnomPays.getText().isEmpty() || TFcontinent.getText().isEmpty() || TAdescription.getText().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Validation Error");
-            alert.setHeaderText("Missing Information");
-            alert.setContentText("Please fill in all fields!");
-            alert.showAndWait();
+        String nom = TFnomPays.getText().trim();
+        String desc = TAdescription.getText().trim();
+
+        if (nom.isEmpty() || desc.isEmpty()) {
+            showError("Missing Information", "Please fill all fields!");
             return;
         }
 
-        // Create Pays object
-        Pays pays = new Pays();
-        pays.setNom(TFnomPays.getText());
-        pays.setContinent(TFcontinent.getText());
-        pays.setDescription(TAdescription.getText());
+        // Duplicate check
+        if (paysService.getAll().stream().anyMatch(p -> p.getNom().equalsIgnoreCase(nom))) {
+            showError("Duplicate Country", "A country with this name already exists!");
+            return;
+        }
 
-        // Add to database
+        Pays pays = new Pays();
+        pays.setNom(nom);
+        pays.setDescription(desc);
+
         paysService.add(pays);
 
-        // Success message
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Success");
-        alert.setHeaderText("Country Added");
-        alert.setContentText("The country has been added successfully!");
-        alert.showAndWait();
-
-        // Close the window
+        showSuccess("Country Added", "Successfully added!");
         closeWindow();
     }
 
-    @FXML
-    void handleCancel(ActionEvent event) {
-        closeWindow();
+    private void showError(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR); alert.setTitle("Validation Error");
+        alert.setHeaderText(header); alert.setContentText(content); alert.showAndWait();
     }
 
-    private void closeWindow() {
-        Stage stage = (Stage) TFnomPays.getScene().getWindow();
-        stage.close();
+    private void showSuccess(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION); alert.setTitle("Success");
+        alert.setHeaderText(header); alert.setContentText(content); alert.showAndWait();
     }
+
+    @FXML void handleCancel(ActionEvent event) { closeWindow(); }
+    private void closeWindow() { Stage stage = (Stage) TFnomPays.getScene().getWindow(); stage.close(); }
 }

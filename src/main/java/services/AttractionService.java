@@ -16,15 +16,17 @@ public class AttractionService implements IService<Attraction> {
 
     @Override
     public void add(Attraction attraction) {
-        String SQL = "INSERT INTO attraction (nom, description, type, prix, horaires, ville_id) VALUES (?, ?, ?, ?, ?, ?)";
+        String SQL = "INSERT INTO attraction (nom, description, type, prix, heure_ouverture, heure_fermeture, est_ferme, ville_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, attraction.getNom());
             pstmt.setString(2, attraction.getDescription());
             pstmt.setString(3, attraction.getType());
             pstmt.setDouble(4, attraction.getPrix());
-            pstmt.setString(5, attraction.getHoraires());
-            pstmt.setInt(6, attraction.getVilleId());
+            pstmt.setTime(5, attraction.getHeureOuverture());
+            pstmt.setTime(6, attraction.getHeureFermeture());
+            pstmt.setBoolean(7, attraction.isEstFerme());
+            pstmt.setInt(8, attraction.getVilleId());
             pstmt.executeUpdate();
             System.out.println("Attraction added successfully!");
         } catch (SQLException e) {
@@ -34,16 +36,18 @@ public class AttractionService implements IService<Attraction> {
 
     @Override
     public void update(Attraction attraction) {
-        String SQL = "UPDATE attraction SET nom = ?, description = ?, type = ?, prix = ?, horaires = ?, ville_id = ? WHERE id = ?";
+        String SQL = "UPDATE attraction SET nom = ?, description = ?, type = ?, prix = ?, heure_ouverture = ?, heure_fermeture = ?, est_ferme = ?, ville_id = ? WHERE id = ?";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, attraction.getNom());
             pstmt.setString(2, attraction.getDescription());
             pstmt.setString(3, attraction.getType());
             pstmt.setDouble(4, attraction.getPrix());
-            pstmt.setString(5, attraction.getHoraires());
-            pstmt.setInt(6, attraction.getVilleId());
-            pstmt.setInt(7, attraction.getId());
+            pstmt.setTime(5, attraction.getHeureOuverture());
+            pstmt.setTime(6, attraction.getHeureFermeture());
+            pstmt.setBoolean(7, attraction.isEstFerme());
+            pstmt.setInt(8, attraction.getVilleId());
+            pstmt.setInt(9, attraction.getId());
             pstmt.executeUpdate();
             System.out.println("Attraction updated successfully!");
         } catch (SQLException e) {
@@ -78,7 +82,9 @@ public class AttractionService implements IService<Attraction> {
                 attraction.setDescription(rs.getString("description"));
                 attraction.setType(rs.getString("type"));
                 attraction.setPrix(rs.getDouble("prix"));
-                attraction.setHoraires(rs.getString("horaires"));
+                attraction.setHeureOuverture(rs.getTime("heure_ouverture"));
+                attraction.setHeureFermeture(rs.getTime("heure_fermeture"));
+                attraction.setEstFerme(rs.getBoolean("est_ferme"));
                 attraction.setVilleId(rs.getInt("ville_id"));
                 attractions.add(attraction);
             }
@@ -102,7 +108,9 @@ public class AttractionService implements IService<Attraction> {
                 attraction.setDescription(rs.getString("description"));
                 attraction.setType(rs.getString("type"));
                 attraction.setPrix(rs.getDouble("prix"));
-                attraction.setHoraires(rs.getString("horaires"));
+                attraction.setHeureOuverture(rs.getTime("heure_ouverture"));
+                attraction.setHeureFermeture(rs.getTime("heure_fermeture"));
+                attraction.setEstFerme(rs.getBoolean("est_ferme"));
                 attraction.setVilleId(rs.getInt("ville_id"));
                 attractions.add(attraction);
             }

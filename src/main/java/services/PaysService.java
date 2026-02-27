@@ -16,12 +16,11 @@ public class PaysService implements IService<Pays> {
 
     @Override
     public void add(Pays pays) {
-        String SQL = "INSERT INTO pays (nom, continent, description) VALUES (?, ?, ?)";
+        String SQL = "INSERT INTO pays (nom, description) VALUES (?, ?)";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, pays.getNom());
-            pstmt.setString(2, pays.getContinent());
-            pstmt.setString(3, pays.getDescription());
+            pstmt.setString(2, pays.getDescription());
             pstmt.executeUpdate();
             System.out.println("Pays added successfully!");
         } catch (SQLException e) {
@@ -31,13 +30,12 @@ public class PaysService implements IService<Pays> {
 
     @Override
     public void update(Pays pays) {
-        String SQL = "UPDATE pays SET nom = ?, continent = ?, description = ? WHERE id = ?";
+        String SQL = "UPDATE pays SET nom = ?, description = ? WHERE id = ?";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, pays.getNom());
-            pstmt.setString(2, pays.getContinent());
-            pstmt.setString(3, pays.getDescription());
-            pstmt.setInt(4, pays.getId());
+            pstmt.setString(2, pays.getDescription());
+            pstmt.setInt(3, pays.getId());
             pstmt.executeUpdate();
             System.out.println("Pays updated successfully!");
         } catch (SQLException e) {
@@ -69,7 +67,6 @@ public class PaysService implements IService<Pays> {
                 Pays pays = new Pays();
                 pays.setId(rs.getInt("id"));
                 pays.setNom(rs.getString("nom"));
-                pays.setContinent(rs.getString("continent"));
                 pays.setDescription(rs.getString("description"));
                 paysList.add(pays);
             }
@@ -89,7 +86,6 @@ public class PaysService implements IService<Pays> {
                 Pays pays = new Pays();
                 pays.setId(rs.getInt("id"));
                 pays.setNom(rs.getString("nom"));
-                pays.setContinent(rs.getString("continent"));
                 pays.setDescription(rs.getString("description"));
                 return pays;
             }

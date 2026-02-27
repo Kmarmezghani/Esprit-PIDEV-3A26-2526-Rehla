@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
@@ -58,38 +59,44 @@
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="101.0" text="Region" GridPane.rowIndex="2">
+                        <Label prefHeight="18.0" prefWidth="114.0" text="Tourism Type" GridPane.rowIndex="2">
                             <GridPane.margin>
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="114.0" text="Tourism Type" GridPane.rowIndex="3">
-                            <GridPane.margin>
-                                <Insets left="10.0" />
-                            </GridPane.margin>
-                        </Label>
-                        <Label text="Season" GridPane.rowIndex="4">
-                            <GridPane.margin>
-                                <Insets left="10.0" />
-                            </GridPane.margin>
-                        </Label>
-                        <Label text="Popularity" GridPane.rowIndex="5">
+                        <Label text="Season" GridPane.rowIndex="3">
                             <GridPane.margin>
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
                         <TextField fx:id="TFnomVille" GridPane.columnIndex="1" />
+                        <Label fx:id="nomError" style="-fx-font-size: 10; -fx-text-fill: gray;" text="" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.valignment="BOTTOM">
+                            <GridPane.margin>
+                                <Insets bottom="-18.0" />
+                            </GridPane.margin>
+                        </Label>
+
                         <ComboBox fx:id="CBpays" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <TextField fx:id="TFregion" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <TextField fx:id="TFtypeTourisme" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <TextField fx:id="TFsaison" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                        <Spinner fx:id="SPpopularite" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                        <Button mnemonicParsing="false" onAction="#updateVille" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@css/styling.css" text="Update" GridPane.halignment="RIGHT" GridPane.rowIndex="6" GridPane.valignment="CENTER">
+
+                        <MenuButton fx:id="MBtypeTourisme" text="Select Types" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label fx:id="typeError" style="-fx-font-size: 10; -fx-text-fill: gray;" text="" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
+                            <GridPane.margin>
+                                <Insets bottom="-18.0" />
+                            </GridPane.margin>
+                        </Label>
+
+                        <ComboBox fx:id="CBsaison" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label fx:id="saisonError" style="-fx-font-size: 10; -fx-text-fill: gray;" text="" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="3" GridPane.valignment="BOTTOM">
+                            <GridPane.margin>
+                                <Insets bottom="-18.0" />
+                            </GridPane.margin>
+                        </Label>
+                        <Button mnemonicParsing="false" onAction="#updateVille" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@css/styling.css" text="Update" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="CENTER">
                             <GridPane.margin>
                                 <Insets right="20.0" />
                             </GridPane.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@css/styling.css" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="6">
+                        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@css/styling.css" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4">
                             <GridPane.margin>
                                 <Insets left="20.0" />
                             </GridPane.margin>

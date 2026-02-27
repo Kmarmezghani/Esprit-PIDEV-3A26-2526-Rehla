@@ -38,16 +38,10 @@ public class CityDetailController {
     private Label countryNameLabel;
 
     @FXML
-    private Label regionLabel;
-
-    @FXML
     private Label tourismTypeLabel;
 
     @FXML
     private Label seasonLabel;
-
-    @FXML
-    private Label popularityLabel;
 
     @FXML
     private Label attractionsCountLabel;
@@ -76,10 +70,8 @@ public class CityDetailController {
     private void displayCityInfo() {
         cityNameLabel.setText(currentVille.getNom());
         countryNameLabel.setText(currentPays != null ? currentPays.getNom() : "Unknown");
-        regionLabel.setText(currentVille.getRegion());
         tourismTypeLabel.setText(currentVille.getTypeTourisme());
         seasonLabel.setText(currentVille.getSaison());
-        popularityLabel.setText(currentVille.getPopularite() + "/100");
     }
 
     private void loadAttractions() {
@@ -139,7 +131,15 @@ public class CityDetailController {
         priceLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
         priceLabel.setTextFill(Color.web("#1976D2"));
 
-        Label hoursLabel = new Label("🕒 " + attraction.getHoraires());
+        String hoursText;
+        if (attraction.isEstFerme()) {
+            hoursText = "Closed";
+        } else {
+            String open = attraction.getHeureOuverture() != null ? attraction.getHeureOuverture().toString().substring(0, 5) : "";
+            String close = attraction.getHeureFermeture() != null ? attraction.getHeureFermeture().toString().substring(0, 5) : "";
+            hoursText = open + " - " + close;
+        }
+        Label hoursLabel = new Label("🕒 " + hoursText);
         hoursLabel.setFont(Font.font("System", 12));
         hoursLabel.setTextFill(Color.web("#5a6c9a"));
 

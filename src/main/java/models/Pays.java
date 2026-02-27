@@ -3,22 +3,19 @@ package models;
 public class Pays {
     private int id;
     private String nom;
-    private String continent;
     private String description;
 
     // Constructors
     public Pays() {}
 
-    public Pays(String nom, String continent, String description) {
+    public Pays(String nom, String description) {
         this.nom = nom;
-        this.continent = continent;
         this.description = description;
     }
 
-    public Pays(int id, String nom, String continent, String description) {
+    public Pays(int id, String nom, String description) {
         this.id = id;
         this.nom = nom;
-        this.continent = continent;
         this.description = description;
     }
 
@@ -39,14 +36,6 @@ public class Pays {
         this.nom = nom;
     }
 
-    public String getContinent() {
-        return continent;
-    }
-
-    public void setContinent(String continent) {
-        this.continent = continent;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -60,7 +49,6 @@ public class Pays {
         return "Pays{" +
                 "id=" + id +
                 ", nom='" + nom + '\'' +
-                ", continent='" + continent + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }

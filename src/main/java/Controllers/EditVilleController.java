@@ -12,84 +12,120 @@ import models.Ville;
 import services.PaysService;
 import services.VilleService;
 
+import models.Saison;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.UnaryOperator;
+import models.TypeTourisme;
+import java.util.stream.Collectors;
+import java.util.Arrays;
 
 public class EditVilleController implements Initializable {
 
-    @FXML
-    private TextField TFnomVille;
+    // ===== FXML Fields =====
+    @FXML private TextField TFnomVille;
+    @FXML private ComboBox<Pays> CBpays;
+    @FXML private TextField TFregion;
+    @FXML private MenuButton MBtypeTourisme;
+    @FXML private ComboBox<Saison> CBsaison;
 
-    @FXML
-    private ComboBox<Pays> CBpays;
-
-    @FXML
-    private TextField TFregion;
-
-    @FXML
-    private TextField TFtypeTourisme;
-
-    @FXML
-    private TextField TFsaison;
-
-    @FXML
-    private Spinner<Integer> SPpopularite;
+    @FXML private Label nomError;
+    @FXML private Label regionError;
+    @FXML private Label typeError;
+    @FXML private Label saisonError;
 
     private Ville currentVille;
     private final VilleService villeService = new VilleService();
     private final PaysService paysService = new PaysService();
 
+    // ===== Constants =====
+    private static final int MAX_NAME = 100;
+    private static final int MAX_REGION = 50;
+    private static final int MAX_TYPE = 50;
+    private static final int MAX_SAISON = 30;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize popularity spinner
-        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 50);
-        SPpopularite.setValueFactory(valueFactory);
-
-        // Load countries into ComboBox
         loadPays();
+        loadSaisons();
+        setupTypeMenu();
+        setupFilters();
+        setupListeners();
     }
 
-    private void loadPays() {
-        List<Pays> paysList = paysService.getAll();
-        ObservableList<Pays> paysObservableList = FXCollections.observableArrayList(paysList);
-        CBpays.setItems(paysObservableList);
+    private void setupTypeMenu() {
+        for (TypeTourisme type : TypeTourisme.values()) {
+            CheckMenuItem item = new CheckMenuItem(type.toString());
+            item.setUserData(type);
+            MBtypeTourisme.getItems().add(item);
+        }
+    }
 
-        // Display country name in ComboBox
-        CBpays.setCellFactory(param -> new ListCell<Pays>() {
-            @Override
-            protected void updateItem(Pays pays, boolean empty) {
-                super.updateItem(pays, empty);
-                if (empty || pays == null) {
-                    setText(null);
-                } else {
-                    setText(pays.getNom());
-                }
-            }
-        });
+    private void loadSaisons() {
+        CBsaison.getItems().setAll(Saison.values());
+    }
 
-        CBpays.setButtonCell(new ListCell<Pays>() {
-            @Override
-            protected void updateItem(Pays pays, boolean empty) {
-                super.updateItem(pays, empty);
-                if (empty || pays == null) {
-                    setText(null);
-                } else {
-                    setText(pays.getNom());
-                }
+    // ===== Filters =====
+    private void setupFilters() {
+        UnaryOperator<TextFormatter.Change> textFilter = c -> 
+            c.getControlNewText().matches("[a-zA-ZÀ-ÿ \\-']*") ? c : null;
+
+        TFnomVille.setTextFormatter(new TextFormatter<>(textFilter));
+        /* Removed TFtypeTourisme filter */
+    }
+
+    // ===== Listeners =====
+    private void setupListeners() {
+        TFnomVille.textProperty().addListener((obs, oldVal, newVal) -> validateLength(TFnomVille, nomError, newVal, 3, MAX_NAME));
+        // TFtypeTourisme listener removed
+        
+        CBsaison.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null) {
+                saisonError.setText("❌ Required");
+                saisonError.setStyle("-fx-text-fill: red;");
+                CBsaison.setStyle("-fx-border-color: red; -fx-border-width: 2;");
+            } else {
+                saisonError.setText("✅ Valid");
+                saisonError.setStyle("-fx-text-fill: green;");
+                CBsaison.setStyle("-fx-border-color: green; -fx-border-width: 2;");
             }
         });
     }
 
+    // ===== Validation Helpers =====
+    private void validateLength(TextField field, Label label, String value, int min, int max) {
+        if (value.isEmpty()) setFieldError(field, label, "❌ Required", "red");
+        else if (value.length() < min) setFieldError(field, label, "⚠ Min " + min, "orange");
+        else if (value.length() > max) setFieldError(field, label, "❌ Max " + max, "red");
+        else setFieldError(field, label, "✅ Valid", "green");
+    }
+
+    private void setFieldError(TextField field, Label label, String message, String color) {
+        if (label != null) {
+            label.setText(message);
+            label.setStyle("-fx-text-fill: " + color + ";");
+        }
+        field.setStyle("-fx-border-color: " + color + "; -fx-border-width: 2;");
+    }
+
+    // ===== Set Data =====
     public void setVille(Ville ville) {
         this.currentVille = ville;
         TFnomVille.setText(ville.getNom());
-        TFregion.setText(ville.getRegion());
-        TFtypeTourisme.setText(ville.getTypeTourisme());
-        TFsaison.setText(ville.getSaison());
-        SPpopularite.getValueFactory().setValue(ville.getPopularite());
-
-        // Select the correct country
+        
+        // Set selected types
+        String[] types = ville.getTypeTourisme().split(",");
+        for (MenuItem item : MBtypeTourisme.getItems()) {
+            CheckMenuItem checkItem = (CheckMenuItem) item;
+            if (Arrays.asList(types).contains(checkItem.getText())) {
+                checkItem.setSelected(true);
+            }
+        }
+        
+        Saison s = Saison.fromString(ville.getSaison());
+        if (s != null) CBsaison.setValue(s);
+        
         for (Pays pays : CBpays.getItems()) {
             if (pays.getId() == ville.getPaysId()) {
                 CBpays.setValue(pays);
@@ -98,50 +134,61 @@ public class EditVilleController implements Initializable {
         }
     }
 
+    // ===== Load Data =====
+    private void loadPays() {
+        List<Pays> paysList = paysService.getAll();
+        ObservableList<Pays> paysObs = FXCollections.observableArrayList(paysList);
+        CBpays.setItems(paysObs);
+        CBpays.setConverter(new javafx.util.StringConverter<>() {
+            @Override public String toString(Pays pays) { return pays == null ? null : pays.getNom(); }
+            @Override public Pays fromString(String s) { return null; }
+        });
+    }
+
+    // ===== Update =====
     @FXML
     void updateVille(ActionEvent event) {
-        // Validation
-        if (TFnomVille.getText().isEmpty() || CBpays.getValue() == null || 
-            TFregion.getText().isEmpty() || TFtypeTourisme.getText().isEmpty() || 
-            TFsaison.getText().isEmpty()) {
-            
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Validation Error");
-            alert.setHeaderText("Missing Information");
-            alert.setContentText("Please fill in all fields!");
-            alert.showAndWait();
+        String nom = TFnomVille.getText().trim();
+        Pays pays = CBpays.getValue();
+        
+        String type = MBtypeTourisme.getItems().stream()
+                .filter(item -> ((CheckMenuItem) item).isSelected())
+                .map(item -> item.getText())
+                .collect(Collectors.joining(","));
+                
+        Saison saison = CBsaison.getValue();
+
+        if (nom.isEmpty() || pays == null || type.isEmpty() || saison == null) {
+            showError("Missing Information", "Please fill all fields!");
             return;
         }
 
-        // Update Ville object
-        currentVille.setNom(TFnomVille.getText());
-        currentVille.setPaysId(CBpays.getValue().getId());
-        currentVille.setRegion(TFregion.getText());
-        currentVille.setTypeTourisme(TFtypeTourisme.getText());
-        currentVille.setSaison(TFsaison.getText());
-        currentVille.setPopularite(SPpopularite.getValue());
+        // Duplicate check (ignore self)
+        if (villeService.getAll().stream().anyMatch(v -> v.getNom().equalsIgnoreCase(nom) && v.getPaysId() == pays.getId() && v.getId() != currentVille.getId())) {
+            showError("Duplicate City", "Another city with this name already exists in " + pays.getNom());
+            return;
+        }
 
-        // Update in database
+        currentVille.setNom(nom); currentVille.setPaysId(pays.getId());
+        currentVille.setTypeTourisme(type);
+        currentVille.setSaison(saison.toString());
+
         villeService.update(currentVille);
 
-        // Success message
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Success");
-        alert.setHeaderText("City Updated");
-        alert.setContentText("The city has been updated successfully!");
-        alert.showAndWait();
-
-        // Close the window
+        showSuccess("City Updated", "Successfully updated!");
         closeWindow();
     }
 
-    @FXML
-    void handleCancel(ActionEvent event) {
-        closeWindow();
+    private void showError(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR); alert.setTitle("Validation Error");
+        alert.setHeaderText(header); alert.setContentText(content); alert.showAndWait();
     }
 
-    private void closeWindow() {
-        Stage stage = (Stage) TFnomVille.getScene().getWindow();
-        stage.close();
+    private void showSuccess(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION); alert.setTitle("Success");
+        alert.setHeaderText(header); alert.setContentText(content); alert.showAndWait();
     }
+
+    @FXML void handleCancel(ActionEvent event) { closeWindow(); }
+    private void closeWindow() { Stage stage = (Stage) TFnomVille.getScene().getWindow(); stage.close(); }
 }

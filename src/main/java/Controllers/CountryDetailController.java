@@ -37,9 +37,6 @@ public class CountryDetailController {
     private Label countryNameLabel;
 
     @FXML
-    private Label countryContinentLabel;
-
-    @FXML
     private Label countryDescriptionLabel;
 
     @FXML
@@ -61,7 +58,6 @@ public class CountryDetailController {
     private void displayCountryInfo() {
         countryFlagLabel.setText(getCountryEmoji(currentPays.getNom()));
         countryNameLabel.setText(currentPays.getNom());
-        countryContinentLabel.setText(currentPays.getContinent());
         countryDescriptionLabel.setText(currentPays.getDescription());
     }
 
@@ -97,10 +93,6 @@ public class CountryDetailController {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 26));
         nameLabel.setTextFill(Color.web("#1a237e"));
 
-        Label regionLabel = new Label("📍 " + ville.getRegion());
-        regionLabel.setFont(Font.font("System", 14));
-        regionLabel.setTextFill(Color.GRAY);
-
         Label typeLabel = new Label(ville.getTypeTourisme());
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 13));
         typeLabel.setStyle("-fx-background-color: #e3f2fd; -fx-padding: 8 15; -fx-background-radius: 15;");
@@ -118,10 +110,6 @@ public class CountryDetailController {
         Label attractionsLabel = new Label("🎯 " + attractionCount + " attractions");
         attractionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         attractionsLabel.setTextFill(Color.web("#3A5BC7"));
-
-        Label popularityLabel = new Label("⭐ " + ville.getPopularite() + "/100");
-        popularityLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        popularityLabel.setTextFill(Color.web("#FFC107"));
 
         // Book button
         Button bookButton = new Button("Book Now");
@@ -148,8 +136,8 @@ public class CountryDetailController {
             handleBookCity(ville);
         });
 
-        card.getChildren().addAll(iconLabel, nameLabel, regionLabel, typeLabel, 
-                seasonLabel, attractionsLabel, popularityLabel, bookButton);
+        card.getChildren().addAll(iconLabel, nameLabel, typeLabel, 
+                seasonLabel, attractionsLabel, bookButton);
 
         // Hover effect
         card.setOnMouseEntered(e -> {

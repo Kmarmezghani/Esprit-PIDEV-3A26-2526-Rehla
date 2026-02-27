@@ -1,4 +1,5 @@
 package Controllers;
+import java.time.*;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -26,19 +27,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image  ;
 
 import javafx.scene.layout.*;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import models.Personne;
-import models.Post;
-import models.notification;
+
+import models.*;
 import org.json.JSONObject;
 import services.*;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +65,7 @@ public class ClientPostsController {
 
     private Image heartEmpty;
     private Image heartFull;
+    private Timeline timeUpdater;
     @FXML private ImageView commentIcon;
 
     private Image commentEmpty;
@@ -75,10 +75,16 @@ public class ClientPostsController {
 
     private ContextMenu notifMenu = new ContextMenu();
     private boolean isLoadingPosts = false;
+    @FXML
+    private Label lblMessageBadge;
 
     @FXML
     private VBox postsContainer;
+    @FXML
+    private Button btnMessage;
 
+
+    private ContextMenu messageMenu = new ContextMenu();
     private boolean isStarred = false;
 
     private Image starEmpty;
@@ -88,9 +94,13 @@ public class ClientPostsController {
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
 private PostService postService = new PostService();
    private notificationService notificationService = new notificationService();
+    private MessageService messageService = new MessageService();
     private PersonneService personneService = new PersonneService();
     private LikeService likeService = new LikeService();
    private CommentaireService commentService = new CommentaireService();
+    private ConversationService ConversationService = new ConversationService();
+    private Map<Label, LocalDateTime> timeLabels = new HashMap<>();
+    private Timeline conversationUpdater;
     private Image avatarImage;
     private Image shareImage;
     private Image editImage;
@@ -98,6 +108,7 @@ private PostService postService = new PostService();
 
     @FXML
     private void initialize() {
+
         if(currentUser == null ||
                 currentUser.getRole() == null ||
                 !currentUser.getRole().equalsIgnoreCase("admin")) {
@@ -131,15 +142,267 @@ private PostService postService = new PostService();
         deleteImage = new Image(
                 Objects.requireNonNull(getClass().getResource("/icons/delete.png")).toExternalForm()
         );
+        timeUpdater = new Timeline(
+                new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
+        );
+        timeUpdater.setCycleCount(Timeline.INDEFINITE);
+        timeUpdater.play();
+        conversationUpdater = new Timeline(
+                new KeyFrame(javafx.util.Duration.seconds(5), e -> {
+                    if (messageMenu.isShowing()) {
+                        loadConversations();
+                    }
+                })
+        );
+        conversationUpdater.setCycleCount(Timeline.INDEFINITE);
+        conversationUpdater.play();
+        Timeline badgeUpdater = new Timeline(
+                new KeyFrame(javafx.util.Duration.seconds(5),
+                        e -> updateUnreadMessagesBadge())
+        );
 
+        badgeUpdater.setCycleCount(Timeline.INDEFINITE);
+        badgeUpdater.play();
 
-
+        updateUnreadMessagesBadge();
 
         loadPosts();
         postsContainer.setFillWidth(true);
         btnNotif.setOnAction(e -> toggleNotifications());
+        btnMessage.setOnAction(e -> toggleMessages());
+        System.out.println("Java Zone = " + ZoneId.systemDefault());
+
+    }
+
+    private void toggleMessages(){
+
+        if(messageMenu.isShowing()){
+            messageMenu.hide();
+            return;
+        }
+
+        if(messageMenu.getItems().isEmpty()){
+            loadConversations();
+        }
+
+        messageMenu.show(btnMessage, Side.BOTTOM, -250, 8);
+    }
+    private void loadConversations() {
+
+        timeLabels.clear();
+        messageMenu.getItems().clear();
+
+        if(!messageMenu.getStyleClass().contains("facebook-menu")){
+            messageMenu.getStyleClass().add("facebook-menu");
+        }
+
+        Label title = new Label("Chats");
+        title.getStyleClass().add("menu-title");
+
+        VBox headerBox = new VBox(title);
+        headerBox.getStyleClass().add("menu-header");
+
+        CustomMenuItem headerItem = new CustomMenuItem(headerBox);
+        headerItem.setHideOnClick(false);
+
+        messageMenu.getItems().add(headerItem);
+
+        List<Conversation> conversations =
+                ConversationService.getAllPossibleConversations(currentUser.getId());
+
+        for (Conversation conv : conversations) {
+
+            int otherUserId =
+                    (conv.getUser1Id() == currentUser.getId())
+                            ? conv.getUser2Id()
+                            : conv.getUser1Id();
+
+            Personne otherUser = personneService.getById(otherUserId);
+
+            if(otherUser == null) continue;
+
+            Message lastMessage = null;
+
+            if(conv.getId() > 0){
+                lastMessage = messageService.getLastMessage(conv.getId());
+            }
+            System.out.println("Conversation id = " + conv.getId());
+            System.out.println("Last message = " + lastMessage);
+            boolean isUnread = false;
+
+            if (lastMessage != null) {
+                isUnread = !lastMessage.isRead()
+                        && lastMessage.getSenderId() != currentUser.getId();
+            }
+
+            String lastText = "Aucun message";
+
+            if (lastMessage != null) {
+
+                boolean isMe = lastMessage.getSenderId() == currentUser.getId();
+
+                String prefix = isMe
+                        ? "Vous : "
+                        : otherUser.getPrenom() + " : ";
+
+                lastText = prefix + lastMessage.getContenu();
+            }
+
+            if (lastText.length() > 25) {
+                lastText = lastText.substring(0, 25) + "...";
+            }
+
+            String timeText = "";
+
+            if (lastMessage != null) {
+                timeText = formatTime(lastMessage.getSentAt());
+            }
+
+            ImageView avatar = new ImageView(avatarImage);
+            avatar.setFitWidth(45);
+            avatar.setFitHeight(45);
+            avatar.setClip(new Circle(22.5, 22.5, 22.5));
+
+            Label nameLabel = new Label(
+                    otherUser.getNom() + " " + otherUser.getPrenom());
+
+            nameLabel.getStyleClass().add("msg-name");
+
+            Label messageLabel = new Label(lastText);
+            messageLabel.getStyleClass().add("msg-text");
+            messageLabel.setMaxWidth(220);
+            messageLabel.setWrapText(true);
+
+            VBox textBox = new VBox(nameLabel, messageLabel);
+            textBox.setSpacing(3);
+
+            Label timeLabel = new Label(timeText);
+            timeLabel.getStyleClass().add("msg-time");
+
+            if (lastMessage != null) {
+                System.out.println("Time added for conversation " + conv.getId());
+                timeLabels.put(timeLabel, lastMessage.getSentAt());
+            }
+
+            Circle redDot = new Circle(5);
+            redDot.setStyle("-fx-fill: red;");
+            redDot.setVisible(isUnread);
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            HBox row = new HBox(10, avatar, textBox, spacer, redDot, timeLabel);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.getStyleClass().add("message-row");
+
+            CustomMenuItem item = new CustomMenuItem(row);
+            item.setHideOnClick(true);
+
+            item.setOnAction(e -> {
+
+                Conversation realConv =
+                        ConversationService.getConversationBetweenUsers(
+                                currentUser.getId(),
+                                otherUser.getId()
+                        );
+
+                if(realConv == null){
+
+                    realConv =
+                            ConversationService.createConversation(
+                                    currentUser.getId(),
+                                    otherUser.getId()
+                            );
+                }
+
+                if (redDot.isVisible()) {
+
+                    messageService.markConversationAsRead(
+                            realConv.getId(),
+                            currentUser.getId()
+                    );
+
+                    redDot.setVisible(false);
+                }
+
+                openChat(otherUser);
+
+            });
+
+            messageMenu.getItems().add(item);
+        }
+
+        refreshConversationTimes();
+    }
+    private void updateUnreadMessagesBadge(){
+
+        int unreadCount =
+                messageService.countUnreadMessagesForUser(currentUser.getId());
 
 
+        if(unreadCount > 0){
+            lblMessageBadge.setText(String.valueOf(unreadCount));
+            lblMessageBadge.setVisible(true);
+        }else{
+            lblMessageBadge.setVisible(false);
+        }
+    }
+
+
+    private void refreshConversationTimes() {
+
+        for (Map.Entry<Label, LocalDateTime> entry : timeLabels.entrySet()) {
+
+            Label label = entry.getKey();
+            LocalDateTime time = entry.getValue();
+
+            Platform.runLater(() -> label.setText(formatTime(time)));
+            System.out.println("DB time = " + time);
+            System.out.println("NOW     = " + LocalDateTime.now());
+            System.out.println("MINUTES = " + Duration.between(time, LocalDateTime.now()).toMinutes());
+            System.out.println("----------------------");
+        }
+        System.out.println("refresh...");
+
+    }
+    private String formatTime(LocalDateTime dateTime) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long minutes = java.time.Duration.between(dateTime, now).toMinutes();
+        long hours = java.time.Duration.between(dateTime, now).toHours();
+        long days = java.time.Duration.between(dateTime, now).toDays();
+
+        if (minutes < 1) return "à l'instant";
+        if (minutes < 60) return "il y a " + minutes + " min";
+        if (hours < 24) return "il y a " + hours + " h";
+        if (days == 1) return "Hier";
+        if (days < 7) return "il y a " + days + " j";
+
+        return dateTime.toLocalDate().toString(); // fallback (date)
+    }
+    private void openChat(Personne user){
+
+        try{
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/ChatPopup.fxml"));
+
+            Parent popup = loader.load();
+
+            ChatPopupController controller = loader.getController();
+
+            // ✅ passer le user connecté + receiver
+            controller.initChat(currentUser.getId(), user);
+
+            Stage stage = new Stage();
+            stage.setTitle("Chat avec " + user.getNom());
+            stage.setScene(new Scene(popup));
+            stage.show();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
     private void toggleNotifications() {
 
@@ -881,7 +1144,7 @@ private PostService postService = new PostService();
         Platform.runLater(() -> {
 
             Timeline timeline = new Timeline(
-                    new KeyFrame(Duration.millis(300),
+                    new KeyFrame(javafx.util.Duration.millis(300),
                             e -> {
 
                                 VBox postNode = findPostNodeById(n.getPostId());
@@ -1040,7 +1303,7 @@ private PostService postService = new PostService();
         StackPane.setAlignment(toast, Pos.TOP_CENTER);
 
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(7),
+                new KeyFrame(javafx.util.Duration.seconds(7),
                         e -> root.getChildren().remove(toast))
         );
 

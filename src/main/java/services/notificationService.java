@@ -4,29 +4,23 @@ package services;
 import models.notification;
 import util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class notificationService {
 
-
-    private Connection cnx;
-
-    public notificationService() {
-        cnx = DBConnection.getInstance().getConn();
-    }
+    private final String URL = "jdbc:mysql://localhost:3306/rehla?useSSL=false&serverTimezone=UTC";
+    private final String USER = "root";
+    private final String PASSWORD = "";
 
     public void add(notification n) {
 
         String sql = "INSERT INTO notification " +
                 "(message, type, post_id, comment_id, activite_id, sender_id, receiver_id, is_read, is_sent_sms, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, NOW())";
-
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (Connection cnx = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setString(1, n.getMessage());
             ps.setString(2, n.getType());
@@ -50,7 +44,8 @@ public class notificationService {
 
         String sql = "SELECT * FROM notification WHERE receiver_id = ? ORDER BY created_at DESC";
 
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (Connection cnx = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setInt(1, receiverId);
 
@@ -85,7 +80,9 @@ public class notificationService {
     public List<notification> getPendingSmsNotifications(int receiverId) {
         List<notification> list = new ArrayList<>();
         String sql = "SELECT * FROM notification WHERE receiver_id = ? AND is_sent_sms = 0 ORDER BY created_at ASC";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+
+        try (Connection cnx = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, receiverId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -116,7 +113,8 @@ public class notificationService {
 
         String sql = "UPDATE notification SET is_sent_sms = 1 WHERE id = ?";
 
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (Connection cnx = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             for(notification n : notifications){
                 ps.setInt(1, n.getId());

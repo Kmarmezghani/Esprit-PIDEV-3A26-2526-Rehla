@@ -29,7 +29,20 @@
 
                 <Button text="✨ Nouveau" styleClass="btn-primary" />
                 <Button fx:id="btnNotif" text="🔔"  styleClass="btn-icon"/>
-                <Button text="💬" styleClass="btn-icon"/>
+                <StackPane>
+                    <Button fx:id="btnMessage" text="💬" styleClass="btn-icon"/>
+
+                    <Label fx:id="lblMessageBadge"
+                           visible="false"
+                           style="-fx-background-color: red;
+                  -fx-text-fill: white;
+                  -fx-font-size: 10;
+                  -fx-padding: 1 5 1 5;
+                  -fx-background-radius: 10;"
+                           StackPane.alignment="TOP_RIGHT"/>
+                </StackPane>
+
+
                 <Button text="⛶" styleClass="btn-icon" onAction="#handleFullScreen"/>
                 <Button text="✕" styleClass="btn-icon" onAction="#handleClose"/>
 

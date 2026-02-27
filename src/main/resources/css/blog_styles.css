@@ -434,3 +434,81 @@
     -fx-background-color: rgba(255,255,255,0.15);
     -fx-background-radius: 10;
 }
+/*--------------- messagerie css----------------------------------------*/
+
+/* MENU CONTAINER */
+.facebook-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 20, 0.2, 0, 5);
+
+    /* SUPPRIME LE CADRE BLEU */
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* SUPPRIME LE FOCUS INTERNE JAVA FX */
+.facebook-menu .menu-item:focused {
+    -fx-background-color: transparent;
+}
+
+/* LIGNE MESSAGE */
+.message-row {
+    -fx-background-color: transparent;
+    -fx-padding: 12 14 12 14;
+    -fx-background-radius: 16;
+}
+
+/* HOVER PROPRE ARRONDI */
+.message-row:hover {
+    -fx-background-color: #E4E6EB;
+}
+
+/* NOM */
+.msg-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+    -fx-text-fill: #050505;
+}
+
+/* MESSAGE */
+.msg-text {
+    -fx-text-fill: #65676B;
+    -fx-font-size: 12;
+}
+
+/* TEMPS */
+.msg-time {
+    -fx-text-fill: #65676B;
+    -fx-font-size: 11;
+}
+
+.menu-header {
+    -fx-padding: 12 15 8 15;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.menu-title {
+    -fx-font-size: 24;        /* plus grand */
+    -fx-font-weight: bold;    /* gras */
+    -fx-text-fill: #1877F2;   /* bleu Messenger */
+}
+
+/* CADRE BLEU AUTOUR DE CHAQUE CONVERSATION */
+.message-row {
+    -fx-background-color: white;
+    -fx-padding: 12 14 12 14;
+    -fx-background-radius: 16;
+
+    -fx-border-color: #1877F2;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 16;
+}
+
+/* HOVER */
+.message-row:hover {
+    -fx-background-color: #E7F3FF;
+}

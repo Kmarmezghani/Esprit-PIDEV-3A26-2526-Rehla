@@ -11,7 +11,7 @@ import java.util.List;
 
 public class PersonneService implements IService<Personne> {
 
-    private final Connection conn;
+    private  Connection conn;
 
     public PersonneService() {
         this.conn = DBConnection.getInstance().getConn();

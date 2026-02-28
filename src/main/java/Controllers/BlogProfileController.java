@@ -710,7 +710,7 @@ public class BlogProfileController {
             StackPane overlay = new StackPane();
             // avant d'ajouter overlay, retire l'ancien
             stackRoot.getChildren().removeIf(node -> node.getStyle().contains("rgba(0,0,0,0.5)"));
-            stackRoot.getChildren().add(overlay);
+
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
             overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
 

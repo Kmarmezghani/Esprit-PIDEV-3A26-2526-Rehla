@@ -77,7 +77,7 @@ public class FavorisService {
             int favorisId = getOrCreateFavoris(p);
 
             String sql = "INSERT INTO favoris_post (favoris_id, post_id, dateAjout) VALUES (?, ?, NOW())";
-
+            System.out.println("POST ID = " + post.getId());
             PreparedStatement ps = cnx.prepareStatement(sql);
             ps.setInt(1, favorisId);
             ps.setInt(2, post.getId());

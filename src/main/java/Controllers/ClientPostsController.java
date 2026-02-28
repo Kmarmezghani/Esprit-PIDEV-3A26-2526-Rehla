@@ -13,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -64,12 +65,11 @@ public class ClientPostsController {
 
     private boolean isLiked = false;
 
-    private Image heartEmpty;
-    private Image heartFull;
-    private Timeline timeUpdater;
-    @FXML private ImageView commentIcon;
 
-    private Image commentEmpty;
+
+    private Timeline timeUpdater;
+
+
 
     @FXML
     private Button btnNotif;
@@ -88,8 +88,6 @@ public class ClientPostsController {
     private ContextMenu messageMenu = new ContextMenu();
     private boolean isStarred = false;
 
-    private Image starEmpty;
-    private Image starFull;
     Personne currentUser = Session.getCurrentUser();
     private File selectedImageFile;
     private ObservableList<Post> postsList = FXCollections.observableArrayList();
@@ -103,10 +101,63 @@ private PostService postService = new PostService();
     private ConversationService ConversationService = new ConversationService();
     private Map<Label, LocalDateTime> timeLabels = new HashMap<>();
     private Timeline conversationUpdater;
-    private Image avatarImage;
-    private Image shareImage;
-    private Image editImage;
-    private Image deleteImage;
+
+    private static final Image AVATAR_IMAGE =
+            new Image(
+                    ClientPostsController.class
+                            .getResource("/icons/usericon.png")
+                            .toExternalForm(),
+                    40,   // largeur max
+                    40,   // hauteur max
+                    true,
+                    false // ❗ smooth = false (moins GPU)
+            );
+    private static final Image HEART_EMPTY =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/heartwhite.png")
+                    .toExternalForm(),
+                    20, 20, true, false);
+
+    private static final Image HEART_FULL =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/HeartRed.png")
+                    .toExternalForm(),
+                    20, 20, true, false);
+
+    private static final Image STAR_EMPTY =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/whiteStar.png")
+                    .toExternalForm(),
+                    20, 20, true, false);
+
+    private static final Image STAR_FULL =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/yellowStar.png")
+                    .toExternalForm(),
+                    20, 20, true, false);
+
+    private static final Image SHARE_IMAGE =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/share.png")
+                    .toExternalForm(),
+                    20, 20, true, false);
+
+    private static final Image EDIT_IMAGE =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/edit.png")
+                    .toExternalForm(),
+                    18, 18, true, false);
+
+    private static final Image DELETE_IMAGE =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/delete.png")
+                    .toExternalForm(),
+                    18, 18, true, false);
+    private static final Image COMMENT_EMPTY =
+            new Image(ClientPostsController.class
+                    .getResource("/icons/comment.png")
+                    .toExternalForm(),
+                    18, 18, true, false);
 
     @FXML
     private void initialize() {
@@ -119,45 +170,45 @@ private PostService postService = new PostService();
             btnNotif.setManaged(false);
         }
 
-        heartEmpty = new Image(getClass().getResourceAsStream("/icons/heartwhite.png"));
-        heartFull = new Image(getClass().getResourceAsStream("/icons/HeartRed.png"));
+//        heartEmpty = new Image(getClass().getResourceAsStream("/icons/heartwhite.png"));
+//        heartFull = new Image(getClass().getResourceAsStream("/icons/HeartRed.png"));
+//
+//
+//        commentEmpty = new Image(getClass()
+//                .getResourceAsStream("/icons/comment.png"));
+//
+//        starEmpty = new Image(getClass().getResourceAsStream("/icons/whiteStar.png"));
+//        starFull = new Image(getClass().getResourceAsStream("/icons/yellowStar.png"));
 
+//        avatarImage = new Image(
+//                Objects.requireNonNull(getClass().getResource("/icons/usericon.png")).toExternalForm()
+//        );
 
-        commentEmpty = new Image(getClass()
-                .getResourceAsStream("/icons/comment.png"));
-
-        starEmpty = new Image(getClass().getResourceAsStream("/icons/whiteStar.png"));
-        starFull = new Image(getClass().getResourceAsStream("/icons/yellowStar.png"));
-
-        avatarImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/icons/usericon.png")).toExternalForm()
-        );
-
-        shareImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/icons/share.png")).toExternalForm()
-        );
-
-        editImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/icons/edit2.png")).toExternalForm()
-        );
-
-        deleteImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/icons/delete.png")).toExternalForm()
-        );
-        timeUpdater = new Timeline(
-                new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
-        );
-        timeUpdater.setCycleCount(Timeline.INDEFINITE);
-        timeUpdater.play();
-        conversationUpdater = new Timeline(
-                new KeyFrame(javafx.util.Duration.seconds(5), e -> {
-                    if (messageMenu.isShowing()) {
-                        loadConversations();
-                    }
-                })
-        );
-        conversationUpdater.setCycleCount(Timeline.INDEFINITE);
-        conversationUpdater.play();
+//        shareImage = new Image(
+//                Objects.requireNonNull(getClass().getResource("/icons/share.png")).toExternalForm()
+//        );
+//
+//        editImage = new Image(
+//                Objects.requireNonNull(getClass().getResource("/icons/edit2.png")).toExternalForm()
+//        );
+//
+//        deleteImage = new Image(
+//                Objects.requireNonNull(getClass().getResource("/icons/delete.png")).toExternalForm()
+//        );
+//        timeUpdater = new Timeline(
+//                new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
+//        );
+//        timeUpdater.setCycleCount(Timeline.INDEFINITE);
+//        timeUpdater.play();
+//        conversationUpdater = new Timeline(
+//                new KeyFrame(javafx.util.Duration.seconds(5), e -> {
+//                    if (messageMenu.isShowing()) {
+//                        loadConversations();
+//                    }
+//                })
+//        );
+//        conversationUpdater.setCycleCount(Timeline.INDEFINITE);
+//        conversationUpdater.play();
         Timeline badgeUpdater = new Timeline(
                 new KeyFrame(javafx.util.Duration.seconds(5),
                         e -> updateUnreadMessagesBadge())
@@ -260,9 +311,13 @@ private PostService postService = new PostService();
                 timeText = formatTime(lastMessage.getSentAt());
             }
 
-            ImageView avatar = new ImageView(avatarImage);
+            ImageView avatar = new ImageView(AVATAR_IMAGE);
             avatar.setFitWidth(45);
             avatar.setFitHeight(45);
+            avatar.setPreserveRatio(true);
+            avatar.setSmooth(false);
+            avatar.setCache(true);
+            avatar.setCacheHint(CacheHint.SPEED);
             avatar.setClip(new Circle(22.5, 22.5, 22.5));
 
             Label nameLabel = new Label(
@@ -465,6 +520,10 @@ private PostService postService = new PostService();
     VBox card = new VBox(10);
         card.getStyleClass().addAll("post", "glass");
 
+        card.setCache(true);
+        card.setCacheHint(CacheHint.SPEED);
+
+
         // ⭐ ID utilisé pour navigation notification
         card.setUserData(post.getId());
 
@@ -473,10 +532,14 @@ private PostService postService = new PostService();
         header.setAlignment(Pos.CENTER_LEFT);
 
 // Avatar
-        ImageView avatar = new ImageView(avatarImage);
-
+        ImageView avatar = new ImageView(AVATAR_IMAGE);
         avatar.setFitWidth(40);
         avatar.setFitHeight(40);
+        avatar.setPreserveRatio(true);
+        avatar.setSmooth(false);
+        avatar.setCache(true);
+        avatar.setCacheHint(CacheHint.SPEED);
+
         avatar.getStyleClass().add("avatar");
 
 // User info
@@ -553,14 +616,8 @@ private PostService postService = new PostService();
                 StackPane mediaPane = new StackPane();
                 mediaPane.getStyleClass().add("media");
 
-                Image img = new Image(
-                        file.toURI().toString(),
-                        680,
-                        0,
-                        true,
-                        true,
-                        true
-                );
+                Image img = loadSafeImage(file);
+
                 ImageView postImg = new ImageView(img);
 
 
@@ -599,16 +656,18 @@ private PostService postService = new PostService();
         Button likeBtn = new Button();
         likeBtn.getStyleClass().add("like-btn");
 
-        ImageView likeIcon = new ImageView(heartEmpty);
+        ImageView likeIcon = new ImageView(HEART_EMPTY);
 
 
         if (likeService.isLikedByUser(currentUser, post)) {
-            likeIcon.setImage(heartFull);
+            likeIcon.setImage(HEART_FULL);
         }
         likeIcon.setFitWidth(25);
         likeIcon.setFitHeight(25);
         likeIcon.setPreserveRatio(true);
-        likeIcon.setSmooth(true);
+        likeIcon.setSmooth(false);
+        likeIcon.setCache(true);
+        likeIcon.setCacheHint(CacheHint.SPEED);
 
         likeBtn.setGraphic(likeIcon);
         int nbLikes = likeService.getNbLikes(post);
@@ -619,15 +678,15 @@ private PostService postService = new PostService();
         likes.setStyle("-fx-cursor: hand;");
         likeBtn.setOnAction(e -> {
 
-            if (likeIcon.getImage() == heartEmpty) {
+            if (likeIcon.getImage() == HEART_EMPTY) {
 
                 likeService.addLike(currentUser, post);
-                likeIcon.setImage(heartFull);
+                likeIcon.setImage(HEART_FULL);
 
             } else {
 
                 likeService.deleteLike(currentUser, post);
-                likeIcon.setImage(heartEmpty);
+                likeIcon.setImage(HEART_EMPTY);
             }
 
             int newCount = likeService.getNbLikes(post);
@@ -644,9 +703,13 @@ private PostService postService = new PostService();
         Button commentBtn = new Button();
         commentBtn.setStyle("-fx-background-color: transparent;");
 
-        ImageView commentIcon = new ImageView(commentEmpty);
+        ImageView commentIcon = new ImageView(COMMENT_EMPTY);
         commentIcon.setFitWidth(21);
         commentIcon.setFitHeight(21);
+        commentIcon.setPreserveRatio(true);
+        commentIcon.setSmooth(false);
+        commentIcon.setCache(true);
+        commentIcon.setCacheHint(CacheHint.SPEED);
 
         commentBtn.setGraphic(commentIcon);
 
@@ -672,13 +735,21 @@ private PostService postService = new PostService();
         starBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         starBtn.setPadding(Insets.EMPTY);
 
-        ImageView favEmptyIcon = new ImageView(starEmpty);
+        ImageView favEmptyIcon = new ImageView(STAR_EMPTY);
         favEmptyIcon.setFitWidth(18);
         favEmptyIcon.setFitHeight(18);
+        favEmptyIcon.setPreserveRatio(true);
+        favEmptyIcon.setSmooth(false);
+        favEmptyIcon.setCache(true);
+        favEmptyIcon.setCacheHint(CacheHint.SPEED);
 
-        ImageView favFullIcon = new ImageView(starFull);
+        ImageView favFullIcon = new ImageView(STAR_FULL);
         favFullIcon.setFitWidth(18);
         favFullIcon.setFitHeight(18);
+        favFullIcon.setPreserveRatio(true);
+        favFullIcon.setSmooth(false);
+        favFullIcon.setCache(true);
+        favFullIcon.setCacheHint(CacheHint.SPEED);
 
 // vérifier si le post est déjà en favoris
         boolean isFav = favorisService.isFavori(currentUser, post);
@@ -716,12 +787,15 @@ private PostService postService = new PostService();
         Button shareBtn = new Button();
         shareBtn.setStyle("-fx-background-color: transparent;");
 
-        ImageView shareIcon = new ImageView(shareImage);
+        ImageView shareIcon = new ImageView(SHARE_IMAGE);
 
         shareIcon.setFitWidth(30);
         shareIcon.setFitHeight(30);
         shareIcon.setPreserveRatio(true);
-
+        shareIcon.setPreserveRatio(true);
+        shareIcon.setSmooth(false);
+        shareIcon.setCache(true);
+        shareIcon.setCacheHint(CacheHint.SPEED);
         shareBtn.setGraphic(shareIcon);
 
         shareBox.getChildren().add(shareBtn);
@@ -735,6 +809,16 @@ private PostService postService = new PostService();
         card.getChildren().add(footer);
 
         return card;
+    }
+    private Image loadSafeImage(File file) {
+        return new Image(
+                file.toURI().toString(),
+                600,   // max width
+                400,   // max height
+                true,
+                false,
+                true
+        );
     }
 
     private void sharePost(Post post){
@@ -952,8 +1036,10 @@ private PostService postService = new PostService();
             controller.setPost(post);
 
             // 🔥 Blur seulement sur le blog
-            GaussianBlur blur = new GaussianBlur(20);
-            mainContent.setEffect(blur);
+//            GaussianBlur blur = new GaussianBlur(20);
+//            mainContent.setEffect(blur);
+            mainContent.setOpacity(0.6);
+
 
             // 🔥 Fond sombre
             StackPane overlay = new StackPane();
@@ -965,7 +1051,7 @@ private PostService postService = new PostService();
             root.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                mainContent.setEffect(null);
+                mainContent.setOpacity(1);
                 root.getChildren().remove(overlay);
                 loadPosts();
             });
@@ -1003,7 +1089,7 @@ private PostService postService = new PostService();
                 postsList.remove(post);
 
                 System.out.println("Post supprimé avec succès !");
-                loadPosts();
+//                loadPosts();
             }
         });
     }
@@ -1011,13 +1097,20 @@ private PostService postService = new PostService();
 
         ContextMenu menu = new ContextMenu();
 
-        ImageView editIcon = new ImageView(editImage);
+        ImageView editIcon = new ImageView(EDIT_IMAGE);
         editIcon.setFitWidth(16);
         editIcon.setFitHeight(16);
-
-        ImageView deleteIcon = new ImageView(deleteImage);
+        editIcon.setPreserveRatio(true);
+        editIcon.setSmooth(false);
+        editIcon.setCache(true);
+        editIcon.setCacheHint(CacheHint.SPEED);
+        ImageView deleteIcon = new ImageView(DELETE_IMAGE);
         deleteIcon.setFitWidth(16);
         deleteIcon.setFitHeight(16);
+        deleteIcon.setPreserveRatio(true);
+        deleteIcon.setSmooth(false);
+        deleteIcon.setCache(true);
+        deleteIcon.setCacheHint(CacheHint.SPEED);
 
 
         MenuItem updateItem = new MenuItem("Modifier", editIcon);
@@ -1245,8 +1338,9 @@ private PostService postService = new PostService();
             controller.setPost(post);
 
 
-            GaussianBlur blur = new GaussianBlur(20);
-            mainContent.setEffect(blur);
+//            GaussianBlur blur = new GaussianBlur(20);
+//            mainContent.setEffect(blur);
+            mainContent.setOpacity(0.6);
 
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
@@ -1257,10 +1351,11 @@ private PostService postService = new PostService();
             root.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                mainContent.setEffect(null);
+//                mainContent.setEffect(null);
+                mainContent.setOpacity(1);
                 root.getChildren().remove(overlay);
 
-                loadPosts();
+//                loadPosts();
             });
 
 
@@ -1278,8 +1373,9 @@ private PostService postService = new PostService();
             controller.setPost(post);
 
 
-            GaussianBlur blur = new GaussianBlur(20);
-            mainContent.setEffect(blur);
+//            GaussianBlur blur = new GaussianBlur(20);
+//            mainContent.setEffect(blur);
+            mainContent.setOpacity(0.6);
 
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
@@ -1290,7 +1386,8 @@ private PostService postService = new PostService();
             root.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                mainContent.setEffect(null);
+//                mainContent.setEffect(null);
+                mainContent.setOpacity(1);
                 root.getChildren().remove(overlay);
             });
 

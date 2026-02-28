@@ -18,26 +18,31 @@ public class PostService implements IService<Post> {
         conn = DBConnection.getInstance().getConn();
     }
 
+//    @Override
+//    public void add(Post post) {
+//        String sql = "INSERT INTO post (titre, contenu, datePublication, popularite, personne_id, image) "
+//                + "VALUES (?, ?, ?, ?, ?, ?)";
+//
+//        try {
+//            PreparedStatement ps = conn.prepareStatement(sql);
+//
+//            ps.setString(1, post.getTitre());
+//            ps.setString(2, post.getContenu());
+//            ps.setTimestamp(3, Timestamp.valueOf(post.getDatePublication()));
+//            ps.setInt(4, post.getPopularite());
+//            ps.setInt(5, post.getAuteur().getId());
+//            ps.setString(6, post.getImage());
+//
+//            ps.executeUpdate();
+//            System.out.println("Post ajouté !");
+//        } catch (SQLException e) {
+//            System.out.println("Erreur ajout post : " + e.getMessage());
+//        }
+//    }
+
     @Override
     public void add(Post post) {
-        String sql = "INSERT INTO post (titre, contenu, datePublication, popularite, personne_id, image) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setString(1, post.getTitre());
-            ps.setString(2, post.getContenu());
-            ps.setTimestamp(3, Timestamp.valueOf(post.getDatePublication()));
-            ps.setInt(4, post.getPopularite());
-            ps.setInt(5, post.getAuteur().getId());
-            ps.setString(6, post.getImage());
-
-            ps.executeUpdate();
-            System.out.println("Post ajouté !");
-        } catch (SQLException e) {
-            System.out.println("Erreur ajout post : " + e.getMessage());
-        }
     }
 
     @Override

@@ -32,9 +32,7 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BlogProfileController {
 
@@ -72,7 +70,7 @@ public class BlogProfileController {
     @FXML
     private StackPane stackRoot;   // racine pour overlay
     private LikeService likeService = new LikeService();
-    Personne currentUser = Session.getCurrentUser();// utilisateur connecté
+    Personne currentUser;// utilisateur connecté
     @FXML
     private Button imageButton;
     @FXML
@@ -80,6 +78,7 @@ public class BlogProfileController {
        // ton contenu principal
     private final DateTimeFormatter dateFormatter =
             DateTimeFormatter.ofPattern("dd MMM yyyy");
+    private final Map<Post, VBox> postCardMap = new HashMap<>();
     private String selectedImagePath = null;
     private static final Image ICON_LIKE_EMPTY =
             new Image(BlogProfileController.class.getResource("/icons/blackHeart.png").toExternalForm());
@@ -101,13 +100,42 @@ public class BlogProfileController {
 
     private static final Image ICON_DELETE =
             new Image(BlogProfileController.class.getResource("/icons/delete.png").toExternalForm());
+    private static final Image AVATAR =
+            new Image(BlogProfileController.class.getResource("/icons/usericon.png").toExternalForm());
+
+    private static final ImageView LIKE_EMPTY_ICON = new ImageView(ICON_LIKE_EMPTY);
+    private static final ImageView LIKE_FULL_ICON  = new ImageView(ICON_LIKE_FULL);
+    private static final ImageView COMMENT_ICON    = new ImageView(ICON_COMMENT);
+    private static final ImageView FAV_EMPTY_ICON  = new ImageView(ICON_FAV_EMPTY);
+    private static final ImageView FAV_FULL_ICON   = new ImageView(ICON_FAV_FULL);
+    private static final ImageView AVATAR_ICON     = new ImageView(AVATAR);
+
+    private final Map<Integer, Integer> likesCountMap = new HashMap<>();
+    private final Map<Integer, Boolean> likedByUserMap = new HashMap<>();
+    private final Map<Integer, Integer> commentsCountMap = new HashMap<>();
+    private final Map<Integer, Boolean> favByUserMap = new HashMap<>();
+
+    // Méthode utilitaire pour cloner et redimensionner
+    private ImageView cloneIcon(ImageView template, double size){
+        ImageView iv = new ImageView(template.getImage());
+        iv.setFitWidth(size);
+        iv.setFitHeight(size);
+        iv.setPreserveRatio(true);
+        return iv;
+    }
 
 
     @FXML
     private void initialize() {
+
+        currentUser = Session.getCurrentUser();
+        System.out.println("USER ID = " + currentUser.getId());
+        if (currentUser == null) {
+            System.out.println("ERREUR: currentUser est NULL");
+            return;
+        }
         closeButton.setOnAction(e -> {
-            root.setCache(false);
-            root.setEffect(null);
+            root.setOpacity(1);
             Stage stage = (Stage) root.getScene().getWindow();
             stage.close();
         });
@@ -126,6 +154,8 @@ public class BlogProfileController {
         initTabs();
 
         loadPostsFromDatabase();
+        postsContainer.setAlignment(Pos.TOP_CENTER);
+        postsContainer.setFillWidth(false);
 
     }
     private void loadPostsFromDatabase() {
@@ -133,11 +163,13 @@ public class BlogProfileController {
         if (currentUser == null) return;
 
         allPosts.clear();
+        likesCountMap.clear();
+        likedByUserMap.clear();
+        commentsCountMap.clear();
+        favByUserMap.clear();
 
-        List<Post> postsFromDB =
-                postService.getPostsByPersonne(currentUser);
+        List<Post> postsFromDB = postService.getPostsByPersonne(currentUser);
 
-        // 🔥 Tri par date publication + heure (le plus récent en premier)
         allPosts.addAll(
                 postsFromDB.stream()
                         .sorted((p1, p2) ->
@@ -146,27 +178,35 @@ public class BlogProfileController {
                         .toList()
         );
 
+        // 🔥 Préchargement des données UNE SEULE FOIS
+        for (Post post : allPosts) {
+
+            int postId = post.getId();
+
+            likesCountMap.put(postId,
+                    likeService.getNbLikes(post));
+
+            likedByUserMap.put(postId,
+                    likeService.isLikedByUser(currentUser, post));
+
+            commentsCountMap.put(postId,
+                    commentaireService.countByPost(postId));
+
+            favByUserMap.put(postId,
+                    favorisService.isFavori(currentUser, post));
+        }
+
         renderPosts(allPosts);
-        System.out.println("renderPosts called, children in postsContainer: " + postsContainer.getChildren().size());
+
         postsCountLabel.setText(String.valueOf(allPosts.size()));
     }
 
 
 
     private void initProfileInfo() {
-        // Tu peux remplacer par tes vraies images
-        Image avatarImage = new Image(
-                getClass().getResource("/icons/usericon.png").toExternalForm(),
-                120, 120, true, true
-        );
-        Image smallAvatar = new Image(
-                getClass().getResource("/icons/usericon.png").toExternalForm(),
-                36, 36, true, true
-        );
-
-        profileAvatar.setImage(avatarImage);
-        currentUserAvatar.setImage(smallAvatar);
-        composerAvatar.setImage(smallAvatar);
+        profileAvatar.setImage(AVATAR);
+        currentUserAvatar.setImage(AVATAR);
+        composerAvatar.setImage(AVATAR);
         profileHeadline.setText(
                 currentUser.getRole() != null
                         ? currentUser.getRole()
@@ -184,18 +224,53 @@ public class BlogProfileController {
 
 
 
+//    private void renderPosts(List<Post> posts) {
+//
+//        postsContainer.getChildren().clear();
+//
+//        if(posts == null) return;
+//
+//        for(Post post : posts){
+//            if(post != null){
+//                postsContainer.getChildren().add(createPostCard(post));
+//            }
+//        }
+//    }
+
+
     private void renderPosts(List<Post> posts) {
         postsContainer.getChildren().clear();
-        for (Post post : posts) {
-            postsContainer.getChildren().add(createPostCard(post));
+        postCardMap.clear();
+
+        for(Post post : posts){
+            if(post != null){
+                VBox card = createPostCard(post);
+                postsContainer.getChildren().add(card);
+                postCardMap.put(post, card);
+            }
         }
     }
 
     private VBox createPostCard(Post post) {
         VBox card = new VBox(8);
         card.setPadding(new Insets(12));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 10;"
-                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12,0,0,2);");
+        card.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 12;" +
+                        "-fx-border-radius: 12;" +
+                        "-fx-border-color: #E0E0E0;" +
+                        "-fx-border-width: 1;"
+        );
+           // largeur préférée
+        card.setAlignment(Pos.TOP_LEFT);
+         // évite les recalculs layout
+        card.setMaxWidth(1000);
+        card.setPrefWidth(1000);
+        VBox.setMargin(card, new Insets(15,0,15,0));
+        card.setMinWidth(550);
+        card.setCache(true);
+        card.setCacheHint(CacheHint.SPEED);
+
 
         // Header
         HBox header = new HBox(8);
@@ -255,9 +330,17 @@ public class BlogProfileController {
                 );
 
                 if (confirm) {
+
                     postService.delete(post);
+
+                    // 🔥 Mise à jour locale
                     allPosts.remove(post);
-                    renderPosts(allPosts);
+
+                    VBox card2 = postCardMap.remove(post);
+                    if (card2 != null) {
+                        postsContainer.getChildren().remove(card);
+                    }
+
                     postsCountLabel.setText(String.valueOf(allPosts.size()));
                 }
             });
@@ -290,6 +373,7 @@ public class BlogProfileController {
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(4, 0, 0, 0));
         card.getChildren().addAll(header, titleLabel, contentText);
+        card.setSpacing(10);
 
 
         // 👉 IMAGE CENTRÉE
@@ -300,16 +384,14 @@ public class BlogProfileController {
 
                 if (file.exists()) {
 
-                    Image image = new Image(
-                            file.toURI().toString(),
-                            500, 0,      // largeur max 500
-                            true,        // preserve ratio
-                            true,        // smooth
-                            true         // background loading
-                    );
+                    Image img = loadSafeImage(file);
 
-                    ImageView postImage = new ImageView(image);
+                    ImageView postImage = new ImageView(img);
+                    postImage.setCache(true);
+                    postImage.setFitWidth(400);
                     postImage.setPreserveRatio(true);
+                    postImage.setCacheHint(CacheHint.SPEED);
+
 
                     HBox imageBox = new HBox(postImage);
                     imageBox.setAlignment(Pos.CENTER);
@@ -321,9 +403,6 @@ public class BlogProfileController {
                 System.err.println("Erreur chargement image : " + ex.getMessage());
             }
         }
-
-
-
         card.getChildren().add(footer);
 
         // ================= LIKE =================
@@ -331,52 +410,62 @@ public class BlogProfileController {
         likeButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         likeButton.setPadding(Insets.EMPTY);
 
-// 🔥 On crée les ImageView UNE seule fois
-        ImageView likeEmpty = getIcon(ICON_LIKE_EMPTY, 24);
-        ImageView likeFull  = getIcon(ICON_LIKE_FULL, 24);
+// ✅ créer 2 icônes propres
+        ImageView likeEmpty = cloneIcon(LIKE_EMPTY_ICON, 24);
+        ImageView likeFull  = cloneIcon(LIKE_FULL_ICON, 24);
 
-        boolean isLiked = likeService.isLikedByUser(currentUser, post);
+        int postId = post.getId();
+
+        boolean isLiked = likedByUserMap.getOrDefault(postId, false);
+        int nbLikes = likesCountMap.getOrDefault(postId, 0);
         likeButton.setGraphic(isLiked ? likeFull : likeEmpty);
-
-        int nbLikes = likeService.getNbLikes(post);
-
         Label likesLabel = new Label(String.valueOf(nbLikes));
         likesLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
-        likesLabel.setPadding(Insets.EMPTY);
 
+// container
         HBox likeContainer = new HBox(4, likeButton, likesLabel);
         likeContainer.setAlignment(Pos.CENTER_LEFT);
 
-// 🔥 Gestion du clic propre
+        final boolean[] liked = { isLiked };
+
         likeButton.setOnAction(e -> {
 
-            boolean currentlyLiked = likeButton.getGraphic() == likeFull;
+            if (liked[0]) {
 
-            if (currentlyLiked) {
                 likeService.deleteLike(currentUser, post);
+
+                liked[0] = false;
                 likeButton.setGraphic(likeEmpty);
+
+                int newCount = Integer.parseInt(likesLabel.getText()) - 1;
+                likesLabel.setText(String.valueOf(newCount));
+                likesCountMap.put(postId, newCount);
+                likedByUserMap.put(postId, false);
+
             } else {
+
                 likeService.addLike(currentUser, post);
+
+                liked[0] = true;
                 likeButton.setGraphic(likeFull);
+
+                int newCount = Integer.parseInt(likesLabel.getText()) + 1;
+                likesLabel.setText(String.valueOf(newCount));
+                likesCountMap.put(postId, newCount);
+                likedByUserMap.put(postId, true);
             }
-
-            int newCount = likeService.getNbLikes(post);
-            likesLabel.setText(String.valueOf(newCount));
         });
-
 // ================= COMMENT =================
 
         Button commentButton = new Button();
         commentButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         commentButton.setPadding(Insets.EMPTY);
 
-// 🔥 Utilise l'image statique déjà chargée
-        ImageView commentIcon = getIcon(ICON_COMMENT, 22);
+        commentButton.setGraphic(cloneIcon(COMMENT_ICON, 22));
 
-        commentButton.setGraphic(commentIcon);
 
 // Nombre de commentaires
-        int nbCommentaires = commentaireService.countByPost(post.getId());
+        int nbCommentaires = commentsCountMap.getOrDefault(postId, 0);
 
         Label commentsLabel = new Label(String.valueOf(nbCommentaires));
         commentsLabel.setStyle("-fx-text-fill: #616161; -fx-font-size: 11px;");
@@ -393,26 +482,33 @@ public class BlogProfileController {
         favButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         favButton.setPadding(Insets.EMPTY);
 
-        ImageView favEmpty = getIcon(ICON_FAV_EMPTY, 24);
-        ImageView favFull  = getIcon(ICON_FAV_FULL, 24);
 
-        boolean isFav = favorisService.isFavori(currentUser, post);
+        ImageView favEmpty = cloneIcon(FAV_EMPTY_ICON, 24);
+        ImageView favFull  = cloneIcon(FAV_FULL_ICON, 24);
 
+        boolean isFav = favByUserMap.getOrDefault(postId, false);
         favButton.setGraphic(isFav ? favFull : favEmpty);
+
+        final boolean[] isFavState = { isFav };
 
         favButton.setOnAction(e -> {
 
-            boolean current = favorisService.isFavori(currentUser, post);
+            if (isFavState[0]) {
 
-            if(current){
                 favorisService.removeFavori(currentUser, post);
+
+                isFavState[0] = false;
                 favButton.setGraphic(favEmpty);
-            }else{
+                favByUserMap.put(postId, false);
+
+            } else {
+
                 favorisService.addFavori(currentUser, post);
+
+                isFavState[0] = true;
                 favButton.setGraphic(favFull);
+                favByUserMap.put(postId, true);
             }
-
-
         });
 // Hover effect
         likeButton.setOnMouseEntered(e -> likeButton.setOpacity(0.7));
@@ -426,13 +522,25 @@ public class BlogProfileController {
                 commentContainer,
                 favButton
         );
+        footer.setCache(true);
+        header.setCache(true);
 
         VBox.setMargin(card, new Insets(0, 4, 0, 4));
         return card;
 
     }
 
+    private Image loadSafeImage(File file) {
+        return new Image(
+                file.toURI().toString(),
+                600,   // max width
+                400,   // max height
+                true,
+                true,
+                false
+        );
 
+    }
     private boolean confirmDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
@@ -472,10 +580,25 @@ public class BlogProfileController {
             }
 
             // Sauvegarde en base
-            postService.add(post);
+            post = postService.addPost(post);
 
-            // Recharge depuis la DB (plus propre que allPosts.add)
-            loadPostsFromDatabase();
+            allPosts.add(0, post); // en haut de la liste
+
+// 🔥 Mettre à jour cache
+            int postId = post.getId();
+
+            likesCountMap.put(postId, 0);
+            likedByUserMap.put(postId, false);
+            commentsCountMap.put(postId, 0);
+            favByUserMap.put(postId, false);
+
+// 🔥 Créer la carte UNE SEULE FOIS
+            VBox card = createPostCard(post);
+
+            postsContainer.getChildren().add(0, card);
+            postCardMap.put(post, card);
+
+            postsCountLabel.setText(String.valueOf(allPosts.size()));
 
             // Reset champs
             newPostTitleField.clear();
@@ -515,10 +638,45 @@ public class BlogProfileController {
 
     private void showFavorites() {
 
-        List<Post> favPosts = favorisService.getFavorisPosts(currentUser.getId());
+        List<Post> favPosts =
+                favorisService.getFavorisPosts(currentUser.getId());
 
-        renderPosts(favPosts);
+        if(favPosts == null){
+            favPosts = new ArrayList<>();
+        }
+
+        Set<Integer> favIds = new HashSet<>();
+
+        for(Post p : favPosts){
+            favIds.add(p.getId());
+        }
+
+        postsContainer.getChildren().forEach(node -> {
+
+            if(node instanceof VBox card){
+
+                Post post = getPostFromCard(card);
+
+                if(post != null){
+                    card.setVisible(favIds.contains(post.getId()));
+                    card.setManaged(favIds.contains(post.getId()));
+                }
+
+            }
+
+        });
     }
+    private Post getPostFromCard(VBox card){
+
+        return postCardMap.entrySet()
+                .stream()
+                .filter(e -> e.getValue() == card)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+    }
+
+
 
     private void showAbout() {
         Label aboutLabel = new Label("Section About");
@@ -544,14 +702,15 @@ public class BlogProfileController {
             UpdatePostPopupController controller = loader.getController();
             controller.setPost(post); // initialise les champs du popup
 
-            // 🔥 Blur sur le blog
-            root.setCache(true);
-            root.setCacheHint(CacheHint.SPEED);
-            GaussianBlur blur = new GaussianBlur(10);
-            root.setEffect(blur);
 
-            // 🔥 Fond sombre
+
+//            GaussianBlur blur = new GaussianBlur(10);
+//            root.setEffect(blur);
+
             StackPane overlay = new StackPane();
+            // avant d'ajouter overlay, retire l'ancien
+            stackRoot.getChildren().removeIf(node -> node.getStyle().contains("rgba(0,0,0,0.5)"));
+            stackRoot.getChildren().add(overlay);
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
             overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
@@ -562,9 +721,20 @@ public class BlogProfileController {
 
 
             controller.setOnClose(() -> {
-                root.setEffect(null);
+
+
                 stackRoot.getChildren().remove(overlay);
-                loadPostsFromDatabase();
+
+                VBox oldCard = postCardMap.get(post);
+
+                if (oldCard != null) {
+                    int index = postsContainer.getChildren().indexOf(oldCard);
+
+                    VBox newCard = createPostCard(post);
+
+                    postsContainer.getChildren().set(index, newCard);
+                    postCardMap.put(post, newCard);
+                }
             });
 
         } catch (Exception ex) {
@@ -591,8 +761,8 @@ public class BlogProfileController {
             controller.setPost(post);
 
             // 🔥 Blur du profil
-            GaussianBlur blur = new GaussianBlur(20);
-            root.setEffect(blur);
+//            GaussianBlur blur = new GaussianBlur(20);
+//            root.setEffect(blur);
 
             // 🔥 Overlay sombre
             StackPane overlay = new StackPane();
@@ -604,9 +774,26 @@ public class BlogProfileController {
             stackRoot.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                root.setEffect(null);
+
+                root.setOpacity(1);
                 stackRoot.getChildren().remove(overlay);
-                loadPostsFromDatabase(); // refresh si besoin
+
+                // 🔥 Update seulement le compteur commentaire
+                int postId = post.getId();
+
+                int newCount = commentaireService.countByPost(postId);
+                commentsCountMap.put(postId, newCount);
+
+                VBox card = postCardMap.get(post);
+
+                if (card != null) {
+                    int index = postsContainer.getChildren().indexOf(card);
+
+                    VBox newCard = createPostCard(post);
+
+                    postsContainer.getChildren().set(index, newCard);
+                    postCardMap.put(post, newCard);
+                }
             });
 
         } catch (Exception e) {

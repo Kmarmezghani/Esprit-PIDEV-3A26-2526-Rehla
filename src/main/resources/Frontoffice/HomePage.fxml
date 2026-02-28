@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<?import javafx.scene.shape.SVGPath?>
+<AnchorPane prefHeight="700.0" prefWidth="1000.0"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.HomePageController"
+            stylesheets="@/Frontoffice/css/profile-menu.css,@/Frontoffice/css/home.css">
+
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+            <center>
+                <ScrollPane fitToWidth="true" styleClass="page" BorderPane.alignment="CENTER">
+                    <content>
+                        <VBox spacing="28.0" styleClass="page">
+
+                            <!-- =========================
+                                 HERO
+                                 ========================= -->
+                            <StackPane styleClass="heroWrap">
+                                <children>
+
+                                    <!-- background image via CSS -->
+                                    <Region styleClass="heroBg"/>
+
+                                    <!-- overlay -->
+                                    <Region styleClass="heroOverlay"/>
+
+                                    <!-- ✅ Booking Block (TABS + SEARCH) pinned to bottom and pushed down by margin -->
+                                    <VBox alignment="CENTER"
+                                          spacing="14.0"
+                                          styleClass="heroCenter"
+                                          StackPane.alignment="BOTTOM_CENTER">
+
+                                        <!-- PLUS PETIT = PLUS BAS. Mets 0 pour coller au bas -->
+                                        <StackPane.margin>
+                                            <Insets bottom="0.0"/>
+                                        </StackPane.margin>
+
+                                        <!-- "Booking-like" CARD that CONTAINS tabs + form -->
+                                        <VBox styleClass="bookingCard" maxWidth="980.0">
+
+                                            <!-- Tabs inside the card (connected) -->
+                                            <HBox alignment="CENTER_LEFT" spacing="0.0" styleClass="tabsBarInCard">
+                                                <Button text="Quick Book!" styleClass="tabActive"/>
+                                                <Button text="Discover" styleClass="tab"/>
+                                                <Button text="Trips" styleClass="tab"/>
+                                                <Button text="Reviews" styleClass="tab"/>
+                                                <Button text="More" styleClass="tab"/>
+                                            </HBox>
+
+                                            <!-- Search content -->
+                                            <VBox styleClass="searchShellInCard">
+
+                                                <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="rowTop">
+                                                    <TextField fx:id="tfWhere"
+                                                               promptText="Places to go, things to do, hotels..."
+                                                               styleClass="searchMainInput"
+                                                               HBox.hgrow="ALWAYS"/>
+                                                    <Button fx:id="btnSearch"
+                                                            text="Search"
+                                                            onAction="#handleSearch"
+                                                            styleClass="searchBtnDark"/>
+                                                </HBox>
+
+                                                <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="rowBottom">
+
+                                                    <VBox styleClass="fieldBox" HBox.hgrow="ALWAYS">
+                                                        <Label text="Destination" styleClass="fieldLabel"/>
+                                                        <Label text="City, airport, region, landmark or property name" styleClass="fieldValue"/>
+                                                    </VBox>
+
+                                                    <VBox styleClass="fieldBox">
+                                                        <Label text="Check-in" styleClass="fieldLabel"/>
+                                                        <DatePicker fx:id="dpStart" styleClass="fieldPicker"/>
+                                                    </VBox>
+
+                                                    <VBox styleClass="fieldBox">
+                                                        <Label text="Check-out" styleClass="fieldLabel"/>
+                                                        <DatePicker fx:id="dpEnd" styleClass="fieldPicker"/>
+                                                    </VBox>
+
+                                                    <VBox styleClass="fieldBox">
+                                                        <Label text="Rooms and Guests" styleClass="fieldLabel"/>
+                                                        <Spinner fx:id="spTravelers" prefWidth="190.0" styleClass="fieldSpinner"/>
+                                                    </VBox>
+
+                                                </HBox>
+
+                                                <Label text="Tip: try “Paris”, “Italy”, or “Beach destinations”" styleClass="tip"/>
+                                            </VBox>
+
+                                        </VBox>
+                                    </VBox>
+
+                                    <!-- ✅ TOP HEADER OVER HERO (transparent) -->
+                                    <HBox alignment="CENTER_LEFT"
+                                          styleClass="topGlassOverlay"
+                                          StackPane.alignment="TOP_CENTER"
+                                          minHeight="70.0" prefHeight="70.0" maxHeight="70.0">
+
+                                        <children>
+                                            <!-- BIGGER LOGO -->
+                                            <ImageView fitHeight="44.0" preserveRatio="true" pickOnBounds="true" styleClass="brandLogo">
+                                                <image>
+                                                    <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png"/>
+                                                </image>
+                                            </ImageView>
+
+                                            <Region HBox.hgrow="ALWAYS"/>
+
+                                            <!-- Center nav -->
+                                            <HBox alignment="CENTER" spacing="22.0">
+                                                <Button onAction="#goToHome" text="Home" styleClass="navBtn"/>
+                                                <Button onAction="#goToDestinations" text="Destinations" styleClass="navBtn"/>
+                                                <Button onAction="#goToPosts" text="Posts" styleClass="navBtn"/>
+                                                <Button onAction="#goToactivities" text="Activities" styleClass="navBtn"/>
+                                                <Button text="About" styleClass="navBtn"/>
+                                            </HBox>
+
+                                            <Region HBox.hgrow="ALWAYS"/>
+
+                                            <!-- right icons -->
+                                            <Button fx:id="btnNotif" onAction="#openNotifications" styleClass="iconBtn" text="🔔">
+                                                <HBox.margin><Insets right="10.0"/></HBox.margin>
+                                            </Button>
+
+                                            <!-- KEEP profile-menu.css -->
+                                            <Button fx:id="btnProfile" onAction="#openProfileMenu" styleClass="iconBtn" text="👤">
+                                                <HBox.margin><Insets right="14.0"/></HBox.margin>
+                                                <contextMenu>
+                                                    <ContextMenu fx:id="profileMenu" styleClass="profileMenu">
+                                                        <items>
+                                                            <MenuItem onAction="#goToMyProfile" text="My Profile"/>
+                                                            <MenuItem onAction="#goToMyPosts" text="My Posts"/>
+                                                            <MenuItem onAction="#goToMyReservations" text="My Reservations"/>
+                                                            <MenuItem onAction="#goToMyActivities" text="My Activities"/>
+                                                            <SeparatorMenuItem/>
+                                                            <MenuItem onAction="#handleLogout" text="Logout"/>
+                                                        </items>
+                                                    </ContextMenu>
+                                                </contextMenu>
+                                            </Button>
+
+                                            <!-- WINDOWS CONTROLS CLEAN -->
+                                            <HBox alignment="CENTER_RIGHT" spacing="0" styleClass="winBox">
+
+                                                <!-- MINIMIZE -->
+                                                <Button onAction="#minwindow" styleClass="winCtrlBtn">
+                                                    <graphic>
+                                                        <SVGPath content="M2 8 H12"
+                                                                 fill="white"
+                                                                 strokeWidth="1.5"/>
+                                                    </graphic>
+                                                </Button>
+
+                                                <!-- MAXIMIZE -->
+                                                <Button onAction="#maxwindow" styleClass="winCtrlBtn">
+                                                    <graphic>
+                                                        <SVGPath content="M2 2 H12 V12 H2 Z"
+                                                                 fill="transparent"
+                                                                 stroke="white"
+                                                                 strokeWidth="1.5"/>
+                                                    </graphic>
+                                                </Button>
+
+                                                <!-- CLOSE -->
+                                                <Button onAction="#closewindow" styleClass="winCtrlBtn winCtrlClose">
+                                                    <graphic>
+                                                        <SVGPath content="M3 3 L11 11 M11 3 L3 11"
+                                                                 stroke="white"
+                                                                 strokeWidth="1.6"/>
+                                                    </graphic>
+                                                </Button>
+
+                                            </HBox>
+                                        </children>
+
+                                        <padding>
+                                            <Insets left="30.0" right="18.0"/>
+                                        </padding>
+                                    </HBox>
+
+                                </children>
+                            </StackPane>
+                            <!-- SPACE between bookingCard and Flash Deals -->
+                            <Region prefHeight="28.0" />
+                            <!-- =========================
+                                 FLASH DEALS
+                                 ========================= -->
+                            <VBox spacing="14.0" styleClass="container">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="dealBanner">
+                                    <Label text="Flash Deals — up to -30%" styleClass="dealBannerTitle"/>
+                                    <Label fx:id="lblFlashSubtitle" text="Limited-time offers you don’t want to miss" styleClass="dealBannerSub"/>
+                                </HBox>
+
+                                <ScrollPane hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" fitToHeight="true"
+                                            style="-fx-background-color: transparent;" prefHeight="260">
+                                    <content>
+                                        <HBox fx:id="flashDealsBox" spacing="16.0" style="-fx-padding: 6 2 6 2;"/>
+                                    </content>
+                                </ScrollPane>
+                            </VBox>
+
+                            <!-- POPULAR -->
+                            <VBox spacing="10.0" styleClass="container">
+                                <Label text="Popular Destinations" styleClass="sectionTitle"/>
+                                <Label text="The most visited places right now" styleClass="sectionSub"/>
+                                <FlowPane fx:id="popularDestinationsFlow" hgap="18.0" vgap="18.0">
+                                    <padding><Insets top="12.0"/></padding>
+                                </FlowPane>
+                            </VBox>
+
+                            <!-- BLOG -->
+                            <VBox spacing="10.0" styleClass="container">
+                                <Label text="Travel Inspiration" styleClass="sectionTitle"/>
+                                <Label text="Ideas and guides to plan smarter" styleClass="sectionSub"/>
+                                <FlowPane fx:id="blogFlow" hgap="18.0" vgap="18.0">
+                                    <padding><Insets top="12.0"/></padding>
+                                </FlowPane>
+                            </VBox>
+
+                            <!-- FOOTER -->
+                            <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-padding: 20;">
+                                <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                    <font><Font name="System Bold" size="16.0"/></font>
+                                </Label>
+                                <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                    <font><Font size="12.0"/></font>
+                                </Label>
+                            </VBox>
+
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+
+        </BorderPane>
+    </children>
+</AnchorPane>

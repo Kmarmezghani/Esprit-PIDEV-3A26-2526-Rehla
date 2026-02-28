@@ -1,0 +1,514 @@
+/* ===== THEME ===== */
+.root{
+    -fx-font-family: "Inter", "Segoe UI", "Arial";
+    -fx-background-color: linear-gradient(to bottom right, #0b1220, #111a2e);
+}
+
+/* HERO */
+.hero{
+    -fx-padding: 14 16 12 16;
+    -fx-background-color: linear-gradient(to right, rgba(124,92,255,0.55), rgba(24,119,242,0.40), rgba(0,200,160,0.35));
+    -fx-border-color: rgba(255,255,255,0.10);
+    -fx-border-width: 0 0 1 0;
+}
+.hero-top{ -fx-padding: 0; }
+.brand{
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+    -fx-text-fill: white;
+}
+
+/* Search */
+.search-wrap{
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 999;
+    -fx-padding: 8 12;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-border-radius: 999;
+}
+.search-icon{ -fx-text-fill: rgba(255,255,255,0.75); -fx-font-size: 14px; }
+.search{
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.60);
+    -fx-border-color: transparent;
+    -fx-pref-width: 420;
+}
+
+/* Chips */
+.chips{ -fx-padding: 2 0 0 0; }
+.chip{
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: rgba(255,255,255,0.85);
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+}
+.chip:hover{ -fx-background-color: rgba(255,255,255,0.18); }
+.chip-active{
+    -fx-background-color: rgba(255,255,255,0.24);
+    -fx-font-weight: 900;
+}
+.ticker{ -fx-text-fill: rgba(255,255,255,0.80); -fx-font-weight: 700; }
+
+/* Dock left */
+.dock{
+    -fx-padding: 14 10;
+    -fx-pref-width: 62;
+    -fx-spacing: 10;
+}
+.dock-btn{
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-background-radius: 14;
+    -fx-padding: 12 0;
+    -fx-min-width: 42;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-border-radius: 14;
+}
+.dock-btn:hover{
+    -fx-background-color: rgba(255,255,255,0.16);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 18, 0.2, 0, 8);
+}
+.dock-active{
+    -fx-background-color: rgba(124,92,255,0.35);
+    -fx-border-color: rgba(124,92,255,0.55);
+}
+
+/* Right */
+.right{ -fx-padding: 14; -fx-pref-width: 300; }
+
+/* Glass card */
+.glass{
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-background-radius: 18;
+    -fx-padding: 14;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 24, 0.25, 0, 10);
+}
+
+/* Feed */
+.scroll{ -fx-background-color: transparent; -fx-background: transparent; }
+.feed{
+    -fx-padding: 16 0 30 0;
+    -fx-max-width: 760;
+    -fx-alignment: TOP_CENTER;
+}
+
+/* Buttons */
+.btn-primary{
+    -fx-background-color: linear-gradient(to right, #7c5cff, #1877f2);
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-background-radius: 12;
+    -fx-padding: 10 14;
+    -fx-cursor: hand;
+}
+.btn-primary:hover{
+    -fx-effect: dropshadow(gaussian, rgba(124,92,255,0.40), 22, 0.25, 0, 10);
+}
+
+.btn-soft{
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: rgba(255,255,255,0.88);
+    -fx-background-radius: 12;
+    -fx-padding: 10 12;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-border-radius: 12;
+}
+.btn-soft:hover{ -fx-background-color: rgba(255,255,255,0.18); }
+
+.btn-icon{
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 12;
+    -fx-padding: 10 12;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-border-radius: 12;
+    -fx-text-fill: white;
+}
+.btn-icon:hover{ -fx-background-color: rgba(255,255,255,0.18); }
+
+/* Avatars */
+.avatar{
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+}
+.avatar.small{ -fx-fit-width: 28; -fx-fit-height: 28; }
+
+/* Me */
+.me-name{ -fx-text-fill: white; -fx-font-weight: 900; }
+.me-sub{ -fx-text-fill: rgba(255,255,255,0.70); -fx-font-size: 11px; }
+
+/* Composer */
+.composer-input{
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-padding: 10 12;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.65);
+}
+.hint{ -fx-text-fill: rgba(255,255,255,0.65); }
+
+/* Post */
+.post{ -fx-padding: 14; }
+.post:hover{
+    -fx-border-color: rgba(124,92,255,0.35);
+    -fx-effect: dropshadow(gaussian, rgba(124,92,255,0.25), 28, 0.25, 0, 12);
+}
+.name{ -fx-text-fill: white; -fx-font-weight: 900; }
+.text{ -fx-text-fill: rgba(255,255,255,0.90); -fx-font-size: 13px; }
+.muted{ -fx-text-fill: rgba(255,255,255,0.65); }
+
+.tag{
+    -fx-background-color: rgba(24,119,242,0.20);
+    -fx-text-fill: rgba(255,255,255,0.90);
+    -fx-background-radius: 999;
+    -fx-padding: 4 10;
+    -fx-font-weight: 800;
+}
+.badge{
+    -fx-background-color: rgba(255,165,0,0.18);
+    -fx-text-fill: rgba(255,255,255,0.90);
+    -fx-background-radius: 999;
+    -fx-padding: 4 10;
+    -fx-font-weight: 900;
+}
+
+/* Media */
+.media{
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 16;
+    -fx-padding: 0;
+}
+.post-img{ -fx-background-radius: 16; -fx-border-radius: 16; }
+.media-overlay{ -fx-padding: 10; }
+.pill{
+    -fx-background-color: rgba(0,0,0,0.35);
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-padding: 6 10;
+    -fx-font-weight: 900;
+}
+
+/* Actions */
+.actions .action{
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-text-fill: rgba(255,255,255,0.90);
+    -fx-background-radius: 12;
+    -fx-padding: 10 12;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 12;
+}
+.actions .action:hover{ -fx-background-color: rgba(255,255,255,0.14); }
+
+.sep{ -fx-opacity: 0.25; }
+
+/* Comments */
+.bubble{
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-background-radius: 14;
+    -fx-padding: 8 10;
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 14;
+}
+.bubble-name{ -fx-text-fill: white; -fx-font-weight: 900; }
+.bubble-text{ -fx-text-fill: rgba(255,255,255,0.85); }
+
+.comment{
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-padding: 10 12;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.65);
+}
+
+/* Right small stats */
+.card-title{ -fx-text-fill: white; -fx-font-weight: 900; }
+.card-emoji{ -fx-font-size: 16px; }
+.mini-stat{
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-background-radius: 14;
+    -fx-padding: 10 12;
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 14;
+}
+.mini-stat-val{ -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 14px; }
+.mini-stat-lbl{ -fx-text-fill: rgba(255,255,255,0.65); -fx-font-size: 11px; }
+.who{ -fx-text-fill: rgba(255,255,255,0.92); -fx-font-weight: 800; }
+
+.bar{
+    -fx-accent: #7c5cff;
+}
+/*------------------------------------*/
+/* ===== COMMENT POPUP ===== */
+
+.comment-popup {
+    -fx-background-color: rgba(20, 25, 40, 0.85);
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 30, 0.3, 0, 10);
+
+}
+
+
+/* Comment block */
+.comment-item {
+    -fx-background-color: rgba(255,255,255,0.07);
+    -fx-background-radius: 16;
+    -fx-padding: 12;
+}
+
+.comment-item:hover {
+    -fx-background-color: rgba(255,255,255,0.12);
+}
+
+/* Avatar */
+.avatar-circle {
+    -fx-fill: linear-gradient(to bottom right, #7c5cff, #5de0ff);
+}
+
+/* Name */
+.comment-name {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* Date */
+.comment-date {
+    -fx-text-fill: rgba(255,255,255,0.6);
+    -fx-font-size: 11px;
+}
+
+/* Text */
+.comment-text {
+    -fx-text-fill: rgba(255,255,255,0.9);
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+
+/* Input */
+.comment {
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(255,255,255,0.14);
+    -fx-padding: 10 14;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.60);
+}
+
+.comment:focused {
+    -fx-border-color: #7c5cff;
+}
+
+/* Scroll */
+.scroll-pane,
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: rgba(255,255,255,0.2);
+    -fx-background-radius: 999;
+}
+
+/* Close button */
+.btn-icon {
+    -fx-background-color: rgba(255,255,255,0.10);
+    -fx-text-fill: white;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+
+.btn-icon:hover {
+    -fx-background-color: rgba(255,255,255,0.25);
+}
+/*-------likes---------------------*/
+
+.like-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.like-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+    -fx-background-radius: 8;
+}
+
+.like-btn:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+/*-----------------------------------------------------------------------*/
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(0,0,0,0.25);
+    -fx-background-radius: 5;
+}
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+/* TextField focus */
+.text-field:focused, .text-area:focused {
+    -fx-border-color: #1E88E5;
+    -fx-border-width: 1;
+}
+
+/*---------------------menu update delete -------------------------------*/
+
+.context-menu {
+    -fx-background-color: #1e1e2f;
+    -fx-background-radius: 10;
+    -fx-padding: 6;
+}
+
+.menu-item {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+}
+
+.menu-item:hover {
+    -fx-background-color: #2c2c40;
+}
+.scroll {
+    -fx-background-color: transparent;
+}
+
+.scroll .viewport {
+    -fx-background-color: transparent;
+}
+.feed {
+    -fx-padding: 20 0 40 0;
+}
+
+
+.right {
+    -fx-padding: 20 15 20 0;
+}
+
+.dock {
+    -fx-padding: 20 0 20 15;
+}
+/* ================= NOTIFICATION DROPDOWN ================= */
+
+.notif-dropdown {
+    -fx-background-color: linear-gradient(to bottom, #6C63FF, #4F46E5);
+    -fx-background-radius: 18;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 25, 0.4, 0, 6);
+}
+
+.notif-dropdown .menu-item {
+    -fx-background-color: transparent;
+}
+
+.notif-header {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.notif-item {
+    -fx-text-fill: #E0E7FF;
+    -fx-font-size: 13px;
+}
+
+.notif-dropdown .menu-item:hover {
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-background-radius: 10;
+}
+/*--------------- messagerie css----------------------------------------*/
+
+/* MENU CONTAINER */
+.facebook-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 20, 0.2, 0, 5);
+
+    /* SUPPRIME LE CADRE BLEU */
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* SUPPRIME LE FOCUS INTERNE JAVA FX */
+.facebook-menu .menu-item:focused {
+    -fx-background-color: transparent;
+}
+
+/* LIGNE MESSAGE */
+.message-row {
+    -fx-background-color: transparent;
+    -fx-padding: 12 14 12 14;
+    -fx-background-radius: 16;
+}
+
+/* HOVER PROPRE ARRONDI */
+.message-row:hover {
+    -fx-background-color: #E4E6EB;
+}
+
+/* NOM */
+.msg-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+    -fx-text-fill: #050505;
+}
+
+/* MESSAGE */
+.msg-text {
+    -fx-text-fill: #65676B;
+    -fx-font-size: 12;
+}
+
+/* TEMPS */
+.msg-time {
+    -fx-text-fill: #65676B;
+    -fx-font-size: 11;
+}
+
+.menu-header {
+    -fx-padding: 12 15 8 15;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.menu-title {
+    -fx-font-size: 24;        /* plus grand */
+    -fx-font-weight: bold;    /* gras */
+    -fx-text-fill: #1877F2;   /* bleu Messenger */
+}
+
+/* CADRE BLEU AUTOUR DE CHAQUE CONVERSATION */
+.message-row {
+    -fx-background-color: white;
+    -fx-padding: 12 14 12 14;
+    -fx-background-radius: 16;
+
+    -fx-border-color: #1877F2;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 16;
+}
+
+/* HOVER */
+.message-row:hover {
+    -fx-background-color: #E7F3FF;
+}

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="520.0" prefWidth="760.0"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.AjouterActiviteController"
+            stylesheets="@css/activity-form.css">
+
+    <children>
+        <BorderPane AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0"
+                    AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0">
+
+            <!-- ================= TOP BAR ================= -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="54.0" styleClass="topBar">
+                    <children>
+                        <ImageView fitHeight="38.0" fitWidth="110.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="LBLformTitle" text="Create activity" styleClass="topTitle"/>
+                    </children>
+                    <padding><Insets left="22.0" right="22.0"/></padding>
+                </HBox>
+            </top>
+
+            <!-- ================= CENTER ================= -->
+            <center>
+                <VBox spacing="12" styleClass="page" BorderPane.alignment="CENTER">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
+                    <VBox spacing="14" styleClass="card">
+
+                        <HBox alignment="CENTER_LEFT">
+                            <Label text="Details" styleClass="sectionTitle"/>
+                        </HBox>
+
+                        <GridPane hgap="18" vgap="14">
+
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="110" prefWidth="110" halignment="LEFT"/>
+                                <ColumnConstraints minWidth="240" prefWidth="280" hgrow="ALWAYS"/>
+                                <ColumnConstraints minWidth="110" prefWidth="110" halignment="LEFT"/>
+                                <ColumnConstraints minWidth="240" prefWidth="280" hgrow="ALWAYS"/>
+                            </columnConstraints>
+
+                            <!-- Row 0: Image -->
+                            <Label text="Image" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="fieldLabel"/>
+                            <HBox spacing="12" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3" alignment="CENTER_LEFT">
+                                <children>
+                                    <Button text="Choose" onAction="#choisirImage" styleClass="ghostBtn"/>
+                                    <Label fx:id="LBLimageName" text="No file selected" styleClass="muted"/>
+                                </children>
+                            </HBox>
+
+                            <!-- Row 1: Preview -->
+                            <Label text="Preview" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="fieldLabel"/>
+                            <ImageView fx:id="imagePreview"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="3"
+                                       fitWidth="520" fitHeight="110"
+                                       preserveRatio="true" smooth="true" pickOnBounds="true"
+                                       styleClass="preview"/>
+
+                            <!-- Row 2: Name | Type -->
+                            <Label text="Name" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="fieldLabel"/>
+                            <TextField fx:id="TFnameactivite" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="field"/>
+
+                            <Label text="Type" GridPane.columnIndex="2" GridPane.rowIndex="2" styleClass="fieldLabel"/>
+                            <TextField fx:id="TFtypeactivite" GridPane.columnIndex="3" GridPane.rowIndex="2"
+                                       styleClass="field" promptText="Hiking, Museum..."/>
+
+                            <!-- Row 3: Description + AI (FIXED) -->
+                            <!-- Row 3: Description + AI -->
+                            <Label text="Description" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="fieldLabel"/>
+
+                            <HBox spacing="12"
+                                  GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"
+                                  alignment="TOP_LEFT">
+
+                                <children>
+                                    <!-- TextArea (multi-lignes) -->
+                                    <TextArea fx:id="TFdescriptionactivite"
+                                              HBox.hgrow="ALWAYS"
+                                              wrapText="true"
+                                              prefRowCount="4"
+                                              prefHeight="110"
+                                              minHeight="90"
+                                              styleClass="field fieldArea"
+                                              promptText="Short description..." />
+
+                                    <Button fx:id="BTNaiDesc"
+                                            text="✨ AI"
+                                            onAction="#generateDescriptionAi"
+                                            styleClass="aiBtn"/>
+                                </children>
+                            </HBox>
+                            <!-- Row 4: Price | Status -->
+                            <Label text="Price" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="fieldLabel"/>
+                            <Spinner fx:id="pricespinneractivite" GridPane.columnIndex="1" GridPane.rowIndex="4"
+                                     styleClass="premiumSpinner"/>
+
+                            <Label text="Status" GridPane.columnIndex="2" GridPane.rowIndex="4" styleClass="fieldLabel"/>
+                            <ComboBox fx:id="CBstatus" GridPane.columnIndex="3" GridPane.rowIndex="4" styleClass="field"/>
+
+                            <!-- Row 5: Start | End -->
+                            <Label text="Start" GridPane.columnIndex="0" GridPane.rowIndex="5" styleClass="fieldLabel"/>
+
+                            <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5" alignment="CENTER_LEFT">
+                                <children>
+                                    <DatePicker fx:id="DPdateDebut" prefWidth="160" styleClass="field"/>
+                                    <HBox spacing="6" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Spinner fx:id="SPheureDebut" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                            <Label text=":" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #64748b;"/>
+                                            <Spinner fx:id="SPminuteDebut" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+
+                            <Label text="End" GridPane.columnIndex="2" GridPane.rowIndex="5" styleClass="fieldLabel"/>
+                            <HBox spacing="10" GridPane.columnIndex="3" GridPane.rowIndex="5" alignment="CENTER_LEFT">
+                                <children>
+                                    <DatePicker fx:id="DPdateFin" prefWidth="160" styleClass="field"/>
+                                    <HBox spacing="6" alignment="CENTER_LEFT">
+                                        <children>
+                                            <Spinner fx:id="SPheureFin" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                            <Label text=":" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #64748b;"/>
+                                            <Spinner fx:id="SPminuteFin" prefWidth="86" styleClass="premiumSpinner timeSpinner"/>
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+
+                            <!-- Row 6: Destination | Max places -->
+                            <Label text="Destination" GridPane.columnIndex="0" GridPane.rowIndex="6" styleClass="fieldLabel"/>
+                            <ComboBox fx:id="CBdestination" GridPane.columnIndex="1" GridPane.rowIndex="6" styleClass="field"/>
+
+                            <Label fx:id="LBLmaxPlaces" text="Max places" GridPane.columnIndex="2" GridPane.rowIndex="6" styleClass="fieldLabel"/>
+                            <Spinner fx:id="SPmaxPlaces" GridPane.columnIndex="3" GridPane.rowIndex="6"
+                                     styleClass="premiumSpinner"/>
+
+                        </GridPane>
+
+                        <HBox alignment="CENTER_RIGHT" spacing="12">
+                            <Button text="Cancel" onAction="#handleCancel" styleClass="secondaryBtn"/>
+                            <Button fx:id="BTNprimary" text="Save" onAction="#ajouterActivite" styleClass="primaryBtn"/>
+                        </HBox>
+
+                    </VBox>
+                </VBox>
+            </center>
+
+        </BorderPane>
+    </children>
+</AnchorPane>

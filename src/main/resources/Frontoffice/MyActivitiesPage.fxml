@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ContextMenu?><AnchorPane prefHeight="700.0" prefWidth="1000.0"
+                                                       xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+                                                       fx:controller="Controllers.MyActivitiesPageController"
+                                                       stylesheets="@/Frontoffice/css/profile-menu.css">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+            <!-- TOP NAV BAR (same style) -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0"
+                      style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+
+                    <children>
+                        <!-- Logo -->
+                        <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <!-- Spacer left -->
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <!-- Center nav -->
+                        <HBox alignment="CENTER" spacing="22.0">
+                            <Button onAction="#goToHome"
+                                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                    text="Home" />
+                            <Button onAction="#goToDestinations"
+                                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                    text="Destinations" />
+                            <Button onAction="#goToPosts"
+                                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                    text="Posts" />
+                            <Button onAction="#goToactivities"
+                                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                    text="Activities" />
+                            <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                    text="About" />
+                        </HBox>
+
+                        <!-- Spacer right -->
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <!-- NOTIF -->
+                        <Button fx:id="btnNotif" onAction="#openNotifications"
+                                styleClass="iconBtn" text="🔔">
+                            <HBox.margin><Insets right="10.0"/></HBox.margin>
+                        </Button>
+
+                        <!-- PROFILE -->
+                        <Button fx:id="btnProfile" onAction="#openProfileMenu"
+                                styleClass="iconBtn" text="👤">
+                            <HBox.margin><Insets right="20.0"/></HBox.margin>
+
+                            <contextMenu>
+                                <ContextMenu fx:id="profileMenu" styleClass="profileMenu">
+                                    <items>
+
+                                        <MenuItem onAction="#goToMyProfile" text="My Profile">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <MenuItem onAction="#goToMyPosts" text="My Posts">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M9 6l1.5-2h3L15 6h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3zm3 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-2.2a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <MenuItem onAction="#goToMyReservations" text="My Reservations">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5V6h14v2zM7 12h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <MenuItem onAction="#goToMyActivities" text="My Activities">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm3.2 4.8l-1.9 5-5 1.9 1.9-5 5-1.9z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <SeparatorMenuItem/>
+
+                                        <MenuItem onAction="#handleLogout" text="Logout">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIconLogout"
+                                                         content="M10 17l1.41-1.41L9.83 14H20v-2H9.83l1.58-1.59L10 9l-5 5 5 5zM4 21h2V3H4v18z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                    </items>
+                                </ContextMenu>
+                            </contextMenu>
+                        </Button>
+
+                        <!-- Window Controls (unchanged) -->
+                        <Button onAction="#minwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@../Backoffice/css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-font-size: 20; -fx-text-fill: white;" styleClass="button4" stylesheets="@../Backoffice/css/styling.css" text="□" />
+                        <Button onAction="#closewindow" style="-fx-font-size: 16; -fx-text-fill: white;" styleClass="button3" stylesheets="@../Backoffice/css/styling.css" text="✕">
+                            <HBox.margin><Insets top="4.0"/></HBox.margin>
+                        </Button>
+                    </children>
+
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+            </top>
+
+            <center>
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #ffffff;">
+                    <content>
+                        <VBox spacing="25" style="-fx-background-color: #ffffff;">
+
+                            <!-- HERO -->
+                            <VBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91); -fx-padding: 45;">
+                                <Label text="My Activities" textFill="WHITE">
+                                    <font><Font name="System Bold" size="40" /></font>
+                                </Label>
+                                <Label text="Manage the activities you created as a guide" textFill="#EAF0FF">
+                                    <font><Font size="16" /></font>
+                                </Label>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10 0 0 0;">
+                                    <TextField fx:id="searchField" prefWidth="360" promptText="Search in my activities..." style="-fx-background-radius: 14; -fx-border-radius: 14; -fx-border-color: transparent;" />
+                                    <Button onAction="#handleSearch" style="-fx-background-color: white; -fx-text-fill: #223f91; -fx-font-weight: bold; -fx-background-radius: 14; -fx-cursor: hand;" text="Search" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#createActivity" style="-fx-background-color: rgba(255,255,255,0.25); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 14; -fx-cursor: hand;" text="+ Create Activity" />
+                                </HBox>
+                            </VBox>
+
+                            <!-- LIST -->
+                            <VBox spacing="10">
+                                <padding><Insets bottom="30" left="40" right="40" top="10" /></padding>
+
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="Your activities" textFill="#223f91">
+                                        <font><Font name="System Bold" size="26" /></font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="LBLcount" text="0" textFill="#4a5f88">
+                                        <font><Font size="14" /></font>
+                                    </Label>
+                                </HBox>
+
+                                <FlowPane fx:id="myActivitiesFlowPane" hgap="25" prefWrapLength="900" vgap="25" />
+                            </VBox>
+
+                            <!-- Footer -->
+                            <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-padding: 20;">
+                                <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                    <font><Font name="System Bold" size="16.0" /></font>
+                                </Label>
+                                <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                    <font><Font size="12.0" /></font>
+                                </Label>
+                            </VBox>
+
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

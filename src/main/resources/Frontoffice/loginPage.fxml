@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.LoginController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <!-- Top Navigation Bar -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets left="100.0" />
+                            </padding>
+                        </HBox>
+
+                        <!-- Window Controls -->
+                        <Button onAction="#minwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@/Backoffice/css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@/Backoffice/css/styling.css" text="□" />
+                        <Button onAction="#closewindow" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@/Backoffice/css/styling.css" text="✕">
+                            <HBox.margin>
+                                <Insets top="4.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+            </top>
+
+            <!-- Main Content -->
+            <center>
+                <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+                    <content>
+                        <VBox alignment="CENTER" spacing="0.0" style="-fx-background-color: linear-gradient(to bottom, #3A5BC7, #223f91);">
+                            <!-- Login Card -->
+                            <VBox alignment="CENTER" maxWidth="450.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 10);">
+                                <padding>
+                                    <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                                </padding>
+                                <VBox.margin>
+                                    <Insets bottom="30.0" top="50.0" />
+                                </VBox.margin>
+
+                                <!-- Welcome Icon -->
+                                <Label style="-fx-font-size: 48;" text="👋" />
+
+                                <!-- Title -->
+                                <Label style="-fx-text-fill: #223f91;" text="Welcome Back!">
+                                    <font>
+                                        <Font name="System Bold" size="32.0" />
+                                    </font>
+                                </Label>
+
+                                <!-- Subtitle -->
+                                <Label style="-fx-text-fill: #666666;" text="Sign in to continue your journey">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+
+                                <!-- Email Field -->
+                                <VBox spacing="8.0" alignment="CENTER_LEFT">
+                                    <Label style="-fx-text-fill: #333333; -fx-font-weight: bold;" text="Email">
+                                        <font>
+                                            <Font size="13.0" />
+                                        </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f4f6fb; -fx-background-radius: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 12;">
+                                        <padding>
+                                            <Insets bottom="12.0" left="15.0" right="15.0" top="12.0" />
+                                        </padding>
+                                        <Label style="-fx-font-size: 16;" text="📧" />
+                                        <TextField fx:id="emailField" prefWidth="320.0" promptText="Enter your email" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-font-size: 14;" />
+                                    </HBox>
+                                </VBox>
+
+                                <!-- Password Field -->
+                                <VBox spacing="8.0" alignment="CENTER_LEFT">
+                                    <Label style="-fx-text-fill: #333333; -fx-font-weight: bold;" text="Password">
+                                        <font>
+                                            <Font size="13.0" />
+                                        </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f4f6fb; -fx-background-radius: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 12;">
+                                        <padding>
+                                            <Insets bottom="12.0" left="15.0" right="15.0" top="12.0" />
+                                        </padding>
+                                        <Label style="-fx-font-size: 16;" text="🔒" />
+                                        <PasswordField fx:id="passwordField" prefWidth="320.0" promptText="Enter your password" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-font-size: 14;" />
+                                    </HBox>
+                                </VBox>
+
+                                <!-- Captcha Box (hidden by default) -->
+                                <HBox fx:id="captchaBox" alignment="CENTER" spacing="10.0" visible="false" managed="false">
+                                    <Label fx:id="captchaLabel" style="-fx-text-fill: #223f91; -fx-font-weight: bold;" text="What is 7 + 4?">
+                                        <font>
+                                            <Font size="14.0" />
+                                        </font>
+                                    </Label>
+                                    <TextField fx:id="captchaField" prefWidth="80.0" style="-fx-background-color: #f4f6fb; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-alignment: center;" />
+                                </HBox>
+
+                                <!-- Error Label -->
+                                <Label fx:id="errorLabel" style="-fx-text-fill: #e74c3c;" text="" visible="false" wrapText="true">
+                                    <font>
+                                        <Font size="13.0" />
+                                    </font>
+                                </Label>
+
+                                <!-- Attempts Label -->
+                                <Label fx:id="attemptsLabel" style="-fx-text-fill: #f39c12;" text="" visible="false">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+
+                                <!-- Login Button -->
+                                <Button fx:id="loginButton" onAction="#handleLogin" prefHeight="50.0" prefWidth="370.0" style="-fx-background-color: linear-gradient(to right, #3A5BC7, #223f91); -fx-text-fill: white; -fx-background-radius: 25; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 16;" text="Sign In">
+                                    <VBox.margin>
+                                        <Insets top="10.0" />
+                                    </VBox.margin>
+                                </Button>
+
+                                <!-- Divider -->
+                                <HBox alignment="CENTER" spacing="15.0">
+                                    <VBox.margin>
+                                        <Insets bottom="5.0" top="5.0" />
+                                    </VBox.margin>
+                                    <Separator prefWidth="120.0" />
+                                    <Label style="-fx-text-fill: #999999;" text="OR">
+                                        <font>
+                                            <Font size="12.0" />
+                                        </font>
+                                    </Label>
+                                    <Separator prefWidth="120.0" />
+                                </HBox>
+
+                                <!-- OTP Login Button -->
+                                <Button fx:id="otpLoginButton" onAction="#handleOTPLogin" prefHeight="50.0" prefWidth="370.0" style="-fx-background-color: white; -fx-text-fill: #3A5BC7; -fx-background-radius: 25; -fx-border-color: #3A5BC7; -fx-border-radius: 25; -fx-border-width: 2; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14;" text="📧  Sign in with Email OTP" />
+
+                                <!-- Face Login Button -->
+                                <Button fx:id="faceLoginButton" onAction="#handleFaceLogin" prefHeight="50.0" prefWidth="370.0" style="-fx-background-color: white; -fx-text-fill: #11998e; -fx-background-radius: 25; -fx-border-color: #11998e; -fx-border-radius: 25; -fx-border-width: 2; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14;" text="👤  Sign in with Face" />
+
+                                <!-- Register Link -->
+                                <HBox alignment="CENTER" spacing="5.0">
+                                    <VBox.margin>
+                                        <Insets top="10.0" />
+                                    </VBox.margin>
+                                    <Label style="-fx-text-fill: #666666;" text="Don't have an account?">
+                                        <font>
+                                            <Font size="13.0" />
+                                        </font>
+                                    </Label>
+                                    <Button onAction="#goToRegister" style="-fx-background-color: transparent; -fx-text-fill: #3A5BC7; -fx-cursor: hand; -fx-underline: true; -fx-font-weight: bold;" text="Create one">
+                                        <font>
+                                            <Font size="13.0" />
+                                        </font>
+                                    </Button>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Footer -->
+                            <VBox alignment="CENTER" spacing="8.0" style="-fx-padding: 30;">
+                                <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                    <font>
+                                        <Font name="System Bold" size="16.0" />
+                                    </font>
+                                </Label>
+                                <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

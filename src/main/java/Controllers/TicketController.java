@@ -62,7 +62,7 @@ public class TicketController {
         }
 
         try {
-            String sql = "SELECT * FROM destination";
+            String sql = "SELECT * FROM ville";
             var conn = util.DBConnection.getInstance().getConn();
             var st = conn.createStatement();
             var rs = st.executeQuery(sql);

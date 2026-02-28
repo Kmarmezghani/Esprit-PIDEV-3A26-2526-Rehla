@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import models.Activite;
 import services.ActiviteService;
 import services.AiDescriptionService;
+import services.AttractionService;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,14 +22,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 
 public class AjouterActiviteController {
 
     private final ActiviteService activiteService = new ActiviteService();
     private final AiDescriptionService aiDescriptionService = new AiDescriptionService();
+    private final AttractionService attractionService = new AttractionService();
 
-    @FXML private TextField TFdescriptionactivite;
+    @FXML private TextArea TFdescriptionactivite;
     @FXML private TextField TFnameactivite;
     @FXML private TextField TFtypeactivite;
 
@@ -83,6 +86,9 @@ public class AjouterActiviteController {
     @FXML
     public void initialize() {
 
+        // =========================
+        // SPINNERS / PICKERS SETUP
+        // =========================
         pricespinneractivite.setValueFactory(
                 new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 100000.0, 1.0, 5.0)
         );
@@ -111,8 +117,40 @@ public class AjouterActiviteController {
 
         if (LBLimageName != null) LBLimageName.setText("No file selected");
 
+        // =========================
+        // DESCRIPTION TEXTAREA FIX
+        // =========================
+        if (TFdescriptionactivite != null) {
+            TFdescriptionactivite.setWrapText(true);
+
+            Tooltip tip = new Tooltip();
+            tip.textProperty().bind(TFdescriptionactivite.textProperty());
+            TFdescriptionactivite.setTooltip(tip);
+
+            enableAutoGrowDescription();
+        }
+
         setCreateModeUI();
         refreshRoleVisibility();
+    }
+
+    private void enableAutoGrowDescription() {
+        TFdescriptionactivite.textProperty().addListener((obs, oldVal, newVal) -> {
+            int lines = 1;
+            if (newVal != null && !newVal.isBlank()) {
+                lines = newVal.split("\n").length;
+            }
+            int approxExtra = (newVal == null) ? 0 : Math.max(0, newVal.length() / 70);
+            int target = Math.min(10, Math.max(4, lines + approxExtra));
+            TFdescriptionactivite.setPrefRowCount(target);
+        });
+    }
+
+    private void scrollToEndDescription() {
+        String t = TFdescriptionactivite.getText();
+        if (t == null) return;
+        TFdescriptionactivite.positionCaret(t.length());
+        TFdescriptionactivite.requestFocus();
     }
 
     private void setCreateModeUI() {
@@ -130,7 +168,6 @@ public class AjouterActiviteController {
     }
 
     private void refreshRoleVisibility() {
-
         boolean guideCreating = isGuideCreating();
 
         if (SPmaxPlaces != null) {
@@ -143,7 +180,7 @@ public class AjouterActiviteController {
         }
 
         if (BTNaiDesc != null) {
-            boolean showAi = guideCreating && !editMode; // ✅ AI only for guide + only in create
+            boolean showAi = guideCreating && !editMode; // AI only for guide + only in create
             BTNaiDesc.setVisible(showAi);
             BTNaiDesc.setManaged(showAi);
         }
@@ -199,16 +236,32 @@ public class AjouterActiviteController {
 
         TFdescriptionactivite.setDisable(true);
         if (BTNaiDesc != null) BTNaiDesc.setDisable(true);
+
         TFdescriptionactivite.setText("Generating...");
 
         new Thread(() -> {
             try {
-                String text = aiDescriptionService.generate(name, type, dest, duration);
+                int destinationId = (dest != null && destinationMap != null && destinationMap.containsKey(dest))
+                        ? destinationMap.get(dest)
+                        : 0;
+
+                // ✅ Option 2 : on prend la liste des attractions de la ville/destination
+                var list = attractionService.getAttractionsByVille(destinationId, 8);
+
+                List<String> attractionLines = list.stream()
+                        .map(a -> "Name: " + a.getNom()
+                                + " | Type: " + a.getType()
+                                + " | Hours: " + a.getHeureOuverture()
+                                + " | Note: " + a.getDescription())
+                        .toList();
+
+                String text = aiDescriptionService.generate(name, type, dest, duration, attractionLines);
 
                 Platform.runLater(() -> {
                     TFdescriptionactivite.setText(text == null ? "" : text.trim());
                     TFdescriptionactivite.setDisable(false);
                     if (BTNaiDesc != null) BTNaiDesc.setDisable(false);
+                    scrollToEndDescription();
                 });
 
             } catch (Exception ex) {

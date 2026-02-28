@@ -2,6 +2,7 @@ package Controllers;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,9 +20,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import models.Activite;
+import models.Personne;
 import models.Review;
 import services.ActiviteService;
 import services.ReviewService;
+import services.GeminiTipsService;
+import util.Session;
 
 import java.io.File;
 import java.io.InputStream;
@@ -29,12 +33,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ActivityDetailsController {
 
-    private static final int CURRENT_USER_ID = 1;
+    Personne CURRENT_USER = Session.getCurrentUser();
+    int CURRENT_USER_ID=CURRENT_USER.getId();
 
     // ===== Header labels =====
     @FXML private Label LBLtitle;
@@ -44,7 +48,7 @@ public class ActivityDetailsController {
     @FXML private Label LBLrating;
     @FXML private Label LBLtype;
 
-    // ✅ header nodes (your FXML ids)
+    // header nodes
     @FXML private StackPane headerPane;
     @FXML private Rectangle overlayRect;
     @FXML private ImageView IMGactivity;
@@ -53,6 +57,17 @@ public class ActivityDetailsController {
     @FXML private Label LBLavgBig;
     @FXML private Label LBLstarsText;
     @FXML private Label LBLcountText;
+
+    // ===== Tips from reviews (AI) =====
+    @FXML private VBox tipsBox;
+    @FXML private VBox tipsItems; // container dans lequel on va injecter un FlowPane
+    @FXML private Label tipsMeta;
+
+    private final GeminiTipsService tipsService = new GeminiTipsService();
+
+    // Cache tips par activité (évite appels IA à chaque refresh)
+    private final Map<Integer, List<String>> tipsCache = new HashMap<>();
+    private final Map<Integer, Integer> fpCache = new HashMap<>();
 
     // ===== Distribution (right) =====
     @FXML private ProgressBar PB5, PB4, PB3, PB2, PB1;
@@ -78,7 +93,7 @@ public class ActivityDetailsController {
     @FXML
     public void initialize() {
 
-        // ✅ make image really full header size + overlay covers it
+        // image full header size + overlay
         Platform.runLater(() -> {
             if (headerPane != null && IMGactivity != null) {
                 IMGactivity.fitWidthProperty().bind(headerPane.widthProperty());
@@ -92,23 +107,27 @@ public class ActivityDetailsController {
             }
         });
 
-        BTNdeleteMyReview.setDisable(true);
+        if (BTNdeleteMyReview != null) BTNdeleteMyReview.setDisable(true);
 
         initStarRating();
 
-        reviewsList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
-            boolean canDelete = newV != null && newV.getPersonneId() == CURRENT_USER_ID;
-            BTNdeleteMyReview.setDisable(!canDelete);
-        });
+        if (reviewsList != null) {
+            reviewsList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+                boolean canDelete = newV != null && newV.getPersonneId() == CURRENT_USER_ID;
+                if (BTNdeleteMyReview != null) BTNdeleteMyReview.setDisable(!canDelete);
+            });
 
-        reviewsList.getSelectionModel().selectedIndexProperty().addListener((obs, o, n) -> reviewsList.refresh());
+            reviewsList.getSelectionModel().selectedIndexProperty().addListener((obs, o, n) -> reviewsList.refresh());
 
-        reviewsList.setStyle("""
-            -fx-background-color: transparent;
-            -fx-control-inner-background: transparent;
-        """);
+            reviewsList.setStyle("""
+                -fx-background-color: transparent;
+                -fx-control-inner-background: transparent;
+            """);
 
-        reviewsList.setCellFactory(list -> new ReviewCardCell());
+            reviewsList.setCellFactory(list -> new ReviewCardCell());
+        }
+
+        hideTips();
     }
 
     public void setActivity(Activite a) {
@@ -120,30 +139,32 @@ public class ActivityDetailsController {
     private void renderActivity() {
         if (activity == null) return;
 
-        LBLtitle.setText(activity.getNom());
+        if (LBLtitle != null) LBLtitle.setText(activity.getNom());
 
         String dest = activiteService.getDestinationDisplayById(activity.getDestinationId());
-        LBLdestination.setText("📍 " + (dest == null || dest.isBlank() ? "Unknown" : dest));
+        if (LBLdestination != null) {
+            LBLdestination.setText("📍 " + (dest == null || dest.isBlank() ? "Unknown" : dest));
+        }
 
         String start = (activity.getDateDebut() != null) ? activity.getDateDebut().format(dtf) : "—";
         String end   = (activity.getDateFin()   != null) ? activity.getDateFin().format(dtf)   : "—";
-        LBLdates.setText("🕒 " + start + "  →  " + end);
+        if (LBLdates != null) LBLdates.setText("🕒 " + start + "  →  " + end);
 
-        LBLprice.setText(String.format("💰 %.2f TND", activity.getPrix()));
-        LBLtype.setText("Type: " + (activity.getTypeActivite() == null ? "" : activity.getTypeActivite()));
+        if (LBLprice != null) LBLprice.setText(String.format("💰 %.2f TND", activity.getPrix()));
+        if (LBLtype != null) LBLtype.setText("Type: " + (activity.getTypeActivite() == null ? "" : activity.getTypeActivite()));
+
         String desc = activity.getDescription();
         if (LBLdescription != null) {
-            LBLdescription.setText((desc == null || desc.isBlank())
-                    ? "No description provided."
-                    : desc.trim());
+            LBLdescription.setText((desc == null || desc.isBlank()) ? "No description provided." : desc.trim());
         }
 
-        // ✅✅✅ SAME LOGIC AS ActivitiesPageController
         Image real = loadActivityImage(activity.getImage());
-        if (real != null) IMGactivity.setImage(real);
-        else {
-            Image ph = loadPlaceholder();
-            if (ph != null) IMGactivity.setImage(ph);
+        if (IMGactivity != null) {
+            if (real != null) IMGactivity.setImage(real);
+            else {
+                Image ph = loadPlaceholder();
+                if (ph != null) IMGactivity.setImage(ph);
+            }
         }
     }
 
@@ -151,8 +172,8 @@ public class ActivityDetailsController {
         if (activity == null) return;
 
         List<Review> list = reviewService.getReviewsByActiviteId(activity.getId());
-        reviewsList.setItems(FXCollections.observableArrayList(list));
-        BTNdeleteMyReview.setDisable(true);
+        if (reviewsList != null) reviewsList.setItems(FXCollections.observableArrayList(list));
+        if (BTNdeleteMyReview != null) BTNdeleteMyReview.setDisable(true);
 
         int total = list.size();
         int[] count = new int[6];
@@ -167,7 +188,7 @@ public class ActivityDetailsController {
         double avg = (total == 0) ? 0.0 : (sum / (double) total);
 
         activity.setNoteMoyenne(avg);
-        LBLrating.setText("⭐ " + String.format("%.1f", avg));
+        if (LBLrating != null) LBLrating.setText("⭐ " + String.format("%.1f", avg));
 
         if (LBLavgBig != null) LBLavgBig.setText(String.format("%.1f", avg));
         if (LBLstarsText != null) LBLstarsText.setText(starsFromAverage(avg));
@@ -186,20 +207,129 @@ public class ActivityDetailsController {
         if (LBLc3 != null) LBLc3.setText("3.0  " + count[3] + " reviews");
         if (LBLc2 != null) LBLc2.setText("2.0  " + count[2] + " reviews");
         if (LBLc1 != null) LBLc1.setText("1.0  " + count[1] + " reviews");
+
+        // ===== IA Tips (après chargement reviews + stats) =====
+        generateTipsSmart(list);
     }
 
-    private String starsFromAverage(double avg) {
-        avg = Math.max(0, Math.min(5, avg));
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i <= 5; i++) {
-            double diff = avg - (i - 1);
-            if (diff >= 1) sb.append("★");
-            else if (diff >= 0.75) sb.append("★");
-            else if (diff >= 0.5) sb.append("⯨");
-            else if (diff >= 0.25) sb.append("⯪");
-            else sb.append("☆");
+    // =========================
+    // IA Tips (NEW DESIGN + MAX 4)
+    // =========================
+
+    private void hideTips() {
+        if (tipsItems != null) tipsItems.getChildren().clear();
+        if (tipsMeta != null) tipsMeta.setText("");
+        if (tipsBox != null) {
+            tipsBox.setVisible(false);
+            tipsBox.setManaged(false);
         }
-        return sb.toString();
+    }
+
+    /**
+     * Affiche en "chips" (FlowPane) + limite à 4 tips.
+     * ⚠️ Ajoute un style CSS .tipChip dans ton reviews.css
+     */
+    private void showTips(List<String> tips, String meta) {
+        if (tipsBox == null || tipsItems == null) return;
+
+        tipsItems.getChildren().clear();
+
+        if (tips == null) tips = List.of();
+        List<String> limited = tips.stream().filter(s -> s != null && !s.isBlank()).limit(4).toList();
+
+        if (limited.isEmpty()) {
+            hideTips();
+            return;
+        }
+
+        tipsBox.setVisible(true);
+        tipsBox.setManaged(true);
+
+        if (tipsMeta != null) tipsMeta.setText(meta == null ? "" : meta);
+
+        FlowPane flow = new FlowPane();
+        flow.setHgap(10);
+        flow.setVgap(10);
+
+        // wrap: ajuste si tu veux
+        flow.setPrefWrapLength(520);
+
+        for (String tip : limited) {
+            Label chip = new Label("💡 " + tip.trim());
+            chip.getStyleClass().add("tipChip");
+            chip.setWrapText(true);
+            flow.getChildren().add(chip);
+        }
+
+        tipsItems.getChildren().add(flow);
+    }
+
+    private void generateTipsSmart(List<Review> list) {
+        if (activity == null) return;
+        if (tipsBox == null || tipsItems == null || tipsMeta == null) return;
+
+        List<String> texts = list.stream()
+                .map(r -> r.getCommentaire() == null ? "" : r.getCommentaire().trim())
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        if (texts.isEmpty()) {
+            hideTips();
+            return;
+        }
+
+        int fp = Objects.hash(texts.size(), String.join("|", texts).hashCode());
+        Integer oldFp = fpCache.get(activity.getId());
+
+        if (oldFp != null && oldFp == fp) {
+            List<String> cached = tipsCache.get(activity.getId());
+            if (cached != null && !cached.isEmpty()) {
+                showTips(cached, "Based on travelers’ reviews (cached)");
+                return;
+            }
+        }
+
+        // Loading state (tu peux styliser tipsMeta)
+        tipsItems.getChildren().clear();
+        tipsBox.setVisible(true);
+        tipsBox.setManaged(true);
+        tipsMeta.setText("Generating tips from reviews...");
+
+        Task<List<String>> task = new Task<>() {
+            @Override
+            protected List<String> call() throws Exception {
+                // GeminiTipsService doit déjà limiter à 3-4 idéalement, mais on re-limite côté UI
+                return tipsService.extractTips(texts);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<String> tips = task.getValue();
+
+            if (tips == null || tips.isEmpty()) {
+                hideTips();
+                return;
+            }
+
+            // cache + fp
+            tipsCache.put(activity.getId(), tips);
+            fpCache.put(activity.getId(), fp);
+
+            showTips(tips, "Based on travelers’ reviews");
+        });
+
+        task.setOnFailed(e -> {
+            List<String> cached = tipsCache.get(activity.getId());
+            if (cached != null && !cached.isEmpty()) {
+                showTips(cached, "Based on travelers’ reviews (cached)");
+            } else {
+                hideTips();
+            }
+        });
+
+        Thread th = new Thread(task, "gemini-tips");
+        th.setDaemon(true);
+        th.start();
     }
 
     // =========================
@@ -245,6 +375,20 @@ public class ActivityDetailsController {
         }
     }
 
+    private String starsFromAverage(double avg) {
+        avg = Math.max(0, Math.min(5, avg));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= 5; i++) {
+            double diff = avg - (i - 1);
+            if (diff >= 1) sb.append("★");
+            else if (diff >= 0.75) sb.append("★");
+            else if (diff >= 0.5) sb.append("⯨");
+            else if (diff >= 0.25) sb.append("⯪");
+            else sb.append("☆");
+        }
+        return sb.toString();
+    }
+
     // =========================
     // CRUD Reviews
     // =========================
@@ -254,18 +398,20 @@ public class ActivityDetailsController {
         if (r.getPersonneId() != CURRENT_USER_ID) return;
 
         editingReview = r;
-        TAreview.setText(r.getCommentaire() == null ? "" : r.getCommentaire());
+
+        if (TAreview != null) {
+            TAreview.setText(r.getCommentaire() == null ? "" : r.getCommentaire());
+            TAreview.requestFocus();
+            TAreview.positionCaret(TAreview.getText().length());
+        }
 
         selectedRating = Math.max(1, Math.min(5, r.getNote()));
         updateStars(selectedRating);
-
-        TAreview.requestFocus();
-        TAreview.positionCaret(TAreview.getText().length());
     }
 
     private void exitEditMode() {
         editingReview = null;
-        TAreview.clear();
+        if (TAreview != null) TAreview.clear();
         selectedRating = 5;
         updateStars(selectedRating);
     }
@@ -274,7 +420,7 @@ public class ActivityDetailsController {
     void addReview() {
         if (activity == null) return;
 
-        String comment = (TAreview.getText() == null) ? "" : TAreview.getText().trim();
+        String comment = (TAreview == null || TAreview.getText() == null) ? "" : TAreview.getText().trim();
         if (comment.isEmpty()) {
             showWarn("Missing review", "Please write a comment before submitting.");
             return;
@@ -298,10 +444,14 @@ public class ActivityDetailsController {
             r.setDateAvis(LocalDateTime.now());
 
             reviewService.add(r);
-            TAreview.clear();
+            if (TAreview != null) TAreview.clear();
         }
 
         activiteService.updateNoteMoyenne(activity.getId());
+
+        // force regen tips (fingerprint change)
+        fpCache.remove(activity.getId());
+
         loadReviewsAndRating();
     }
 
@@ -323,7 +473,7 @@ public class ActivityDetailsController {
     void deleteMyReview() {
         if (activity == null) return;
 
-        Review selected = reviewsList.getSelectionModel().getSelectedItem();
+        Review selected = (reviewsList == null) ? null : reviewsList.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
         if (selected.getPersonneId() != CURRENT_USER_ID) {
@@ -339,6 +489,10 @@ public class ActivityDetailsController {
 
         reviewService.deleteByIdAndUser(selected.getId(), CURRENT_USER_ID);
         activiteService.updateNoteMoyenne(activity.getId());
+
+        // force regen tips
+        fpCache.remove(activity.getId());
+
         loadReviewsAndRating();
     }
 
@@ -393,7 +547,7 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    // ✅✅✅ SAME IMAGE LOADER AS ActivitiesPageController
+    // IMAGE LOADER
     // =========================
 
     private Image loadActivityImage(String path) {
@@ -454,7 +608,7 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    //  CUSTOM REVIEW CARD CELL
+    // CUSTOM REVIEW CARD CELL
     // =========================
 
     private class ReviewCardCell extends ListCell<Review> {
@@ -573,6 +727,7 @@ public class ActivityDetailsController {
     }
 
     private String initialsOf(String name) {
+        if (name == null || name.isBlank()) return "U";
         String[] parts = name.trim().split("\\s+");
         if (parts.length == 0) return "U";
         if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();

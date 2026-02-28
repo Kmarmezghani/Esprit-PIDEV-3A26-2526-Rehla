@@ -10,6 +10,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Side;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,22 +22,31 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import models.Activite;
-import models.Reservation;
-import models.Review;
-import models.Ticket;
+import models.*;
 import models.stats.AvgNoteRow;
 import models.stats.NoteDistributionRow;
 import models.stats.TopActiviteRow;
 import services.*;
+import services.PaysService;
+import services.VilleService;
+import services.AttractionService;
+import Controllers.EditPaysController;
+import Controllers.EditVilleController;
+import Controllers.EditAttractionController;
 
 import java.io.File;
+import java.io.InputStream;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+// Missing imports added
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+import util.Session;
 
 public class DashboardController {
 
@@ -101,9 +112,7 @@ public class DashboardController {
     @FXML private TableColumn<Ticket, Void> colDeleteTicket;
     @FXML private TableColumn<Ticket, String> colDestinationTicket;
 
-    @FXML private TableView<?> tabledestination;
-    @FXML private TableView<?> tablepost;
-    @FXML private TableView<?> tableuser;
+
 
     @FXML private BarChart<String, Number> barTopActivities;
     @FXML private CategoryAxis xTopActivities;
@@ -116,6 +125,32 @@ public class DashboardController {
     @FXML private TableColumn<AvgNoteRow, Double> colAvg;
     @FXML private TableColumn<AvgNoteRow, Integer> colCount;
 
+    // Destination Tables
+    @FXML private TableView<Pays> tablePays;
+    @FXML private TableView<Ville> tableVille;
+    @FXML private TableView<Attraction> tableAttraction;
+
+    // Pays Columns
+    @FXML private TableColumn<Pays, String> colNomPays;
+    @FXML private TableColumn<Pays, String> colDescriptionPays;
+    @FXML private TableColumn<Pays, Void> colActionsPays;
+
+    // Ville Columns
+    @FXML private TableColumn<Ville, String> colNomVille;
+    @FXML private TableColumn<Ville, String> colPaysVille;
+    @FXML private TableColumn<Ville, String> colTypeTourismeVille;
+    @FXML private TableColumn<Ville, String> colSaisonVille;
+    @FXML private TableColumn<Ville, Void> colActionsVille;
+
+    // Attraction Columns
+    @FXML private TableColumn<Attraction, String> colNomAttraction;
+    @FXML private TableColumn<Attraction, String> colDescriptionAttraction;
+    @FXML private TableColumn<Attraction, String> colTypeAttraction;
+    @FXML private TableColumn<Attraction, Double> colPrixAttraction;
+    @FXML private TableColumn<Attraction, String> colHorairesAttraction;
+    @FXML private TableColumn<Attraction, String> colVilleAttraction;
+    @FXML private TableColumn<Attraction, Void> colActionsAttraction;
+
     @FXML private ToggleButton dashactbut;
     @FXML private ToggleButton dashdesbut;
     @FXML private ToggleButton dashpostbut;
@@ -123,6 +158,16 @@ public class DashboardController {
     @FXML private ToggleButton dashuserbut;
 
     private final ToggleGroup dashboardGroup = new ToggleGroup();
+
+    // Destination Services
+    private final PaysService paysService = new PaysService();
+    private final VilleService villeService = new VilleService();
+    private final AttractionService attractionService = new AttractionService();
+
+    // Destination Lists
+    private final ObservableList<Pays> paysList = FXCollections.observableArrayList();
+    private final ObservableList<Ville> villeList = FXCollections.observableArrayList();
+    private final ObservableList<Attraction> attractionList = FXCollections.observableArrayList();
 
     private final ActiviteService activiteService = new ActiviteService();
     private final ObservableList<Activite> activiteList = FXCollections.observableArrayList();
@@ -141,9 +186,92 @@ public class DashboardController {
     private Reservation currentReservationForTickets;
 
     private final StatsService statsService = new StatsService();
+    @FXML private TableView<Commentaire> tableCommentaire;
+
+
+
+    @FXML
+    private Button btnNotif;
+
+
+    @FXML private TableView<Post> tablepost;
+
+    @FXML private TableColumn<Post, Integer> colIdPost;
+    @FXML private TableColumn<Post, String> colTitrePost;
+    @FXML private TableColumn<Post, String> colContenuPost;
+    @FXML private TableColumn<Post, java.time.LocalDate> colDatePost;
+    @FXML private TableColumn<Post, Integer> colPopularitePost;
+    @FXML private TableColumn<Post, String> colAuteurPost;
+    @FXML private TableColumn<Post, Integer> colLikesPost;
+    @FXML
+    private TableColumn<Post, Void> colAction;
+    @FXML
+    private TableColumn<Commentaire, Void> colAction2;
+
+    @FXML
+    private TableColumn<Post, String> colImagePost;
+
+
+    @FXML private TableColumn<Commentaire, Integer> colIdCom;
+    @FXML private TableColumn<Commentaire, String> colContenuCom;
+    @FXML private TableColumn<Commentaire, java.time.LocalDate> colDateCom;
+    @FXML private TableColumn<Commentaire, Integer> colAuteurCom;
+    @FXML private TableColumn<Commentaire, Integer> colPostCom;
+
+
+    @FXML private Tab preferencetab;
+    private ContextMenu notifMenu = new ContextMenu();
+    @FXML private TableView<Personne> tableuser;
+    @FXML private TableView<Preference> tablePreferences;
+    //-------------------------------------------------------------------
+    @FXML private TableColumn<Personne, Integer> colUserId;
+    @FXML private TableColumn<Personne, String> colUserNom;
+    @FXML private TableColumn<Personne, String> colUserPrenom;
+    @FXML private TableColumn<Personne, String> colUserEmail;
+    @FXML private TableColumn<Personne, String> colUserRole;
+    @FXML private TableColumn<Personne, String> colUserStatut;
+    @FXML private TableColumn<Personne, String> colUserDateInsc;
+    @FXML private TableColumn<Preference, String> colPrefUser;
+    @FXML private TableColumn<Preference, Double> colPrefBudgetMin;
+    @FXML private TableColumn<Preference, Double> colPrefBudgetMax;
+    @FXML private TableColumn<Preference, String> colPrefTypes;
+    @FXML private TableColumn<Preference, String> colPrefCentres;
+
+//--------------------------------------------------------------
+
+    @FXML private TableView<FavorisPost> tableFavoris;
+
+    @FXML private TableColumn<FavorisPost, String> colFavUser;
+    @FXML private TableColumn<FavorisPost, String> colFavPost;
+    @FXML private TableColumn<FavorisPost, String> colFavDate;
+    @FXML private TableColumn<FavorisPost, Void> colFavAction;
+
+    private ObservableList<FavorisPost> favorisList = FXCollections.observableArrayList();
+    private FavorisService favorisService = new FavorisService();
+
+
+    private PersonneService personneService = new PersonneService();
+    private PreferenceService preferenceService = new PreferenceService();
+    private ObservableList<Personne> userList = FXCollections.observableArrayList();
+    private ObservableList<Preference> preferenceList = FXCollections.observableArrayList();
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private NotificationService notificationService = new NotificationService();
+
+    private CommentaireService commentaireService = new CommentaireService();
+    private ObservableList<Commentaire> commentaireList = FXCollections.observableArrayList();
+    private PostService postService = new PostService();
+    private ObservableList<Post> postList = FXCollections.observableArrayList();
+
+    Personne currentUser = Session.getCurrentUser();
 
     @FXML
     public void initialize() {
+        System.out.println("Current user: " + currentUser);
+        if(currentUser == null){
+            btnNotif.setVisible(false);
+            btnNotif.setManaged(false);
+            return;
+        }
 
         dashuserbut.setToggleGroup(dashboardGroup);
         dashdesbut.setToggleGroup(dashboardGroup);
@@ -161,11 +289,44 @@ public class DashboardController {
 
         dashboardGroup.selectToggle(dashuserbut);
         applySelectedStyles();
+        Platform.runLater(() -> {
+            Scene scene = dashuserbut.getScene();
+            Stage stage = (Stage) scene.getWindow();
+
+            scene.setOnKeyPressed(event -> {
+                if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE && stage.isMaximized()) {
+                    stage.setMaximized(false);
+                }
+            });
+        });
 
         initActiviteTable();
         initReviewTable();
         initReservationTable();
         initTicketTable();
+
+        // Initialize Destination Tables
+        initPaysTable();
+        initVilleTable();
+        initAttractionTable();
+        loadPosts();
+        loadCommentaires();
+        loadFavoris();
+        initUsersTable();
+        initPreferencesTable();
+
+        btnNotif.setOnAction(e -> toggleNotifications());
+
+        addEditDeleteButtonsToColumn(colAction,
+                post -> openUpdatePopup((Post) post),
+                post -> deletePost((Post) post)
+        );
+        addEditDeleteButtonsToColumn(colAction2,
+                com -> openUpdateCommentPopup((Commentaire) com),
+                com -> deleteComment((Commentaire) com)
+        );
+
+        addImageColumn();
 
         addDeleteReservationButton();
         addTicketButton();
@@ -303,40 +464,66 @@ public class DashboardController {
             protected void updateItem(String imagePath, boolean empty) {
                 super.updateItem(imagePath, empty);
 
-                if (empty || imagePath == null || imagePath.trim().isEmpty()) {
+                if (empty) {
                     setGraphic(null);
                     return;
                 }
 
+                // (Optionnel) pour éviter que les anciennes images restent affichées
+                imageView.setImage(null);
+
+                String p = (imagePath == null) ? "" : imagePath.trim();
+                Image img = null;
+
                 try {
-                    Image img = null;
+                    // 1) resources (classpath): "/Backoffice/..." ou "/images/..."
+                    if (!p.isEmpty() && p.startsWith("/")) {
+                        try (InputStream is = getClass().getResourceAsStream(p)) {
+                            if (is != null) {
+                                img = new Image(is);
+                            } else {
+                                System.out.println("[IMG] Resource introuvable: " + p);
+                            }
+                        }
+                    }
 
-                    // 1) resources: "/images/activities/.."
-                    if (imagePath.startsWith("/")) {
-                        var is = getClass().getResourceAsStream(imagePath);
-                        if (is != null) img = new Image(is);
-                    } else {
-                        // 2) file system (comme ton ami)
-                        File file = new File(imagePath);
+                    // 2) file system: "C:\..." ou "relative/path.png"
+                    if (img == null && !p.isEmpty() && !p.startsWith("/")) {
+                        File file = new File(p);
 
-                        // si relatif, essayer depuis user.dir
                         if (!file.exists()) {
-                            file = new File(System.getProperty("user.dir"), imagePath);
+                            file = new File(System.getProperty("user.dir"), p);
                         }
 
                         if (file.exists()) {
                             img = new Image(file.toURI().toString());
+                        } else {
+                            System.out.println("[IMG] File introuvable: " + file.getAbsolutePath());
                         }
                     }
 
-                    // placeholder si pas trouvé
+                    // 3) placeholder obligatoire
                     if (img == null) {
-                        var is2 = getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png");
-                        if (is2 != null) img = new Image(is2);
+                        try (InputStream is2 = getClass().getResourceAsStream("/Backoffice/icons/activity_placeholder.png")) {
+                            if (is2 != null) {
+                                img = new Image(is2);
+                            } else {
+                                System.out.println("[IMG] Placeholder introuvable: /Backoffice/icons/activity_placeholder.png");
+                            }
+                        }
                     }
 
-                    imageView.setImage(img);
-                    setGraphic(imageView);
+                    if (img != null) {
+                        imageView.setFitWidth(60);
+                        imageView.setFitHeight(45);
+                        imageView.setPreserveRatio(true);
+                        imageView.setSmooth(true);
+
+                        imageView.setImage(img);
+                        setGraphic(imageView);
+                    } else {
+                        setGraphic(null); // si même le placeholder manque
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -972,4 +1159,733 @@ public class DashboardController {
     private void FXaddActivite(ActionEvent event) {
         // empty (ton code)
     }
+
+    // ========== DESTINATION MODULE METHODS ==========
+
+    // --- PAYS (Country) Methods ---
+    private void initPaysTable() {
+        colNomPays.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colDescriptionPays.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        addPaysActionButtons();
+        refreshPaysTable();
+    }
+
+    private void refreshPaysTable() {
+        paysList.setAll(paysService.getAll());
+        tablePays.setItems(paysList);
+    }
+
+    private void addPaysActionButtons() {
+        colActionsPays.setCellFactory(param -> new TableCell<>() {
+            private final Button editBtn = createEditButton();
+            private final Button deleteBtn = createDeleteButton();
+            private final HBox container = new HBox(10, editBtn, deleteBtn);
+
+            {
+                container.setAlignment(Pos.CENTER);
+
+                editBtn.setOnAction(e -> {
+                    Pays pays = getTableView().getItems().get(getIndex());
+                    openEditPopupPays(pays);
+                });
+
+                deleteBtn.setOnAction(e -> {
+                    Pays pays = getTableView().getItems().get(getIndex());
+                    paysService.delete(pays);
+                    refreshPaysTable();
+                    refreshVilleTable(); // Refresh child table
+                    refreshAttractionTable(); // Refresh grandchild table
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : container);
+            }
+        });
+    }
+
+    @FXML
+    void openAddPopupPays(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Backoffice/FormulaireAddPays.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add Country");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshPaysTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openEditPopupPays(Pays pays) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireEditPays.fxml"));
+            Parent root = loader.load();
+            
+            EditPaysController controller = loader.getController();
+            controller.setPays(pays);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Edit Country");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshPaysTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- VILLE (City) Methods ---
+    private void initVilleTable() {
+        colNomVille.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colPaysVille.setCellValueFactory(cellData -> {
+            int paysId = cellData.getValue().getPaysId();
+            String paysName = paysList.stream()
+                    .filter(p -> p.getId() == paysId)
+                    .map(Pays::getNom)
+                    .findFirst()
+                    .orElse("Unknown ID: " + paysId);
+            return new SimpleStringProperty(paysName);
+        });
+        colTypeTourismeVille.setCellValueFactory(new PropertyValueFactory<>("typeTourisme"));
+        colSaisonVille.setCellValueFactory(new PropertyValueFactory<>("saison"));
+
+        addVilleActionButtons();
+        refreshVilleTable();
+    }
+
+    private void refreshVilleTable() {
+        villeList.setAll(villeService.getAll());
+        tableVille.setItems(villeList);
+    }
+
+    private void addVilleActionButtons() {
+        colActionsVille.setCellFactory(param -> new TableCell<>() {
+            private final Button editBtn = createEditButton();
+            private final Button deleteBtn = createDeleteButton();
+            private final HBox container = new HBox(10, editBtn, deleteBtn);
+
+            {
+                container.setAlignment(Pos.CENTER);
+
+                editBtn.setOnAction(e -> {
+                    Ville ville = getTableView().getItems().get(getIndex());
+                    openEditPopupVille(ville);
+                });
+
+                deleteBtn.setOnAction(e -> {
+                    Ville ville = getTableView().getItems().get(getIndex());
+                    villeService.delete(ville);
+                    refreshVilleTable();
+                    refreshAttractionTable(); // Refresh child table
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : container);
+            }
+        });
+    }
+
+    @FXML
+    void openAddPopupVille(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Backoffice/FormulaireAddVille.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add City");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshVilleTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openEditPopupVille(Ville ville) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireEditVille.fxml"));
+            Parent root = loader.load();
+
+            EditVilleController controller = loader.getController();
+            controller.setVille(ville);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Edit City");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshVilleTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- ATTRACTION Methods ---
+    private void initAttractionTable() {
+        colNomAttraction.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colDescriptionAttraction.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colTypeAttraction.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colPrixAttraction.setCellValueFactory(new PropertyValueFactory<>("prix"));
+        colHorairesAttraction.setCellValueFactory(cellData -> {
+            Attraction a = cellData.getValue();
+            if (a.isEstFerme()) {
+                return new SimpleStringProperty("Closed");
+            } else {
+                String start = (a.getHeureOuverture() != null) ? a.getHeureOuverture().toString().substring(0, 5) : "?";
+                String end = (a.getHeureFermeture() != null) ? a.getHeureFermeture().toString().substring(0, 5) : "?";
+                return new SimpleStringProperty(start + " - " + end);
+            }
+        });
+        colVilleAttraction.setCellValueFactory(cellData -> {
+            int villeId = cellData.getValue().getVilleId();
+            String villeName = villeList.stream()
+                    .filter(v -> v.getId() == villeId)
+                    .map(Ville::getNom)
+                    .findFirst()
+                    .orElse("Unknown ID: " + villeId);
+            return new SimpleStringProperty(villeName);
+        });
+
+        addAttractionActionButtons();
+        refreshAttractionTable();
+    }
+
+    private void refreshAttractionTable() {
+        attractionList.setAll(attractionService.getAll());
+        tableAttraction.setItems(attractionList);
+    }
+
+    private void addAttractionActionButtons() {
+        colActionsAttraction.setCellFactory(param -> new TableCell<>() {
+            private final Button editBtn = createEditButton();
+            private final Button deleteBtn = createDeleteButton();
+            private final HBox container = new HBox(10, editBtn, deleteBtn);
+
+            {
+                container.setAlignment(Pos.CENTER);
+
+                editBtn.setOnAction(e -> {
+                    Attraction attraction = getTableView().getItems().get(getIndex());
+                    openEditPopupAttraction(attraction);
+                });
+
+                deleteBtn.setOnAction(e -> {
+                    Attraction attraction = getTableView().getItems().get(getIndex());
+                    attractionService.delete(attraction);
+                    refreshAttractionTable();
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : container);
+            }
+        });
+    }
+
+    @FXML
+    void openAddPopupAttraction(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Backoffice/FormulaireAddAttraction.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Add Attraction");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshAttractionTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openEditPopupAttraction(Attraction attraction) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireEditAttraction.fxml"));
+            Parent root = loader.load();
+
+            EditAttractionController controller = loader.getController();
+            controller.setAttraction(attraction);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Edit Attraction");
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setScene(new Scene(root));
+            popupStage.showAndWait();
+            refreshAttractionTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- Helper Methods for Buttons ---
+    private Button createEditButton() {
+        Button btn = new Button("Edit");
+        btn.setStyle("-fx-background-color: #3A5BC7; -fx-text-fill: white; -fx-cursor: hand;");
+        return btn;
+    }
+
+    private Button createDeleteButton() {
+        Button btn = new Button("Delete");
+        btn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-cursor: hand;");
+        return btn;
+    }
+    /////////////////////notification
+    private void toggleNotifications() {
+
+        if (notifMenu.isShowing()) {
+            notifMenu.hide();
+            return;
+        }
+        loadNotifications();
+        notifMenu.show(btnNotif, Side.BOTTOM, 0, 8);
+    }
+
+    private void loadNotifications() {
+
+        if (currentUser == null) return;
+
+        List<notification> list =
+                notificationService.getByReceiver2(currentUser.getId()); // admin
+
+        notifMenu.getItems().clear();
+        notifMenu.getStyleClass().add("notif-dropdown");
+
+        MenuItem header = new MenuItem("Notifications");
+        header.setDisable(true);
+        header.getStyleClass().add("notif-header");
+
+        notifMenu.getItems().add(header);
+        notifMenu.getItems().add(new SeparatorMenuItem());
+
+        if (list.isEmpty()) {
+
+            MenuItem empty = new MenuItem("Aucune notification");
+            empty.setDisable(true);
+            empty.getStyleClass().add("notif-item");
+            notifMenu.getItems().add(empty);
+
+        } else {
+
+            for (notification n : list) {
+
+                MenuItem item = new MenuItem(n.getMessage());
+                item.getStyleClass().add("notif-item");
+                item.setOnAction(ev -> handleNotificationClick(n));
+
+                notifMenu.getItems().add(item);
+            }
+
+        }
+    }
+    private void handleNotificationClick(notification n) {
+        notifMenu.hide();
+
+        Platform.runLater(() -> {
+
+            if (n.getCommentId() != null) {
+
+                dashboardGroup.selectToggle(dashpostbut);
+                showPane(posttabpanmain);
+
+                Commentaire targetCom = commentaireList.stream()
+                        .filter(c -> c.getId() == n.getCommentId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (targetCom != null) {
+
+                    int index = commentaireList.indexOf(targetCom);
+
+                    tableCommentaire.getSelectionModel().clearAndSelect(index);
+                    tableCommentaire.scrollTo(index);
+                    tableCommentaire.requestFocus();
+
+                } else {
+                    System.out.println("Commentaire non trouvé");
+                }
+
+            }
+
+            else if (n.getPostId() != null) {
+
+                dashboardGroup.selectToggle(dashpostbut);
+                showPane(posttabpanmain);
+
+                Post targetPost = postList.stream()
+                        .filter(p -> p.getId() == n.getPostId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (targetPost != null) {
+
+                    int index = postList.indexOf(targetPost);
+
+                    tablepost.getSelectionModel().clearAndSelect(index);
+                    tablepost.scrollTo(index);
+                    tablepost.requestFocus();
+                }
+            }
+        });
+    }
+    /*---------------------------------------posts-------------------------------------------*/
+    private void loadPosts() {
+
+
+        colTitrePost.setCellValueFactory(new PropertyValueFactory<>("titre"));
+        colContenuPost.setCellValueFactory(new PropertyValueFactory<>("contenu"));
+        colDatePost.setCellValueFactory(new PropertyValueFactory<>("datePublication"));
+        colPopularitePost.setCellValueFactory(new PropertyValueFactory<>("popularite"));
+        colLikesPost.setCellValueFactory(new PropertyValueFactory<>("nbLikes"));
+
+        colAuteurPost.setCellValueFactory(cellData -> {
+            String nom = "";
+            String prenom = "";
+
+            if (cellData.getValue().getAuteur() != null) {
+                nom = cellData.getValue().getAuteur().getNom() != null ? cellData.getValue().getAuteur().getNom() : "";
+                prenom = cellData.getValue().getAuteur().getPrenom() != null ? cellData.getValue().getAuteur().getPrenom() : "";
+            }
+
+            String fullName = (nom + " " + prenom).trim();
+            if (fullName.isEmpty()) {
+                fullName = "Inconnu";
+            }
+
+            return new SimpleStringProperty(fullName);
+        });
+
+        postList.setAll(postService.getAll());
+        tablepost.setItems(postList);
+    }
+    /*----------------appeler le formulaire FormulaireAddPost avec ajout d'un titre----------------- */
+    @FXML
+    private void openAddPostForm() {
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireAddPost.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter Post");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            loadPosts(); // refresh après fermeture
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private <T> void addEditDeleteButtonsToColumn(TableColumn<T, Void> col, java.util.function.Consumer<T> onEdit, java.util.function.Consumer<T> onDelete) {
+        col.setCellFactory(param -> new TableCell<>() {
+
+            private final Button btnEdit = new Button();
+            private final Button btnDelete = new Button();
+            private final HBox hbox = new HBox(10, btnEdit, btnDelete);
+
+            {
+                // EDIT
+                Image editImage = new Image(getClass().getResourceAsStream("/Backoffice/icons/edit.png"));
+                ImageView editView = new ImageView(editImage);
+                editView.setFitWidth(16);
+                editView.setFitHeight(16);
+                editView.setPreserveRatio(true);
+                btnEdit.setGraphic(editView);
+                btnEdit.setStyle("-fx-background-color: transparent;");
+                btnEdit.setCursor(Cursor.HAND);
+                btnEdit.setOnAction(event -> {
+                    T item = getTableView().getItems().get(getIndex());
+                    onEdit.accept(item);
+                });
+
+                // DELETE
+                Image deleteImage = new Image(getClass().getResourceAsStream("/Backoffice/icons/poubelle.png"));
+                ImageView deleteView = new ImageView(deleteImage);
+                deleteView.setFitWidth(16);
+                deleteView.setFitHeight(16);
+                deleteView.setPreserveRatio(true);
+                btnDelete.setGraphic(deleteView);
+                btnDelete.setStyle("-fx-background-color: transparent;");
+                btnDelete.setCursor(Cursor.HAND);
+                btnDelete.setOnAction(event -> {
+                    T item = getTableView().getItems().get(getIndex());
+                    onDelete.accept(item);
+                });
+            }
+            /*---------------tableview appelle updateItem pour mettre le contenu--------------*/
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(hbox);
+                }
+            }
+        });
+    }
+
+    private void addImageColumn() {
+
+        colImagePost.setCellFactory(param -> new TableCell<>() {
+
+            private final ImageView imageView = new ImageView();
+
+            {
+                imageView.setFitWidth(80);
+                imageView.setFitHeight(60);
+                imageView.setPreserveRatio(true);
+            }
+
+            @Override
+            protected void updateItem(String imagePath, boolean empty) {
+                super.updateItem(imagePath, empty);
+
+                if (empty || imagePath == null || imagePath.trim().isEmpty()) {
+                    setGraphic(null);
+                    return;
+                }
+
+                try {
+                    File file = new File(imagePath);
+
+                    if (file.exists()) {
+                        imageView.setImage(new Image(file.toURI().toString()));
+                    } else {
+                        imageView.setImage(null); // pas d’image si fichier absent
+                    }
+
+                    setGraphic(imageView);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    setGraphic(null);
+                }
+            }
+        });
+
+        colImagePost.setCellValueFactory(
+                new PropertyValueFactory<>("image")
+        );
+    }
+
+
+
+    private void openUpdatePopup(Post post) {
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Backoffice/FormulaireUpdatePost.fxml")
+            );
+
+            Parent root = loader.load();
+
+            UpdatePostController controller = loader.getController();
+            controller.setPostToEdit(post);
+
+            Stage stage = new Stage();
+            stage.setTitle("Modifier Post");
+            stage.setScene(new Scene(root));
+            /*attendre jusqu'a la fermiture de la fenetre et puis récuperer tt les posts*/
+            stage.showAndWait();
+
+            postList.setAll(postService.getAll());
+            tablepost.refresh();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deletePost(Post post) {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Supprimer ce post ?");
+        alert.setContentText("Cette action est irréversible !");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                postService.delete(post);
+                postList.remove(post);
+                loadCommentaires(); // rafraîchir TableView
+            }
+        });
+    }
+    /*-------------------------------------commentaires--------------------------------*/
+    private void loadCommentaires() {
+
+
+        colContenuCom.setCellValueFactory(new PropertyValueFactory<>("contenu"));
+        colDateCom.setCellValueFactory(new PropertyValueFactory<>("dateCommentaire"));
+
+        // Auteur ID
+        colAuteurCom.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleIntegerProperty(
+                        cellData.getValue().getAuteur().getId()
+                ).asObject()
+        );
+
+        // Post ID
+        colPostCom.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleIntegerProperty(
+                        cellData.getValue().getPost().getId()
+                ).asObject()
+        );
+
+        commentaireList.setAll(commentaireService.getAll());
+        tableCommentaire.setItems(commentaireList);
+    }
+    @FXML
+    private void openAddCommentForm() {
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Backoffice/FormulaireAddComment.fxml")
+            );
+
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter Commentaire");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            loadCommentaires();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void openUpdateCommentPopup(Commentaire com) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireUpdateComment.fxml"));
+            Parent root = loader.load();
+
+            UpdateCommentController controller = loader.getController();
+            controller.setCommentToEdit(com);
+
+            Stage stage = new Stage();
+            stage.setTitle("Modifier Commentaire");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            // rafraîchir TableView après modification
+            commentaireList.setAll(commentaireService.getAll());
+            tableCommentaire.refresh();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteComment(Commentaire com) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Supprimer ce commentaire ?");
+        alert.setContentText("Cette action est irréversible !");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                commentaireService.delete(com);
+                commentaireList.remove(com); // rafraîchir TableView
+            }
+        });
+    }
+    /*--------------------------------------------Favoris---------------------------------------------------------------------------*/
+    private void loadFavoris() {
+
+        colFavUser.setCellValueFactory(cell ->
+                new SimpleStringProperty(
+                        cell.getValue().getFavoris().getPersonne().getNom()
+                                + " " +
+                                cell.getValue().getFavoris().getPersonne().getPrenom()
+                )
+        );
+
+        colFavPost.setCellValueFactory(cell ->
+                new SimpleStringProperty(
+                        cell.getValue().getPost().getContenu()
+                )
+        );
+
+        colFavDate.setCellValueFactory(cell ->
+                new SimpleStringProperty(
+                        cell.getValue().getDateAjout().toString()
+                )
+        );
+
+        favorisList.setAll(favorisService.getAllFavorisPosts());
+        tableFavoris.setItems(favorisList);
+    }
+    /*------------------------------------------Module users------------------------------------------*/
+
+    @FXML
+    void refreshUsersTable(ActionEvent event) {
+        refreshUsersTable();
+    }
+
+    @FXML
+    void refreshPreferencesTable(ActionEvent event) {
+        refreshPreferencesTable();
+    }
+
+    private void initUsersTable() {
+        colUserId.setCellValueFactory(cell -> new SimpleIntegerProperty(cell.getValue().getId()).asObject());
+        colUserNom.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNom()));
+        colUserPrenom.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPrenom()));
+        colUserEmail.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEmail()));
+        colUserRole.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getRole()));
+        colUserStatut.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getStatutCompte()));
+        colUserDateInsc.setCellValueFactory(cell -> {
+            var dt = cell.getValue().getDateInscription();
+            String s = dt != null ? dt.format(DATE_FORMAT) : "";
+            return new SimpleStringProperty(s);
+        });
+        userList.setAll(personneService.getAll());
+        tableuser.setItems(userList);
+    }
+
+    private void refreshUsersTable() {
+        userList.setAll(personneService.getAll());
+        tableuser.setItems(userList);
+    }
+
+    private void initPreferencesTable() {
+        colPrefUser.setCellValueFactory(cell -> {
+            int pid = cell.getValue().getPersonneId();
+            Personne p = personneService.getById(pid);
+            String email = p != null ? p.getEmail() : "—";
+            return new SimpleStringProperty(email);
+        });
+        colPrefBudgetMin.setCellValueFactory(cell -> {
+            Double v = cell.getValue().getBudgetMin();
+            return new SimpleDoubleProperty(v != null ? v : 0).asObject();
+        });
+        colPrefBudgetMax.setCellValueFactory(cell -> {
+            Double v = cell.getValue().getBudgetMax();
+            return new SimpleDoubleProperty(v != null ? v : 0).asObject();
+        });
+        colPrefTypes.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTypesVoyage() != null ? cell.getValue().getTypesVoyage() : "—"));
+        colPrefCentres.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCentresInteret() != null ? cell.getValue().getCentresInteret() : "—"));
+        preferenceList.setAll(preferenceService.getAll());
+        tablePreferences.setItems(preferenceList);
+    }
+
+    private void refreshPreferencesTable() {
+        preferenceList.setAll(preferenceService.getAll());
+        tablePreferences.setItems(preferenceList);
+    }
+    /*------------------------------------------------------------------------*/
+
+
 }

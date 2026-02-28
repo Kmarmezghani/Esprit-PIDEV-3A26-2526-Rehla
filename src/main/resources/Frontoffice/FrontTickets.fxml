@@ -25,6 +25,10 @@
             <VBox spacing="20"
                   style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 30;">
 
+                <Label fx:id="recommendationLabel"
+                       text=""
+                       style="-fx-font-weight: bold; -fx-text-fill: green;" />
+
                 <TableView fx:id="ticketTable" prefWidth="850" prefHeight="400">
 
                     <columns>
@@ -32,6 +36,7 @@
                         <TableColumn fx:id="colDestination" text="Destination" prefWidth="200"/>
                         <TableColumn fx:id="colPrice" text="Price" prefWidth="120"/>
                         <TableColumn fx:id="colSelect" text="Select" prefWidth="100"/>
+                        <TableColumn fx:id="colRecommended" text="Recommendation" />
                     </columns>
 
                 </TableView>

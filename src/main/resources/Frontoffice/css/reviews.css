@@ -109,3 +109,17 @@
 .rMeta { -fx-text-fill: #6a7aa6; -fx-font-size: 12; }
 .rStars { -fx-text-fill: #223f91; -fx-font-weight: 900; -fx-font-size: 12; }
 .rComment { -fx-text-fill: #344054; -fx-font-size: 13; }
+.tipChip {
+    -fx-background-color: #f7f9ff;
+    -fx-border-color: #dbe3ff;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 8 14;
+    -fx-text-fill: #1f2a44;
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+}
+
+.tipChip:hover {
+    -fx-background-color: #eef3ff;
+}

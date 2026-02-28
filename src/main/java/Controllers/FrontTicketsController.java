@@ -11,8 +11,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import models.Preference;
 import models.Reservation;
 import models.Ticket;
+import services.PreferenceService;
 import services.TicketService;
 
 import java.io.IOException;
@@ -27,15 +29,25 @@ public class FrontTicketsController {
     @FXML private TableColumn<Ticket, Double> colPrice;
     @FXML private TableColumn<Ticket, String> colDestination;
     @FXML private TableColumn<Ticket, Boolean> colSelect;
+    @FXML private TableColumn<Ticket, String> colRecommended;
 
     @FXML private Label titleLabel;
+    @FXML private Label recommendationLabel;
 
     private TicketService ticketService = new TicketService();
+
+    private PreferenceService preferenceService = new PreferenceService();
+    private final int loggedUserId = 1;
 
     private Reservation reservation;
     private LocalDate selectedDate;
     private String ticketType; // ✅ NEW
     private boolean addMode = false;
+    private int destinationId;
+    public void setDestinationId(int destinationId) {
+        this.destinationId = destinationId;
+        tryLoadTickets();
+    }
 
     public void setAddMode(boolean addMode) {
         this.addMode = addMode;
@@ -84,6 +96,41 @@ public class FrontTicketsController {
                 }
             }
         });
+        colRecommended.setCellValueFactory(data -> {
+
+            Preference pref = preferenceService.getByPersonneId(loggedUserId);
+
+            if (pref != null &&
+                    data.getValue().getPrix() >= pref.getBudgetMin() &&
+                    data.getValue().getPrix() <= pref.getBudgetMax()) {
+
+                return new SimpleStringProperty("⭐ Recommended");
+            }
+
+            return new SimpleStringProperty("");
+        });
+
+        ticketTable.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(Ticket ticket, boolean empty) {
+                super.updateItem(ticket, empty);
+
+                if (ticket == null || empty) {
+                    setStyle("");
+                } else {
+                    Preference pref = preferenceService.getByPersonneId(loggedUserId);
+
+                    if (pref != null &&
+                            ticket.getPrix() >= pref.getBudgetMin() &&
+                            ticket.getPrix() <= pref.getBudgetMax()) {
+
+                        setStyle("-fx-background-color: #e6ffe6;");
+                    } else {
+                        setStyle("");
+                    }
+                }
+            }
+        });
     }
 
     // ===============================
@@ -92,7 +139,6 @@ public class FrontTicketsController {
     public void setTicketType(String type) {
         this.ticketType = type;
 
-        // 🔥 dynamic title
         switch (type.toLowerCase()) {
             case "flight":
                 titleLabel.setText("✈ Available Flights");
@@ -107,19 +153,18 @@ public class FrontTicketsController {
                 titleLabel.setText("Tickets");
         }
 
-        loadTickets();
+        tryLoadTickets();
     }
 
     private void loadTickets() {
-        List<Ticket> all = ticketService.getAvailableTickets();
+        List<Ticket> tickets =
+                ticketService.getAvailableTicketsByTypeAndVille(ticketType, destinationId);
 
-        // ✅ FILTER BY TYPE
-        List<Ticket> filtered = all.stream()
-                .filter(t -> t.getType().equalsIgnoreCase(ticketType))
-                .collect(Collectors.toList());
+        List<Ticket> recommended = getRecommendedTickets(tickets);
 
-        ObservableList<Ticket> list = FXCollections.observableArrayList(filtered);
+        ObservableList<Ticket> list = FXCollections.observableArrayList(tickets);
         ticketTable.setItems(list);
+        System.out.println("Tickets found: " + tickets.size());
     }
 
     // ===============================
@@ -172,9 +217,16 @@ public class FrontTicketsController {
     // ===============================
     @FXML
     private void handleBack(ActionEvent event) {
-        // Close the current window
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.close();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/BookingType.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.getScene().setRoot(root);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     @FXML
     private void handleBookTicket() {
@@ -224,6 +276,58 @@ public class FrontTicketsController {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private List<Ticket> getRecommendedTickets(List<Ticket> tickets) {
+
+        Preference pref = preferenceService.getByPersonneId(loggedUserId);
+
+        if (pref == null) {
+            recommendationLabel.setText("");
+            return tickets;
+        }
+
+        double min = pref.getBudgetMin();
+        double max = pref.getBudgetMax();
+
+        List<Ticket> sorted = tickets.stream()
+                .sorted((t1, t2) -> {
+                    boolean t1InBudget = t1.getPrix() >= min && t1.getPrix() <= max;
+                    boolean t2InBudget = t2.getPrix() >= min && t2.getPrix() <= max;
+
+                    if (t1InBudget && !t2InBudget) return -1;
+                    if (!t1InBudget && t2InBudget) return 1;
+
+                    return Double.compare(
+                            Math.abs(t1.getPrix() - max),
+                            Math.abs(t2.getPrix() - max)
+                    );
+                })
+                .toList();
+
+        // 🔥 BEST MATCH = FIRST ELEMENT
+        if (!sorted.isEmpty()) {
+            Ticket best = sorted.get(0);
+
+            if (best.getPrix() >= min && best.getPrix() <= max) {
+                recommendationLabel.setText(
+                        "⭐ Recommended for you: " + best.getType()
+                                + " - " + best.getPrix() + " TND (Matches your budget)"
+                );
+            } else {
+                recommendationLabel.setText(
+                        "⚠ No tickets fully match your budget."
+                );
+            }
+        }
+
+        return sorted;
+    }
+
+    private void tryLoadTickets() {
+        if (ticketType != null && destinationId != 0) {
+            loadTickets();
         }
     }
 }

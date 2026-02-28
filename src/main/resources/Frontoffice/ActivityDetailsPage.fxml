@@ -112,6 +112,11 @@
                                            wrapText="true"
                                            style="-fx-font-size: 13.5; -fx-text-fill: #475569; -fx-line-spacing: 2;" />
                                 </VBox>
+                                <VBox fx:id="tipsBox" spacing="6" visible="false" managed="false" styleClass="card">
+                                    <Label text="💡 Tips from travelers" styleClass="h3"/>
+                                    <VBox fx:id="tipsItems" spacing="6"/>
+                                    <Label fx:id="tipsMeta" text="" styleClass="muted"/>
+                                </VBox>
                                 <!-- Reviews Card -->
                                 <VBox spacing="16"
                                       style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;

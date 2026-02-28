@@ -3,6 +3,7 @@ package services;
 import models.Ticket;
 import util.DBConnection;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +120,7 @@ public class TicketService implements IService<Ticket> {
         String sql = """
             SELECT t.*, d.nom AS destination_nom
             FROM ticket t
-            LEFT JOIN destination d ON t.destination_id = d.id
+            LEFT JOIN ville d ON t.destination_id = d.id
         """;
 
         try (Statement stmt = conn.createStatement();
@@ -209,7 +210,7 @@ public class TicketService implements IService<Ticket> {
         String sql = """
             SELECT t.*, d.nom AS destination_nom
             FROM ticket t
-            LEFT JOIN destination d ON t.destination_id = d.id
+            LEFT JOIN ville d ON t.destination_id = d.id
             WHERE t.reservation_id IS NULL
         """;
 
@@ -388,5 +389,38 @@ public class TicketService implements IService<Ticket> {
             e.printStackTrace();
         }
         return null;
+    }
+    public List<Ticket> getAvailableTicketsByTypeAndVille(String type, int ville_id) {
+
+        List<Ticket> tickets = new ArrayList<>();
+
+        String sql = "SELECT * FROM ticket WHERE type = ? AND destination_id = ?";
+
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+
+            pst.setString(1, type);
+            pst.setInt(2, ville_id);
+
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+
+                Ticket t = new Ticket();
+
+                t.setId(rs.getInt("id"));
+                t.setType(rs.getString("type"));
+                t.setPrix(rs.getDouble("prix"));
+                t.setDestinationId(rs.getInt("destination_id"));
+                t.setStatut(rs.getString("statut"));
+                t.setReservationId(rs.getInt("reservation_id"));
+
+                tickets.add(t);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return tickets;
     }
 }

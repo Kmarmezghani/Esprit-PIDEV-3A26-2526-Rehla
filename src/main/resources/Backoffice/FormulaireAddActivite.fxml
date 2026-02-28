@@ -12,8 +12,10 @@
             stylesheets="@css/activity-form.css">
 
     <children>
-        <BorderPane AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0">
+        <BorderPane AnchorPane.topAnchor="0" AnchorPane.rightAnchor="0"
+                    AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0">
 
+            <!-- ================= TOP BAR ================= -->
             <top>
                 <HBox alignment="CENTER_LEFT" prefHeight="54.0" styleClass="topBar">
                     <children>
@@ -30,6 +32,7 @@
                 </HBox>
             </top>
 
+            <!-- ================= CENTER ================= -->
             <center>
                 <VBox spacing="12" styleClass="page" BorderPane.alignment="CENTER">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
@@ -74,19 +77,33 @@
                             <TextField fx:id="TFtypeactivite" GridPane.columnIndex="3" GridPane.rowIndex="2"
                                        styleClass="field" promptText="Hiking, Museum..."/>
 
+                            <!-- Row 3: Description + AI (FIXED) -->
                             <!-- Row 3: Description + AI -->
                             <Label text="Description" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="fieldLabel"/>
-                            <HBox spacing="12" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3" alignment="CENTER_LEFT">
+
+                            <HBox spacing="12"
+                                  GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"
+                                  alignment="TOP_LEFT">
+
                                 <children>
-                                    <TextField fx:id="TFdescriptionactivite" HBox.hgrow="ALWAYS"
-                                               styleClass="field" promptText="Short description..." />
-                                    <Button fx:id="BTNaiDesc" text="✨ AI" onAction="#generateDescriptionAi" styleClass="aiBtn"/>
+                                    <!-- TextArea (multi-lignes) -->
+                                    <TextArea fx:id="TFdescriptionactivite"
+                                              HBox.hgrow="ALWAYS"
+                                              wrapText="true"
+                                              prefRowCount="4"
+                                              prefHeight="110"
+                                              minHeight="90"
+                                              styleClass="field fieldArea"
+                                              promptText="Short description..." />
+
+                                    <Button fx:id="BTNaiDesc"
+                                            text="✨ AI"
+                                            onAction="#generateDescriptionAi"
+                                            styleClass="aiBtn"/>
                                 </children>
                             </HBox>
-
                             <!-- Row 4: Price | Status -->
                             <Label text="Price" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="fieldLabel"/>
-                            <!-- ⚠️ pas de styleClass="field" ici pour éviter double cadre -->
                             <Spinner fx:id="pricespinneractivite" GridPane.columnIndex="1" GridPane.rowIndex="4"
                                      styleClass="premiumSpinner"/>
 
@@ -128,7 +145,6 @@
                             <ComboBox fx:id="CBdestination" GridPane.columnIndex="1" GridPane.rowIndex="6" styleClass="field"/>
 
                             <Label fx:id="LBLmaxPlaces" text="Max places" GridPane.columnIndex="2" GridPane.rowIndex="6" styleClass="fieldLabel"/>
-                            <!-- ⚠️ pas de field ici aussi -->
                             <Spinner fx:id="SPmaxPlaces" GridPane.columnIndex="3" GridPane.rowIndex="6"
                                      styleClass="premiumSpinner"/>
 
@@ -142,6 +158,7 @@
                     </VBox>
                 </VBox>
             </center>
+
         </BorderPane>
     </children>
 </AnchorPane>

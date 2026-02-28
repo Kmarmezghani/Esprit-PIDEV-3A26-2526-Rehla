@@ -1,3 +1,4 @@
+
 /* =========================
    BASE
    ========================= */
@@ -224,4 +225,26 @@
     -fx-alignment: CENTER;
     -fx-font-size: 15px;
     -fx-font-weight: 700;
+}
+/* =========================
+   TextArea (Description) : même style que TextField
+   ========================= */
+.fieldArea {
+    -fx-background-color: transparent;
+}
+
+/* Le vrai fond/bordure est sur .content */
+.text-area.fieldArea .content {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #dbe7ff;
+    -fx-border-width: 1;
+    -fx-padding: 10 12;
+}
+
+/* Focus */
+.text-area.fieldArea:focused .content {
+    -fx-border-color: #3A5BC7;
+    -fx-border-width: 1.2;
 }

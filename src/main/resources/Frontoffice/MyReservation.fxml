@@ -94,14 +94,15 @@
                                 <TableView fx:id="tableReservation" prefHeight="250" style="-fx-background-radius: 12;                                                   -fx-border-radius: 12;                                                   -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8,0,0,2);">
 
                                     <columns>
-                                        <TableColumn fx:id="colDateDebut" prefWidth="160.79998016357422" text="Start Date" />
-                                        <TableColumn fx:id="colDateFin" prefWidth="152.00003051757812" text="End Date" />
-                                        <TableColumn fx:id="colStatut" prefWidth="134.39996337890625" text="Status" />
-                                        <TableColumn fx:id="colCoutTotal" prefWidth="143.19992065429688" text="Total Cost" />
-                                        <TableColumn fx:id="colNbrTickets" prefWidth="157.5999755859375" text="Number of Tickets" />
-                                        <TableColumn fx:id="colDestination" minWidth="0.0" prefWidth="157.5999755859375" text="Destination" />
+                                        <TableColumn fx:id="colDateDebut" prefWidth="128.79998397827148" text="Start Date" />
+                                        <TableColumn fx:id="colDateFin" prefWidth="152.0000457763672" text="End Date" />
+                                        <TableColumn fx:id="colStatut" prefWidth="122.4000244140625" text="Status" />
+                                        <TableColumn fx:id="colCoutTotal" prefWidth="146.39996337890625" text="Total Cost" />
+                                        <TableColumn fx:id="colNbrTickets" prefWidth="132.79998779296875" text="Number of Tickets" />
+                                        <TableColumn fx:id="colDestination" minWidth="0.0" prefWidth="141.5999755859375" text="Destination" />
                                         <TableColumn fx:id="colDeleteReservation" prefWidth="55.0" />
                                         <TableColumn fx:id="colPdf" prefWidth="55.0" />
+                              <TableColumn fx:id="colPay" prefWidth="75.20001220703125" />
                                     </columns>
                                 </TableView>
 

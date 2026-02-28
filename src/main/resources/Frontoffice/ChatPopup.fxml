@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<?import javafx.scene.shape.Circle?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.ChatPopupController"
+            prefHeight="500" prefWidth="400"
+            style="-fx-background-color: #f0f2f5;">
+
+    <!-- 🔵 HEADER -->
+    <top>
+        <HBox spacing="10"
+              style="-fx-background-color: white;
+                     -fx-padding: 15;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1),10,0,0,2);">
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <ImageView fx:id="imgReceiverAvatar"
+                           fitWidth="40"
+                           fitHeight="40"/>
+                <Label fx:id="lblReceiverName"/>
+            </HBox>
+
+        </HBox>
+    </top>
+
+    <!-- 💬 MESSAGES -->
+    <center>
+        <ScrollPane fx:id="scroll"
+                    fitToWidth="true"
+                    style="-fx-background: transparent;">
+
+            <VBox fx:id="messagesBox"
+                  spacing="10"
+                  style="-fx-padding: 15;" />
+        </ScrollPane>
+    </center>
+
+    <!-- ✏ INPUT -->
+    <bottom>
+        <HBox spacing="10"
+              style="-fx-background-color: white;
+                     -fx-padding: 10;">
+
+            <TextField fx:id="txtMessage"
+                       HBox.hgrow="ALWAYS"
+                       promptText="Écrire un message..."
+                       style="-fx-background-radius: 20;
+                              -fx-padding: 8 15 8 15;" />
+
+            <Button text="➤"
+                    onAction="#sendMessage"
+                    style="-fx-background-color: #1877f2;
+                           -fx-text-fill: white;
+                           -fx-background-radius: 50;
+                           -fx-font-size: 14px;
+                           -fx-min-width: 40px;
+                           -fx-min-height: 40px;" />
+        </HBox>
+    </bottom>
+
+</BorderPane>

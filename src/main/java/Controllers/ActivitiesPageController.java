@@ -17,12 +17,16 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import models.Activite;
+import models.Personne;
 import models.Preference;
+import models.Reservation;
 import services.*;
+import util.Session;
 
 import java.io.File;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -55,21 +59,92 @@ public class ActivitiesPageController {
     private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MMM yyyy • HH:mm");
     private List<Activite> allActivities = new ArrayList<>();
 
-    // ✅ Flash mode
     private boolean flashMode = false;
 
-    // refresh auto toutes les 30s
     private final javafx.animation.Timeline flashTicker =
             new javafx.animation.Timeline(
                     new javafx.animation.KeyFrame(javafx.util.Duration.seconds(30), e -> refreshFlashUI())
             );
 
-    // ⚠️ Remplace ça plus tard par Session.getCurrentUserId()
-    private static final int CURRENT_USER_ID = 1;
+    Personne CURRENT_USER = Session.getCurrentUser();
+    int CURRENT_USER_ID=CURRENT_USER.getId();
+    // ===== Booking context (vient du calendrier / BookingType) =====
+    private boolean addMode = false;
+    private Reservation reservationContext = null;
+    private LocalDate selectedDate = null;
 
-    // =========================
-    // ✅ AI CACHE
-    // =========================
+    public void setAddMode(boolean addMode) {
+        this.addMode = addMode;
+        maybeApplyContextReload();
+    }
+
+    public void setReservation(Reservation r) {
+        this.reservationContext = r;
+        maybeApplyContextReload();
+    }
+
+    public void setSelectedDate(LocalDate d) {
+        this.selectedDate = d;
+        maybeApplyContextReload();
+    }
+
+    private boolean hasContext() {
+        return addMode && reservationContext != null && selectedDate != null;
+    }
+
+    private boolean isSelectedDateWithinReservation() {
+        if (reservationContext == null || reservationContext.getDateDebut() == null || reservationContext.getDateFin() == null)
+            return false;
+
+        LocalDate start = reservationContext.getDateDebut().toLocalDate();
+        LocalDate end   = reservationContext.getDateFin().toLocalDate();
+
+        return !selectedDate.isBefore(start) && !selectedDate.isAfter(end);
+    }
+
+    private boolean doesActivityCoverSelectedDate(Activite a) {
+        if (a == null || a.getDateDebut() == null || a.getDateFin() == null) return false;
+
+        LocalDate aStart = a.getDateDebut().toLocalDate();
+        LocalDate aEnd   = a.getDateFin().toLocalDate();
+
+        return !selectedDate.isBefore(aStart) && !selectedDate.isAfter(aEnd);
+    }
+
+    /**
+     * IMPORTANT :
+     * initialize() s’exécute avant que BookingTypeController appelle tes setters.
+     * Donc on refresh dès que le contexte est reçu.
+     */
+    private void maybeApplyContextReload() {
+        if (!hasContext()) return;
+
+        Platform.runLater(() -> {
+            // si la page est déjà en mode flash, garde flash, sinon normal
+            if (flashMode) showFlashSales(null);
+            else reloadFromDB();
+        });
+    }
+
+    /** Applique le filtre de contexte sur une liste donnée */
+    private List<Activite> applyContextFilter(List<Activite> input) {
+        if (input == null) return new ArrayList<>();
+
+        if (!hasContext()) return input;
+
+        if (!isSelectedDateWithinReservation()) {
+            Platform.runLater(() -> toastWarn("Date invalide",
+                    "La date choisie n’appartient pas à l’intervalle de la réservation."));
+            return new ArrayList<>();
+        }
+
+        List<Activite> out = new ArrayList<>();
+        for (Activite a : input) {
+            if (doesActivityCoverSelectedDate(a)) out.add(a);
+        }
+        return out;
+    }
+
     private static long lastAiFetchMs = 0;
     private static final long AI_CACHE_MS = 5 * 60 * 1000;
 
@@ -556,44 +631,84 @@ public class ActivitiesPageController {
                         if (qty == null || qty <= 0) return;
 
                         try {
-                            reservationService.bookWithQty(
-                                    CURRENT_USER_ID,
-                                    a.getId(),
-                                    qty,
-                                    unitPrice,
-                                    a.getDestinationId()
-                            );
 
-                            toastSuccessWithAction(
-                                    "Booked!",
-                                    "Reservation created for " + qty + " ticket(s).",
-                                    "View my bookings",
-                                    this::goToMyReservationsFromToast
-                            );
+                            Reservation created = null; // ✅ déclaré ici pour être visible après le if/else
 
-                            // ✅ recharge liste selon mode
+                            if (hasContext()) {
+
+                                if (!isSelectedDateWithinReservation()) {
+                                    toastWarn("Date invalide", "La date choisie n’appartient pas à l’intervalle de la réservation.");
+                                    return;
+                                }
+                                if (!doesActivityCoverSelectedDate(a)) {
+                                    toastWarn("Hors date", "Cette activité n’est pas disponible pour la date sélectionnée.");
+                                    return;
+                                }
+
+                                reservationService.addActivityTicketsToExistingReservation(
+                                        reservationContext.getId(),
+                                        CURRENT_USER_ID,
+                                        a.getId(),
+                                        qty,
+                                        unitPrice,
+                                        a.getDestinationId(),
+                                        selectedDate
+                                );
+
+                                toastSuccessWithAction(
+                                        "Ajouté !",
+                                        qty + " ticket(s) ajoutés à votre réservation.",
+                                        "Voir mes réservations",
+                                        this::goToMyReservationsFromToast
+                                );
+
+                            } else {
+
+                                created = reservationService.bookWithQtyReturnReservation(
+                                        CURRENT_USER_ID,
+                                        a.getId(),
+                                        qty,
+                                        unitPrice,
+                                        a.getDestinationId()
+                                );
+
+                                toastSuccessWithAction(
+                                        "Booked!",
+                                        "Reservation created for " + qty + " ticket(s).",
+                                        "View my bookings",
+                                        this::goToMyReservationsFromToast
+                                );
+                            }
+
                             if (flashMode) showFlashSales(null);
                             else reloadFromDB();
 
-                            String userEmail = personneService.getEmailById(CURRENT_USER_ID);
-                            String userName = personneService.getFullNameById(CURRENT_USER_ID);
+                            // ✅ email seulement pour le cas "nouvelle réservation"
+                            if (!hasContext()) {
+                                String userEmail = personneService.getEmailById(CURRENT_USER_ID);
+                                String userName  = personneService.getFullNameById(CURRENT_USER_ID);
 
-                            if (userEmail != null && !userEmail.isBlank()) {
-                                new Thread(() -> {
-                                    try {
-                                        emailService.sendBookingConfirmation(
-                                                userEmail,
-                                                userName,
-                                                safe(a.getNom()),
-                                                unitPrice * qty
-                                        );
-                                    } catch (Exception mailEx) {
-                                        mailEx.printStackTrace();
-                                        Platform.runLater(() ->
-                                                toastWarn("Email not sent", "Booking succeeded, but email failed.")
-                                        );
-                                    }
-                                }).start();
+                                if (userEmail != null && !userEmail.isBlank() && created != null) {
+
+                                    Reservation finalCreated = created; // ✅ variable "effectively final" pour le Thread
+
+                                    new Thread(() -> {
+                                        try {
+                                            emailService.sendBookingConfirmationWithPdf(
+                                                    userEmail,
+                                                    userName,
+                                                    safe(a.getNom()),
+                                                    unitPrice * qty,
+                                                    finalCreated
+                                            );
+                                        } catch (Exception mailEx) {
+                                            mailEx.printStackTrace();
+                                            Platform.runLater(() ->
+                                                    toastWarn("Email not sent", "Booking succeeded, but email failed.")
+                                            );
+                                        }
+                                    }).start();
+                                }
                             }
 
                         } catch (SQLException ex) {
@@ -679,7 +794,14 @@ public class ActivitiesPageController {
         }
 
         // ✅ normal mode list
-        allActivities = activiteService.getDisponibles();
+        List<Activite> base = activiteService.getDisponibles();
+
+        // ✅ filtre si contexte
+        allActivities = applyContextFilter(base);
+
+        if (hasContext() && allActivities.isEmpty()) {
+            Platform.runLater(() -> toastWarn("Aucune activité", "Aucune activité disponible pour cette date."));
+        }
 
         if (cachedRecommendedIds != null && !cachedRecommendedIds.isEmpty()) {
             recommendedIds = new HashSet<>(cachedRecommendedIds);
@@ -687,8 +809,8 @@ public class ActivitiesPageController {
 
         applySearchFilter();
 
+        // ... le reste de ton code AI cache inchangé ...
         long now = System.currentTimeMillis();
-
         String currentActivitiesSig = buildActivitiesSignature(allActivities);
         boolean listChanged = !currentActivitiesSig.equals(cachedActivitiesSignature);
 
@@ -720,7 +842,6 @@ public class ActivitiesPageController {
                 }
 
                 List<Activite> candidates = filterCandidatesByPreference(allActivities, pref);
-
                 List<Integer> ids = geminiService.rankActivityIdsMax3(candidates, profileKey);
                 recommendedIds = new HashSet<>(ids);
 
@@ -738,7 +859,6 @@ public class ActivitiesPageController {
             }
         }).start();
     }
-
     private String buildProfileText(Preference p) {
         return """
             budgetMin: %s
@@ -1139,7 +1259,7 @@ public class ActivitiesPageController {
         }
     }
 
-    // ✅ FLASH MODE : charge flash list + met allActivities
+
     @FXML
     private void showFlashSales(ActionEvent event) {
         flashMode = true;
@@ -1149,24 +1269,26 @@ public class ActivitiesPageController {
                 activiteService.refreshFlashSales();
                 List<Activite> flash = activiteService.getFlashSales();
 
-                Platform.runLater(() -> {
-                    allActivities = flash;   // ✅ FIX
-                    applySearchFilter();     // ✅ search compatible
+                // ✅ filtre si contexte
+                List<Activite> finalList = applyContextFilter(flash);
 
-                    if (flash.isEmpty()) {
-                        toastWarn("Flash sales", "Aucune activité en vente flash pour le moment.");
+                Platform.runLater(() -> {
+                    allActivities = finalList;
+                    applySearchFilter();
+
+                    if (finalList.isEmpty()) {
+                        toastWarn("Flash sales", hasContext()
+                                ? "Aucune activité flash disponible pour cette date."
+                                : "Aucune activité en vente flash pour le moment.");
                     }
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
-                Platform.runLater(() ->
-                        toastError("Erreur", "Impossible de charger les flash sales.")
-                );
+                Platform.runLater(() -> toastError("Erreur", "Impossible de charger les flash sales."));
             }
         }).start();
     }
-
     @FXML
     private void showAllActivities(ActionEvent event) {
         flashMode = false;
@@ -1193,9 +1315,12 @@ public class ActivitiesPageController {
                         ? activiteService.getFlashSales()
                         : activiteService.getDisponibles();
 
+                // ✅ filtre si contexte
+                List<Activite> finalList = applyContextFilter(freshList);
+
                 Platform.runLater(() -> {
-                    allActivities = freshList;   // ✅ FIX CRITIQUE
-                    applySearchFilter();         // ✅ stable pour search
+                    allActivities = finalList;
+                    applySearchFilter();
                 });
 
             } catch (Exception ex) {
@@ -1204,7 +1329,6 @@ public class ActivitiesPageController {
             }
         }).start();
     }
-
     private void startFlashCountdown(Label lbl, LocalDateTime expiresAt, VBox card) {
 
         javafx.animation.Timeline tl = new javafx.animation.Timeline();

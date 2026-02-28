@@ -8,8 +8,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import javafx.scene.image.Image;
+import models.NotificationScheduler;
 
 public class MainFx extends Application {
+    private static Stage stage;
 double x,y =0;
     public static void main(String[] args) {
         launch(args);
@@ -18,8 +20,10 @@ double x,y =0;
     @Override
     public void start(Stage primaryStage) {
         try{
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
-            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Backoffice/Dashboard.fxml"));
+            NotificationScheduler scheduler = new NotificationScheduler();
+            scheduler.start();
+            stage = primaryStage;
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Frontoffice/loginPage.fxml"));
             Parent root = fxmlLoader.load();
             Scene scene = new Scene(root);
             primaryStage.initStyle(StageStyle.UNDECORATED);

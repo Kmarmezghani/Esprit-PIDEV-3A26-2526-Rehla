@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="750.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.SecurityCenterController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <!-- Top Navigation Bar -->
+            <top>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                    <children>
+                        <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                            </image>
+                        </ImageView>
+
+                        <!-- Navigation Menu -->
+                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets left="100.0" />
+                            </padding>
+                            <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;" text="Home" />
+                            <Button style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand; -fx-background-radius: 20; -fx-padding: 8 20;" text="Security Center" />
+                        </HBox>
+
+                        <!-- Window Controls -->
+                        <Button onAction="#minwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@css/styling.css" text="□" />
+                        <Button onAction="#closewindow" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@css/styling.css" text="✕">
+                            <HBox.margin>
+                                <Insets top="4.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+            </top>
+
+            <!-- Main Content -->
+            <center>
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #f4f6fb;" BorderPane.alignment="CENTER">
+                    <content>
+                        <VBox spacing="25.0" style="-fx-background-color: #f4f6fb;">
+                            <padding>
+                                <Insets bottom="40.0" left="40.0" right="40.0" top="30.0" />
+                            </padding>
+
+                            <!-- Page Header -->
+                            <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                <Label style="-fx-font-size: 28;" text="🛡️" />
+                                <VBox spacing="2.0">
+                                    <Label style="-fx-text-fill: #223f91;" text="Security &amp; Privacy Center">
+                                        <font>
+                                            <Font name="System Bold" size="28.0" />
+                                        </font>
+                                    </Label>
+                                    <Label style="-fx-text-fill: #666666;" text="Monitor your account security and manage privacy settings">
+                                        <font>
+                                            <Font size="14.0" />
+                                        </font>
+                                    </Label>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Top Cards Row -->
+                            <HBox spacing="25.0" alignment="CENTER">
+                                <!-- Security Score Card -->
+                                <VBox fx:id="scoreCard" alignment="CENTER" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                                    </padding>
+                                    <Label style="-fx-text-fill: #666666;" text="Security Score">
+                                        <font>
+                                            <Font size="14.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="scoreValueLabel" style="-fx-text-fill: #27ae60;" text="85">
+                                        <font>
+                                            <Font name="System Bold" size="56.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="scoreStatusLabel" style="-fx-text-fill: #27ae60; -fx-font-weight: bold;" text="Secure">
+                                        <font>
+                                            <Font size="18.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="scoreDescLabel" style="-fx-text-fill: #999999;" text="Your account is well protected" wrapText="true" textAlignment="CENTER">
+                                        <font>
+                                            <Font size="12.0" />
+                                        </font>
+                                    </Label>
+                                </VBox>
+
+                                <!-- Last Login Card -->
+                                <VBox alignment="CENTER" spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                                    </padding>
+                                    <Label style="-fx-font-size: 36;" text="📍" />
+                                    <Label style="-fx-text-fill: #666666;" text="Last Login Location">
+                                        <font>
+                                            <Font size="14.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="lastLocationLabel" style="-fx-text-fill: #223f91; -fx-font-weight: bold;" text="Loading...">
+                                        <font>
+                                            <Font size="18.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="lastLoginTimeLabel" style="-fx-text-fill: #999999;" text="">
+                                        <font>
+                                            <Font size="12.0" />
+                                        </font>
+                                    </Label>
+                                </VBox>
+
+                                <!-- Total Events Card -->
+                                <VBox alignment="CENTER" spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                                    </padding>
+                                    <Label style="-fx-font-size: 36;" text="📊" />
+                                    <Label style="-fx-text-fill: #666666;" text="Security Events">
+                                        <font>
+                                            <Font size="14.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="totalEventsLabel" style="-fx-text-fill: #223f91; -fx-font-weight: bold;" text="0">
+                                        <font>
+                                            <Font size="28.0" />
+                                        </font>
+                                    </Label>
+                                    <Label style="-fx-text-fill: #999999;" text="Total logged events">
+                                        <font>
+                                            <Font size="12.0" />
+                                        </font>
+                                    </Label>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Activity Timeline Section -->
+                            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                                <padding>
+                                    <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+                                </padding>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <Label style="-fx-font-size: 20;" text="📋" />
+                                    <Label style="-fx-text-fill: #223f91;" text="Activity Timeline">
+                                        <font>
+                                            <Font name="System Bold" size="18.0" />
+                                        </font>
+                                    </Label>
+                                    <HBox HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="refreshButton" onAction="#refreshTimeline" style="-fx-background-color: #f4f6fb; -fx-text-fill: #3A5BC7; -fx-background-radius: 20; -fx-cursor: hand;" text="↻ Refresh" />
+                                </HBox>
+
+                                <TableView fx:id="timelineTable" prefHeight="300.0" style="-fx-background-color: transparent;">
+                                    <columns>
+                                        <TableColumn fx:id="iconColumn" prefWidth="50.0" text="" />
+                                        <TableColumn fx:id="typeColumn" prefWidth="150.0" text="Event" />
+                                        <TableColumn fx:id="messageColumn" prefWidth="450.0" text="Details" />
+                                        <TableColumn fx:id="timestampColumn" prefWidth="180.0" text="Time" />
+                                    </columns>
+                                </TableView>
+                            </VBox>
+
+                            <!-- Quick Actions Section -->
+                            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                                <padding>
+                                    <Insets bottom="25.0" left="25.0" right="25.0" top="20.0" />
+                                </padding>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <Label style="-fx-font-size: 20;" text="⚡" />
+                                    <Label style="-fx-text-fill: #223f91;" text="Quick Actions">
+                                        <font>
+                                            <Font name="System Bold" size="18.0" />
+                                        </font>
+                                    </Label>
+                                </HBox>
+
+                                <HBox spacing="20.0" alignment="CENTER">
+                                    <!-- Logout All Sessions -->
+                                    <VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #f4f6fb; -fx-background-radius: 12; -fx-cursor: hand;" onMouseClicked="#handleLogoutAll" HBox.hgrow="ALWAYS">
+                                        <padding>
+                                            <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
+                                        </padding>
+                                        <Label style="-fx-font-size: 32;" text="🚪" />
+                                        <Label style="-fx-text-fill: #223f91; -fx-font-weight: bold;" text="Logout All">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #666666;" text="End all sessions" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="11.0" />
+                                            </font>
+                                        </Label>
+                                    </VBox>
+
+                                    <!-- Reset Password -->
+                                    <VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #f4f6fb; -fx-background-radius: 12; -fx-cursor: hand;" onMouseClicked="#handleResetPassword" HBox.hgrow="ALWAYS">
+                                        <padding>
+                                            <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
+                                        </padding>
+                                        <Label style="-fx-font-size: 32;" text="🔑" />
+                                        <Label style="-fx-text-fill: #223f91; -fx-font-weight: bold;" text="Reset Password">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #666666;" text="Change password" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="11.0" />
+                                            </font>
+                                        </Label>
+                                    </VBox>
+
+                                    <!-- Lock Account -->
+                                    <VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #fff3cd; -fx-background-radius: 12; -fx-cursor: hand;" onMouseClicked="#handleLockAccount" HBox.hgrow="ALWAYS">
+                                        <padding>
+                                            <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
+                                        </padding>
+                                        <Label style="-fx-font-size: 32;" text="🔒" />
+                                        <Label style="-fx-text-fill: #856404; -fx-font-weight: bold;" text="Lock Account">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #856404;" text="Temporarily suspend" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="11.0" />
+                                            </font>
+                                        </Label>
+                                    </VBox>
+
+                                    <!-- Export Data -->
+                                    <VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #f4f6fb; -fx-background-radius: 12; -fx-cursor: hand;" onMouseClicked="#handleExportData" HBox.hgrow="ALWAYS">
+                                        <padding>
+                                            <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
+                                        </padding>
+                                        <Label style="-fx-font-size: 32;" text="📥" />
+                                        <Label style="-fx-text-fill: #223f91; -fx-font-weight: bold;" text="Export Data">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #666666;" text="Download my info" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="11.0" />
+                                            </font>
+                                        </Label>
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Footer -->
+                            <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-background-radius: 15; -fx-padding: 20;">
+                                <Label text="Rehla - Your Travel Companion" textFill="WHITE">
+                                    <font>
+                                        <Font name="System Bold" size="16.0" />
+                                    </font>
+                                </Label>
+                                <Label text="© 2026 Rehla. All rights reserved." textFill="#cccccc">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

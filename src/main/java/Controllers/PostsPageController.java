@@ -61,13 +61,12 @@ public class PostsPageController implements Initializable {
 
     @FXML
     void goToHome(ActionEvent event) {
-        navigateToPage("/Frontoffice/HomePage.fxml");
+        navigateToPage(event, "/Frontoffice/HomePage.fxml");
     }
 
     @FXML
     void goToDestinations(ActionEvent event) {
-        System.out.println("Destinations - to be implemented");
-        showInfo("Destinations", "Destinations page - implement navigation");
+        navigateToPage(event, "/Frontoffice/CountryBrowsePage.fxml");
     }
 
     @FXML
@@ -110,8 +109,7 @@ public class PostsPageController implements Initializable {
 
     @FXML
     void goToMyReservations(ActionEvent event) {
-        System.out.println("📅 My Reservations - to be implemented");
-        showInfo("My Reservations", "Implement in Reservation module");
+        navigateToPage(event, "/Frontoffice/MyReservation.fxml");
     }
 
     @FXML
@@ -138,13 +136,18 @@ public class PostsPageController implements Initializable {
         alert.showAndWait();
     }
 
-    private void navigateToPage(String fxmlPath) {
+    private void navigateToPage(ActionEvent event, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             
-            Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            // Use setRoot to keep window size
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
+            } else {
+                stage.getScene().setRoot(root);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             showInfo("Error", "Could not load page: " + fxmlPath);

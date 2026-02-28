@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -38,16 +37,11 @@
                     <Label text="End Date:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                     <DatePicker fx:id="dpEndDate" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                    <!-- Row 2 -->
-                    <Label text="Ticket:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-               <ListView fx:id="selectedTickets" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
                     <columnConstraints>
                         <ColumnConstraints percentWidth="40" />
                         <ColumnConstraints percentWidth="60" />
                     </columnConstraints>
                <rowConstraints>
-                  <RowConstraints />
                   <RowConstraints />
                   <RowConstraints />
                </rowConstraints>

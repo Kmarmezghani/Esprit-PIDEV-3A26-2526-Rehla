@@ -111,7 +111,6 @@ public class ReservationService implements IService<Reservation> {
             try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
         }
 
-
         if (wantCancelled && !wasCancelledBefore && activiteIdsToPromote != null && !activiteIdsToPromote.isEmpty()) {
             List<Integer> finalIds = new ArrayList<>(activiteIdsToPromote);
             new Thread(() -> {
@@ -174,7 +173,6 @@ public class ReservationService implements IService<Reservation> {
             }).start();
         }
     }
-
 
     private boolean isReservationAlreadyCancelled(Connection c, int reservationId) throws SQLException {
         String sql = "SELECT statut FROM reservation WHERE id = ? LIMIT 1";
@@ -243,7 +241,7 @@ public class ReservationService implements IService<Reservation> {
     }
 
     public String getDestinationNomById(int id) {
-        String sql = "SELECT nom FROM destination WHERE id = ?";
+        String sql = "SELECT nom FROM ville WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -272,8 +270,6 @@ public class ReservationService implements IService<Reservation> {
         return r;
     }
 
-
-
     public int sumTicketsConfirmedByActiviteId(int activiteId) throws SQLException {
         String sql = """
             SELECT COALESCE(COUNT(*),0) AS taken
@@ -289,7 +285,40 @@ public class ReservationService implements IService<Reservation> {
         }
     }
 
+    // =========================================================
+    // ✅ BOOKING - version existante (inchangée au niveau "API")
+    // =========================================================
     public void bookWithQty(int userId, int activiteId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
+        // On garde la signature/usage existant
+        bookWithQtyInternal(userId, activiteId, qty, prixUnitaire, destinationId, false);
+    }
+
+    // =========================================================
+    // ✅ AJOUT : retourner l'ID de la réservation créée
+    // =========================================================
+    public int bookWithQtyReturnReservationId(int userId, int activiteId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
+        return bookWithQtyInternal(userId, activiteId, qty, prixUnitaire, destinationId, true);
+    }
+
+    // =========================================================
+    // ✅ AJOUT : retourner l'objet Reservation (parfait pour Email PDF)
+    // =========================================================
+    public Reservation bookWithQtyReturnReservation(int userId, int activiteId, int qty, double prixUnitaire, Integer destinationId) throws SQLException {
+        int id = bookWithQtyInternal(userId, activiteId, qty, prixUnitaire, destinationId, true);
+        return getById(id);
+    }
+
+    /**
+     * Core booking : fait le lock, check seats, insert reservation, insert tickets, commit.
+     * @return reservationId si returnId=true, sinon -1
+     */
+    private int bookWithQtyInternal(int userId,
+                                    int activiteId,
+                                    int qty,
+                                    double prixUnitaire,
+                                    Integer destinationId,
+                                    boolean returnId) throws SQLException {
+
         try {
             conn.setAutoCommit(false);
 
@@ -297,6 +326,7 @@ public class ReservationService implements IService<Reservation> {
             Date actStartDate;
             Date actEndDate;
 
+            // Lock activity row
             try (PreparedStatement ps = conn.prepareStatement(
                     "SELECT max_places, date_debut, date_fin FROM activite WHERE id = ? FOR UPDATE")) {
 
@@ -352,6 +382,9 @@ public class ReservationService implements IService<Reservation> {
             ticketService.createTicketsBatch(conn, reservationId, activiteId, qty, prixUnitaire, destinationId);
 
             conn.commit();
+
+            return returnId ? reservationId : -1;
+
         } catch (SQLException ex) {
             conn.rollback();
             throw ex;
@@ -370,6 +403,7 @@ public class ReservationService implements IService<Reservation> {
             return -1;
         }
     }
+
     public void updateReservationStats(int reservationId) {
 
         String countSql = "SELECT COUNT(*), COALESCE(SUM(prix),0) FROM ticket WHERE reservation_id=?";
@@ -397,6 +431,121 @@ public class ReservationService implements IService<Reservation> {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void markAsPaid(int reservationId) {
+
+        String sql = "UPDATE reservation SET statut = 'PAID' WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, reservationId);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addActivityTicketsToExistingReservation(
+            int reservationId,
+            int userId,
+            int activiteId,
+            int qty,
+            double prixUnitaire,
+            Integer destinationId,
+            LocalDate selectedDate
+    ) throws SQLException {
+
+        if (qty <= 0) throw new SQLException("Quantité invalide.");
+
+        try {
+            conn.setAutoCommit(false);
+
+            // 1) Vérifier réservation + dates + ownership
+            Date resStart;
+            Date resEnd;
+
+            try (PreparedStatement ps = conn.prepareStatement("""
+                SELECT dateDebut, dateFin, statut
+                FROM reservation
+                WHERE id = ? AND personne_id = ?
+                FOR UPDATE
+        """)) {
+                ps.setInt(1, reservationId);
+                ps.setInt(2, userId);
+                ResultSet rs = ps.executeQuery();
+
+                if (!rs.next()) throw new SQLException("Réservation introuvable.");
+                String statut = rs.getString("statut");
+                if (statut != null && statut.equalsIgnoreCase("CANCELLED"))
+                    throw new SQLException("Impossible d'ajouter sur une réservation annulée.");
+
+                resStart = rs.getDate("dateDebut");
+                resEnd = rs.getDate("dateFin");
+                if (resStart == null || resEnd == null)
+                    throw new SQLException("Dates réservation manquantes.");
+            }
+
+            LocalDate rStart = resStart.toLocalDate();
+            LocalDate rEnd = resEnd.toLocalDate();
+
+            if (selectedDate == null) throw new SQLException("selectedDate manquante.");
+            if (selectedDate.isBefore(rStart) || selectedDate.isAfter(rEnd)) {
+                throw new SQLException("Date sélectionnée hors intervalle de la réservation.");
+            }
+
+            // 2) Vérifier activité + dates + max places
+            Integer maxPlaces;
+            Date actStartDate;
+            Date actEndDate;
+
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT max_places, date_debut, date_fin FROM activite WHERE id = ? FOR UPDATE")) {
+
+                ps.setInt(1, activiteId);
+                ResultSet rs = ps.executeQuery();
+                if (!rs.next()) throw new SQLException("Activity not found.");
+
+                int mp = rs.getInt("max_places");
+                maxPlaces = rs.wasNull() ? null : mp;
+
+                actStartDate = rs.getDate("date_debut");
+                actEndDate = rs.getDate("date_fin");
+
+                if (actStartDate == null || actEndDate == null) {
+                    throw new SQLException("Activity dates are missing (date_debut/date_fin).");
+                }
+            }
+
+            LocalDate aStart = actStartDate.toLocalDate();
+            LocalDate aEnd = actEndDate.toLocalDate();
+
+            if (selectedDate.isBefore(aStart) || selectedDate.isAfter(aEnd)) {
+                throw new SQLException("Cette activité n'est pas disponible pour la date sélectionnée.");
+            }
+
+            // 3) Check seats
+            int taken = sumTicketsConfirmedByActiviteId(activiteId);
+            if (maxPlaces != null) {
+                int available = Math.max(0, maxPlaces - taken);
+                if (qty > available) throw new SQLException("Not enough spots. Only " + available + " left.");
+            }
+
+            // 4) Créer tickets (batch)
+            ticketService.createTicketsBatch(conn, reservationId, activiteId, qty, prixUnitaire, destinationId);
+
+            // 5) Mettre à jour nb_tickets + coutTotal
+            updateReservationStats(reservationId);
+
+            conn.commit();
+
+        } catch (SQLException ex) {
+            conn.rollback();
+            throw ex;
+        } finally {
+            conn.setAutoCommit(true);
         }
     }
 }

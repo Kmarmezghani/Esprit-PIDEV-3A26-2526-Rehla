@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -15,6 +16,11 @@ public class BookingTypeController {
     private boolean addMode;
     private Reservation reservation;
     private LocalDate selectedDate;
+    private int villeId;
+
+    public void setVilleId(int villeId) {
+        this.villeId = villeId;
+    }
 
     public void setAddMode(boolean addMode) {
         this.addMode = addMode;
@@ -45,6 +51,7 @@ public class BookingTypeController {
             FrontTicketsController controller = loader.getController();
 
             controller.setTicketType(type);
+            controller.setDestinationId(villeId);
 
             // 🔥 PASS MODE + DATA
             controller.setAddMode(addMode);
@@ -72,6 +79,47 @@ public class BookingTypeController {
     }
 
     public void goToActivities(ActionEvent e) {
-        loadPage(e, "/Frontoffice/ActivitiesPage.fxml");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ActivitiesPage.fxml"));
+            Parent root = loader.load();
+
+            ActivitiesPageController controller = loader.getController();
+
+            // ✅ Passer le contexte pour “add to existing reservation”
+            controller.setAddMode(addMode);
+            controller.setReservation(reservation);
+            controller.setSelectedDate(selectedDate);
+
+            Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+            stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleBack(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Frontoffice/HomePage.fxml"));
+
+            if (loader.getLocation() == null) {
+                throw new RuntimeException("FXML file not found!");
+            }
+
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((Node) event.getSource())
+                    .getScene().getWindow();
+
+            stage.getScene().setRoot(root);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -42,6 +42,7 @@ public class MyReservationsController {
     @FXML private TableColumn<Reservation, String> colDestination;
     @FXML private TableColumn<Reservation, Void> colDeleteReservation;
     @FXML private TableColumn<Reservation, Void> colPdf;
+    @FXML private TableColumn<Reservation, Void> colPay;
 
     @FXML private AnchorPane calendarContainer;
 
@@ -97,6 +98,7 @@ public class MyReservationsController {
 
         addDeleteReservationButton(); // ton code + waitlist
         addPdfButton();              // code amie
+        addPayButton();
 
         tableReservation.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -224,131 +226,254 @@ public class MyReservationsController {
             }
         });
     }
+    private void addPayButton() {
 
+        colPay.setCellFactory(param -> new TableCell<>() {
+
+            private final Button payBtn = new Button();
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                    return;
+                }
+
+                Reservation reservation = getTableView().getItems().get(getIndex());
+
+                LocalDate today = LocalDate.now();
+                LocalDate startDate = reservation.getDateDebut().toLocalDate();
+                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(today, startDate);
+
+                // ================= ALREADY PAID =================
+                if ("PAID".equalsIgnoreCase(reservation.getStatut())) {
+
+                    payBtn.setText("PAID ✓");
+                    payBtn.setStyle("-fx-background-color:#28a745; -fx-text-fill:white;");
+                    payBtn.setDisable(true);
+                }
+
+                // ================= TOO LATE TO PAY =================
+                else if (daysBetween < 3) {
+
+                    payBtn.setText("Expired");
+                    payBtn.setStyle("-fx-background-color:gray; -fx-text-fill:white;");
+                    payBtn.setDisable(true);
+                }
+
+                // ================= PAYMENT ALLOWED =================
+                else {
+
+                    payBtn.setText("Pay");
+                    payBtn.setStyle("-fx-background-color:#ff9800; -fx-text-fill:white;");
+                    payBtn.setDisable(false);
+
+                    payBtn.setOnAction(event -> {
+
+                        PaymentService paymentService = new PaymentService();
+                        paymentService.payReservation(
+                                reservation.getId(),
+                                reservation.getCoutTotal()
+                        );
+
+                        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                        confirm.setTitle("Confirm Payment");
+                        confirm.setHeaderText("Did you complete the payment?");
+                        confirm.setContentText("Click OK after successful payment.");
+
+                        confirm.showAndWait().ifPresent(response -> {
+
+                            if (response == ButtonType.OK) {
+
+                                // 1️⃣ Update status
+                                reservationService.markAsPaid(reservation.getId());
+
+                                // 2️⃣ Generate invoice PDF
+                                PdfInvoiceService invoiceService = new PdfInvoiceService();
+                                invoiceService.generateInvoice(reservation);
+
+                                // 3️⃣ Refresh UI
+                                refreshReservationTable();
+
+                                showInfo("Success", "Payment confirmed & Invoice generated!");
+                            }
+                        });
+                    });
+                }
+
+                setGraphic(payBtn);
+            }
+        });
+    }
     // ================= CALENDAR (fusion) =================
     private void showCalendarForReservation(Reservation reservation) {
 
         calendarContainer.getChildren().clear();
 
-        VBox mainBox = new VBox(15);
+        VBox mainBox = new VBox(20);
         mainBox.setStyle("-fx-padding:15;");
-
-        // ===== HEADER =====
-        HBox header = new HBox(10);
-
-        LocalDate startDate = reservation.getDateDebut().toLocalDate();
-        YearMonth yearMonth = YearMonth.from(startDate);
-
-        Label monthLabel = new Label(yearMonth.getMonth() + " " + yearMonth.getYear());
-        monthLabel.setStyle("-fx-font-size:18px; -fx-font-weight:bold;");
-
-        Region spacerHeader = new Region();
-        HBox.setHgrow(spacerHeader, Priority.ALWAYS);
-
-        ComboBox<String> currencyBox = new ComboBox<>();
-        currencyBox.getItems().addAll("EUR", "USD", "TND");
-        currencyBox.setValue(selectedCurrency);
-        currencyBox.setStyle("-fx-background-color:#3A5BC7; -fx-background-radius:8; -fx-mark-color:white;");
-
-        currencyBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) setText(null);
-                else {
-                    setText(item);
-                    setTextFill(javafx.scene.paint.Color.WHITE);
-                }
-            }
-        });
-
-        currencyBox.setOnAction(e -> {
-            selectedCurrency = currencyBox.getValue();
-            showCalendarForReservation(reservation);
-        });
-
-        header.getChildren().addAll(monthLabel, spacerHeader, currencyBox);
-
-        // ===== GRID =====
-        GridPane calendarGrid = new GridPane();
-        calendarGrid.setGridLinesVisible(true);
-
-        LocalDate firstOfMonth = yearMonth.atDay(1);
-        int daysInMonth = yearMonth.lengthOfMonth();
-
-        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue(); // 1=Mon
-        int row = 0;
-        int col = dayOfWeek - 1;
 
         LocalDate reservationStart = reservation.getDateDebut().toLocalDate();
         LocalDate reservationEnd = reservation.getDateFin().toLocalDate();
 
+        YearMonth startMonth = YearMonth.from(reservationStart);
+        YearMonth endMonth = YearMonth.from(reservationEnd);
+
         String rawCity = reservationService.getDestinationNomById(reservation.getDestinationId());
         final String city = (rawCity != null) ? rawCity.trim().replace(" ", "%20") : "";
 
-        for (int day = 1; day <= daysInMonth; day++) {
+        // 🔁 LOOP THROUGH ALL MONTHS
+        YearMonth currentMonth = startMonth;
 
-            LocalDate currentDate = yearMonth.atDay(day);
+        while (!currentMonth.isAfter(endMonth)) {
 
-            VBox dayBox = new VBox(6);
-            dayBox.setPrefSize(150, 120);
-            dayBox.setStyle("-fx-padding:5; -fx-border-color: #ccc; -fx-border-width:1; -fx-background-radius:5; -fx-border-radius:5;");
+            VBox monthBox = new VBox(10);
 
-            Label dayNumber = new Label(String.valueOf(day));
-            dayNumber.setStyle("-fx-font-weight:bold;");
-            dayBox.getChildren().add(dayNumber);
+            // ===== HEADER =====
+            HBox header = new HBox(10);
 
-            LocalDate selectedDate = currentDate;
+            Label monthLabel = new Label(currentMonth.getMonth() + " " + currentMonth.getYear());
+            monthLabel.setStyle("-fx-font-size:18px; -fx-font-weight:bold;");
 
-            boolean inRange = !currentDate.isBefore(reservationStart) && !currentDate.isAfter(reservationEnd);
+            Region spacerHeader = new Region();
+            HBox.setHgrow(spacerHeader, Priority.ALWAYS);
 
-            if (inRange) {
-                dayBox.setStyle(dayBox.getStyle() + "; -fx-background-color: #e8f0ff;");
-                dayBox.setOnMouseClicked(event -> {
-                    if (event.getClickCount() == 2) { // ✅ double click
-                        openTicketSelectionPopup(selectedDate);
+            ComboBox<String> currencyBox = new ComboBox<>();
+            currencyBox.getItems().addAll("EUR", "USD", "TND");
+            currencyBox.setValue(selectedCurrency);
+
+            currencyBox.setStyle(
+                    "-fx-background-color:#3A5BC7;" +
+                            "-fx-background-radius:8;" +
+                            "-fx-mark-color:white;"
+            );
+
+// white text inside
+            currencyBox.setButtonCell(new ListCell<>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) setText(null);
+                    else {
+                        setText(item);
+                        setTextFill(javafx.scene.paint.Color.WHITE);
                     }
-                });
-            } else {
-                dayBox.setStyle(dayBox.getStyle() + "; -fx-background-color: #f5f5f5; -fx-opacity:0.6;");
-                dayBox.setDisable(true);
+                }
+            });
+            currencyBox.setOnAction(e -> {
+                selectedCurrency = currencyBox.getValue();
+                showCalendarForReservation(reservation);
+            });
+
+            header.getChildren().addAll(monthLabel, spacerHeader, currencyBox);
+
+            // ===== GRID =====
+            GridPane calendarGrid = new GridPane();
+            calendarGrid.setHgap(5);
+            calendarGrid.setVgap(5);
+
+// 🔥 WEEK HEADER
+            String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+
+            for (int i = 0; i < 7; i++) {
+                Label dayHeader = new Label(days[i]);
+                dayHeader.setStyle(
+                        "-fx-font-weight:bold;" +
+                                "-fx-text-fill:#3A5BC7;" +
+                                "-fx-alignment:center;"
+                );
+                dayHeader.setPrefWidth(150);
+                calendarGrid.add(dayHeader, i, 0);
             }
 
-            if (inRange) {
-                // weather button
-                Button weatherBtn = new Button("🌤 Weather");
-                weatherBtn.setStyle("-fx-background-color:#FFD700; -fx-text-fill:black; -fx-padding:3 8 3 8; -fx-background-radius:5;");
-                weatherBtn.setOnAction(e -> {
-                    if (city == null || city.isEmpty()) {
-                        showInfo("Weather", "Invalid destination");
-                        return;
-                    }
-                    JSONObject forecast = weatherService.getFullForecastForDate(city, selectedDate);
-                    if (forecast != null) showCustomWeatherDialog(selectedDate, city, forecast);
-                    else showInfo("Weather Forecast", "No forecast available for this date.");
-                });
-                dayBox.getChildren().add(weatherBtn);
+// 🔥 DAYS
+            LocalDate firstOfMonth = currentMonth.atDay(1);
+            int daysInMonth = currentMonth.lengthOfMonth();
 
-                // tickets
-                for (Ticket ticket : ticketList) {
-                    VBox ticketNode = createTicketNode(ticket);
-                    dayBox.getChildren().add(ticketNode);
+            int dayOfWeek = firstOfMonth.getDayOfWeek().getValue();
+            int row = 1; // ⬅ start AFTER header
+            int col = dayOfWeek - 1;
+
+            for (int day = 1; day <= daysInMonth; day++) {
+
+                LocalDate currentDate = currentMonth.atDay(day);
+
+                VBox dayBox = new VBox(5);
+                dayBox.setPrefSize(150, 110);
+
+                dayBox.setStyle(
+                        "-fx-padding:6;" +
+                                "-fx-background-color:white;" +
+                                "-fx-border-color:#ddd;" +
+                                "-fx-border-radius:8;" +
+                                "-fx-background-radius:8;"
+                );
+
+                Label dayNumber = new Label(String.valueOf(day));
+                dayNumber.setStyle("-fx-font-weight:bold;");
+                dayBox.getChildren().add(dayNumber);
+
+                boolean inRange = !currentDate.isBefore(reservationStart)
+                        && !currentDate.isAfter(reservationEnd);
+
+                if (inRange) {
+                    dayBox.setStyle(dayBox.getStyle() + "; -fx-background-color:#e8f0ff;");
+
+                    LocalDate selectedDate = currentDate;
+
+                    dayBox.setOnMouseClicked(event -> {
+                        if (event.getClickCount() == 2) {
+                            openTicketSelectionPopup(selectedDate);
+                        }
+                    });
+
+                    // 🌤 WEATHER BUTTON
+                    Button weatherBtn = new Button("🌤 Weather");
+                    weatherBtn.setStyle(
+                            "-fx-background-color:#FFD700;" +   // gold
+                                    "-fx-text-fill:black;" +
+                                    "-fx-padding:3 8 3 8;" +
+                                    "-fx-background-radius:5;"
+                    );
+
+                    weatherBtn.setOnAction(e -> {
+                        JSONObject forecast = weatherService.getFullForecastForDate(city, currentDate);
+                        if (forecast != null)
+                            showCustomWeatherDialog(currentDate, city, forecast);
+                    });
+
+                    dayBox.getChildren().add(weatherBtn);
+
+                    // 🎟 Tickets
+                    for (Ticket ticket : ticketList) {
+                        dayBox.getChildren().add(createTicketNode(ticket));
+                    }
+
+                } else {
+                    dayBox.setStyle(dayBox.getStyle() +
+                            "; -fx-background-color:#f5f5f5; -fx-opacity:0.6;");
+                    dayBox.setDisable(true);
+                }
+
+                calendarGrid.add(dayBox, col, row);
+
+                col++;
+                if (col == 7) {
+                    col = 0;
+                    row++;
                 }
             }
+            monthBox.getChildren().addAll(header, calendarGrid);
+            mainBox.getChildren().add(monthBox);
 
-            calendarGrid.add(dayBox, col, row);
-
-            col++;
-            if (col == 7) {
-                col = 0;
-                row++;
-            }
+            // ➡️ next month
+            currentMonth = currentMonth.plusMonths(1);
         }
 
-        mainBox.getChildren().addAll(header, calendarGrid);
         calendarContainer.getChildren().add(mainBox);
     }
-
     // ================= Ticket Node (code amie + devise + delete release) =================
     private VBox createTicketNode(Ticket ticket) {
 
@@ -408,7 +533,7 @@ public class MyReservationsController {
         if (selectedReservation == null) return;
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/BookingType.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/BookingTypeEdit.fxml"));
             Parent root = loader.load();
 
             BookingTypeController controller = loader.getController();
@@ -647,4 +772,5 @@ public class MyReservationsController {
     void goToDestinations(ActionEvent event) {
         showInfo("Destinations", "Implement navigation to your module page");
     }
+
 }

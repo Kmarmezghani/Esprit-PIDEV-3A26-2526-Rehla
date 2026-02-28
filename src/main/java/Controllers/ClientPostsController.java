@@ -10,6 +10,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -98,6 +99,7 @@ private PostService postService = new PostService();
     private PersonneService personneService = new PersonneService();
     private LikeService likeService = new LikeService();
    private CommentaireService commentService = new CommentaireService();
+    private FavorisService favorisService = new FavorisService();
     private ConversationService ConversationService = new ConversationService();
     private Map<Label, LocalDateTime> timeLabels = new HashMap<>();
     private Timeline conversationUpdater;
@@ -662,25 +664,45 @@ private PostService postService = new PostService();
         commentBox.getChildren().addAll(commentBtn, comments);
 
         // STAR
+        // ================= FAVORIS =================
         HBox starBox = new HBox(6);
         starBox.setAlignment(Pos.CENTER_LEFT);
 
         Button starBtn = new Button();
-        starBtn.setStyle("-fx-background-color: transparent;");
+        starBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        starBtn.setPadding(Insets.EMPTY);
 
-        ImageView starIcon = new ImageView(starEmpty);
-        starIcon.setFitWidth(18);
-        starIcon.setFitHeight(18);
+        ImageView favEmptyIcon = new ImageView(starEmpty);
+        favEmptyIcon.setFitWidth(18);
+        favEmptyIcon.setFitHeight(18);
 
-        starBtn.setGraphic(starIcon);
+        ImageView favFullIcon = new ImageView(starFull);
+        favFullIcon.setFitWidth(18);
+        favFullIcon.setFitHeight(18);
 
+// vérifier si le post est déjà en favoris
+        boolean isFav = favorisService.isFavori(currentUser, post);
+
+        starBtn.setGraphic(isFav ? favFullIcon : favEmptyIcon);
+
+// action click
         starBtn.setOnAction(e -> {
-            if (starIcon.getImage() == starEmpty) {
-                starIcon.setImage(starFull);
-            } else {
-                starIcon.setImage(starEmpty);
+
+            boolean current = favorisService.isFavori(currentUser, post);
+
+            if(current){
+                favorisService.removeFavori(currentUser, post);
+                starBtn.setGraphic(favEmptyIcon);
+            }else{
+                favorisService.addFavori(currentUser, post);
+                starBtn.setGraphic(favFullIcon);
             }
+
         });
+
+// Hover effect
+        starBtn.setOnMouseEntered(e -> starBtn.setOpacity(0.7));
+        starBtn.setOnMouseExited(e -> starBtn.setOpacity(1));
 
         starBox.getChildren().add(starBtn);
 
@@ -703,6 +725,8 @@ private PostService postService = new PostService();
         shareBtn.setGraphic(shareIcon);
 
         shareBox.getChildren().add(shareBtn);
+
+
         shareBtn.setOnAction(e -> sharePost(post));
 
 

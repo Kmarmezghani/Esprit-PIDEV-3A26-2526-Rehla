@@ -9,19 +9,15 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import models.Commentaire;
-import models.Personne;
-import models.Post;
-import models.Preference;
-import services.CommentaireService;
-import services.PersonneService;
-import services.PostService;
+import models.*;
+import services.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.Cursor;
@@ -31,11 +27,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import services.PreferenceService;
+import util.Session;
 
 import java.io.File;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class DashboardController {
 
@@ -78,7 +75,8 @@ public class DashboardController {
     @FXML private ToggleButton dashresbut;
     @FXML private ToggleButton dashuserbut;
 
-
+    @FXML
+    private Button btnNotif;
     private final ToggleGroup dashboardGroup = new ToggleGroup();
 
 
@@ -106,10 +104,10 @@ public class DashboardController {
 
 
     @FXML private Tab preferencetab;
-
+    private ContextMenu notifMenu = new ContextMenu();
     @FXML private TableView<Personne> tableuser;
     @FXML private TableView<Preference> tablePreferences;
-
+//-------------------------------------------------------------------
     @FXML private TableColumn<Personne, Integer> colUserId;
     @FXML private TableColumn<Personne, String> colUserNom;
     @FXML private TableColumn<Personne, String> colUserPrenom;
@@ -123,22 +121,40 @@ public class DashboardController {
     @FXML private TableColumn<Preference, String> colPrefTypes;
     @FXML private TableColumn<Preference, String> colPrefCentres;
 
+//--------------------------------------------------------------
+
+    @FXML private TableView<FavorisPost> tableFavoris;
+
+    @FXML private TableColumn<FavorisPost, String> colFavUser;
+    @FXML private TableColumn<FavorisPost, String> colFavPost;
+    @FXML private TableColumn<FavorisPost, String> colFavDate;
+    @FXML private TableColumn<FavorisPost, Void> colFavAction;
+
+    private ObservableList<FavorisPost> favorisList = FXCollections.observableArrayList();
+    private FavorisService favorisService = new FavorisService();
+
+
     private PersonneService personneService = new PersonneService();
     private PreferenceService preferenceService = new PreferenceService();
     private ObservableList<Personne> userList = FXCollections.observableArrayList();
     private ObservableList<Preference> preferenceList = FXCollections.observableArrayList();
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
+    private notificationService notificationService = new notificationService();
 
     private CommentaireService commentaireService = new CommentaireService();
     private ObservableList<Commentaire> commentaireList = FXCollections.observableArrayList();
     private PostService postService = new PostService();
     private ObservableList<Post> postList = FXCollections.observableArrayList();
 
-
+    Personne currentUser = Session.getCurrentUser();
     @FXML
     public void initialize() {
-
+        System.out.println("Current user: " + currentUser);
+        if(currentUser == null){
+            btnNotif.setVisible(false);
+            btnNotif.setManaged(false);
+            return;
+        }
 
         dashuserbut.setToggleGroup(dashboardGroup);
         dashdesbut.setToggleGroup(dashboardGroup);
@@ -175,6 +191,8 @@ public class DashboardController {
         });
         loadPosts();
         loadCommentaires();
+        loadFavoris();
+        btnNotif.setOnAction(e -> toggleNotifications());
 
         addEditDeleteButtonsToColumn(colAction,
                 post -> openUpdatePopup((Post) post),
@@ -186,11 +204,109 @@ public class DashboardController {
         );
 
         addImageColumn();
+
+
+
+    }
+    private void toggleNotifications() {
+
+        if (notifMenu.isShowing()) {
+            notifMenu.hide();
+            return;
+        }
+        loadNotifications();
+        notifMenu.show(btnNotif, Side.BOTTOM, 0, 8);
     }
 
+    private void loadNotifications() {
 
+        if (currentUser == null) return;
 
-    private void hideAllPanes() {
+        List<notification> list =
+                notificationService.getByReceiver2(currentUser.getId()); // admin
+
+        notifMenu.getItems().clear();
+        notifMenu.getStyleClass().add("notif-dropdown");
+
+        MenuItem header = new MenuItem("Notifications");
+        header.setDisable(true);
+        header.getStyleClass().add("notif-header");
+
+        notifMenu.getItems().add(header);
+        notifMenu.getItems().add(new SeparatorMenuItem());
+
+        if (list.isEmpty()) {
+
+            MenuItem empty = new MenuItem("Aucune notification");
+            empty.setDisable(true);
+            empty.getStyleClass().add("notif-item");
+            notifMenu.getItems().add(empty);
+
+        } else {
+
+            for (notification n : list) {
+
+                MenuItem item = new MenuItem(n.getMessage());
+                item.getStyleClass().add("notif-item");
+                item.setOnAction(ev -> handleNotificationClick(n));
+
+                notifMenu.getItems().add(item);
+            }
+
+        }
+    }
+    private void handleNotificationClick(notification n) {
+        notifMenu.hide();
+
+        Platform.runLater(() -> {
+
+            if (n.getCommentId() != null) {
+
+                dashboardGroup.selectToggle(dashpostbut);
+                showPane(posttabpanmain);
+
+                Commentaire targetCom = commentaireList.stream()
+                        .filter(c -> c.getId() == n.getCommentId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (targetCom != null) {
+
+                    int index = commentaireList.indexOf(targetCom);
+
+                    tableCommentaire.getSelectionModel().clearAndSelect(index);
+                    tableCommentaire.scrollTo(index);
+                    tableCommentaire.requestFocus();
+
+                } else {
+                    System.out.println("Commentaire non trouvé");
+                }
+
+            }
+
+            else if (n.getPostId() != null) {
+
+                dashboardGroup.selectToggle(dashpostbut);
+                showPane(posttabpanmain);
+
+                Post targetPost = postList.stream()
+                        .filter(p -> p.getId() == n.getPostId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (targetPost != null) {
+
+                    int index = postList.indexOf(targetPost);
+
+                    tablepost.getSelectionModel().clearAndSelect(index);
+                    tablepost.scrollTo(index);
+                    tablepost.requestFocus();
+                }
+            }
+        });
+    }
+
+        private void hideAllPanes() {
         hidePane(usertabpanmain);
         hidePane(activitetabpanmain);
         hidePane(destinationtabpanmain);
@@ -540,7 +656,33 @@ public class DashboardController {
             }
         });
     }
-    /*------------------Module users------------------------------------------*/
+/*--------------------------------------------Favoris---------------------------------------------------------------------------*/
+    private void loadFavoris() {
+
+        colFavUser.setCellValueFactory(cell ->
+                new SimpleStringProperty(
+                        cell.getValue().getFavoris().getPersonne().getNom()
+                                + " " +
+                                cell.getValue().getFavoris().getPersonne().getPrenom()
+                )
+        );
+
+        colFavPost.setCellValueFactory(cell ->
+                new SimpleStringProperty(
+                        cell.getValue().getPost().getContenu()
+                )
+        );
+
+        colFavDate.setCellValueFactory(cell ->
+                new SimpleStringProperty(
+                        cell.getValue().getDateAjout().toString()
+                )
+        );
+
+        favorisList.setAll(favorisService.getAllFavorisPosts());
+        tableFavoris.setItems(favorisList);
+    }
+    /*------------------------------------------Module users------------------------------------------*/
 
     @FXML
     void refreshUsersTable(ActionEvent event) {

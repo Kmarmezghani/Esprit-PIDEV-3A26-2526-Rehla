@@ -24,6 +24,10 @@ public class Favoris {
         this.posts = posts;
     }
 
+    public Favoris() {
+
+    }
+
     public int getId() {
         return id;
     }

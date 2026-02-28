@@ -183,7 +183,7 @@ private PostService postService = new PostService();
             return;
         }
 
-        if(messageMenu.getItems().isEmpty()){
+        if (messageMenu.getItems().isEmpty()) {
             loadConversations();
         }
 
@@ -394,7 +394,7 @@ private PostService postService = new PostService();
 
             ChatPopupController controller = loader.getController();
 
-            // ✅ passer le user connecté + receiver
+
             controller.initChat(currentUser.getId(), user);
 
             Stage stage = new Stage();
@@ -413,7 +413,7 @@ private PostService postService = new PostService();
             return;
         }
 
-        loadNotifications();
+//        loadNotifications();
         notifMenu.show(btnNotif, Side.BOTTOM, 0, 8);
     }
 
@@ -1119,104 +1119,6 @@ private PostService postService = new PostService();
     }
 
 
-    private void loadNotifications() {
-
-        if (currentUser == null) return;
-
-        List<notification> list =
-                notificationService.getByReceiver(currentUser.getId()); // admin
-
-        notifMenu.getItems().clear();
-        notifMenu.getStyleClass().add("notif-dropdown");
-
-        MenuItem header = new MenuItem("Notifications");
-        header.setDisable(true);
-        header.getStyleClass().add("notif-header");
-
-        notifMenu.getItems().add(header);
-        notifMenu.getItems().add(new SeparatorMenuItem());
-
-        if (list.isEmpty()) {
-
-            MenuItem empty = new MenuItem("Aucune notification");
-            empty.setDisable(true);
-            empty.getStyleClass().add("notif-item");
-            notifMenu.getItems().add(empty);
-
-        } else {
-
-            for (notification n : list) {
-
-                MenuItem item = new MenuItem(n.getMessage());
-                item.getStyleClass().add("notif-item");
-
-                item.setOnAction(e -> {
-
-                    handleNotificationClick(n);
-
-                });
-
-                notifMenu.getItems().add(item);
-            }
-
-        }
-    }
-    private void handleNotificationClick(notification n){
-
-        loadPosts();
-
-        Platform.runLater(() -> {
-
-            Timeline timeline = new Timeline(
-                    new KeyFrame(javafx.util.Duration.millis(300),
-                            e -> {
-
-                                VBox postNode = findPostNodeById(n.getPostId());
-
-                                if(postNode != null){
-
-                                    scrollToNode(postNode);
-
-                                    postNode.setStyle(
-                                            "-fx-border-color:red;" +
-                                                    "-fx-border-width:3px;" +
-                                                    "-fx-border-radius:10;"
-                                    );
-                                }
-                            })
-            );
-
-            timeline.play();
-
-        });
-    }
-
-
-    private void scrollToNode(Node node){
-
-        ScrollPane scroll =
-                (ScrollPane) postsContainer
-                        .getScene()
-                        .lookup(".scroll");
-
-        double height = postsContainer.getHeight();
-        double y = node.getLayoutY();
-
-        scroll.setVvalue(y / height);
-    }
-
-    private VBox findPostNodeById(int postId){
-
-        for(Node node : postsContainer.getChildren()){
-
-            if(node.getUserData() != null &&
-                    node.getUserData().equals(postId)){
-                return (VBox) node;
-            }
-        }
-
-        return null;
-    }
 
 
     @FXML
@@ -1419,6 +1321,119 @@ private PostService postService = new PostService();
             e.printStackTrace();
         }
     }
+
+
+    @FXML
+    private void handleLocalisation(ActionEvent event) {
+
+        if (selectedImageFile == null) {
+            showToast("Veuillez d'abord sélectionner une image !");
+            return;
+        }
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                sendImageToLocalizationAPI(selectedImageFile);
+                return null;
+            }
+        };
+
+        new Thread(task).start();
+    }
+    private void sendImageToLocalizationAPI(File file) {
+
+        try {
+
+            URL url = new URL("http://localhost:5001/localize");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            String boundary = "Boundary-" + System.currentTimeMillis();
+            conn.setRequestProperty("Content-Type",
+                    "multipart/form-data; boundary=" + boundary);
+
+            OutputStream os = conn.getOutputStream();
+            PrintWriter writer = new PrintWriter(
+                    new OutputStreamWriter(os, "UTF-8"), true);
+
+            // ---- file ----
+            writer.append("--").append(boundary).append("\r\n");
+            writer.append("Content-Disposition: form-data; name=\"image\"; filename=\"")
+                    .append(file.getName()).append("\"\r\n");
+            writer.append("Content-Type: application/octet-stream\r\n\r\n");
+            writer.flush();
+
+            Files.copy(file.toPath(), os);
+            os.flush();
+
+            writer.append("\r\n");
+            writer.append("--").append(boundary).append("--\r\n");
+            writer.close();
+
+            int status = conn.getResponseCode();
+
+            InputStream is = (status == 200)
+                    ? conn.getInputStream()
+                    : conn.getErrorStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+
+            if (status == 200) {
+
+                JSONObject json = new JSONObject(response.toString());
+
+                String city = json.optString("city", "");
+                String country = json.optString("country", "");
+
+                Platform.runLater(() ->
+                        showToastLong("📍 Votre photo est située à "
+                                + city + ", " + country));
+
+            } else {
+
+                Platform.runLater(() ->
+                        showToast("Erreur localisation ❌"));
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Platform.runLater(() ->
+                    showToast("Erreur serveur ❌"));
+        }
+    }
+    private void showToastLong(String message) {
+
+        Label toast = new Label(message);
+        toast.setStyle(
+                "-fx-background-color: rgba(0,0,0,0.8);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-padding: 12px 25px;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-font-size: 14px;"
+        );
+
+        root.getChildren().add(toast);
+        StackPane.setAlignment(toast, Pos.TOP_CENTER);
+
+        Timeline timeline = new Timeline(
+                new KeyFrame(javafx.util.Duration.seconds(10),
+                        e -> root.getChildren().remove(toast))
+        );
+
+        timeline.setCycleCount(1);
+        timeline.play();
+    }
+
 
 }
 

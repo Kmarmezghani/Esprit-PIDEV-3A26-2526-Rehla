@@ -13,6 +13,10 @@ public class FavorisPost {
         this.dateAjout = new Date();
     }
 
+    public FavorisPost() {
+
+    }
+
     public Favoris getFavoris() {
         return favoris;
     }

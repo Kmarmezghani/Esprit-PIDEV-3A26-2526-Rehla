@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -634,43 +635,68 @@ public class BlogProfileController {
     }
     private void switchTab(String tab) {
 
+        if(currentUser == null) return;
+
         tabPosts.setSelected(false);
         tabFavorites.setSelected(false);
         tabAbout.setSelected(false);
+
         postsContainer.setVisible(false);
-        newPostTitleField.setVisible(false);
-        newPostContentArea.setVisible(false);
-        publishButton.setVisible(false);
+        newPostBox.setVisible(false);
 
         switch (tab) {
+
             case "posts":
+
                 tabPosts.setSelected(true);
+
+                newPostBox.setVisible(true);
                 postsContainer.setVisible(true);
-                newPostTitleField.setVisible(true);
-                newPostContentArea.setVisible(true);
-                publishButton.setVisible(true);
+
                 showPosts();
                 break;
 
             case "favorites":
-                tabFavorites.setSelected(true);
-                tabPosts.setSelected(false);
 
-                newPostBox.setVisible(true);
-                newPostTitleField.setVisible(true);
-                newPostContentArea.setVisible(true);
-                publishButton.setVisible(true);
+                tabFavorites.setSelected(true);
+
+                newPostBox.setVisible(false);
                 postsContainer.setVisible(true);
 
-               this.showFavorites();
-
+                showFavorites();
                 break;
 
             case "about":
+
                 tabAbout.setSelected(true);
-                showAbout();
+
+                postsContainer.getChildren().clear();
+
+                Label aboutLabel = new Label("Section About");
+                contentArea.getChildren().setAll(aboutLabel);
+
                 break;
         }
     }
 
+    // Profile Menu Actions
+    @FXML
+    void goToMyProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfilePage.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfo("Profile", "Could not open profile page.");
+        }
+    }
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

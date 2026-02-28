@@ -76,6 +76,49 @@ public class notificationService {
 
         return list;
     }
+
+    public List<notification> getByReceiver2(int receiverId) {
+
+        List<notification> list = new ArrayList<>();
+
+        String sql;
+
+        // Si c’est le root fictif, récupérer toutes les notifications (ou un subset si tu veux)
+        if (receiverId == 0) {
+            sql = "SELECT * FROM notification ORDER BY created_at DESC";
+        } else {
+            sql = "SELECT * FROM notification WHERE receiver_id = ? ORDER BY created_at DESC";
+        }
+
+        try (Connection cnx = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = cnx.prepareStatement(sql)) {
+
+            if (receiverId != 0) ps.setInt(1, receiverId); // pour les vrais users
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                notification n = new notification(
+                        rs.getInt("id"),
+                        rs.getString("message"),
+                        rs.getString("type"),
+                        (Integer) rs.getObject("post_id"),
+                        (Integer) rs.getObject("comment_id"),
+                        (Integer) rs.getObject("activite_id"),
+                        rs.getInt("sender_id"),
+                        rs.getInt("receiver_id"),
+                        rs.getBoolean("is_read"),
+                        rs.getBoolean("is_sent_sms"),
+                        rs.getTimestamp("created_at").toLocalDateTime()
+                );
+                list.add(n);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
     // Récupérer les notifications non encore envoyées par SMS pour un utilisateur
     public List<notification> getPendingSmsNotifications(int receiverId) {
         List<notification> list = new ArrayList<>();

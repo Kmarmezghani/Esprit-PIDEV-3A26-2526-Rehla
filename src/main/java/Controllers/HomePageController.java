@@ -381,19 +381,38 @@ public class HomePageController implements Initializable {
         stage.setMaximized(!stage.isMaximized());
     }
 
-    // Profile Menu Actions
+
+
     @FXML
-    void goToMyProfile(ActionEvent event) {
+    private void goToProfile(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfilePage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/blogProfileView.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/css/blog_styles.css").toExternalForm()
+            );
+
+            Stage stage;
+
+            if (event.getSource() instanceof javafx.scene.control.MenuItem menuItem) {
+                stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
+            } else {
+                stage = (Stage) ((Node) event.getSource())
+                        .getScene()
+                        .getWindow();
+            }
+
+            stage.setScene(scene);
+            stage.show();
+
         } catch (Exception e) {
             e.printStackTrace();
-            showInfo("Profile", "Could not open profile page.");
         }
     }
+
 
     @FXML
     void goToMyPosts(ActionEvent event) {

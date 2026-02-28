@@ -1,5 +1,7 @@
 package services;
 
+import models.Favoris;
+import models.FavorisPost;
 import models.Personne;
 import models.Post;
 import util.DBConnection;
@@ -150,5 +152,56 @@ public class FavorisService {
         }
 
         return posts;
+    }
+
+    public List<FavorisPost> getAllFavorisPosts() {
+
+        List<FavorisPost> list = new ArrayList<>();
+
+        String sql = "SELECT fp.dateAjout, " +
+                "p.id as post_id, p.titre, p.contenu, " +
+                "per.id as user_id, per.nom, per.prenom " +
+                "FROM favoris_post fp " +
+                "JOIN favoris f ON fp.favoris_id = f.id " +
+                "JOIN post p ON fp.post_id = p.id " +
+                "JOIN personne per ON f.personne_id = per.id " +
+                "ORDER BY fp.dateAjout DESC";
+
+        try {
+
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+
+                Personne personne = new Personne();
+                personne.setId(rs.getInt("user_id"));
+                personne.setNom(rs.getString("nom"));
+                personne.setPrenom(rs.getString("prenom"));
+
+
+                Post post = new Post();
+                post.setId(rs.getInt("post_id"));
+                post.setTitre(rs.getString("titre"));
+                post.setContenu(rs.getString("contenu"));
+
+
+                Favoris favoris = new Favoris();
+                favoris.setPersonne(personne);
+
+                FavorisPost fp = new FavorisPost();
+                fp.setFavoris(favoris);
+                fp.setPost(post);
+                fp.setDateAjout(rs.getTimestamp("dateAjout"));
+
+                list.add(fp);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }

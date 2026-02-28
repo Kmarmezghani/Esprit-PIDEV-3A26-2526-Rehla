@@ -681,7 +681,7 @@ public class BlogProfileController {
 
     // Profile Menu Actions
     @FXML
-    void goToMyProfile(ActionEvent event) {
+    void goToMyProfileUpdate(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfilePage.fxml"));
             Parent root = loader.load();

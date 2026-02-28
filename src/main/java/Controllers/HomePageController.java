@@ -414,11 +414,7 @@ public class HomePageController implements Initializable {
     }
 
 
-    @FXML
-    void goToMyPosts(ActionEvent event) {
-        System.out.println("📝 My Posts - to be implemented");
-        showInfo("My Posts", "My Posts page - implement in your module");
-    }
+
 
     @FXML
     void goToMyReservations(ActionEvent event) {

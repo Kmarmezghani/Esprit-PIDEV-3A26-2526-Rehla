@@ -137,7 +137,7 @@
                             <Button text="✏ Modifier le profil"
                                     style="-fx-background-radius: 20; -fx-background-color: #E3F2FD;
                                            -fx-text-fill: #1E88E5; -fx-font-weight: bold;
-                                           -fx-padding: 6 18; -fx-cursor: hand;" onAction="#goToMyProfile"/>
+                                           -fx-padding: 6 18; -fx-cursor: hand;" onAction="#goToMyProfileUpdate"/>
                             <Button text="⚙ Paramètres"
                                     style="-fx-background-radius: 20; -fx-background-color: #F5F5F5;
                                            -fx-text-fill: #424242; -fx-padding: 4 10; -fx-cursor: hand;"/>

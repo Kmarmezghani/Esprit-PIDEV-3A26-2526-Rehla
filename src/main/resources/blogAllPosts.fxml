@@ -82,7 +82,7 @@
             <Button text="⭐" styleClass="dock-btn" />
             <Button text="👥" styleClass="dock-btn" />
             <Button text="⚙" styleClass="dock-btn" />
-                <Button text="👤" styleClass="dock-btn" onAction="#goToProfile"/>
+                <Button text="👤" styleClass="dock-btn" />
 
                 <Region VBox.vgrow="ALWAYS"/>
             <Button text="🌙" styleClass="dock-btn" />

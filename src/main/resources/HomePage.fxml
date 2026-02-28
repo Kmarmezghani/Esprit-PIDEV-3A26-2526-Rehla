@@ -45,7 +45,7 @@
                         <MenuButton style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 20; -fx-cursor: hand; -fx-background-radius: 25; -fx-padding: 8;" text="👤" xmlns:fx="http://javafx.com/fxml">
                             <items>
                                 <MenuItem onAction="#goToProfile" style="-fx-font-size: 14;" text="👤 My Profile" />
-                                <MenuItem onAction="#goToMyPosts" style="-fx-font-size: 14;" text="📝 My Posts" />
+                                <MenuItem onAction="#goToPosts" style="-fx-font-size: 14;" text="📝 My Posts" />
                                 <MenuItem onAction="#goToMyReservations" style="-fx-font-size: 14;" text="📅 My Reservations" />
                                 <SeparatorMenuItem />
                                 <MenuItem onAction="#handleLogout" style="-fx-font-size: 14;" text="🚪 Logout" />

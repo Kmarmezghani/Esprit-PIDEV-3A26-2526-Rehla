@@ -28,8 +28,6 @@ import java.util.ResourceBundle;
  */
 public class HomePageController implements Initializable {
 
-    @FXML
-    private TextField searchField;
 
     @FXML
     private FlowPane countriesFlowPane;  // Empty for now - Destination team will populate
@@ -318,15 +316,15 @@ public class HomePageController implements Initializable {
        END OF DESTINATION MODULE CODE
        ===================================================== */
 
-    @FXML
-    void handleSearch(ActionEvent event) {
-        String searchText = searchField.getText().trim();
-        if (!searchText.isEmpty()) {
-            System.out.println("Search: " + searchText);
-            // TODO: Implement search for your module
-            showInfo("Search", "Search feature - implement for your module");
-        }
-    }
+//    @FXML
+//    void handleSearch(ActionEvent event) {
+//        String searchText = searchField.getText().trim();
+//        if (!searchText.isEmpty()) {
+//            System.out.println("Search: " + searchText);
+//            // TODO: Implement search for your module
+//            showInfo("Search", "Search feature - implement for your module");
+//        }
+//    }
 
     @FXML
     void goToHome(ActionEvent event) {
@@ -346,13 +344,11 @@ public class HomePageController implements Initializable {
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
-
-
             scene.getStylesheets().add(
                     getClass().getResource("/css/blog_styles.css").toExternalForm()
             );
 
-            Stage stage = (Stage) searchField.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
             stage.show();
 
@@ -416,40 +412,40 @@ public class HomePageController implements Initializable {
 
 
 
-    @FXML
-    void goToMyReservations(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
-            Parent root = loader.load();
+//    @FXML
+//    void goToMyReservations(ActionEvent event) {
+//        try {
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/MyReservation.fxml"));
+//            Parent root = loader.load();
+//
+//            Stage stage = (Stage) searchField.getScene().getWindow();
+//            stage.setScene(new Scene(root));
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-            Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    void handleLogout(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Logout");
-        alert.setHeaderText("Are you sure you want to logout?");
-        alert.setContentText("You will be returned to the login screen.");
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                util.Session.clear();
-                try {
-                    Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
-                    Stage stage = (Stage) searchField.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+//    @FXML
+//    void handleLogout(ActionEvent event) {
+//        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+//        alert.setTitle("Logout");
+//        alert.setHeaderText("Are you sure you want to logout?");
+//        alert.setContentText("You will be returned to the login screen.");
+//
+//        alert.showAndWait().ifPresent(response -> {
+//            if (response == ButtonType.OK) {
+//                util.Session.clear();
+//                try {
+//                    Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
+//                    Stage stage = (Stage) searchField.getScene().getWindow();
+//                    stage.setScene(new Scene(root));
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

@@ -17,9 +17,7 @@ public class ActiviteService implements IService<Activite> {
         this.conn = DBConnection.getInstance().getConn();
     }
 
-    // =========================
-    // CRUD
-    // =========================
+
 
     @Override
     public void add(Activite activite) {
@@ -65,7 +63,7 @@ public class ActiviteService implements IService<Activite> {
             if (activite.getImage() != null && !activite.getImage().isBlank()) ps.setString(12, activite.getImage());
             else ps.setNull(12, Types.VARCHAR);
 
-            // ✅ FLASH FIELDS
+
             ps.setInt(13, activite.isFlashSale() ? 1 : 0);
 
             if (activite.getFlashPrice() != null) ps.setDouble(14, activite.getFlashPrice());
@@ -133,7 +131,7 @@ public class ActiviteService implements IService<Activite> {
             if (activite.getImage() != null && !activite.getImage().isBlank()) ps.setString(12, activite.getImage());
             else ps.setNull(12, Types.VARCHAR);
 
-            // ✅ FLASH
+
             ps.setInt(13, activite.isFlashSale() ? 1 : 0);
 
             if (activite.getFlashPrice() != null) ps.setDouble(14, activite.getFlashPrice());
@@ -182,9 +180,7 @@ public class ActiviteService implements IService<Activite> {
         return activites;
     }
 
-    // =========================
-    // Helpers
-    // =========================
+
 
     private Activite mapActivite(ResultSet rs) throws SQLException {
         Activite a = new Activite();
@@ -215,7 +211,7 @@ public class ActiviteService implements IService<Activite> {
 
         a.setImage(rs.getString("image"));
 
-        // ✅ FLASH FIELDS
+
         try {
             a.setFlashSale(rs.getInt("is_flash_sale") == 1);
 
@@ -231,9 +227,7 @@ public class ActiviteService implements IService<Activite> {
         return a;
     }
 
-    // =========================
-    // Extras (unchanged)
-    // =========================
+
 
     public void updateNoteMoyenne(int activiteId) {
         String sql = "UPDATE activite SET noteMoyenne = (" +
@@ -273,22 +267,44 @@ public class ActiviteService implements IService<Activite> {
 
     public Map<String, Integer> getDestinationsMap() {
         Map<String, Integer> map = new LinkedHashMap<>();
-        String sql = "SELECT id, nom FROM destination ORDER BY nom";
+
+        String sql = """
+        SELECT v.id AS ville_id,
+               v.nom AS ville_nom,
+               p.nom AS pays_nom
+        FROM ville v
+        JOIN pays p ON v.pays_id = p.id
+        ORDER BY p.nom, v.nom
+    """;
+
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) map.put(rs.getString("nom"), rs.getInt("id"));
+
+            while (rs.next()) {
+                String villeNom = rs.getString("ville_nom");
+                String paysNom = rs.getString("pays_nom");
+
+                String key = villeNom + ", " + paysNom;
+
+                map.put(key, rs.getInt("ville_id"));
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return map;
     }
 
     public String getDestinationNameById(int destinationId) {
         if (destinationId <= 0) return "";
-        String sql = "SELECT nom FROM destination WHERE id = " + destinationId;
-        try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) return rs.getString("nom");
+
+        String sql = "SELECT nom FROM ville WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, destinationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("nom");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -297,10 +313,19 @@ public class ActiviteService implements IService<Activite> {
 
     public String getDestinationDisplayById(int destinationId) {
         if (destinationId <= 0) return "";
-        String sql = "SELECT CONCAT(nom, ', ', pays) AS display FROM destination WHERE id = " + destinationId;
-        try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) return rs.getString("display");
+
+        String sql = """
+        SELECT CONCAT(v.nom, ', ', p.nom) AS display
+        FROM ville v
+        JOIN pays p ON p.id = v.pays_id
+        WHERE v.id = ?
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, destinationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("display");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -428,8 +453,8 @@ public class ActiviteService implements IService<Activite> {
             a.flash_price = CASE
                 WHEN IFNULL(x.booked,0) < (a.max_places * 0.5)
                  AND a.noteMoyenne < 3.5
-                THEN ROUND(a.prix * 0.70, 2)  -- ✅ 30% remise
-                ELSE ROUND(a.prix * 0.80, 2)  -- ✅ 20% remise
+                THEN ROUND(a.prix * 0.70, 2) 
+                ELSE ROUND(a.prix * 0.80, 2) 
             END
         WHERE a.status = 'DISPONIBLE'
           AND (a.is_flash_sale = 0 OR a.is_flash_sale IS NULL)
@@ -447,7 +472,6 @@ public class ActiviteService implements IService<Activite> {
     }
     public void revalidateFlashForActivity(int activiteId) throws SQLException {
 
-        // 1) Si flash expiré ou champs incohérents => reset
         String resetSql = """
         UPDATE activite
         SET is_flash_sale = 0,
@@ -465,8 +489,7 @@ public class ActiviteService implements IService<Activite> {
           )
     """;
 
-        // 2) Si l’activité n’est plus éligible (ex: date_debut changée) => reset
-        // ⚠️ adapte ici TES règles (j’ai mis les mêmes que refreshFlashSales)
+
         String notEligibleSql = """
         UPDATE activite
         SET is_flash_sale = 0,
@@ -492,5 +515,34 @@ public class ActiviteService implements IService<Activite> {
             ps2.setInt(1, activiteId);
             ps2.executeUpdate();
         }
+    }
+    public List<String> getAttractionsByDestination(int destinationId) {
+
+        String sql = """
+        SELECT nom 
+        FROM attraction 
+        WHERE ville_id = ? 
+        ORDER BY nom ASC
+    """;
+
+        List<String> res = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, destinationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String nom = rs.getString("nom");
+                    if (nom != null && !nom.isBlank()) {
+                        res.add(nom.trim());
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return res;
     }
 }

@@ -203,7 +203,7 @@ public class RegisterController implements Initializable {
         );
 
         Session.setCurrentUser(p);
-        navigateTo("/HomePage.fxml", event);
+        navigateTo("Frontoffice/HomePage.fxml", event);
     }
 
     private void showError(String message) {
@@ -234,7 +234,7 @@ public class RegisterController implements Initializable {
 
     @FXML
     void goToLogin(ActionEvent event) {
-        navigateTo("/loginPage.fxml", event);
+        navigateTo("Frontoffice/loginPage.fxml", event);
     }
 
     @FXML

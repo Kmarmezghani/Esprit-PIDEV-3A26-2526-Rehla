@@ -94,12 +94,24 @@ public class CommentaireService  {
     }
 
     public List<Commentaire> getAll() {
+
         List<Commentaire> commentaires = new ArrayList<>();
-        String sql = "SELECT * FROM commentaire";
-        try {
-            Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+
+        String sql = """
+        SELECT c.*, 
+               p.nom AS p_nom, 
+               p.prenom AS p_prenom,
+               po.contenu AS post_contenu
+        FROM commentaire c
+        JOIN personne p ON c.personne_id = p.id
+        JOIN post po ON c.post_id = po.id
+        """;
+
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
             while (rs.next()) {
+
                 Commentaire c = new Commentaire();
                 c.setId(rs.getInt("id"));
                 c.setContenu(rs.getString("contenu"));
@@ -107,22 +119,26 @@ public class CommentaireService  {
                         rs.getTimestamp("dateCommentaire").toLocalDateTime()
                 );
 
-
-                // Auteur
+                // Auteur complet
                 Personne auteur = new Personne();
                 auteur.setId(rs.getInt("personne_id"));
+                auteur.setNom(rs.getString("p_nom"));
+                auteur.setPrenom(rs.getString("p_prenom"));
                 c.setAuteur(auteur);
 
-                // Post
+                // Post complet
                 Post post = new Post();
                 post.setId(rs.getInt("post_id"));
+                post.setContenu(rs.getString("post_contenu"));
                 c.setPost(post);
 
                 commentaires.add(c);
             }
+
         } catch (SQLException e) {
             System.out.println("Erreur récupération commentaires : " + e.getMessage());
         }
+
         return commentaires;
     }
     public List<Commentaire> getCommentairesByPost(Post post) {

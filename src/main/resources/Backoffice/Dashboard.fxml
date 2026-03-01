@@ -410,10 +410,10 @@
                                                             <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                                 <children>
                                                                     <Label text="Reservations" textFill="#002b11">
-                                                      <HBox.margin>
-                                                         <Insets bottom="5.0" top="5.0" />
-                                                      </HBox.margin></Label>
-                                                   <Button fx:id="btnanalysis" mnemonicParsing="false" onAction="#openAnalysisPopup" prefHeight="26.0" prefWidth="98.0" styleClass="button2" stylesheets="@/Backoffice/css/styling.css" text="Analysis" textFill="#002b11" />
+                                                                        <HBox.margin>
+                                                                            <Insets bottom="5.0" top="5.0" />
+                                                                        </HBox.margin></Label>
+                                                                    <Button fx:id="btnanalysis" mnemonicParsing="false" onAction="#openAnalysisPopup" prefHeight="26.0" prefWidth="98.0" styleClass="button2" stylesheets="@/Backoffice/css/styling.css" text="Analysis" textFill="#002b11" />
                                                                 </children>
                                                                 <padding>
                                                                     <Insets left="30.0" />
@@ -525,9 +525,9 @@
                                                             <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
                                                                 <children>
                                                                     <Label text="Review" textFill="#002b11">
-                                                      <HBox.margin>
-                                                         <Insets bottom="5.0" top="5.0" />
-                                                      </HBox.margin></Label>
+                                                                        <HBox.margin>
+                                                                            <Insets bottom="5.0" top="5.0" />
+                                                                        </HBox.margin></Label>
                                                                 </children>
                                                                 <padding>
                                                                     <Insets left="30.0" />
@@ -615,18 +615,6 @@
                                             <AnchorPane>
                                                 <children>
                                                     <BorderPane layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                        <top>
-                                                            <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
-                                                                <children>
-                                                                    <Label text="posts" textFill="#002b11" />
-                                                                    <Button mnemonicParsing="false" onAction="#openAddPostForm" prefHeight="28.0" prefWidth="98.0" styleClass="button2" text="Add new" textFill="#002b11" />
-                                                                    <Button mnemonicParsing="false" prefHeight="28.0" prefWidth="133.0" styleClass="button2" text=" Export(Excel)" textFill="#002b11" />
-                                                                </children>
-                                                                <padding>
-                                                                    <Insets left="30.0" />
-                                                                </padding>
-                                                            </HBox>
-                                                        </top>
                                                         <center>
                                                             <TableView fx:id="tablepost" BorderPane.alignment="CENTER">
                                                                 <columns>
@@ -659,28 +647,13 @@
                                                 <children>
                                                     <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-                                                        <top>
-                                                            <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
-                                                                <children>
-                                                                    <Label text="Commentaires" textFill="#002b11" />
-
-                                                                    <Button mnemonicParsing="false" onAction="#openAddCommentForm" prefHeight="26.0" prefWidth="98.0" styleClass="button2" text="Add new" textFill="#002b11" />
-
-                                                                </children>
-                                                                <padding>
-                                                                    <Insets left="30.0" />
-                                                                </padding>
-                                                            </HBox>
-                                                        </top>
-
-
                                                         <center>
                                                             <TableView fx:id="tableCommentaire">
                                                                 <columns>
 
                                                                     <TableColumn fx:id="colContenuCom" text="Contenu du Commentaire" />
                                                                     <TableColumn fx:id="colDateCom" text="Date de Publication" />
-                                                                    <TableColumn fx:id="colAuteurCom" text="Auteur" />
+                                                                    <TableColumn fx:id="colAuteurCom" text="Auteur du commentaire" />
                                                                     <TableColumn fx:id="colPostCom" text="Post Associé" />
                                                                     <TableColumn fx:id="colAction2" prefWidth="120" text="Actions" />
                                                                 </columns>

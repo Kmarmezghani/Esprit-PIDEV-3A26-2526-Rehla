@@ -16,7 +16,6 @@
 
     <TextField fx:id="txtTitre" promptText="Titre"/>
     <TextArea fx:id="txtContenu" promptText="Contenu"/>
-    <TextField fx:id="txtPopularite" promptText="Popularité"/>
     <TextField fx:id="txtAuteurId"
                promptText="ID Auteur"
                editable="false"/>

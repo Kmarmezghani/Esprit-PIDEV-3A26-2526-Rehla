@@ -82,13 +82,19 @@ public class PostService implements IService<Post> {
 
         List<Post> posts = new ArrayList<>();
 
-        String sql = "SELECT p.*, pe.nom, pe.prenom " +
-                "FROM post p " +
-                "JOIN personne pe ON p.personne_id = pe.id";
+        String sql = """
+        SELECT p.*, pe.nom, pe.prenom,
+               COUNT(DISTINCT l.id) AS nb_likes,
+               COUNT(DISTINCT c.id) AS nb_commentaires
+        FROM post p
+        JOIN personne pe ON p.personne_id = pe.id
+        LEFT JOIN likes l ON l.post_id = p.id
+        LEFT JOIN commentaire c ON c.post_id = p.id
+        GROUP BY p.id
+        """;
 
-        try {
-            Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
 
@@ -97,15 +103,22 @@ public class PostService implements IService<Post> {
                 auteur.setNom(rs.getString("nom"));
                 auteur.setPrenom(rs.getString("prenom"));
 
+                int nbLikes = rs.getInt("nb_likes");
+                int nbCommentaires = rs.getInt("nb_commentaires");
+
+                int scorePopularite = (nbLikes * 2) + (nbCommentaires * 3);
+
                 Post post = new Post(
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("contenu"),
                         rs.getTimestamp("datePublication").toLocalDateTime(),
-                        rs.getInt("popularite"),
+                        scorePopularite,
                         auteur,
                         rs.getString("image")
                 );
+
+                post.setNbLikes(nbLikes);
 
                 posts.add(post);
             }
@@ -189,6 +202,53 @@ public class PostService implements IService<Post> {
             return null;
         }
     }
+    public List<Post> getTop6PostsByPopularite() {
 
+        List<Post> posts = new ArrayList<>();
+
+        String sql = """
+        SELECT p.*, pe.nom, pe.prenom,
+               (COUNT(DISTINCT l.id) * 2 +
+                COUNT(DISTINCT c.id) * 3) AS score_popularite
+
+        FROM post p
+        JOIN personne pe ON p.personne_id = pe.id
+        LEFT JOIN likes l ON l.post_id = p.id
+        LEFT JOIN commentaire c ON c.post_id = p.id
+
+        GROUP BY p.id
+        ORDER BY score_popularite DESC
+        LIMIT 6
+        """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                Personne auteur = new Personne();
+                auteur.setId(rs.getInt("personne_id"));
+                auteur.setNom(rs.getString("nom"));
+                auteur.setPrenom(rs.getString("prenom"));
+
+                Post post = new Post(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getTimestamp("datePublication").toLocalDateTime(),
+                        rs.getInt("score_popularite"), // 🔥 score calculé
+                        auteur,
+                        rs.getString("image")
+                );
+
+                posts.add(post);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Erreur récupération top posts : " + e.getMessage());
+        }
+
+        return posts;
+    }
 
 }

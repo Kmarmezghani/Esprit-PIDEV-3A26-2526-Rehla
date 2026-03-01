@@ -213,8 +213,8 @@ public class DashboardController {
     @FXML private TableColumn<Commentaire, Integer> colIdCom;
     @FXML private TableColumn<Commentaire, String> colContenuCom;
     @FXML private TableColumn<Commentaire, java.time.LocalDate> colDateCom;
-    @FXML private TableColumn<Commentaire, Integer> colAuteurCom;
-    @FXML private TableColumn<Commentaire, Integer> colPostCom;
+    @FXML private TableColumn<Commentaire, String> colAuteurCom;
+    @FXML private TableColumn<Commentaire, String> colPostCom;
 
 
     @FXML private Tab preferencetab;
@@ -323,14 +323,12 @@ public class DashboardController {
 
         btnNotif.setOnAction(e -> toggleNotifications());
 
-        addEditDeleteButtonsToColumn(colAction,
-                post -> openUpdatePopup((Post) post),
-                post -> deletePost((Post) post)
-        );
-        addEditDeleteButtonsToColumn(colAction2,
-                com -> openUpdateCommentPopup((Commentaire) com),
-                com -> deleteComment((Commentaire) com)
-        );
+        addDeleteButtonsToColumn(colAction,
+                post -> deletePost((post)
+        ));
+        addDeleteButtonsToColumn(colAction2,
+                com -> deleteComment((com)
+        ));
 
         addImageColumn();
 
@@ -1276,7 +1274,7 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireEditPays.fxml"));
             Parent root = loader.load();
-            
+
             EditPaysController controller = loader.getController();
             controller.setPays(pays);
 
@@ -1636,27 +1634,15 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
-    private <T> void addEditDeleteButtonsToColumn(TableColumn<T, Void> col, java.util.function.Consumer<T> onEdit, java.util.function.Consumer<T> onDelete) {
+    private <T> void addDeleteButtonsToColumn(TableColumn<T, Void> col,java.util.function.Consumer<T> onDelete) {
         col.setCellFactory(param -> new TableCell<>() {
 
-            private final Button btnEdit = new Button();
             private final Button btnDelete = new Button();
-            private final HBox hbox = new HBox(10, btnEdit, btnDelete);
+            private final HBox hbox = new HBox(10, btnDelete);
 
             {
-                // EDIT
-                Image editImage = new Image(getClass().getResourceAsStream("/Backoffice/icons/edit.png"));
-                ImageView editView = new ImageView(editImage);
-                editView.setFitWidth(16);
-                editView.setFitHeight(16);
-                editView.setPreserveRatio(true);
-                btnEdit.setGraphic(editView);
-                btnEdit.setStyle("-fx-background-color: transparent;");
-                btnEdit.setCursor(Cursor.HAND);
-                btnEdit.setOnAction(event -> {
-                    T item = getTableView().getItems().get(getIndex());
-                    onEdit.accept(item);
-                });
+
+
 
                 // DELETE
                 Image deleteImage = new Image(getClass().getResourceAsStream("/Backoffice/icons/poubelle.png"));
@@ -1778,64 +1764,39 @@ public class DashboardController {
         colContenuCom.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         colDateCom.setCellValueFactory(new PropertyValueFactory<>("dateCommentaire"));
 
-        // Auteur ID
-        colAuteurCom.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleIntegerProperty(
-                        cellData.getValue().getAuteur().getId()
-                ).asObject()
-        );
+        colAuteurCom.setCellValueFactory(cellData -> {
 
-        // Post ID
-        colPostCom.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleIntegerProperty(
-                        cellData.getValue().getPost().getId()
-                ).asObject()
-        );
+            if (cellData.getValue().getAuteur() == null) {
+                return new javafx.beans.property.SimpleStringProperty("Inconnu");
+            }
+
+            String nom = cellData.getValue().getAuteur().getNom();
+            String prenom = cellData.getValue().getAuteur().getPrenom();
+
+            return new javafx.beans.property.SimpleStringProperty(prenom + " " + nom);
+        });
+
+        colPostCom.setCellValueFactory(cellData -> {
+
+            if (cellData.getValue().getPost() == null) {
+                return new javafx.beans.property.SimpleStringProperty("—");
+            }
+
+            String contenu = cellData.getValue().getPost().getContenu();
+
+            if (contenu == null) {
+                return new javafx.beans.property.SimpleStringProperty("—");
+            }
+
+            if (contenu.length() > 40) {
+                contenu = contenu.substring(0, 40) + ".....";
+            }
+
+            return new javafx.beans.property.SimpleStringProperty(contenu);
+        });
 
         commentaireList.setAll(commentaireService.getAll());
         tableCommentaire.setItems(commentaireList);
-    }
-    @FXML
-    private void openAddCommentForm() {
-
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/Backoffice/FormulaireAddComment.fxml")
-            );
-
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setTitle("Ajouter Commentaire");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            loadCommentaires();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    private void openUpdateCommentPopup(Commentaire com) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireUpdateComment.fxml"));
-            Parent root = loader.load();
-
-            UpdateCommentController controller = loader.getController();
-            controller.setCommentToEdit(com);
-
-            Stage stage = new Stage();
-            stage.setTitle("Modifier Commentaire");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-            // rafraîchir TableView après modification
-            commentaireList.setAll(commentaireService.getAll());
-            tableCommentaire.refresh();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void deleteComment(Commentaire com) {

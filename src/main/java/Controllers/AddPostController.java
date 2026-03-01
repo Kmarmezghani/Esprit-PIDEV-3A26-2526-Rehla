@@ -24,7 +24,6 @@ public class AddPostController {
 
     @FXML private TextField txtTitre;
     @FXML private TextArea txtContenu;
-    @FXML private TextField txtPopularite;
     @FXML private ImageView imagePreview;
 
     private File selectedImageFile;
@@ -109,19 +108,6 @@ public class AddPostController {
                 return;
             }
 
-            if (txtPopularite.getText() == null || txtPopularite.getText().trim().isEmpty()) {
-                showError("La popularité est obligatoire !");
-                return;
-            }
-
-            int popularite;
-            try {
-                popularite = Integer.parseInt(txtPopularite.getText().trim());
-            } catch (NumberFormatException e) {
-                showError("La popularité doit être un nombre !");
-                return;
-            }
-
             Personne auteur = comboAuteur.getSelectionModel().getSelectedItem();
             if (auteur == null) {
                 showError("Veuillez sélectionner un auteur !");
@@ -133,7 +119,6 @@ public class AddPostController {
             post.setTitre(txtTitre.getText().trim());
             post.setContenu(txtContenu.getText().trim());
             post.setDatePublication(LocalDateTime.now());
-            post.setPopularite(popularite);
             post.setAuteur(auteur);
 
             if (selectedImageFile != null) {

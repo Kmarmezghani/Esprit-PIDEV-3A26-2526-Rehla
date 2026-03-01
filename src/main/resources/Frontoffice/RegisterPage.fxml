@@ -24,7 +24,7 @@
                     <children>
                         <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@icons/IMG_20260125_122708_191-removebg-preview.png" />
+                                <Image url="/Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
                             </image>
                         </ImageView>
 
@@ -35,9 +35,9 @@
                         </HBox>
 
                         <!-- Window Controls -->
-                        <Button onAction="#minwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@css/styling.css" text="−" />
-                        <Button onAction="#maxwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="@css/styling.css" text="□" />
-                        <Button onAction="#closewindow" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="@css/styling.css" text="✕">
+                        <Button onAction="#minwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="/Backoffice/css/styling.css" text="−" />
+                        <Button onAction="#maxwindow" style="-fx-text-fill: white; -fx-font-size: 20;" styleClass="button4" stylesheets="/Backoffice/css/styling.css" text="□" />
+                        <Button onAction="#closewindow" style="-fx-text-fill: white; -fx-font-size: 16;" styleClass="button3" stylesheets="/Backoffice/css/styling.css" text="✕">
                             <HBox.margin>
                                 <Insets top="4.0" />
                             </HBox.margin>

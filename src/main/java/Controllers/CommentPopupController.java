@@ -34,7 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class CommentPopupController {
+public class CommentPopupController implements Initializable {
 
     @FXML
     private VBox commentsContainer;
@@ -49,12 +49,19 @@ public class CommentPopupController {
 
     private CommentaireService commentaireService = new CommentaireService();
     private Personne currentUser = Session.getCurrentUser();
-
+    private final Image defaultAvatar = new Image(getClass().getResourceAsStream("/Backoffice/icons/usericon.png"));
     private PersonneService personneService = new PersonneService();
+    @FXML
+    private ImageView currentUserAvatarView;
     public void setOnClose(Runnable onClose) {
         this.onClose = onClose;
     }
-
+    @Override
+    public void initialize(URL location, ResourceBundle resources){
+        if (currentUserAvatarView != null) {
+            currentUserAvatarView.setImage(defaultAvatar);
+        }
+    }
     public void setPost(Post post) {
         this.post = post;
 
@@ -239,9 +246,17 @@ public class CommentPopupController {
 
         // ================= HEADER =================
         HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        ImageView avatarView = new ImageView(defaultAvatar);
 
-        Circle avatar = new Circle(15);
-        avatar.getStyleClass().add("avatar-circle");
+        double size = 35;
+        avatarView.setFitWidth(size);
+        avatarView.setFitHeight(size);
+        avatarView.setPreserveRatio(true);
+        avatarView.setSmooth(true);
+        Circle clip = new Circle(size / 2, size / 2, size / 2);
+        avatarView.setClip(clip);
+
 
         VBox nameDate = new VBox(2);
 
@@ -252,7 +267,7 @@ public class CommentPopupController {
         lblDate.getStyleClass().add("comment-date");
 
         nameDate.getChildren().addAll(lblName, lblDate);
-        header.getChildren().addAll(avatar, nameDate);
+        header.getChildren().addAll(avatarView, nameDate);
 
         // ================= MESSAGE =================
         Label lblMessage = new Label(message);
@@ -269,7 +284,7 @@ public class CommentPopupController {
 
             // Image Update
             ImageView updateImg = new ImageView(
-                    new Image(getClass().getResourceAsStream("/icons/editblue.png"))
+                    new Image(getClass().getResourceAsStream("/Backoffice/icons/editblue.png"))
             );
 
             updateImg.setFitWidth(20);
@@ -290,7 +305,7 @@ public class CommentPopupController {
 
             // Image Delete
             ImageView deleteImg = new ImageView(
-                    new Image(getClass().getResourceAsStream("/icons/delete.png"))
+                    new Image(getClass().getResourceAsStream("/Backoffice/icons/delete.png"))
             );
 
             deleteImg.setFitWidth(20);

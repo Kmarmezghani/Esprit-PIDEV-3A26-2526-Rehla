@@ -202,7 +202,7 @@ public class PostService implements IService<Post> {
             return null;
         }
     }
-    public List<Post> getTop6PostsByPopularite() {
+    public List<Post> getTop5PostsByPopularite() {
 
         List<Post> posts = new ArrayList<>();
 
@@ -218,7 +218,7 @@ public class PostService implements IService<Post> {
 
         GROUP BY p.id
         ORDER BY score_popularite DESC
-        LIMIT 6
+        LIMIT 5
         """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql);

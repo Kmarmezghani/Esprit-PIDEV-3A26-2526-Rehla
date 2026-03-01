@@ -63,6 +63,7 @@ public class HomePageController implements Initializable {
     private final TicketService ticketService = new TicketService();
     private final ReservationService reservationService = new ReservationService();
     private final PreferenceService preferenceService = new PreferenceService();
+    private final PostService postService = new PostService();
     Personne CURRENT_USER = Session.getCurrentUser();
     int CURRENT_USER_ID=CURRENT_USER.getId();
 
@@ -85,6 +86,7 @@ public class HomePageController implements Initializable {
         if (!isGuide) {
             profileMenu.getItems().remove(menuMyActivities); // pas d’espace vide
         }
+
     }
 
 
@@ -321,19 +323,20 @@ public class HomePageController implements Initializable {
                 new UserPost("Ahmed", "Budget tip: eat like a local, save a lot 💡", "/Frontoffice/images/blog/blog-default.jpg", 61, 7)
         );
 
-        for (UserPost p : posts) blogFlow.getChildren().add(createUserPostCard(p));
+//        for (UserPost p : posts) blogFlow.getChildren().add(createUserPostCard(p));
+        loadTopPosts();
     }
 
-    private VBox createUserPostCard(UserPost p) {
+    private VBox createUserPostCard(Post p) {
         double cardW = 300;
-        double imgH  = 160;
+        double imgH = 160;
 
         VBox card = new VBox(10);
         card.getStyleClass().add("postCard");
         card.setPrefWidth(cardW);
         card.setMaxWidth(cardW);
 
-        Image img = loadActivityImage(p.imagePath);
+        Image img = loadActivityImage(p.getImage());
         if (img == null) img = loadActivityImage("/Frontoffice/images/blog/blog-default.jpg");
 
         ImageView iv = new ImageView(img);
@@ -347,25 +350,38 @@ public class HomePageController implements Initializable {
         clip.setArcHeight(16);
         iv.setClip(clip);
 
-        Label user = new Label("@" + p.username);
+        Label user = new Label("@" + p.getAuteur().getNom() + " " + p.getAuteur().getPrenom());
         user.setStyle("-fx-font-weight:900; -fx-text-fill:#0f172a;");
 
-        Label caption = new Label(p.caption);
+        Label titre = new Label(p.getTitre());
+        titre.setWrapText(true);
+        titre.setStyle("-fx-font-weight:700; -fx-text-fill:#1e293b; -fx-font-size:14;");
+
+        Label caption = new Label(p.getContenu());
         caption.setWrapText(true);
         caption.setStyle("-fx-text-fill:#334155; -fx-font-size:12;");
 
-        Label stats = new Label("❤ " + p.likes + "   💬 " + p.comments);
+        Label stats = new Label("❤ Popularité: " + p.getPopularite());
         stats.setStyle("-fx-text-fill:#64748b; -fx-font-weight:800; -fx-font-size:12;");
 
         Button open = new Button("Open post →");
         open.getStyleClass().add("flashBtn");
         open.setOnAction(e -> goToPosts(new ActionEvent(open, null)));
 
-        VBox body = new VBox(6, user, caption, stats, open);
+        VBox body = new VBox(6, user, titre, caption, stats, open);
         body.setPadding(new Insets(10, 12, 12, 12));
 
         card.getChildren().addAll(iv, body);
         return card;
+    }
+    private void loadTopPosts() {
+        if (blogFlow == null) return;
+        blogFlow.getChildren().clear();
+        List<Post> topPosts = postService.getTop5PostsByPopularite();
+
+        for (Post p : topPosts) {
+            blogFlow.getChildren().add(createUserPostCard(p));
+        }
     }
     @FXML
     private void goToCreatePost(ActionEvent event) {

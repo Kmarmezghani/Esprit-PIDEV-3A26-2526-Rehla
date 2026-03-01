@@ -64,7 +64,8 @@ public class ClientPostsController {
     @FXML private Button btnProfile;
 
     @FXML private ContextMenu profileMenu;
-
+    @FXML
+    private MenuItem menuMyActivities;
     private boolean isLiked = false;
 
     private Image heartEmpty;
@@ -79,7 +80,9 @@ public class ClientPostsController {
     private boolean isLoadingPosts = false;
     @FXML
     private Label lblMessageBadge;
-
+    @FXML private Label lblNotifCount;
+    @FXML private TextField searchField;
+    @FXML private Button btnNotif;
     @FXML
     private VBox postsContainer;
     @FXML
@@ -108,7 +111,7 @@ private PostService postService = new PostService();
     private Image shareImage;
     private Image editImage;
     private Image deleteImage;
-    @FXML private TextField searchField;
+
     @FXML
     private void initialize() {
 
@@ -166,7 +169,13 @@ private PostService postService = new PostService();
 
         btnMessage.setOnAction(e -> toggleMessages());
         System.out.println("Java Zone = " + ZoneId.systemDefault());
+        Personne u = Session.getCurrentUser();
+        boolean isGuide = (u != null) && "GUIDE".equalsIgnoreCase(u.getRole());
 
+        if (!isGuide) {
+            profileMenu.getItems().remove(menuMyActivities); // pas d’espace vide
+        }
+        refreshNotifCount();
     }
 /*----------------------------header--------------------------------------------------------------*/
 
@@ -281,6 +290,113 @@ private PostService postService = new PostService();
         alert.setHeaderText("Are you sure you want to logout?");
         alert.setContentText("You will be returned to the login screen.");
         alert.showAndWait();
+    }
+    @FXML
+    public void openNotifications(ActionEvent event) {
+        try {
+            refreshNotifCount();
+
+            List<NotificationService.NotifRow> notifs =
+                    notificationService.getLatestUnread(currentUser.getId(), 5);
+
+            ContextMenu menu = new ContextMenu();
+            menu.setStyle("-fx-background-radius: 14; -fx-padding: 10; -fx-background-color: #f8fafc;");
+            menu.getStyleClass().add("notifMenu");
+
+            final double MENU_W = 320;
+
+            if (notifs.isEmpty()) {
+                Label lbl = new Label("Aucune notification");
+                lbl.setWrapText(true);
+                lbl.setPrefWidth(MENU_W);
+                lbl.setMaxWidth(MENU_W);
+                lbl.setAlignment(Pos.CENTER);
+                lbl.setStyle("""
+                    -fx-padding: 14 12;
+                    -fx-text-fill: #6b7280;
+                    -fx-font-size: 13px;
+                """);
+                menu.getItems().add(new CustomMenuItem(lbl, false));
+
+            } else {
+                for (var n : notifs) {
+
+                    Label title = new Label(("WAITLIST_HOLD".equalsIgnoreCase(n.type) ? "⏳ Waitlist" : "🔔 Notification"));
+                    title.setStyle("-fx-font-size: 12; -fx-font-weight: 900; -fx-text-fill: #0f172a;");
+
+                    Label msg = new Label(n.message);
+                    msg.setWrapText(true);
+                    msg.setMaxWidth(300);
+                    msg.setStyle("-fx-font-size: 13; -fx-text-fill: #334155;");
+
+                    Label time = new Label(n.createdAt != null ? n.createdAt.toString() : "");
+                    time.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
+
+                    VBox card = new VBox(6, title, msg, time);
+                    card.setStyle("""
+                        -fx-background-color: white;
+                        -fx-background-radius: 12;
+                        -fx-padding: 12 12;
+                        -fx-border-color: #e5e7eb;
+                        -fx-border-radius: 12;
+                    """);
+
+                    CustomMenuItem it = new CustomMenuItem(card, true);
+
+                    it.setOnAction(ev -> {
+                        try {
+                            notificationService.markRead(n.id);
+                            refreshNotifCount();
+                            // si tu veux faire une action spéciale WAITLIST_HOLD ici, tu peux.
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+
+                    menu.getItems().add(it);
+                }
+
+                menu.getItems().add(new SeparatorMenuItem());
+
+                MenuItem mark = new MenuItem("Tout marquer comme lu");
+                mark.setOnAction(e2 -> {
+                    try {
+                        notificationService.markAllRead(currentUser.getId());
+                        refreshNotifCount();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                menu.getItems().add(mark);
+            }
+
+            // positionner sous le bouton notif
+            var b = btnNotif.localToScreen(btnNotif.getBoundsInLocal());
+            double x = b.getMaxX() - MENU_W;
+            double y = b.getMaxY() + 8;
+
+            x = Math.max(8, x);
+            y = Math.max(8, y);
+
+            menu.show(btnNotif, x, y);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void refreshNotifCount() {
+        try {
+            int n = notificationService.countUnread(currentUser.getId());
+
+            if (lblNotifCount != null) {
+                lblNotifCount.setText(String.valueOf(n));
+                boolean show = n > 0;
+                lblNotifCount.setVisible(show);
+                lblNotifCount.setManaged(show);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /*-------------------------------------------------------------------------------------------------------------------------*/

@@ -554,21 +554,18 @@ public class HomePageController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogAllPosts.fxml"));
             Parent root = loader.load();
 
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/Frontoffice/css/blog_styles.css")).toExternalForm()
-            );
-
             Stage stage = getStageFromEvent(event);
             if (stage == null) stage = getAnyStage();
             if (stage != null) {
-                stage.setScene(scene);
-                stage.show();
+                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                else stage.getScene().setRoot(root);
             }
+
+            root.applyCss();
+            root.layout();
 
         } catch (Exception e) {
             e.printStackTrace();
-            showInfo("Posts", "Erreur lors du chargement de blogAllPosts.");
         }
     }
 

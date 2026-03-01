@@ -10,8 +10,8 @@ public class ChatServer {
 
     public static void main(String[] args) throws Exception{
 
-        ServerSocket server = new ServerSocket(5002);
-
+        ServerSocket server = new ServerSocket(5003);
+        System.out.println("Server chat started...");
         while(true){
 
             Socket socket = server.accept();

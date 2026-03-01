@@ -17,13 +17,16 @@ public class VilleService implements IService<Ville> {
     @Override
     public void add(Ville ville) {
         if (conn == null) return;
-        String SQL = "INSERT INTO ville (nom, pays_id, typeTourisme, saison) VALUES (?, ?, ?, ?)";
+        String SQL = "INSERT INTO ville (nom, pays_id, visit_count, latitude, longitude, typeTourisme, saison) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, ville.getNom());
             pstmt.setInt(2, ville.getPaysId());
-            pstmt.setString(3, ville.getTypeTourisme());
-            pstmt.setString(4, ville.getSaison());
+            pstmt.setInt(3, ville.getVisitCount());
+            pstmt.setDouble(4, ville.getLatitude());
+            pstmt.setDouble(5, ville.getLongitude());
+            pstmt.setString(6, ville.getTypeTourisme());
+            pstmt.setString(7, ville.getSaison());
             pstmt.executeUpdate();
             System.out.println("Ville added successfully!");
         } catch (SQLException e) {
@@ -34,14 +37,17 @@ public class VilleService implements IService<Ville> {
     @Override
     public void update(Ville ville) {
         if (conn == null) return;
-        String SQL = "UPDATE ville SET nom = ?, pays_id = ?, typeTourisme = ?, saison = ? WHERE id = ?";
+        String SQL = "UPDATE ville SET nom = ?, pays_id = ?, visit_count = ?, latitude = ?, longitude = ?, typeTourisme = ?, saison = ? WHERE id = ?";
         try {
             PreparedStatement pstmt = conn.prepareStatement(SQL);
             pstmt.setString(1, ville.getNom());
             pstmt.setInt(2, ville.getPaysId());
-            pstmt.setString(3, ville.getTypeTourisme());
-            pstmt.setString(4, ville.getSaison());
-            pstmt.setInt(5, ville.getId());
+            pstmt.setInt(3, ville.getVisitCount());
+            pstmt.setDouble(4, ville.getLatitude());
+            pstmt.setDouble(5, ville.getLongitude());
+            pstmt.setString(6, ville.getTypeTourisme());
+            pstmt.setString(7, ville.getSaison());
+            pstmt.setInt(8, ville.getId());
             pstmt.executeUpdate();
             System.out.println("Ville updated successfully!");
         } catch (SQLException e) {
@@ -76,6 +82,9 @@ public class VilleService implements IService<Ville> {
                 ville.setId(rs.getInt("id"));
                 ville.setNom(rs.getString("nom"));
                 ville.setPaysId(rs.getInt("pays_id"));
+                ville.setVisitCount(rs.getInt("visit_count"));
+                ville.setLatitude(rs.getDouble("latitude"));
+                ville.setLongitude(rs.getDouble("longitude"));
                 ville.setTypeTourisme(rs.getString("typeTourisme"));
                 ville.setSaison(rs.getString("saison"));
                 villes.add(ville);
@@ -99,6 +108,9 @@ public class VilleService implements IService<Ville> {
                 ville.setId(rs.getInt("id"));
                 ville.setNom(rs.getString("nom"));
                 ville.setPaysId(rs.getInt("pays_id"));
+                ville.setVisitCount(rs.getInt("visit_count"));
+                ville.setLatitude(rs.getDouble("latitude"));
+                ville.setLongitude(rs.getDouble("longitude"));
                 ville.setTypeTourisme(rs.getString("typeTourisme"));
                 ville.setSaison(rs.getString("saison"));
                 villes.add(ville);

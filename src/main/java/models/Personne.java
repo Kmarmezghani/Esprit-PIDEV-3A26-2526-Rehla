@@ -16,10 +16,12 @@ public class Personne {
     private String email;
     private String motDePasse;
     private LocalDateTime dateInscription;
+    private LocalDateTime lastLoginAt;
     private String role;
     private String statutCompte;
     private Favoris favoris;
-
+    private String profilePhoto;
+    private Boolean notifSmsActive;
     // NOUVEAUX CHAMPS
     private String telephone;
     private LocalTime heureNotif;
@@ -43,7 +45,8 @@ public class Personne {
 
     public Personne(String nom, String prenom, String email, String password, LocalDateTime now, String role, String actif) {
     }
-
+    public String getProfilePhoto() { return profilePhoto; }
+    public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -81,5 +84,21 @@ public class Personne {
     @Override
     public String toString() {
         return "Personne{id=" + id + ", nom='" + nom + "', prenom='" + prenom + "', email='" + email + "', role='" + role + "'}";
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+
+    public Boolean getNotifSmsActive() {
+        return notifSmsActive;
+    }
+
+    public void setNotifSmsActive(Boolean notifSmsActive) {
+        this.notifSmsActive = notifSmsActive;
     }
 }

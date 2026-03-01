@@ -15,22 +15,26 @@ public class NotificationService {
         this.cnx = DBConnection.getInstance().getConn();
     }
 
-    public void createWaitlistHoldNotif(int senderId, int receiverId, int activiteId, String message) throws SQLException {
+    public int createWaitlistHoldNotif(Integer senderId, int receiverId, int activiteId, String message) throws SQLException {
         String sql = """
-            INSERT INTO notification
-                (message, type, post_id, comment_id, activite_id, sender_id, receiver_id, is_read)
-            VALUES
-                (?, 'WAITLIST_HOLD', NULL, NULL, ?, ?, ?, 0)
-        """;
+        INSERT INTO notification
+            (message, type, post_id, comment_id, activite_id, sender_id, receiver_id, is_read, is_sent_sms)
+        VALUES
+            (?, 'WAITLIST_HOLD', NULL, NULL, ?, ?, ?, 0, 0)
+    """;
+
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setString(1, message);
             ps.setInt(2, activiteId);
-            ps.setInt(3, senderId);
+
+            if (senderId == null) ps.setNull(3, Types.INTEGER);
+            else ps.setInt(3, senderId);
+
             ps.setInt(4, receiverId);
-            ps.executeUpdate();
+
+            return ps.executeUpdate();
         }
     }
-
     public int countUnread(int receiverId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM notification WHERE receiver_id=? AND IFNULL(is_read,0)=0";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
@@ -148,7 +152,7 @@ public class NotificationService {
         }
         return list;
     }
-    private final String URL = "jdbc:mysql://localhost:3306/rehla?useSSL=false&serverTimezone=UTC";
+    private final String URL = "jdbc:mysql://localhost:3306/rehlaPI?useSSL=false&serverTimezone=UTC";
     private final String USER = "root";
     private final String PASSWORD = "";
 

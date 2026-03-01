@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    private String url = "jdbc:mysql://localhost:3306/rehla";
+    private String url = "jdbc:mysql://localhost:3306/rehlaPI";
     private String user = "root";
     private String password = "";
     private Connection conn;

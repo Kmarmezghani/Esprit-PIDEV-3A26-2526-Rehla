@@ -6,44 +6,58 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.Pays;
+import services.CountriesNowService;
+import services.DescriptionApiService;
 import services.PaysService;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.UnaryOperator;
 
 public class AjouterPaysController implements Initializable {
 
     // ===== FXML Fields =====
-    @FXML private TextField TFnomPays;
+    @FXML private ComboBox<String> CBNomPays;
     @FXML private TextArea TAdescription;
 
     @FXML private Label nomError;
     @FXML private Label descriptionCounter;
 
     private final PaysService paysService = new PaysService();
+    private final CountriesNowService countriesNowService = new CountriesNowService();
+    private final DescriptionApiService descriptionApiService = new DescriptionApiService();
 
     // ===== Constants =====
-    private static final int MAX_NAME = 50;
     private static final int MAX_DESC = 500;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        setupFilters();
+        loadCountriesFromApi();
         setupListeners();
     }
 
-    // ===== Filters =====
-    private void setupFilters() {
-        UnaryOperator<TextFormatter.Change> textFilter = c -> 
-            c.getControlNewText().matches("[a-zA-Z \\-']*") ? c : null;
-
-        TFnomPays.setTextFormatter(new TextFormatter<>(textFilter));
+    private void loadCountriesFromApi() {
+        List<String> countries = countriesNowService.getCountries();
+        CBNomPays.getItems().setAll(countries);
+        if (countries.isEmpty()) {
+            nomError.setText("X API unavailable");
+            nomError.setStyle("-fx-text-fill: red;");
+        }
     }
 
     // ===== Listeners =====
     private void setupListeners() {
-        TFnomPays.textProperty().addListener((obs, oldVal, newVal) -> validateLength(TFnomPays, nomError, newVal, 3, MAX_NAME));
+        CBNomPays.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isBlank()) {
+                nomError.setText("X Required");
+                nomError.setStyle("-fx-text-fill: red;");
+                CBNomPays.setStyle("-fx-border-color: red; -fx-border-width: 2;");
+            } else {
+                nomError.setText("V Valid");
+                nomError.setStyle("-fx-text-fill: green;");
+                CBNomPays.setStyle("-fx-border-color: green; -fx-border-width: 2;");
+            }
+        });
 
         TAdescription.textProperty().addListener((obs, oldVal, newVal) -> {
             descriptionCounter.setText(newVal.length() + " / " + MAX_DESC);
@@ -54,26 +68,27 @@ public class AjouterPaysController implements Initializable {
         });
     }
 
-    // ===== Validation Helpers =====
-    private void validateLength(TextField field, Label label, String value, int min, int max) {
-        if (value.isEmpty()) setFieldError(field, label, "X Required", "red");
-        else if (value.length() < min) setFieldError(field, label, "! Min " + min, "orange");
-        else if (value.length() > max) setFieldError(field, label, "X Max " + max, "red");
-        else setFieldError(field, label, "V Valid", "green");
-    }
-
-    private void setFieldError(TextField field, Label label, String message, String color) {
-        if (label != null) {
-            label.setText(message);
-            label.setStyle("-fx-text-fill: " + color + ";");
+    // ===== Save =====
+    @FXML
+    void handleGenerateDescription(ActionEvent event) {
+        String country = CBNomPays.getValue();
+        if (country == null || country.isBlank()) {
+            showError("Country Required", "Please select a country first.");
+            return;
         }
-        field.setStyle("-fx-border-color: " + color + "; -fx-border-width: 2;");
+
+        try {
+            String description = descriptionApiService.generateCountryDescription(country);
+            TAdescription.setText(description);
+        } catch (Exception e) {
+            showError("Description API Error", e.getMessage());
+        }
     }
 
     // ===== Save =====
     @FXML
     void ajouterPays(ActionEvent event) {
-        String nom = TFnomPays.getText().trim();
+        String nom = CBNomPays.getValue() == null ? "" : CBNomPays.getValue().trim();
         String desc = TAdescription.getText().trim();
 
         if (nom.isEmpty() || desc.isEmpty()) {
@@ -108,5 +123,5 @@ public class AjouterPaysController implements Initializable {
     }
 
     @FXML void handleCancel(ActionEvent event) { closeWindow(); }
-    private void closeWindow() { Stage stage = (Stage) TFnomPays.getScene().getWindow(); stage.close(); }
+    private void closeWindow() { Stage stage = (Stage) CBNomPays.getScene().getWindow(); stage.close(); }
 }

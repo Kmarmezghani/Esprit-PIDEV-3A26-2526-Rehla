@@ -81,26 +81,36 @@ public class WaitlistService {
         WaitlistEntry holdEntry = createHold(next.get().getId(), HOLD_MINUTES);
 
         // notif
+        // notif (✅ corrigé)
         try {
             int userId = holdEntry.getPersonneId();
             Activite a = activiteService.getById(activiteId);
-            String activityName = (a != null && a.getNom() != null) ? a.getNom() : ("Activité #" + activiteId);
+
+            String activityName = (a != null && a.getNom() != null)
+                    ? a.getNom()
+                    : ("Activité #" + activiteId);
 
             Integer senderId = null;
-            try {
-                if (a != null && a.getGuideId() > 0) {
-                    senderId = a.getGuideId();
-                }
-            } catch (Exception ignored) {}
 
-            notificationService.createWaitlistHoldNotif(
-                    senderId == null ? 0 : senderId,
+            // senderId = guideId seulement si valide
+            if (a != null && a.getGuideId() > 0) {
+                int gid = a.getGuideId();
+                if (personneService.existsById(gid)) senderId = gid; // sinon reste NULL
+            }
+
+            int rows = notificationService.createWaitlistHoldNotif(
+                    senderId,     // ✅ NULL autorisé
                     userId,
                     activiteId,
                     "Une place s’est libérée pour \"" + activityName + "\". Réserve dans " + HOLD_MINUTES + " minutes."
             );
-        } catch (Exception ignored) {}
 
+            System.out.println("[Waitlist] notif inserted rows=" + rows);
+
+        } catch (Exception ex) {
+            System.err.println("[Waitlist] Failed to create WAITLIST_HOLD notification: " + ex.getMessage());
+            ex.printStackTrace();
+        }
         // email (optionnel)
         try {
             int userId = holdEntry.getPersonneId();

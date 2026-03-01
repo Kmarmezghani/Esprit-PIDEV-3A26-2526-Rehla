@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import models.Personne;
 import models.Post;
 import services.*;
+import util.ProfileImageUtil;
 import util.Session;
 
 import java.io.File;
@@ -40,6 +41,7 @@ public class BlogProfileController {
 
     @FXML private ContextMenu profileMenu;
     @FXML private ImageView profileAvatar;
+    // Dans les déclarations de variables en haut de la classe
 
     @FXML private ImageView composerAvatar;
 
@@ -103,14 +105,13 @@ public class BlogProfileController {
 
     private static final Image ICON_DELETE =
             new Image(BlogProfileController.class.getResource("/Backoffice/icons/delete.png").toExternalForm());
-    private static final Image AVATAR =
-            new Image(BlogProfileController.class.getResource("/Backoffice/icons/usericon.png").toExternalForm());
+
     private static final ImageView LIKE_EMPTY_ICON = new ImageView(ICON_LIKE_EMPTY);
     private static final ImageView LIKE_FULL_ICON  = new ImageView(ICON_LIKE_FULL);
     private static final ImageView COMMENT_ICON    = new ImageView(ICON_COMMENT);
     private static final ImageView FAV_EMPTY_ICON  = new ImageView(ICON_FAV_EMPTY);
     private static final ImageView FAV_FULL_ICON   = new ImageView(ICON_FAV_FULL);
-    private static final ImageView AVATAR_ICON     = new ImageView(AVATAR);
+
 
     private final Map<Integer, Integer> likesCountMap = new HashMap<>();
     private final Map<Integer, Boolean> likedByUserMap = new HashMap<>();
@@ -131,8 +132,8 @@ public class BlogProfileController {
             System.out.println("ERREUR: currentUser est NULL");
             return;
         }
-        initProfileInfo();
 
+        initProfileInfo();
         renderPosts(allPosts);
 
         publishButton.setOnAction(e -> handlePublish());
@@ -387,9 +388,17 @@ void goToMyReservations(ActionEvent event) {
     }
 
     private void initProfileInfo() {
-        profileAvatar.setImage(AVATAR);
-        composerAvatar.setImage(AVATAR);
+        /*--------------------------------------------*/
+        String path = currentUser.getProfilePhoto().trim();
+        File file = new File(path);
 
+        if (file.exists()) {
+            Image img = new Image(file.toURI().toString());
+            profileAvatar.setImage(img);
+            composerAvatar.setImage(img);
+        }
+
+/*----------------------------------------------------------*/
         profileHeadline.setText(
                 currentUser.getRole() != null
                         ? currentUser.getRole()

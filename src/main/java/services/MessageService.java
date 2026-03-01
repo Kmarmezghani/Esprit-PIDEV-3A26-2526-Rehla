@@ -11,7 +11,7 @@ import java.util.List;
 
 public class MessageService {
 
-    private final String URL = "jdbc:mysql://localhost:3306/rehla?useSSL=false&serverTimezone=UTC";
+    private final String URL = "jdbc:mysql://localhost:3306/rehlaPI?useSSL=false&serverTimezone=UTC";
     private final String USER = "root";
     private final String PASSWORD = "";
 

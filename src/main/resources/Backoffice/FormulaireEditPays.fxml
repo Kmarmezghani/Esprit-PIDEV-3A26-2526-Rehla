@@ -2,9 +2,9 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -54,7 +54,7 @@
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
-                        <TextField fx:id="TFnomPays" GridPane.columnIndex="1" />
+                        <ComboBox fx:id="CBNomPays" prefWidth="220.0" GridPane.columnIndex="1" />
                         <Label fx:id="nomError" style="-fx-font-size: 10; -fx-text-fill: gray;" text="" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.valignment="BOTTOM">
                             <GridPane.margin>
                                 <Insets bottom="-18.0" />
@@ -67,6 +67,11 @@
                                 <Insets bottom="-18.0" />
                             </GridPane.margin>
                         </Label>
+                        <Button mnemonicParsing="false" onAction="#handleGenerateDescription" prefHeight="27.0" prefWidth="160.0" styleClass="button2" stylesheets="@/Backoffice/css/styling.css" text="Generate Description" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+                            <GridPane.margin>
+                                <Insets left="20.0" />
+                            </GridPane.margin>
+                        </Button>
                         <Button mnemonicParsing="false" onAction="#updatePays" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@../css/styling.css" text="Update" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                             <GridPane.margin>
                                 <Insets right="20.0" />

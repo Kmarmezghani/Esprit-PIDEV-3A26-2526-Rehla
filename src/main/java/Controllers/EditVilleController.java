@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.Pays;
 import models.Ville;
+import services.CountriesNowService;
 import services.PaysService;
 import services.VilleService;
 
@@ -16,7 +17,6 @@ import models.Saison;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.UnaryOperator;
 import models.TypeTourisme;
 import java.util.stream.Collectors;
 import java.util.Arrays;
@@ -24,34 +24,28 @@ import java.util.Arrays;
 public class EditVilleController implements Initializable {
 
     // ===== FXML Fields =====
-    @FXML private TextField TFnomVille;
+    @FXML private ComboBox<String> CBNomVille;
     @FXML private ComboBox<Pays> CBpays;
-    @FXML private TextField TFregion;
     @FXML private MenuButton MBtypeTourisme;
     @FXML private ComboBox<Saison> CBsaison;
 
     @FXML private Label nomError;
-    @FXML private Label regionError;
     @FXML private Label typeError;
     @FXML private Label saisonError;
 
     private Ville currentVille;
     private final VilleService villeService = new VilleService();
     private final PaysService paysService = new PaysService();
+    private final CountriesNowService countriesNowService = new CountriesNowService();
 
     // ===== Constants =====
-    private static final int MAX_NAME = 100;
-    private static final int MAX_REGION = 50;
-    private static final int MAX_TYPE = 50;
-    private static final int MAX_SAISON = 30;
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         loadPays();
         loadSaisons();
         setupTypeMenu();
-        setupFilters();
         setupListeners();
+        CBNomVille.setDisable(true);
     }
 
     private void setupTypeMenu() {
@@ -66,19 +60,21 @@ public class EditVilleController implements Initializable {
         CBsaison.getItems().setAll(Saison.values());
     }
 
-    // ===== Filters =====
-    private void setupFilters() {
-        UnaryOperator<TextFormatter.Change> textFilter = c -> 
-            c.getControlNewText().matches("[a-zA-Z \\-']*") ? c : null;
-
-        TFnomVille.setTextFormatter(new TextFormatter<>(textFilter));
-        /* Removed TFtypeTourisme filter */
-    }
-
     // ===== Listeners =====
     private void setupListeners() {
-        TFnomVille.textProperty().addListener((obs, oldVal, newVal) -> validateLength(TFnomVille, nomError, newVal, 3, MAX_NAME));
-        // TFtypeTourisme listener removed
+        CBNomVille.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isBlank()) {
+                nomError.setText("X Required");
+                nomError.setStyle("-fx-text-fill: red;");
+                CBNomVille.setStyle("-fx-border-color: red; -fx-border-width: 2;");
+            } else {
+                nomError.setText("V Valid");
+                nomError.setStyle("-fx-text-fill: green;");
+                CBNomVille.setStyle("-fx-border-color: green; -fx-border-width: 2;");
+            }
+        });
+
+        CBpays.valueProperty().addListener((obs, oldVal, newVal) -> loadCitiesForSelectedCountry(newVal));
         
         CBsaison.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
@@ -93,26 +89,33 @@ public class EditVilleController implements Initializable {
         });
     }
 
-    // ===== Validation Helpers =====
-    private void validateLength(TextField field, Label label, String value, int min, int max) {
-        if (value.isEmpty()) setFieldError(field, label, "X Required", "red");
-        else if (value.length() < min) setFieldError(field, label, "! Min " + min, "orange");
-        else if (value.length() > max) setFieldError(field, label, "X Max " + max, "red");
-        else setFieldError(field, label, "V Valid", "green");
-    }
+    private void loadCitiesForSelectedCountry(Pays selectedPays) {
+        CBNomVille.getItems().clear();
+        CBNomVille.setValue(null);
+        CBNomVille.setStyle("");
 
-    private void setFieldError(TextField field, Label label, String message, String color) {
-        if (label != null) {
-            label.setText(message);
-            label.setStyle("-fx-text-fill: " + color + ";");
+        if (selectedPays == null) {
+            CBNomVille.setDisable(true);
+            return;
         }
-        field.setStyle("-fx-border-color: " + color + "; -fx-border-width: 2;");
+
+        List<String> cities = countriesNowService.getCitiesByCountry(selectedPays.getNom());
+        CBNomVille.getItems().setAll(cities);
+        CBNomVille.setDisable(cities.isEmpty());
+
+        if (cities.isEmpty()) {
+            nomError.setText("X No cities from API");
+            nomError.setStyle("-fx-text-fill: red;");
+            CBNomVille.setStyle("-fx-border-color: red; -fx-border-width: 2;");
+        } else {
+            nomError.setText("");
+            CBNomVille.setStyle("");
+        }
     }
 
     // ===== Set Data =====
     public void setVille(Ville ville) {
         this.currentVille = ville;
-        TFnomVille.setText(ville.getNom());
         
         // Set selected types
         String[] types = ville.getTypeTourisme().split(",");
@@ -129,6 +132,11 @@ public class EditVilleController implements Initializable {
         for (Pays pays : CBpays.getItems()) {
             if (pays.getId() == ville.getPaysId()) {
                 CBpays.setValue(pays);
+                loadCitiesForSelectedCountry(pays);
+                if (!CBNomVille.getItems().contains(ville.getNom())) {
+                    CBNomVille.getItems().add(ville.getNom());
+                }
+                CBNomVille.setValue(ville.getNom());
                 break;
             }
         }
@@ -148,7 +156,7 @@ public class EditVilleController implements Initializable {
     // ===== Update =====
     @FXML
     void updateVille(ActionEvent event) {
-        String nom = TFnomVille.getText().trim();
+        String nom = CBNomVille.getValue() == null ? "" : CBNomVille.getValue().trim();
         Pays pays = CBpays.getValue();
         
         String type = MBtypeTourisme.getItems().stream()
@@ -190,5 +198,5 @@ public class EditVilleController implements Initializable {
     }
 
     @FXML void handleCancel(ActionEvent event) { closeWindow(); }
-    private void closeWindow() { Stage stage = (Stage) TFnomVille.getScene().getWindow(); stage.close(); }
+    private void closeWindow() { Stage stage = (Stage) CBNomVille.getScene().getWindow(); stage.close(); }
 }

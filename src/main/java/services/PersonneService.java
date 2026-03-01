@@ -123,8 +123,19 @@ public class PersonneService implements IService<Personne> {
         p.setMotDePasse(rs.getString("motDePasse"));
         Timestamp ts = rs.getTimestamp("dateInscription");
         p.setDateInscription(ts != null ? ts.toLocalDateTime() : null);
+        try {
+            Timestamp last = rs.getTimestamp("last_login_at");
+            if (last != null) p.setLastLoginAt(last.toLocalDateTime());
+        } catch (SQLException ignored) {}
         p.setRole(fromDbRole(rs.getString("role")));
         p.setStatutCompte(fromDbStatut(rs.getString("statutCompte")));
+        try { p.setTelephone(rs.getString("telephone")); } catch (SQLException ignored) {}
+        try {
+            Time t = rs.getTime("heureNotif");
+            if (t != null) p.setHeureNotif(t.toLocalTime());
+        } catch (SQLException ignored) {}
+        try { p.setNotifSmsActive(rs.getBoolean("notifSmsActive")); } catch (SQLException ignored) {}
+        try { p.setProfilePhoto(rs.getString("profile_photo")); } catch (SQLException ignored) {}
         return p;
     }
 
@@ -273,5 +284,63 @@ public class PersonneService implements IService<Personne> {
             e.printStackTrace();
         }
         return "User";
+    }
+    public boolean existsById(int id) throws SQLException {
+        String sql = "SELECT 1 FROM personne WHERE id = ? LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Update last_login_at when a user successfully logs in.
+     */
+    public void updateLastLogin(int userId, LocalDateTime when) {
+        if (conn == null) throw new IllegalStateException("DB not connected");
+        String sql = "UPDATE personne SET last_login_at = ? WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, when != null ? Timestamp.valueOf(when) : null);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[DB] PersonneService updateLastLogin: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Set accounts to INACTIF when they have not logged in for the given number of days.
+     * If last_login_at is null we fall back to dateInscription.
+     *
+     * @return number of rows updated
+     */
+    public int deactivateInactiveAccounts(int inactivityDays) {
+        if (conn == null) throw new IllegalStateException("DB not connected");
+        if (inactivityDays <= 0) return 0;
+
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(inactivityDays);
+
+        String sql = """
+            UPDATE personne
+            SET statutCompte = 'INACTIF'
+            WHERE statutCompte = 'ACTIF'
+              AND (
+                    (last_login_at IS NOT NULL AND last_login_at < ?)
+                 OR (last_login_at IS NULL AND dateInscription < ?)
+              )
+        """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(cutoff));
+            ps.setTimestamp(2, Timestamp.valueOf(cutoff));
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[DB] PersonneService deactivateInactiveAccounts: " + e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

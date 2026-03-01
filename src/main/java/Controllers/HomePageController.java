@@ -222,11 +222,10 @@ public class HomePageController implements Initializable {
         Map<Integer, String> paysNameById = paysList.stream()
                 .collect(Collectors.toMap(Pays::getId, Pays::getNom, (a, b) -> a));
 
-        // ✅ tri “top” : popularite desc puis visitCount desc
+        // ✅ tri “top” : visit count desc
         List<Ville> top = villes.stream()
                 .sorted(Comparator
-                        .comparingInt(Ville::getPopularite).reversed()
-                        .thenComparingInt(Ville::getVisitCount).reversed()
+                        .comparingInt(Ville::getVisitCount).reversed()
                 )
                 .limit(4)
                 .collect(Collectors.toList());
@@ -256,8 +255,8 @@ public class HomePageController implements Initializable {
         Label name = new Label(ville.getNom() + ", " + paysNom);
         name.getStyleClass().add("destName");
 
-        String descTxt = (ville.getRegion() != null && !ville.getRegion().isBlank())
-                ? ville.getRegion()
+        String descTxt = (ville.getTypeTourisme() != null && !ville.getTypeTourisme().isBlank())
+                ? ville.getTypeTourisme()
                 : "Discover amazing places";
         Label desc = new Label(descTxt);
         desc.getStyleClass().add("destDesc");
@@ -270,12 +269,10 @@ public class HomePageController implements Initializable {
         int days = guessDaysFromSeason(ville.getSaison());
 
 
-        double price = (ville.getPrix() != null ? ville.getPrix() : 0.0);
-
         Label daysLbl = new Label("⏱ " + days + " Days");
         daysLbl.getStyleClass().add("metaText");
 
-        Label priceLbl = new Label(price > 0 ? formatTND(price) : "—");
+        Label priceLbl = new Label("👁 " + ville.getVisitCount() + " visits");
         priceLbl.getStyleClass().add("priceText");
 
         Region spacer = new Region();

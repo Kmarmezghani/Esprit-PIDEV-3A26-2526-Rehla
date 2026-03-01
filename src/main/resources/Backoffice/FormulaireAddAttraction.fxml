@@ -128,7 +128,7 @@
                                 <Insets bottom="-18.0" />
                             </GridPane.margin>
                         </Label>
-                        <javafx.scene.control.CheckBox fx:id="CBestFerme" text="Closed / Fermé" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <javafx.scene.control.CheckBox fx:id="CBestFerme" text="Closed / Fermï¿½" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                         <ComboBox fx:id="CBville" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                         <Button mnemonicParsing="false" onAction="#ajouterAttraction" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@../css/styling.css" text="Save" GridPane.halignment="RIGHT" GridPane.rowIndex="8" GridPane.valignment="CENTER">
                             <GridPane.margin>

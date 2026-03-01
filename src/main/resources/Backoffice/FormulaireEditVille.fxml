@@ -6,7 +6,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -69,7 +68,7 @@
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
-                        <TextField fx:id="TFnomVille" GridPane.columnIndex="1" />
+                        <ComboBox fx:id="CBNomVille" prefWidth="150.0" GridPane.columnIndex="1" />
                         <Label fx:id="nomError" style="-fx-font-size: 10; -fx-text-fill: gray;" text="" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.valignment="BOTTOM">
                             <GridPane.margin>
                                 <Insets bottom="-18.0" />

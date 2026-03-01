@@ -653,7 +653,7 @@
 
                                                                     <TableColumn fx:id="colContenuCom" text="Contenu du Commentaire" />
                                                                     <TableColumn fx:id="colDateCom" text="Date de Publication" />
-                                                                    <TableColumn fx:id="colAuteurCom" text="Auteur" />
+                                                                    <TableColumn fx:id="colAuteurCom" text="Auteur du commentaire" />
                                                                     <TableColumn fx:id="colPostCom" text="Post Associé" />
                                                                     <TableColumn fx:id="colAction2" prefWidth="120" text="Actions" />
                                                                 </columns>

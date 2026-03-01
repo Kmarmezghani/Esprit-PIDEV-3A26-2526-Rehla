@@ -213,8 +213,8 @@ public class DashboardController {
     @FXML private TableColumn<Commentaire, Integer> colIdCom;
     @FXML private TableColumn<Commentaire, String> colContenuCom;
     @FXML private TableColumn<Commentaire, java.time.LocalDate> colDateCom;
-    @FXML private TableColumn<Commentaire, Integer> colAuteurCom;
-    @FXML private TableColumn<Commentaire, Integer> colPostCom;
+    @FXML private TableColumn<Commentaire, String> colAuteurCom;
+    @FXML private TableColumn<Commentaire, String> colPostCom;
 
 
     @FXML private Tab preferencetab;
@@ -1764,64 +1764,39 @@ public class DashboardController {
         colContenuCom.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         colDateCom.setCellValueFactory(new PropertyValueFactory<>("dateCommentaire"));
 
-        // Auteur ID
-        colAuteurCom.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleIntegerProperty(
-                        cellData.getValue().getAuteur().getId()
-                ).asObject()
-        );
+        colAuteurCom.setCellValueFactory(cellData -> {
 
-        // Post ID
-        colPostCom.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleIntegerProperty(
-                        cellData.getValue().getPost().getId()
-                ).asObject()
-        );
+            if (cellData.getValue().getAuteur() == null) {
+                return new javafx.beans.property.SimpleStringProperty("Inconnu");
+            }
+
+            String nom = cellData.getValue().getAuteur().getNom();
+            String prenom = cellData.getValue().getAuteur().getPrenom();
+
+            return new javafx.beans.property.SimpleStringProperty(prenom + " " + nom);
+        });
+
+        colPostCom.setCellValueFactory(cellData -> {
+
+            if (cellData.getValue().getPost() == null) {
+                return new javafx.beans.property.SimpleStringProperty("—");
+            }
+
+            String contenu = cellData.getValue().getPost().getContenu();
+
+            if (contenu == null) {
+                return new javafx.beans.property.SimpleStringProperty("—");
+            }
+
+            if (contenu.length() > 40) {
+                contenu = contenu.substring(0, 40) + ".....";
+            }
+
+            return new javafx.beans.property.SimpleStringProperty(contenu);
+        });
 
         commentaireList.setAll(commentaireService.getAll());
         tableCommentaire.setItems(commentaireList);
-    }
-    @FXML
-    private void openAddCommentForm() {
-
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/Backoffice/FormulaireAddComment.fxml")
-            );
-
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setTitle("Ajouter Commentaire");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            loadCommentaires();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    private void openUpdateCommentPopup(Commentaire com) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Backoffice/FormulaireUpdateComment.fxml"));
-            Parent root = loader.load();
-
-            UpdateCommentController controller = loader.getController();
-            controller.setCommentToEdit(com);
-
-            Stage stage = new Stage();
-            stage.setTitle("Modifier Commentaire");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-            // rafraîchir TableView après modification
-            commentaireList.setAll(commentaireService.getAll());
-            tableCommentaire.refresh();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void deleteComment(Commentaire com) {

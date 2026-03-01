@@ -12,6 +12,7 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 import models.Reservation;
+import com.sun.mail.util.MailSSLSocketFactory;
 
 public class EmailService {
 
@@ -33,9 +34,18 @@ public class EmailService {
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.enable", "true"); // force SSL
         props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.port", "465"); // SSL port
+
+// Temporary fix for PKIX path error
+        try {
+            MailSSLSocketFactory sf = new MailSSLSocketFactory();
+            sf.setTrustAllHosts(true); // trust all SSL certificates
+            props.put("mail.smtp.ssl.socketFactory", sf);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override

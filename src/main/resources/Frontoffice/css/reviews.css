@@ -4,7 +4,100 @@
     -fx-padding: 18;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 14, 0, 0, 4);
 }
+/* =========================
+   TOP NAV (BLUE LIKE HOME)
+   ========================= */
 
+.topBlueBar{
+    -fx-background-color: #223f91;
+    -fx-border-color: transparent;
+}
+
+/* Logo */
+.brandLogo{
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 10, 0, 0, 2);
+}
+
+/* Nav buttons */
+.navBtnBlue{
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255,255,255,0.95);
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+    -fx-padding: 8 10;
+}
+.navBtnBlue:hover{
+    -fx-background-color: rgba(255,255,255,0.16);
+    -fx-background-radius: 999;
+}
+
+/* Icons (notif/profile) */
+.iconBtnBlue{
+    -fx-background-color: rgba(255,255,255,0.16);
+    -fx-background-radius: 999;
+    -fx-padding: 9 11;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+}
+.iconBtnBlue:hover{
+    -fx-background-color: rgba(255,255,255,0.24);
+}
+
+/* Notif badge */
+.notifBadge{
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+    -fx-padding: 2 6;
+    -fx-background-radius: 999;
+    -fx-min-width: 18px;
+    -fx-alignment: center;
+
+    /* position inside StackPane */
+    -fx-translate-x: 10;
+    -fx-translate-y: -8;
+}
+
+/* Back button */
+.backBtnBlue{
+    -fx-background-color: rgba(255,255,255,0.20);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 12;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+}
+.backBtnBlue:hover{
+    -fx-background-color: rgba(255,255,255,0.28);
+}
+
+/* =========================
+   PROFILE MENU (dropdown)
+   ========================= */
+
+.profileMenu{
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 18, 0, 0, 8);
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 14;
+}
+
+.profileMenu .menu-item{
+    -fx-padding: 10 14;
+    -fx-background-radius: 12;
+}
+.profileMenu .menu-item .label{
+    -fx-text-fill: #0f172a;
+    -fx-font-weight: 800;
+}
+.profileMenu .menu-item:hover{
+    -fx-background-color: #eef2ff;
+}
 /* Title "Reviews" like photo 2 */
 .h2 { -fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827; }
 .h3 { -fx-font-size: 16; -fx-font-weight: 800; -fx-text-fill: #223f91; }

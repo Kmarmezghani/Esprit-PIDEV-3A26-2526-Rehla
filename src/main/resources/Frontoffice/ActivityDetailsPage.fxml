@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ProgressBar?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" stylesheets="@css/reviews.css"
+<AnchorPane prefHeight="700.0" prefWidth="1000.0"
+            stylesheets="@css/reviews.css,@/Frontoffice/css/profile-menu.css,@/Frontoffice/css/home.css"
             xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controllers.ActivityDetailsController">
 
@@ -28,41 +19,134 @@
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-            <!-- TOP NAV BAR -->
             <top>
-                <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                <HBox alignment="CENTER_LEFT"
+                      prefHeight="70.0"
+                      minHeight="70.0"
+                      maxHeight="70.0"
+                      styleClass="topBlueBar"
+                      BorderPane.alignment="CENTER">
+
                     <children>
-                        <ImageView fitHeight="60.0" fitWidth="100.0" preserveRatio="true">
+                        <ImageView fitHeight="44.0" preserveRatio="true" pickOnBounds="true" styleClass="brandLogo">
                             <image>
-                                <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                                <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png"/>
                             </image>
                         </ImageView>
 
-                        <HBox alignment="CENTER" spacing="30.0" HBox.hgrow="ALWAYS">
-                            <padding><Insets left="100.0" /></padding>
-                            <Button onAction="#goToHome" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Home" />
-                            <Button onAction="#goToDestinations" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Destinations" />
-                            <Button onAction="#goToPosts" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Posts" />
-                            <Button onAction="#goToactivities" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="Activities" />
-                            <Button style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16;" text="About" />
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <HBox alignment="CENTER" spacing="22.0">
+                            <Button onAction="#goToHome" text="Home" styleClass="navBtnBlue"/>
+                            <Button onAction="#goToDestinations" text="Destinations" styleClass="navBtnBlue"/>
+                            <Button onAction="#goToPosts" text="Posts" styleClass="navBtnBlue"/>
+                            <Button onAction="#goToactivities" text="Activities" styleClass="navBtnBlue"/>
+                            <Button text="About" styleClass="navBtnBlue"/>
                         </HBox>
 
-                        <Button onAction="#backToActivities"
-                                style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 14; -fx-background-radius: 12; -fx-padding: 8 14;"
-                                text="← Back" />
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <Button fx:id="btnNotif" onAction="#openNotifications" styleClass="iconBtn" text="🔔">
+                            <HBox.margin><Insets right="10.0"/></HBox.margin>
+                        </Button>
+
+                        <Button fx:id="btnProfile" onAction="#openProfileMenu" styleClass="iconBtn" text="👤">
+                            <HBox.margin><Insets right="14.0"/></HBox.margin>
+                            <contextMenu>
+                                <ContextMenu fx:id="profileMenu" styleClass="profileMenu">
+                                    <items>
+
+                                        <MenuItem onAction="#goToMyProfile" text="My Profile">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <MenuItem onAction="#goToMyPosts" text="My Posts">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M9 6l1.5-2h3L15 6h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3zm3 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-2.2a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <MenuItem onAction="#goToMyReservations" text="My Reservations">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5V6h14v2zM7 12h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <MenuItem fx:id="menuMyActivities"
+                                                  onAction="#goToMyActivities"
+                                                  text="My Activities">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIcon"
+                                                         content="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm3.2 4.8l-1.9 5-5 1.9 1.9-5 5-1.9z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                        <SeparatorMenuItem/>
+
+                                        <MenuItem onAction="#handleLogout" text="Logout">
+                                            <graphic>
+                                                <SVGPath styleClass="menuIconLogout"
+                                                         content="M10 17l1.41-1.41L9.83 14H20v-2H9.83l1.58-1.59L10 9l-5 5 5 5zM4 21h2V3H4v18z"/>
+                                            </graphic>
+                                        </MenuItem>
+
+                                    </items>
+                                </ContextMenu>
+                            </contextMenu>
+                        </Button>
+
+                        <HBox styleClass="winBox" alignment="CENTER_RIGHT" spacing="0">
+                            <Button onAction="#minwindow" styleClass="winCtrlBtn" focusTraversable="false">
+                                <graphic>
+                                    <SVGPath content="M2 8 H12"
+                                             stroke="white"
+                                             strokeWidth="1.8"
+                                             strokeLineCap="round"/>
+                                </graphic>
+                            </Button>
+
+                            <Button onAction="#maxwindow" styleClass="winCtrlBtn" focusTraversable="false">
+                                <graphic>
+                                    <SVGPath content="M3 3 H11 V11 H3 Z"
+                                             fill="transparent"
+                                             stroke="white"
+                                             strokeWidth="1.6"
+                                             strokeLineJoin="round"/>
+                                </graphic>
+                            </Button>
+
+                            <Button focusTraversable="false" onAction="#closewindow" styleClass="winCtrlClose" text="">
+                                <graphic>
+                                    <SVGPath content="M4 4 L12 12 M12 4 L4 12"
+                                             fill="transparent"
+                                             stroke="white"
+                                             strokeLineCap="round"
+                                             strokeWidth="1.8"/>
+                                </graphic>
+                            </Button>
+                        </HBox>
+
                     </children>
-                    <padding><Insets left="30.0" right="30.0" /></padding>
+
+                    <padding>
+                        <Insets left="30.0" right="30.0"/>
+                    </padding>
                 </HBox>
             </top>
 
+            <!-- CENTER (TON CONTENU INCHANGÉ) -->
             <center>
                 <ScrollPane fitToWidth="true" style="-fx-background-color: #ffffff;">
                     <content>
                         <VBox spacing="0" style="-fx-background-color: #ffffff;">
 
-                            <!-- ✅ HEADER WITH IMAGE + OVERLAY + TEXT -->
+                            <!-- HEADER IMAGE -->
                             <StackPane fx:id="headerPane" prefHeight="260.0" minHeight="260.0" maxHeight="260.0">
-
                                 <ImageView fx:id="IMGactivity"
                                            fitHeight="260.0"
                                            preserveRatio="false"
@@ -91,16 +175,17 @@
                                         <Label fx:id="LBLprice" style="-fx-font-size: 16; -fx-font-weight: bold;" text="💰 0.00 TND" textFill="WHITE" />
                                     </HBox>
                                 </VBox>
-
                             </StackPane>
+
                             <!-- BODY -->
                             <VBox spacing="18" style="-fx-background-color: #ffffff;">
                                 <padding><Insets bottom="28" left="40" right="40" top="24" /></padding>
+
                                 <!-- Description Card -->
                                 <VBox spacing="10"
                                       style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;
-             -fx-border-color: #eef2ff; -fx-border-radius: 18;
-             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 4);">
+                                             -fx-border-color: #eef2ff; -fx-border-radius: 18;
+                                             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 4);">
 
                                     <HBox spacing="10" alignment="CENTER_LEFT">
                                         <Label text="📝" style="-fx-font-size: 18;" />
@@ -112,12 +197,16 @@
                                            wrapText="true"
                                            style="-fx-font-size: 13.5; -fx-text-fill: #475569; -fx-line-spacing: 2;" />
                                 </VBox>
+
+                                <!-- Tips -->
                                 <VBox fx:id="tipsBox" spacing="6" visible="false" managed="false" styleClass="card">
                                     <Label text="💡 Tips from travelers" styleClass="h3"/>
                                     <VBox fx:id="tipsItems" spacing="6"/>
                                     <Label fx:id="tipsMeta" text="" styleClass="muted"/>
                                 </VBox>
+
                                 <!-- Reviews Card -->
+                                <!-- (je laisse ton bloc reviews inchangé, garde exactement le tien) -->
                                 <VBox spacing="16"
                                       style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 18;
                                       -fx-border-color: #eef2ff; -fx-border-radius: 18;
@@ -125,13 +214,11 @@
                                       styleClass="card">
 
                                     <HBox alignment="CENTER_LEFT">
-                                        <Label style="-fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827;" styleClass="h2" text="Reviews" />
+                                        <Label style="-fx-font-size: 28; -fx-font-weight: 900; -fx-text-fill: #111827;"
+                                               styleClass="h2" text="Reviews" />
                                     </HBox>
 
-                                    <!-- Summary row -->
                                     <HBox alignment="CENTER_LEFT" spacing="30" HBox.hgrow="ALWAYS">
-
-                                        <!-- Left: Average block -->
                                         <VBox minWidth="180" prefWidth="180" spacing="8">
                                             <Label fx:id="LBLavgBig" style="-fx-font-size: 56; -fx-font-weight: 900; -fx-text-fill: #111827;" styleClass="avgBig" text="0.0" />
                                             <Label fx:id="LBLstarsText" styleClass="starsBig" text="★★★★★" />
@@ -140,9 +227,7 @@
 
                                         <Separator orientation="VERTICAL" prefHeight="110" styleClass="vSep" />
 
-                                        <!-- Right: Distribution bars -->
                                         <VBox minWidth="600" spacing="12" HBox.hgrow="ALWAYS">
-
                                             <HBox alignment="CENTER_LEFT" spacing="12">
                                                 <ProgressBar fx:id="PB5" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
                                                 <Label fx:id="LBLc5" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="5.0  0 reviews" />
@@ -167,13 +252,11 @@
                                                 <ProgressBar fx:id="PB1" maxWidth="Infinity" prefWidth="1" progress="0" styleClass="rateBar" HBox.hgrow="ALWAYS" />
                                                 <Label fx:id="LBLc1" alignment="CENTER_RIGHT" prefWidth="140" styleClass="rightMeta" text="1.0  0 reviews" />
                                             </HBox>
-
                                         </VBox>
                                     </HBox>
 
                                     <Separator />
 
-                                    <!-- Reviews list -->
                                     <ListView fx:id="reviewsList" prefHeight="260" styleClass="reviewsList" />
 
                                     <HBox alignment="CENTER_LEFT">
@@ -182,7 +265,6 @@
 
                                     <Separator />
 
-                                    <!-- Write review -->
                                     <VBox spacing="10">
                                         <Label styleClass="h3" text="Write a review" />
 
@@ -192,13 +274,13 @@
                                         </HBox>
 
                                         <TextArea fx:id="TAreview" prefRowCount="5" promptText="Share your experience..." styleClass="reviewArea" wrapText="true" />
-
                                         <Button onAction="#addReview" styleClass="primaryBtn" text="Submit review" />
                                     </VBox>
                                 </VBox>
 
                                 <!-- Footer -->
-                                <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: #223f91; -fx-padding: 20; -fx-background-radius: 14;">
+                                <VBox alignment="CENTER" spacing="8.0"
+                                      style="-fx-background-color: #223f91; -fx-padding: 20; -fx-background-radius: 14;">
                                     <Label text="Rehla - Your Travel Companion" textFill="WHITE">
                                         <font><Font name="System Bold" size="16.0" /></font>
                                     </Label>

@@ -23,7 +23,7 @@
                     <children>
                         <ImageView fitHeight="38.0" fitWidth="101.0" pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../icons/IMG_20260125_122708_191-removebg-preview.png" />
+                                <Image url="@/Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
                             </image>
                         </ImageView>
                     </children>
@@ -56,11 +56,11 @@
                                 <Insets left="10.0" />
                             </GridPane.margin>
                         </Label>
-                        <Button mnemonicParsing="false" onAction="#ajouterTicket" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@../css/styling.css" text="Save" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="CENTER">
+                        <Button mnemonicParsing="false" onAction="#ajouterTicket" prefHeight="27.0" prefWidth="72.0" styleClass="button2" stylesheets="@/Backoffice/css/styling.css" text="Save" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="CENTER">
                             <GridPane.margin>
                                 <Insets right="20.0" />
                             </GridPane.margin></Button>
-                        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@../css/styling.css" text="cancel" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4">
+                        <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="27.0" prefWidth="69.0" styleClass="button5" stylesheets="@/Backoffice/css/styling.css" text="cancel" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4">
                             <GridPane.margin>
                                 <Insets left="20.0" />
                             </GridPane.margin></Button>

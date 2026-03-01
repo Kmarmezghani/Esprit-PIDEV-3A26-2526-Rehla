@@ -54,6 +54,8 @@ public class MyReservationsController {
     @FXML private Button btnProfile;
     @FXML private Button btnNotif;
     @FXML private ContextMenu profileMenu;
+    @FXML
+    private MenuItem menuMyActivities;
 
     // ================= SERVICES =================
     private final ReservationService reservationService = new ReservationService();
@@ -83,6 +85,12 @@ public class MyReservationsController {
     // ================= INITIALIZE =================
     @FXML
     public void initialize() {
+        Personne u = Session.getCurrentUser();
+        boolean isGuide = (u != null) && "GUIDE".equalsIgnoreCase(u.getRole());
+
+        if (!isGuide) {
+            profileMenu.getItems().remove(menuMyActivities); // pas d’espace vide
+        }
 
         colDateDebut.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
         colDateFin.setCellValueFactory(new PropertyValueFactory<>("dateFin"));

@@ -368,20 +368,32 @@ public class ActiviteService implements IService<Activite> {
     }
 
     public Activite getById(int id) {
-        String sql = "SELECT * FROM activite WHERE id = ? LIMIT 1";
-
+        String sql = "SELECT * FROM activite WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return null;
-                return mapActivite(rs);
+                if (rs.next()) {
+                    Activite a = new Activite();
+                    a.setId(rs.getInt("id"));
+                    a.setNom(rs.getString("nom"));
+                    a.setDescription(rs.getString("description"));
+                    a.setPrix(rs.getDouble("prix"));
+                    a.setTypeActivite(rs.getString("typeActivite"));
+                    a.setNoteMoyenne(rs.getDouble("noteMoyenne"));
+                    a.setDestinationId(rs.getInt("destination_id"));
+                    a.setDateDebut(rs.getTimestamp("date_debut").toLocalDateTime());
+                    a.setDateFin(rs.getTimestamp("date_fin").toLocalDateTime());
+                    a.setImage(rs.getString("image"));
+                    a.setFlashPrice((Double) rs.getObject("flash_price"));
+                    a.setFlashSale(rs.getBoolean("is_flash_sale"));
+                    return a;
+                }
             }
-        } catch (SQLException e) {
-            System.out.println("getById error: " + e.getMessage());
-            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
-
     public void markExpiredActivitiesAsUnavailable() {
         String sql = """
             UPDATE activite

@@ -12,7 +12,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Activite;
+import models.Personne;
 import services.ActiviteService;
+import util.Session;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +22,8 @@ import java.util.Optional;
 
 public class MyActivitiesPageController {
 
-    private static final int CURRENT_USER_ID = 5;
+    Personne CURRENT_USER = Session.getCurrentUser();
+    int CURRENT_USER_ID=CURRENT_USER.getId();
 
     @FXML private FlowPane myActivitiesFlowPane;
     @FXML private TextField searchField;
@@ -301,10 +304,10 @@ public class MyActivitiesPageController {
 
 
 
-        @FXML
-        public void openNotifications(ActionEvent event) {
-            // TODO: ouvrir notifications (page/popup)
-        }
+    @FXML
+    public void openNotifications(ActionEvent event) {
+        // TODO: ouvrir notifications (page/popup)
+    }
 
     @FXML
     public void openProfileMenu(ActionEvent e) {

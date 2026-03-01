@@ -104,8 +104,6 @@ public class DashboardController {
     @FXML private TableColumn<Reservation, Void> colTicketReservation;
 
     @FXML private TableView<Ticket> tableTicket;
-    @FXML private TableColumn<Ticket, Date> colDateDebut1;
-    @FXML private TableColumn<Ticket, Date> colDateFin1;
     @FXML private TableColumn<Ticket, String> colStatut1;
     @FXML private TableColumn<Ticket, Double> colPrix;
     @FXML private TableColumn<Ticket, String> colType;
@@ -263,6 +261,14 @@ public class DashboardController {
     private ObservableList<Post> postList = FXCollections.observableArrayList();
 
     Personne currentUser = Session.getCurrentUser();
+    //----------------------------------------------------
+    @FXML private Label lblTotalUsers;
+    @FXML private Label lblTotalPosts;
+    @FXML private Label lblTotalComments;
+    @FXML private Label lblTotalReservations;
+
+    private AnalyticsReservationService analyticsService = new AnalyticsReservationService();
+    //-------------------------------------------------------
 
     @FXML
     public void initialize() {
@@ -382,8 +388,7 @@ public class DashboardController {
             colType.setPrefWidth(available * 0.20);
             colPrix.setPrefWidth(available * 0.15);
             colStatut1.setPrefWidth(available * 0.15);
-            colDateDebut1.setPrefWidth(available * 0.15);
-            colDateFin1.setPrefWidth(available * 0.15);
+
             colDeleteTicket.setPrefWidth(available * 0.10);
             colDestinationTicket.setPrefWidth(available * 0.10);
         });
@@ -433,6 +438,22 @@ public class DashboardController {
                 }
             });
         });
+
+        lblTotalUsers.setText(String.valueOf(
+                analyticsService.getTotalUsers()
+        ));
+
+        lblTotalPosts.setText(String.valueOf(
+                analyticsService.getTotalPosts()
+        ));
+
+        lblTotalComments.setText(String.valueOf(
+                analyticsService.getTotalComments()
+        ));
+
+        lblTotalReservations.setText(String.valueOf(
+                analyticsService.getTotalReservations()
+        ));
     }
 
     // =========================
@@ -777,8 +798,7 @@ public class DashboardController {
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         colPrix.setCellValueFactory(new PropertyValueFactory<>("prix"));
         colStatut1.setCellValueFactory(new PropertyValueFactory<>("statut"));
-        colDateDebut1.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
-        colDateFin1.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
+
         colDestinationTicket.setCellValueFactory(new PropertyValueFactory<>("destinationNom"));
 
         tableTicket.setRowFactory(tv -> {
@@ -878,23 +898,32 @@ public class DashboardController {
         styleToggle(dashactbut);
         styleToggle(dashpostbut);
     }
-
     @FXML
-    private void openAddPopup(ActionEvent e) {
+    private void openAnalysisPopup() {
+
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/Backoffice/ajoutReservation.fxml"));
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Back" +
+                            "office/AdminDashboard.fxml")
+            );
+
+            Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("Add new reservation");
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("/Backoffice/icons/logoblue.png")));
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(((Node) e.getSource()).getScene().getWindow());
+            stage.setTitle("Admin Analytics");
             stage.setScene(new Scene(root));
+
+            // Makes it popup modal
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            stage.setWidth(900);
+            stage.setHeight(600);
+
             stage.showAndWait();
 
-            refreshReservationTable();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -1055,27 +1084,37 @@ public class DashboardController {
                 btn.setStyle("-fx-background-color: transparent;");
 
                 btn.setOnAction(e -> {
+
                     Ticket t = getTableView().getItems().get(getIndex());
 
                     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
                     confirm.setTitle("Confirmation");
-                    confirm.setHeaderText("Remove ticket from reservation");
-                    confirm.setContentText("This ticket will become Available.");
+                    confirm.setHeaderText("Delete Ticket");
+                    confirm.setContentText("Are you sure?");
 
                     confirm.showAndWait().ifPresent(b -> {
+
                         if (b == ButtonType.OK) {
 
                             Integer resId = t.getReservationId();
 
-                            // 🔥 1. Libérer le ticket
-                            ticketService.releaseTicket(t.getId());
-
-                            // 🔥 2. Recalculer stats
+                            // 🔥 CASE 1 → Ticket belongs to reservation
                             if (resId != null) {
+
+                                ticketService.releaseTicket(t.getId());
+
+                                // recalcul stats réservation
                                 reservationService.updateReservationStats(resId);
+
+                            }
+                            // 🔥 CASE 2 → Ticket is free
+                            else {
+
+                                ticketService.delete(t);
+
                             }
 
-                            // 🔥 3. Refresh UI
+                            // 🔄 REFRESH TABLES
                             if (currentReservationForTickets != null)
                                 loadTicketsByReservation(currentReservationForTickets.getId());
                             else

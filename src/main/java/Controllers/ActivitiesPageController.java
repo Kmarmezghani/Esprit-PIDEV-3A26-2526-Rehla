@@ -154,9 +154,17 @@ public class ActivitiesPageController {
     // =========================
 
     @FXML
+    private MenuItem menuMyActivities;
+    @FXML
     public void initialize() {
         reloadFromDB();        // charge liste normale
         refreshNotifCount();
+        Personne u = Session.getCurrentUser();
+        boolean isGuide = (u != null) && "GUIDE".equalsIgnoreCase(u.getRole());
+
+        if (!isGuide) {
+            profileMenu.getItems().remove(menuMyActivities); // pas d’espace vide
+        }
 
         flashTicker.setCycleCount(javafx.animation.Animation.INDEFINITE);
         flashTicker.play();

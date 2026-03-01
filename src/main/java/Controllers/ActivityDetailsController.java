@@ -6,6 +6,9 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,6 +19,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
@@ -23,8 +27,9 @@ import models.Activite;
 import models.Personne;
 import models.Review;
 import services.ActiviteService;
-import services.ReviewService;
 import services.GeminiTipsService;
+import services.NotificationService;
+import services.ReviewService;
 import util.Session;
 
 import java.io.File;
@@ -37,10 +42,26 @@ import java.util.*;
 
 public class ActivityDetailsController {
 
+    // =========================
+    // SESSION
+    // =========================
     Personne CURRENT_USER = Session.getCurrentUser();
-    int CURRENT_USER_ID=CURRENT_USER.getId();
+    int CURRENT_USER_ID = (CURRENT_USER != null) ? CURRENT_USER.getId() : -1;
 
-    // ===== Header labels =====
+    // =========================
+    // TOPBAR (NOTIF + PROFILE)
+    // =========================
+    @FXML private Button btnProfile;
+    @FXML private Button btnNotif;
+    @FXML private ContextMenu profileMenu;
+    @FXML private Label lblNotifCount;
+    @FXML private TextField searchField;
+
+    private final NotificationService notificationService = new NotificationService();
+
+    // =========================
+    // HEADER / DETAILS
+    // =========================
     @FXML private Label LBLtitle;
     @FXML private Label LBLdestination;
     @FXML private Label LBLdates;
@@ -48,28 +69,31 @@ public class ActivityDetailsController {
     @FXML private Label LBLrating;
     @FXML private Label LBLtype;
 
-    // header nodes
     @FXML private StackPane headerPane;
     @FXML private Rectangle overlayRect;
     @FXML private ImageView IMGactivity;
 
-    // ===== Reviews summary (left) =====
+    @FXML private Label LBLdescription;
+
+    // =========================
+    // REVIEWS SUMMARY
+    // =========================
     @FXML private Label LBLavgBig;
     @FXML private Label LBLstarsText;
     @FXML private Label LBLcountText;
 
-    // ===== Tips from reviews (AI) =====
+    // IA Tips
     @FXML private VBox tipsBox;
-    @FXML private VBox tipsItems; // container dans lequel on va injecter un FlowPane
+    @FXML private VBox tipsItems;
     @FXML private Label tipsMeta;
+    @FXML
+    private MenuItem menuMyActivities;
 
     private final GeminiTipsService tipsService = new GeminiTipsService();
-
-    // Cache tips par activité (évite appels IA à chaque refresh)
     private final Map<Integer, List<String>> tipsCache = new HashMap<>();
     private final Map<Integer, Integer> fpCache = new HashMap<>();
 
-    // ===== Distribution (right) =====
+    // Distribution
     @FXML private ProgressBar PB5, PB4, PB3, PB2, PB1;
     @FXML private Label LBLc5, LBLc4, LBLc3, LBLc2, LBLc1;
 
@@ -78,7 +102,6 @@ public class ActivityDetailsController {
     @FXML private HBox starBox;
     @FXML private TextArea TAreview;
     @FXML private Button BTNdeleteMyReview;
-    @FXML private Label LBLdescription;
 
     private final ActiviteService activiteService = new ActiviteService();
     private final ReviewService reviewService = new ReviewService();
@@ -90,10 +113,13 @@ public class ActivityDetailsController {
     private int selectedRating = 5;
     private int hoverRating = 0;
 
+    // =========================
+    // INIT
+    // =========================
     @FXML
     public void initialize() {
 
-        // image full header size + overlay
+        // Bind header image sizing
         Platform.runLater(() -> {
             if (headerPane != null && IMGactivity != null) {
                 IMGactivity.fitWidthProperty().bind(headerPane.widthProperty());
@@ -106,6 +132,15 @@ public class ActivityDetailsController {
                 overlayRect.heightProperty().bind(headerPane.heightProperty());
             }
         });
+        Personne u = Session.getCurrentUser();
+        boolean isGuide = (u != null) && "GUIDE".equalsIgnoreCase(u.getRole());
+
+        if (!isGuide) {
+            profileMenu.getItems().remove(menuMyActivities); // pas d’espace vide
+        }
+
+        // Notif count (badge)
+        refreshNotifCount();
 
         if (BTNdeleteMyReview != null) BTNdeleteMyReview.setDisable(true);
 
@@ -130,6 +165,46 @@ public class ActivityDetailsController {
         hideTips();
     }
 
+    @FXML public void goToMyProfile(ActionEvent event) { }
+    @FXML public void goToMyPosts(ActionEvent event) { }
+
+    @FXML
+    void goToMyReservations(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = getStageFromEvent(event);
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML public void goToMyActivities(ActionEvent event) { switchScene(event, "/Frontoffice/MyActivitiesPage.fxml"); }
+    private void switchScene(ActionEvent event, String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage stage = getStageFromEvent(event);
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // =========================
+    // SET DATA
+    // =========================
     public void setActivity(Activite a) {
         this.activity = a;
         renderActivity();
@@ -168,6 +243,9 @@ public class ActivityDetailsController {
         }
     }
 
+    // =========================
+    // REVIEWS LOAD
+    // =========================
     private void loadReviewsAndRating() {
         if (activity == null) return;
 
@@ -208,14 +286,12 @@ public class ActivityDetailsController {
         if (LBLc2 != null) LBLc2.setText("2.0  " + count[2] + " reviews");
         if (LBLc1 != null) LBLc1.setText("1.0  " + count[1] + " reviews");
 
-        // ===== IA Tips (après chargement reviews + stats) =====
         generateTipsSmart(list);
     }
 
     // =========================
-    // IA Tips (NEW DESIGN + MAX 4)
+    // IA Tips
     // =========================
-
     private void hideTips() {
         if (tipsItems != null) tipsItems.getChildren().clear();
         if (tipsMeta != null) tipsMeta.setText("");
@@ -225,10 +301,6 @@ public class ActivityDetailsController {
         }
     }
 
-    /**
-     * Affiche en "chips" (FlowPane) + limite à 4 tips.
-     * ⚠️ Ajoute un style CSS .tipChip dans ton reviews.css
-     */
     private void showTips(List<String> tips, String meta) {
         if (tipsBox == null || tipsItems == null) return;
 
@@ -250,8 +322,6 @@ public class ActivityDetailsController {
         FlowPane flow = new FlowPane();
         flow.setHgap(10);
         flow.setVgap(10);
-
-        // wrap: ajuste si tu veux
         flow.setPrefWrapLength(520);
 
         for (String tip : limited) {
@@ -289,7 +359,6 @@ public class ActivityDetailsController {
             }
         }
 
-        // Loading state (tu peux styliser tipsMeta)
         tipsItems.getChildren().clear();
         tipsBox.setVisible(true);
         tipsBox.setManaged(true);
@@ -298,7 +367,6 @@ public class ActivityDetailsController {
         Task<List<String>> task = new Task<>() {
             @Override
             protected List<String> call() throws Exception {
-                // GeminiTipsService doit déjà limiter à 3-4 idéalement, mais on re-limite côté UI
                 return tipsService.extractTips(texts);
             }
         };
@@ -311,7 +379,6 @@ public class ActivityDetailsController {
                 return;
             }
 
-            // cache + fp
             tipsCache.put(activity.getId(), tips);
             fpCache.put(activity.getId(), fp);
 
@@ -335,7 +402,6 @@ public class ActivityDetailsController {
     // =========================
     // Stars rating UI
     // =========================
-
     private void initStarRating() {
         if (starBox == null) return;
 
@@ -392,7 +458,6 @@ public class ActivityDetailsController {
     // =========================
     // CRUD Reviews
     // =========================
-
     private void startEdit(Review r) {
         if (r == null) return;
         if (r.getPersonneId() != CURRENT_USER_ID) return;
@@ -449,9 +514,7 @@ public class ActivityDetailsController {
 
         activiteService.updateNoteMoyenne(activity.getId());
 
-        // force regen tips (fingerprint change)
         fpCache.remove(activity.getId());
-
         loadReviewsAndRating();
     }
 
@@ -490,16 +553,13 @@ public class ActivityDetailsController {
         reviewService.deleteByIdAndUser(selected.getId(), CURRENT_USER_ID);
         activiteService.updateNoteMoyenne(activity.getId());
 
-        // force regen tips
         fpCache.remove(activity.getId());
-
         loadReviewsAndRating();
     }
 
     // =========================
     // NAVIGATION
     // =========================
-
     @FXML
     public void backToActivities(ActionEvent event) {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
@@ -510,7 +570,7 @@ public class ActivityDetailsController {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/HomePage.fxml");
     }
 
-    @FXML public void goToDestinations(ActionEvent event) { }
+    @FXML public void goToDestinations(ActionEvent event) { /* TODO */ }
 
     @FXML
     public void goToPosts(ActionEvent event) {
@@ -520,6 +580,17 @@ public class ActivityDetailsController {
     @FXML
     public void goToactivities(ActionEvent event) {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
+    }
+
+
+
+    @FXML
+    public void handleLogout(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("Are you sure you want to logout?");
+        alert.setContentText("You will be returned to the login screen.");
+        alert.showAndWait();
     }
 
     private void switchSceneKeepSize(Node anyNodeOnScene, String fxmlPath) {
@@ -547,9 +618,131 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    // IMAGE LOADER
+    // ✅ PROFILE MENU + NOTIFS (copié du ActivitiesPageController)
     // =========================
+    @FXML
+    public void openProfileMenu(ActionEvent event) {
+        if (profileMenu == null || btnProfile == null) return;
 
+        if (profileMenu.isShowing()) {
+            profileMenu.hide();
+            return;
+        }
+        profileMenu.show(btnProfile, Side.BOTTOM, 0, 6);
+    }
+
+    @FXML
+    public void openNotifications(ActionEvent event) {
+        try {
+            refreshNotifCount();
+
+            List<NotificationService.NotifRow> notifs =
+                    notificationService.getLatestUnread(CURRENT_USER_ID, 5);
+
+            ContextMenu menu = new ContextMenu();
+            menu.setStyle("-fx-background-radius: 14; -fx-padding: 10; -fx-background-color: #f8fafc;");
+            menu.getStyleClass().add("notifMenu");
+
+            final double MENU_W = 320;
+
+            if (notifs.isEmpty()) {
+                Label lbl = new Label("Aucune notification");
+                lbl.setWrapText(true);
+                lbl.setPrefWidth(MENU_W);
+                lbl.setMaxWidth(MENU_W);
+                lbl.setAlignment(Pos.CENTER);
+                lbl.setStyle("""
+                    -fx-padding: 14 12;
+                    -fx-text-fill: #6b7280;
+                    -fx-font-size: 13px;
+                """);
+                menu.getItems().add(new CustomMenuItem(lbl, false));
+
+            } else {
+                for (var n : notifs) {
+
+                    Label title = new Label(("WAITLIST_HOLD".equalsIgnoreCase(n.type) ? "⏳ Waitlist" : "🔔 Notification"));
+                    title.setStyle("-fx-font-size: 12; -fx-font-weight: 900; -fx-text-fill: #0f172a;");
+
+                    Label msg = new Label(n.message);
+                    msg.setWrapText(true);
+                    msg.setMaxWidth(300);
+                    msg.setStyle("-fx-font-size: 13; -fx-text-fill: #334155;");
+
+                    Label time = new Label(n.createdAt != null ? n.createdAt.toString() : "");
+                    time.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
+
+                    VBox card = new VBox(6, title, msg, time);
+                    card.setStyle("""
+                        -fx-background-color: white;
+                        -fx-background-radius: 12;
+                        -fx-padding: 12 12;
+                        -fx-border-color: #e5e7eb;
+                        -fx-border-radius: 12;
+                    """);
+
+                    CustomMenuItem it = new CustomMenuItem(card, true);
+
+                    it.setOnAction(ev -> {
+                        try {
+                            notificationService.markRead(n.id);
+                            refreshNotifCount();
+                            // si tu veux faire une action spéciale WAITLIST_HOLD ici, tu peux.
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+
+                    menu.getItems().add(it);
+                }
+
+                menu.getItems().add(new SeparatorMenuItem());
+
+                MenuItem mark = new MenuItem("Tout marquer comme lu");
+                mark.setOnAction(e2 -> {
+                    try {
+                        notificationService.markAllRead(CURRENT_USER_ID);
+                        refreshNotifCount();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                menu.getItems().add(mark);
+            }
+
+            // positionner sous le bouton notif
+            var b = btnNotif.localToScreen(btnNotif.getBoundsInLocal());
+            double x = b.getMaxX() - MENU_W;
+            double y = b.getMaxY() + 8;
+
+            x = Math.max(8, x);
+            y = Math.max(8, y);
+
+            menu.show(btnNotif, x, y);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void refreshNotifCount() {
+        try {
+            int n = notificationService.countUnread(CURRENT_USER_ID);
+
+            if (lblNotifCount != null) {
+                lblNotifCount.setText(String.valueOf(n));
+                boolean show = n > 0;
+                lblNotifCount.setVisible(show);
+                lblNotifCount.setManaged(show);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // =========================
+    // IMAGE LOADER (inchangé)
+    // =========================
     private Image loadActivityImage(String path) {
         if (path == null || path.isBlank()) return null;
 
@@ -585,11 +778,9 @@ public class ActivityDetailsController {
     private Image loadFromFileSmart(String p) {
         try {
             File file = new File(p);
-
             if (!file.exists()) {
                 file = new File(System.getProperty("user.dir"), p);
             }
-
             if (file.exists()) {
                 return new Image(file.toURI().toString(), true);
             }
@@ -608,11 +799,9 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    // CUSTOM REVIEW CARD CELL
+    // CUSTOM REVIEW CELL
     // =========================
-
     private class ReviewCardCell extends ListCell<Review> {
-
         @Override
         protected void updateItem(Review r, boolean empty) {
             super.updateItem(r, empty);
@@ -758,4 +947,24 @@ public class ActivityDetailsController {
 
         return "Just now";
     }
+    @FXML void closewindow(ActionEvent e) { Stage s = getStageFromEvent(e); if (s != null) s.close(); }
+    @FXML void minwindow(ActionEvent e) { Stage s = getStageFromEvent(e); if (s != null) s.setIconified(true); }
+    @FXML void maxwindow(ActionEvent e) {
+        Stage s = getStageFromEvent(e);
+        if (s != null) s.setMaximized(!s.isMaximized());
+    }
+    private Stage getStageFromEvent(ActionEvent event) {
+        try {
+            Object src = event.getSource();
+            if (src instanceof MenuItem mi) {
+                return (Stage) mi.getParentPopup().getOwnerWindow();
+            }
+            if (src instanceof Node n) {
+                return (Stage) n.getScene().getWindow();
+            }
+            return null ;
+        } catch (Exception ignored) {}
+        return null;
+    }
+
 }

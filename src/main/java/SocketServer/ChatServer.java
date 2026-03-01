@@ -10,7 +10,7 @@ public class ChatServer {
 
     public static void main(String[] args) throws Exception{
 
-        ServerSocket server = new ServerSocket(5000);
+        ServerSocket server = new ServerSocket(5002);
 
         while(true){
 

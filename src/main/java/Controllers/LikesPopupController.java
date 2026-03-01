@@ -24,12 +24,11 @@ public class LikesPopupController {
     private Runnable onClose;
     @FXML
     private ImageView likeIcon;
-
+    private final Image defaultAvatar = new Image(getClass().getResourceAsStream("/Backoffice/icons/usericon.png"));
+    private final Image like_Icon=new Image(getClass().getResourceAsStream("/Backoffice/icons/HeartRed.png"));
     @FXML
     public void initialize() {
-        likeIcon.setImage(
-                new Image(getClass().getResourceAsStream("/icons/HeartRed.png"))
-        );
+        likeIcon.setImage(like_Icon);
     }
     public void setOnClose(Runnable onClose) {
         this.onClose = onClose;
@@ -58,13 +57,22 @@ public class LikesPopupController {
         userBox.setAlignment(Pos.CENTER_LEFT);
         userBox.getStyleClass().add("comment-item");
 
-        Circle avatar = new Circle(18);
-        avatar.getStyleClass().add("avatar-circle");
+        ImageView avatarView = new ImageView(defaultAvatar);
+
+        double size = 36;
+        avatarView.setFitWidth(size);
+        avatarView.setFitHeight(size);
+        avatarView.setPreserveRatio(true);
+        avatarView.setSmooth(true);
+
+        // Clip pour garder l'aspect circulaire
+        Circle clip = new Circle(size / 2, size / 2, size / 2);
+        avatarView.setClip(clip);
 
         Label name = new Label(p.getPrenom() + " " + p.getNom());
         name.getStyleClass().add("comment-name");
 
-        userBox.getChildren().addAll(avatar, name);
+        userBox.getChildren().addAll(avatarView, name);
         likesContainer.getChildren().add(userBox);
     }
 

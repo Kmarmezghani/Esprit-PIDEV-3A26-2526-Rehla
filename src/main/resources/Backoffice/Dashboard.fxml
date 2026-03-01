@@ -642,7 +642,6 @@
                                                                     <TableColumn fx:id="colTitrePost" text="Titre du post" />
                                                                     <TableColumn fx:id="colContenuPost" text="Description" />
                                                                     <TableColumn fx:id="colDatePost" text="Date de publication" />
-                                                                    <TableColumn fx:id="colPopularitePost" text="Score de popularité" />
                                                                     <TableColumn fx:id="colAuteurPost" text="Auteur" />
                                                                     <TableColumn fx:id="colLikesPost" text="Nombre de likes" />
                                                                     <TableColumn fx:id="colImagePost" text="Image associée" prefWidth="120"/>

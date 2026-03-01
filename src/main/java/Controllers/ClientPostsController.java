@@ -61,6 +61,9 @@ public class ClientPostsController {
     @FXML
     private TextField txtNewPost;
 
+    @FXML private Button btnProfile;
+
+    @FXML private ContextMenu profileMenu;
 
     private boolean isLiked = false;
 
@@ -71,8 +74,6 @@ public class ClientPostsController {
 
     private Image commentEmpty;
 
-    @FXML
-    private Button btnNotif;
 
     private ContextMenu notifMenu = new ContextMenu();
     private boolean isLoadingPosts = false;
@@ -107,26 +108,18 @@ private PostService postService = new PostService();
     private Image shareImage;
     private Image editImage;
     private Image deleteImage;
-
+    @FXML private TextField searchField;
     @FXML
     private void initialize() {
 
-        if(currentUser == null ||
-                currentUser.getRole() == null ||
-                !currentUser.getRole().equalsIgnoreCase("admin")) {
-
-            btnNotif.setVisible(false);
-            btnNotif.setManaged(false);
-        }
-
-        heartEmpty = new Image(getClass().getResourceAsStream("/Backoffice/icons/heartwhite.png"));
+        heartEmpty = new Image(getClass().getResourceAsStream("/Backoffice/icons/blackHeart.png"));
         heartFull = new Image(getClass().getResourceAsStream("/Backoffice/icons/HeartRed.png"));
 
 
         commentEmpty = new Image(getClass()
-                .getResourceAsStream("/Backoffice/icons/comment.png"));
+                .getResourceAsStream("/Backoffice/icons/commentB.png"));
 
-        starEmpty = new Image(getClass().getResourceAsStream("/Backoffice/icons/whiteStar.png"));
+        starEmpty = new Image(getClass().getResourceAsStream("/Backoffice/icons/blackStar.png"));
         starFull = new Image(getClass().getResourceAsStream("/Backoffice/icons/yellowStar.png"));
 
         avatarImage = new Image(
@@ -134,15 +127,15 @@ private PostService postService = new PostService();
         );
 
         shareImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/share.png")).toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/shareNoir.png")).toExternalForm()
         );
 
         editImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/edit2.png")).toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/editblue.png")).toExternalForm()
         );
 
         deleteImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/delete.png")).toExternalForm()
+                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/poubelle.png")).toExternalForm()
         );
         timeUpdater = new Timeline(
                 new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
@@ -170,11 +163,128 @@ private PostService postService = new PostService();
 
         loadPosts();
         postsContainer.setFillWidth(true);
-        btnNotif.setOnAction(e -> toggleNotifications());
+
         btnMessage.setOnAction(e -> toggleMessages());
         System.out.println("Java Zone = " + ZoneId.systemDefault());
 
     }
+/*----------------------------header--------------------------------------------------------------*/
+
+
+
+    @FXML public void closewindow(ActionEvent event) { getStageFromEvent(event).close(); }
+    @FXML public void minwindow(ActionEvent event) { getStageFromEvent(event).setIconified(true); }
+    @FXML public void maxwindow(ActionEvent event) {
+        Stage stage = getStageFromEvent(event);
+        stage.setMaximized(!stage.isMaximized());
+
+    }
+
+    private Stage getStageFromEvent(ActionEvent event) {
+        if (event == null) return getStage();
+
+        Object src = event.getSource();
+        if (src instanceof Node n) return (Stage) n.getScene().getWindow();
+        if (src instanceof MenuItem mi) return (Stage) mi.getParentPopup().getOwnerWindow();
+        throw new IllegalArgumentException("Unknown event source: " + src);
+    }
+
+    private void switchScene(ActionEvent event, String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage stage = getStageFromEvent(event);
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML public void goToHome(ActionEvent event) { switchScene(event, "/Frontoffice/HomePage.fxml"); }
+    @FXML public void goToDestinations(ActionEvent event) { }
+    @FXML public void goToPosts(ActionEvent event) { switchScene(event, "/Frontoffice/PostsPage.fxml"); }
+    @FXML public void goToactivities(ActionEvent event) { }
+    @FXML
+    private void goToMyProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogProfileView.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/Frontoffice/css/blog_styles.css").toExternalForm()
+            );
+
+            Stage stage;
+
+            if (event.getSource() instanceof javafx.scene.control.MenuItem menuItem) {
+                stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
+            } else {
+                stage = (Stage) ((Node) event.getSource())
+                        .getScene()
+                        .getWindow();
+            }
+
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML public void goToMyPosts(ActionEvent event) { }
+
+    private Stage getStage() {
+        return (Stage) root.getScene().getWindow();
+    }
+
+    @FXML
+    public void openProfileMenu(ActionEvent event) {
+        if (profileMenu == null || btnProfile == null) return;
+
+        if (profileMenu.isShowing()) {
+            profileMenu.hide();
+            return;
+        }
+
+        profileMenu.show(btnProfile, Side.BOTTOM, 0, 6);
+    }
+    @FXML
+    void goToMyReservations(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML public void goToMyActivities(ActionEvent event) { switchScene(event, "/Frontoffice/MyActivitiesPage.fxml"); }
+
+    @FXML
+    public void handleLogout(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("Are you sure you want to logout?");
+        alert.setContentText("You will be returned to the login screen.");
+        alert.showAndWait();
+    }
+
+    /*-------------------------------------------------------------------------------------------------------------------------*/
+
 
     private void toggleMessages(){
 
@@ -211,6 +321,20 @@ private PostService postService = new PostService();
 
         List<Conversation> conversations =
                 ConversationService.getAllPossibleConversations(currentUser.getId());
+
+        Map<Conversation, Message> lastMessageMap = new HashMap<>();
+        for (Conversation conv : conversations) {
+            lastMessageMap.put(conv, messageService.getLastMessage(conv.getId()));
+        }
+
+// On trie la liste en utilisant la Map
+        conversations.sort((c1, c2) -> {
+            Message m1 = lastMessageMap.get(c1);
+            Message m2 = lastMessageMap.get(c2);
+            if (m1 == null || m1.getSentAt() == null) return 1;
+            if (m2 == null || m2.getSentAt() == null) return -1;
+            return m2.getSentAt().compareTo(m1.getSentAt());
+        });
 
         for (Conversation conv : conversations) {
 
@@ -296,6 +420,10 @@ private PostService postService = new PostService();
             HBox row = new HBox(10, avatar, textBox, spacer, redDot, timeLabel);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("message-row");
+
+            row.setMinWidth(360);
+            row.setPrefWidth(360);
+            row.setMaxWidth(360);
 
             CustomMenuItem item = new CustomMenuItem(row);
             item.setHideOnClick(true);
@@ -405,16 +533,6 @@ private PostService postService = new PostService();
         }catch(Exception e){
             e.printStackTrace();
         }
-    }
-    private void toggleNotifications() {
-
-        if (notifMenu.isShowing()) {
-            notifMenu.hide();
-            return;
-        }
-
-//        loadNotifications();
-        notifMenu.show(btnNotif, Side.BOTTOM, 0, 8);
     }
 
 
@@ -663,7 +781,6 @@ private PostService postService = new PostService();
 
         commentBox.getChildren().addAll(commentBtn, comments);
 
-        // STAR
         // ================= FAVORIS =================
         HBox starBox = new HBox(6);
         starBox.setAlignment(Pos.CENTER_LEFT);
@@ -671,15 +788,17 @@ private PostService postService = new PostService();
         Button starBtn = new Button();
         starBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         starBtn.setPadding(Insets.EMPTY);
-
+        starBtn.setMinSize(28, 28);
+        starBtn.setPrefSize(28, 28);
+        starBtn.setMaxSize(28, 28);
         ImageView favEmptyIcon = new ImageView(starEmpty);
-        favEmptyIcon.setFitWidth(18);
-        favEmptyIcon.setFitHeight(18);
+        favEmptyIcon.setFitWidth(28);
+        favEmptyIcon.setFitHeight(20);
+
 
         ImageView favFullIcon = new ImageView(starFull);
-        favFullIcon.setFitWidth(18);
-        favFullIcon.setFitHeight(18);
-
+        favFullIcon.setFitWidth(20);
+        favFullIcon.setFitHeight(20);
 // vérifier si le post est déjà en favoris
         boolean isFav = favorisService.isFavori(currentUser, post);
 
@@ -718,8 +837,8 @@ private PostService postService = new PostService();
 
         ImageView shareIcon = new ImageView(shareImage);
 
-        shareIcon.setFitWidth(30);
-        shareIcon.setFitHeight(30);
+        shareIcon.setFitWidth(20);
+        shareIcon.setFitHeight(20);
         shareIcon.setPreserveRatio(true);
 
         shareBtn.setGraphic(shareIcon);
@@ -1022,6 +1141,8 @@ private PostService postService = new PostService();
 
         MenuItem updateItem = new MenuItem("Modifier", editIcon);
         MenuItem deleteItem = new MenuItem("Supprimer", deleteIcon);
+        updateItem.getStyleClass().add("update-item");
+        deleteItem.getStyleClass().add("delete-item");
 
         // ACTION UPDATE
         updateItem.setOnAction(e -> handleUpdatePost(post));
@@ -1408,7 +1529,6 @@ private PostService postService = new PostService();
         timeline.setCycleCount(1);
         timeline.play();
     }
-
 
 }
 

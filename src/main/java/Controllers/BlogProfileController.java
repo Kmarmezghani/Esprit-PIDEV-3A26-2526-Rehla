@@ -6,7 +6,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.CacheHint;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -39,9 +41,11 @@ import java.util.List;
 public class BlogProfileController {
 
     @FXML private BorderPane root;
+    @FXML private Button btnProfile;
 
+    @FXML private ContextMenu profileMenu;
     @FXML private ImageView profileAvatar;
-    @FXML private ImageView currentUserAvatar;
+
     @FXML private ImageView composerAvatar;
 
     @FXML private Label profileName;
@@ -49,9 +53,8 @@ public class BlogProfileController {
     @FXML private Label postsCountLabel;
     @FXML private Label followersCountLabel;
     @FXML private Label favoritesCountLabel;
-    @FXML private Label currentUserName;
 
-    @FXML private TextField searchField;
+
     @FXML private ToggleButton tabPosts;
     @FXML private ToggleButton tabFavorites;
     @FXML private ToggleButton tabAbout;
@@ -67,8 +70,6 @@ public class BlogProfileController {
     private PostService postService = new PostService();
     private CommentaireService commentaireService = new CommentaireService();
     private FavorisService favorisService = new FavorisService();
-    @FXML private Button fullscreenButton;
-    @FXML private Button closeButton;
     @FXML
     private StackPane stackRoot;   // racine pour overlay
     private LikeService likeService = new LikeService();
@@ -105,18 +106,7 @@ public class BlogProfileController {
 
     @FXML
     private void initialize() {
-        closeButton.setOnAction(e -> {
-            root.setCache(false);
-            root.setEffect(null);
-            Stage stage = (Stage) root.getScene().getWindow();
-            stage.close();
-        });
 
-        // Fullscreen : bascule la fenêtre en plein écran
-        fullscreenButton.setOnAction(e -> {
-            Stage stage = (Stage) root.getScene().getWindow();
-            stage.setFullScreen(!stage.isFullScreen());
-        });
         initProfileInfo();
 
         renderPosts(allPosts);
@@ -128,6 +118,96 @@ public class BlogProfileController {
         loadPostsFromDatabase();
 
     }
+
+
+    /*----------------------------header--------------------------------------------------------------*/
+
+
+
+    @FXML public void closewindow(ActionEvent event) { getStageFromEvent(event).close(); }
+    @FXML public void minwindow(ActionEvent event) { getStageFromEvent(event).setIconified(true); }
+    @FXML public void maxwindow(ActionEvent event) {
+        Stage stage = getStageFromEvent(event);
+        stage.setMaximized(!stage.isMaximized());
+
+    }
+
+    private Stage getStageFromEvent(ActionEvent event) {
+        if (event == null) return getStage();
+
+        Object src = event.getSource();
+        if (src instanceof Node n) return (Stage) n.getScene().getWindow();
+        if (src instanceof MenuItem mi) return (Stage) mi.getParentPopup().getOwnerWindow();
+        throw new IllegalArgumentException("Unknown event source: " + src);
+    }
+
+    private void switchScene(ActionEvent event, String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage stage = getStageFromEvent(event);
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML public void goToHome(ActionEvent event) { switchScene(event, "/Frontoffice/HomePage.fxml"); }
+    @FXML public void goToDestinations(ActionEvent event) { }
+    @FXML public void goToPosts(ActionEvent event) { switchScene(event, "/Frontoffice/PostsPage.fxml"); }
+    @FXML public void goToactivities(ActionEvent event) { }
+    @FXML public void goToMyProfile(ActionEvent event) { }
+    @FXML public void goToMyPosts(ActionEvent event) { }
+
+    private Stage getStage() {
+        return (Stage) root.getScene().getWindow();
+    }
+
+    @FXML
+    public void openProfileMenu(ActionEvent event) {
+        if (profileMenu == null || btnProfile == null) return;
+
+        if (profileMenu.isShowing()) {
+            profileMenu.hide();
+            return;
+        }
+
+        profileMenu.show(btnProfile, Side.BOTTOM, 0, 6);
+    }
+@FXML
+void goToMyReservations(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
+        Parent root = loader.load();
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+        stage.setScene(new Scene(root));
+        stage.show();
+    } catch (Exception e) {
+        e.printStackTrace();
+        showInfo("Profile", "Could not open profile page.");
+    }
+}
+    @FXML public void goToMyActivities(ActionEvent event) { switchScene(event, "/Frontoffice/MyActivitiesPage.fxml"); }
+
+    @FXML
+    public void handleLogout(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("Are you sure you want to logout?");
+        alert.setContentText("You will be returned to the login screen.");
+        alert.showAndWait();
+    }
+
+    /*-------------------------------------------------------------------------------------------------------------------------*/
+
+
+
     private void loadPostsFromDatabase() {
 
         if (currentUser == null) return;
@@ -165,18 +245,15 @@ public class BlogProfileController {
         );
 
         profileAvatar.setImage(avatarImage);
-        currentUserAvatar.setImage(smallAvatar);
         composerAvatar.setImage(smallAvatar);
-        profileHeadline.setText(
-                currentUser.getRole() != null
-                        ? currentUser.getRole()
-                        : "Utilisateur"
-        );
         profileName.setText(currentUser.getNom() + " " + currentUser.getPrenom());
+        profileName.setStyle("-fx-text-fill: black; -fx-font-weight: bold; -fx-font-size: 80px;"); // On force le noir ici
 
+        profileHeadline.setText(
+                currentUser.getRole() != null ? currentUser.getRole() : "Utilisateur"
+        );
+        profileHeadline.setStyle("-fx-text-fill: #000000; -fx-font-size: 20px;");
 
-
-        currentUserName.setText(currentUser.getPrenom());
         postsCountLabel.setText("18");
         followersCountLabel.setText("1.2K");
         favoritesCountLabel.setText("87");
@@ -685,8 +762,10 @@ public class BlogProfileController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ProfilePage.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) searchField.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
             stage.setScene(new Scene(root));
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
             showInfo("Profile", "Could not open profile page.");

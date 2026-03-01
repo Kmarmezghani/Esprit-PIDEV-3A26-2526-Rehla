@@ -19,7 +19,6 @@ public class UpdatePostController {
 
     @FXML private TextField txtTitre;
     @FXML private TextArea txtContenu;
-    @FXML private TextField txtPopularite;
     @FXML private TextField txtAuteurId;
     @FXML private ImageView imagePreview;
 
@@ -34,7 +33,6 @@ public class UpdatePostController {
 
         txtTitre.setText(post.getTitre());
         txtContenu.setText(post.getContenu());
-        txtPopularite.setText(String.valueOf(post.getPopularite()));
         txtAuteurId.setText(String.valueOf(post.getAuteur().getId()));
 
         if (post.getImage() != null && !post.getImage().isEmpty()) {
@@ -85,7 +83,6 @@ public class UpdatePostController {
             // Mise à jour
             postToEdit.setTitre(txtTitre.getText().trim());
             postToEdit.setContenu(txtContenu.getText().trim());
-            postToEdit.setPopularite(Integer.parseInt(txtPopularite.getText()));
 
 
 
@@ -101,8 +98,6 @@ public class UpdatePostController {
             Stage stage = (Stage) txtTitre.getScene().getWindow();
             stage.close();
 
-        } catch (NumberFormatException e) {
-            showError("La popularité doit être un nombre !");
         } catch (Exception e) {
             showError(e.getMessage());
         }

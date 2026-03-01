@@ -71,25 +71,25 @@ public class FavorisViewPostController {
             DateTimeFormatter.ofPattern("dd MMM yyyy");
     private String selectedImagePath = null;
     private static final Image ICON_LIKE_EMPTY =
-            new Image(BlogProfileController.class.getResource("/icons/blackHeart.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/blackHeart.png").toExternalForm());
 
     private static final Image ICON_LIKE_FULL =
-            new Image(BlogProfileController.class.getResource("/icons/HeartRed.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/HeartRed.png").toExternalForm());
 
     private static final Image ICON_COMMENT =
-            new Image(BlogProfileController.class.getResource("/icons/commentB.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/commentB.png").toExternalForm());
 
     private static final Image ICON_FAV_EMPTY =
-            new Image(BlogProfileController.class.getResource("/icons/blackStar.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/blackStar.png").toExternalForm());
 
     private static final Image ICON_FAV_FULL =
-            new Image(BlogProfileController.class.getResource("/icons/yellowStar.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/yellowStar.png").toExternalForm());
 
     private static final Image ICON_EDIT =
-            new Image(BlogProfileController.class.getResource("/icons/editblue.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/editblue.png").toExternalForm());
 
     private static final Image ICON_DELETE =
-            new Image(BlogProfileController.class.getResource("/icons/delete.png").toExternalForm());
+            new Image(BlogProfileController.class.getResource("/Backoffice/icons/delete.png").toExternalForm());
 
 
     @FXML
@@ -144,11 +144,11 @@ public class FavorisViewPostController {
     private void initProfileInfo() {
         // Tu peux remplacer par tes vraies images
         Image avatarImage = new Image(
-                getClass().getResource("/icons/usericon.png").toExternalForm(),
+                getClass().getResource("/Backoffice/icons/usericon.png").toExternalForm(),
                 120, 120, true, true
         );
         Image smallAvatar = new Image(
-                getClass().getResource("/icons/usericon.png").toExternalForm(),
+                getClass().getResource("/Backoffice/icons/usericon.png").toExternalForm(),
                 36, 36, true, true
         );
 
@@ -526,7 +526,7 @@ public class FavorisViewPostController {
 
     private void handleComment(Post post) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CommentPopup.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/CommentPopup.fxml"));
             Parent popup = loader.load();
 
             CommentPopupController controller = loader.getController();

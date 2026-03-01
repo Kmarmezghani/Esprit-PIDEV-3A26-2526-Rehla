@@ -48,7 +48,7 @@ public class ChatPopupController {
         this.receiver = receiver;
         Image avatar = new Image(
                 Objects.requireNonNull(
-                        getClass().getResource("/icons/usericon.png")
+                        getClass().getResource("/Backoffice/icons/usericon.png")
                 ).toExternalForm()
         );
 
@@ -187,7 +187,7 @@ public class ChatPopupController {
         } else {
 
             ImageView profileImage = new ImageView(
-                    new Image(getClass().getResourceAsStream("/icons/usericon.png"))
+                    new Image(getClass().getResourceAsStream("/Backoffice/icons/usericon.png"))
             );
 
             profileImage.setFitWidth(30);

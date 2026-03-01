@@ -200,7 +200,6 @@ public class DashboardController {
     @FXML private TableColumn<Post, String> colTitrePost;
     @FXML private TableColumn<Post, String> colContenuPost;
     @FXML private TableColumn<Post, java.time.LocalDate> colDatePost;
-    @FXML private TableColumn<Post, Integer> colPopularitePost;
     @FXML private TableColumn<Post, String> colAuteurPost;
     @FXML private TableColumn<Post, Integer> colLikesPost;
     @FXML
@@ -1555,7 +1554,6 @@ public class DashboardController {
         colTitrePost.setCellValueFactory(new PropertyValueFactory<>("titre"));
         colContenuPost.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         colDatePost.setCellValueFactory(new PropertyValueFactory<>("datePublication"));
-        colPopularitePost.setCellValueFactory(new PropertyValueFactory<>("popularite"));
         colLikesPost.setCellValueFactory(new PropertyValueFactory<>("nbLikes"));
 
         colAuteurPost.setCellValueFactory(cellData -> {

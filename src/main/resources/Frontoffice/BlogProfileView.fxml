@@ -7,56 +7,144 @@
 <?import javafx.scene.text.Font?>
 
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.image.Image?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="Controllers.BlogProfileController" fx:id="stackRoot">
+           fx:controller="Controllers.BlogProfileController" fx:id="stackRoot" stylesheets="@/Frontoffice/css/profile-menu.css">
 
     <BorderPane fx:id="root" styleClass="root">
 
     <!-- ====== BARRE HAUTE (HEADER) ====== -->
-    <top>
-        <HBox spacing="20" alignment="CENTER_LEFT"
-              style="-fx-background-color: linear-gradient(to right, #a7a3ec, #3B82F6, #06B6D4);
-             -fx-padding: 10 25;
-             -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.5), 20, 0.4, 0, 4);">
+        <top>
+            <HBox alignment="CENTER_LEFT" prefHeight="70.0"
+                  style="-fx-background-color: #223f91;" BorderPane.alignment="CENTER">
+                <children>
 
-        <!-- Logo / Titre du site -->
-            <Label text="MyBlogSphere"
-                   style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;"/>
-            <Region HBox.hgrow="ALWAYS"/>
+                    <!-- Logo -->
+                    <ImageView fitHeight="60.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                        </image>
+                    </ImageView>
 
-            <!-- Champ de recherche -->
-            <TextField fx:id="searchField"
-                       promptText="Rechercher un blog, un auteur..."
-                       style="-fx-background-radius: 20; -fx-background-color: rgba(255,255,255,0.15);
-                              -fx-text-fill: white; -fx-prompt-text-fill: #E0E0E0;
-                              -fx-border-color: rgba(255,255,255,0.3); -fx-border-radius: 20;
-                              -fx-border-width: 1; -fx-padding: 4 12;"/>
-            <!-- Notifications -->
-            <Button text="🔔"
-                    style="-fx-font-size: 18px; -fx-background-color: transparent;
-                           -fx-text-fill: white; -fx-cursor: hand;"/>
-            <!-- Profil connecté -->
-            <HBox spacing="8" alignment="CENTER_RIGHT">
-                <ImageView fx:id="currentUserAvatar" fitHeight="32" fitWidth="32"
-                           style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8,0,0,1);
-                                   -fx-background-radius: 16; -fx-border-radius: 16;"/>
-                <Label fx:id="currentUserName"
-                       text="Vous"
-                       style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <!-- Center nav -->
+                    <HBox alignment="CENTER" spacing="22.0">
+                        <Button onAction="#goToHome"
+                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                text="Home" />
+                        <Button onAction="#goToDestinations"
+                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                text="Destinations" />
+                        <Button onAction="#goToPosts"
+                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                text="Posts" />
+                        <Button onAction="#goToactivities"
+                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                text="Activities" />
+                        <Button
+                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                                text="About" />
+                    </HBox>
+
+                    <Region HBox.hgrow="ALWAYS" />
+                    <StackPane>
+                        <HBox.margin>
+                            <Insets right="15.0"/>
+                        </HBox.margin>
+                        <Button fx:id="btnMessage" text="💬" styleClass="iconBtn"/>
+
+                        <Label fx:id="lblMessageBadge"
+                               visible="false"
+                               style="-fx-background-color: red;
+                  -fx-text-fill: white;
+                  -fx-font-size: 10;
+                  -fx-padding: 1 5 1 5;
+                  -fx-background-radius: 10;"
+                               StackPane.alignment="TOP_RIGHT"/>
+                    </StackPane>
+
+                    <!-- PROFILE -->
+                    <Button fx:id="btnProfile" onAction="#openProfileMenu"
+                            styleClass="iconBtn" text="👤">
+                        <HBox.margin><Insets right="20.0"/></HBox.margin>
+
+                        <contextMenu>
+                            <ContextMenu fx:id="profileMenu" styleClass="profileMenu">
+                                <items>
+
+                                    <MenuItem onAction="#goToMyProfile" text="My Profile">
+                                        <graphic>
+                                            <SVGPath content="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"
+                                                     style="-fx-fill: #374151; -fx-scale-x: 0.8; -fx-scale-y: 0.8;"/>
+                                        </graphic>
+                                    </MenuItem>
+
+                                    <MenuItem onAction="#goToMyPosts" text="My Posts">
+                                        <graphic>
+                                            <SVGPath styleClass="menuIcon"
+                                                     content="M9 6l1.5-2h3L15 6h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3zm3 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-2.2a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/>
+                                        </graphic>
+                                    </MenuItem>
+
+                                    <MenuItem onAction="#goToMyReservations" text="My Reservations">
+                                        <graphic>
+                                            <SVGPath styleClass="menuIcon"
+                                                     content="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5V6h14v2zM7 12h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/>
+                                        </graphic>
+                                    </MenuItem>
+
+                                    <MenuItem onAction="#goToMyActivities" text="My Activities">
+                                        <graphic>
+                                            <SVGPath styleClass="menuIcon"
+                                                     content="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm3.2 4.8l-1.9 5-5 1.9 1.9-5 5-1.9z"/>
+                                        </graphic>
+                                    </MenuItem>
+
+                                    <SeparatorMenuItem/>
+
+                                    <MenuItem onAction="#handleLogout" text="Logout">
+                                        <graphic>
+                                            <SVGPath content="M10 3v2h6v14h-6v2h8V3z M4 12l4-4v3h8v2H8v3z"
+                                                     style="-fx-fill: #dc2626; -fx-scale-x: 0.8; -fx-scale-y: 0.8;"/>
+                                        </graphic>
+                                    </MenuItem>
+
+                                </items>
+                            </ContextMenu>
+                        </contextMenu>
+                    </Button>
+
+                    <!-- window buttons -->
+                    <Button onAction="#minwindow"
+                            style="-fx-text-fill: white; -fx-font-size: 20;"
+                            styleClass="button4"
+                            stylesheets="@../Backoffice/css/styling.css"
+                            text="−" />
+                    <Button onAction="#maxwindow"
+                            style="-fx-text-fill: white; -fx-font-size: 20;"
+                            styleClass="button4"
+                            stylesheets="@../Backoffice/css/styling.css"
+                            text="□" />
+                    <Button onAction="#closewindow"
+                            style="-fx-text-fill: white; -fx-font-size: 16;"
+                            styleClass="button3"
+                            stylesheets="@../Backoffice/css/styling.css"
+                            text="✕">
+                        <HBox.margin><Insets top="4.0"/></HBox.margin>
+                    </Button>
+
+                </children>
+
+                <padding>
+                    <Insets left="30.0" right="30.0" />
+                </padding>
             </HBox>
-            <HBox spacing="8" alignment="CENTER_RIGHT" style="-fx-padding: 5 25 5 25;">
-                <Button text="⛶"
-                        style="-fx-background-color: transparent; -fx-font-size: 16px; -fx-cursor: hand;"
-                        fx:id="fullscreenButton"/>
-                <Button text="✖"
-                        style="-fx-background-color: transparent; -fx-font-size: 16px; -fx-cursor: hand;"
-                        fx:id="closeButton"/>
-            </HBox>
-        </HBox>
-    </top>
+        </top>
 
-    <!-- ====== CONTENU PRINCIPAL ====== -->
+        <!-- ====== CONTENU PRINCIPAL ====== -->
     <center>
         <BorderPane>
 

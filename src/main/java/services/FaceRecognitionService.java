@@ -56,7 +56,7 @@ public class FaceRecognitionService {
     }
 
     private void loadConfig() {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("Frontoffice/config.properties")) {
             if (input != null) {
                 Properties props = new Properties();
                 props.load(input);

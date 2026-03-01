@@ -13,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -111,49 +112,78 @@ private PostService postService = new PostService();
     private Image shareImage;
     private Image editImage;
     private Image deleteImage;
+    private static final Image AVATAR_IMAGE =
+            new Image(
+                    ClientPostsController.class
+                            .getResource("/Backoffice/icons/usericon.png")
+                            .toExternalForm(),
+                    40,   // largeur max
+                    40,   // hauteur max
+                    true,
+                    false // ❗ smooth = false (moins GPU)
+            );
+    private static final Image HEART_EMPTY =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/blackHeart.png")
+                    .toExternalForm());
 
+    private static final Image HEART_FULL =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/HeartRed.png")
+                    .toExternalForm());
+
+    private static final Image STAR_EMPTY =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/blackStar.png")
+                    .toExternalForm());
+
+    private static final Image STAR_FULL =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/yellowStar.png")
+                    .toExternalForm());
+
+    private static final Image SHARE_IMAGE =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/shareNoir.png")
+                    .toExternalForm());
+
+    private static final Image EDIT_IMAGE =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/editblue.png")
+                    .toExternalForm());
+
+    private static final Image DELETE_IMAGE =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/poubelle.png")
+                    .toExternalForm());
+    private static final Image COMMENT_EMPTY =
+            new Image(ClientPostsController.class
+                    .getResource("/Backoffice/icons/commentB.png")
+                    .toExternalForm());
     @FXML
     private void initialize() {
+        if(currentUser == null ||
+                currentUser.getRole() == null ||
+                !currentUser.getRole().equalsIgnoreCase("admin")) {
 
-        heartEmpty = new Image(getClass().getResourceAsStream("/Backoffice/icons/blackHeart.png"));
-        heartFull = new Image(getClass().getResourceAsStream("/Backoffice/icons/HeartRed.png"));
+            btnNotif.setVisible(false);
+            btnNotif.setManaged(false);
+        }
 
-
-        commentEmpty = new Image(getClass()
-                .getResourceAsStream("/Backoffice/icons/commentB.png"));
-
-        starEmpty = new Image(getClass().getResourceAsStream("/Backoffice/icons/blackStar.png"));
-        starFull = new Image(getClass().getResourceAsStream("/Backoffice/icons/yellowStar.png"));
-
-        avatarImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/usericon.png")).toExternalForm()
-        );
-
-        shareImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/shareNoir.png")).toExternalForm()
-        );
-
-        editImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/editblue.png")).toExternalForm()
-        );
-
-        deleteImage = new Image(
-                Objects.requireNonNull(getClass().getResource("/Backoffice/icons/poubelle.png")).toExternalForm()
-        );
-        timeUpdater = new Timeline(
-                new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
-        );
-        timeUpdater.setCycleCount(Timeline.INDEFINITE);
-        timeUpdater.play();
-        conversationUpdater = new Timeline(
-                new KeyFrame(javafx.util.Duration.seconds(5), e -> {
-                    if (messageMenu.isShowing()) {
-                        loadConversations();
-                    }
-                })
-        );
-        conversationUpdater.setCycleCount(Timeline.INDEFINITE);
-        conversationUpdater.play();
+//        timeUpdater = new Timeline(
+//                new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
+//        );
+//        timeUpdater.setCycleCount(Timeline.INDEFINITE);
+//        timeUpdater.play();
+//        conversationUpdater = new Timeline(
+//                new KeyFrame(javafx.util.Duration.seconds(5), e -> {
+//                    if (messageMenu.isShowing()) {
+//                        loadConversations();
+//                    }
+//                })
+//        );
+//        conversationUpdater.setCycleCount(Timeline.INDEFINITE);
+//        conversationUpdater.play();
         Timeline badgeUpdater = new Timeline(
                 new KeyFrame(javafx.util.Duration.seconds(5),
                         e -> updateUnreadMessagesBadge())
@@ -500,7 +530,7 @@ private PostService postService = new PostService();
                 timeText = formatTime(lastMessage.getSentAt());
             }
 
-            ImageView avatar = new ImageView(avatarImage);
+            ImageView avatar = new ImageView(AVATAR_IMAGE);
             avatar.setFitWidth(45);
             avatar.setFitHeight(45);
             avatar.setClip(new Circle(22.5, 22.5, 22.5));
@@ -696,10 +726,12 @@ private PostService postService = new PostService();
                                 Map<Integer, Integer> commentCounts){
 
 
-    VBox card = new VBox(10);
+        VBox card = new VBox(10);
         card.getStyleClass().addAll("post", "glass");
 
-        // ⭐ ID utilisé pour navigation notification
+        card.setCache(true);
+        card.setCacheHint(CacheHint.SPEED);
+
         card.setUserData(post.getId());
 
         // ================= HEADER =================
@@ -707,10 +739,14 @@ private PostService postService = new PostService();
         header.setAlignment(Pos.CENTER_LEFT);
 
 // Avatar
-        ImageView avatar = new ImageView(avatarImage);
-
+        ImageView avatar = new ImageView(AVATAR_IMAGE);
         avatar.setFitWidth(40);
         avatar.setFitHeight(40);
+        avatar.setPreserveRatio(true);
+        avatar.setSmooth(false);
+        avatar.setCache(true);
+        avatar.setCacheHint(CacheHint.SPEED);
+
         avatar.getStyleClass().add("avatar");
 
 // User info
@@ -787,14 +823,8 @@ private PostService postService = new PostService();
                 StackPane mediaPane = new StackPane();
                 mediaPane.getStyleClass().add("media");
 
-                Image img = new Image(
-                        file.toURI().toString(),
-                        680,
-                        0,
-                        true,
-                        true,
-                        true
-                );
+                Image img = loadSafeImage(file);
+
                 ImageView postImg = new ImageView(img);
 
 
@@ -833,16 +863,18 @@ private PostService postService = new PostService();
         Button likeBtn = new Button();
         likeBtn.getStyleClass().add("like-btn");
 
-        ImageView likeIcon = new ImageView(heartEmpty);
+        ImageView likeIcon = new ImageView(HEART_EMPTY);
 
 
         if (likeService.isLikedByUser(currentUser, post)) {
-            likeIcon.setImage(heartFull);
+            likeIcon.setImage(HEART_FULL);
         }
         likeIcon.setFitWidth(25);
         likeIcon.setFitHeight(25);
         likeIcon.setPreserveRatio(true);
-        likeIcon.setSmooth(true);
+        likeIcon.setSmooth(false);
+        likeIcon.setCache(true);
+        likeIcon.setCacheHint(CacheHint.SPEED);
 
         likeBtn.setGraphic(likeIcon);
         int nbLikes = likeService.getNbLikes(post);
@@ -853,15 +885,15 @@ private PostService postService = new PostService();
         likes.setStyle("-fx-cursor: hand;");
         likeBtn.setOnAction(e -> {
 
-            if (likeIcon.getImage() == heartEmpty) {
+            if (likeIcon.getImage() == HEART_EMPTY) {
 
                 likeService.addLike(currentUser, post);
-                likeIcon.setImage(heartFull);
+                likeIcon.setImage(HEART_FULL);
 
             } else {
 
                 likeService.deleteLike(currentUser, post);
-                likeIcon.setImage(heartEmpty);
+                likeIcon.setImage(HEART_EMPTY);
             }
 
             int newCount = likeService.getNbLikes(post);
@@ -878,9 +910,13 @@ private PostService postService = new PostService();
         Button commentBtn = new Button();
         commentBtn.setStyle("-fx-background-color: transparent;");
 
-        ImageView commentIcon = new ImageView(commentEmpty);
-        commentIcon.setFitWidth(21);
-        commentIcon.setFitHeight(21);
+        ImageView commentIcon = new ImageView(COMMENT_EMPTY);
+        commentIcon.setFitWidth(18);
+        commentIcon.setFitHeight(18);
+        commentIcon.setPreserveRatio(true);
+        commentIcon.setSmooth(false);
+        commentIcon.setCache(true);
+        commentIcon.setCacheHint(CacheHint.SPEED);
 
         commentBtn.setGraphic(commentIcon);
 
@@ -897,6 +933,7 @@ private PostService postService = new PostService();
 
         commentBox.getChildren().addAll(commentBtn, comments);
 
+        // STAR
         // ================= FAVORIS =================
         HBox starBox = new HBox(6);
         starBox.setAlignment(Pos.CENTER_LEFT);
@@ -904,17 +941,23 @@ private PostService postService = new PostService();
         Button starBtn = new Button();
         starBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
         starBtn.setPadding(Insets.EMPTY);
-        starBtn.setMinSize(28, 28);
-        starBtn.setPrefSize(28, 28);
-        starBtn.setMaxSize(28, 28);
-        ImageView favEmptyIcon = new ImageView(starEmpty);
-        favEmptyIcon.setFitWidth(28);
-        favEmptyIcon.setFitHeight(20);
 
+        ImageView favEmptyIcon = new ImageView(STAR_EMPTY);
+        favEmptyIcon.setFitWidth(22);
+        favEmptyIcon.setFitHeight(22);
+        favEmptyIcon.setPreserveRatio(true);
+        favEmptyIcon.setSmooth(false);
+        favEmptyIcon.setCache(true);
+        favEmptyIcon.setCacheHint(CacheHint.SPEED);
 
-        ImageView favFullIcon = new ImageView(starFull);
-        favFullIcon.setFitWidth(20);
-        favFullIcon.setFitHeight(20);
+        ImageView favFullIcon = new ImageView(STAR_FULL);
+        favFullIcon.setFitWidth(22);
+        favFullIcon.setFitHeight(22);
+        favFullIcon.setPreserveRatio(true);
+        favFullIcon.setSmooth(false);
+        favFullIcon.setCache(true);
+        favFullIcon.setCacheHint(CacheHint.SPEED);
+
 // vérifier si le post est déjà en favoris
         boolean isFav = favorisService.isFavori(currentUser, post);
 
@@ -951,12 +994,15 @@ private PostService postService = new PostService();
         Button shareBtn = new Button();
         shareBtn.setStyle("-fx-background-color: transparent;");
 
-        ImageView shareIcon = new ImageView(shareImage);
+        ImageView shareIcon = new ImageView(SHARE_IMAGE);
 
-        shareIcon.setFitWidth(20);
-        shareIcon.setFitHeight(20);
+        shareIcon.setFitWidth(25);
+        shareIcon.setFitHeight(25);
         shareIcon.setPreserveRatio(true);
-
+        shareIcon.setPreserveRatio(true);
+        shareIcon.setSmooth(false);
+        shareIcon.setCache(true);
+        shareIcon.setCacheHint(CacheHint.SPEED);
         shareBtn.setGraphic(shareIcon);
 
         shareBox.getChildren().add(shareBtn);
@@ -970,6 +1016,16 @@ private PostService postService = new PostService();
         card.getChildren().add(footer);
 
         return card;
+    }
+    private Image loadSafeImage(File file) {
+        return new Image(
+                file.toURI().toString(),
+                600,   // max width
+                400,   // max height
+                true,
+                false,
+                true
+        );
     }
 
     private void sharePost(Post post){
@@ -1183,14 +1239,9 @@ private PostService postService = new PostService();
             Parent popup = loader.load();
             CommentPopupController controller = loader.getController();
 
-            // ⚡ Important : passer le post pour charger les commentaires
             controller.setPost(post);
+            mainContent.setOpacity(0.6);
 
-            // 🔥 Blur seulement sur le blog
-            GaussianBlur blur = new GaussianBlur(20);
-            mainContent.setEffect(blur);
-
-            // 🔥 Fond sombre
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
 
@@ -1200,7 +1251,7 @@ private PostService postService = new PostService();
             root.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                mainContent.setEffect(null);
+                mainContent.setOpacity(1);
                 root.getChildren().remove(overlay);
                 loadPosts();
             });
@@ -1246,19 +1297,24 @@ private PostService postService = new PostService();
 
         ContextMenu menu = new ContextMenu();
 
-        ImageView editIcon = new ImageView(editImage);
+        ImageView editIcon = new ImageView(EDIT_IMAGE);
         editIcon.setFitWidth(16);
         editIcon.setFitHeight(16);
-
-        ImageView deleteIcon = new ImageView(deleteImage);
+        editIcon.setPreserveRatio(true);
+        editIcon.setSmooth(false);
+        editIcon.setCache(true);
+        editIcon.setCacheHint(CacheHint.SPEED);
+        ImageView deleteIcon = new ImageView(DELETE_IMAGE);
         deleteIcon.setFitWidth(16);
         deleteIcon.setFitHeight(16);
+        deleteIcon.setPreserveRatio(true);
+        deleteIcon.setSmooth(false);
+        deleteIcon.setCache(true);
+        deleteIcon.setCacheHint(CacheHint.SPEED);
 
 
         MenuItem updateItem = new MenuItem("Modifier", editIcon);
         MenuItem deleteItem = new MenuItem("Supprimer", deleteIcon);
-        updateItem.getStyleClass().add("update-item");
-        deleteItem.getStyleClass().add("delete-item");
 
         // ACTION UPDATE
         updateItem.setOnAction(e -> handleUpdatePost(post));
@@ -1481,9 +1537,7 @@ private PostService postService = new PostService();
             UpdatePostPopupController controller = loader.getController();
             controller.setPost(post);
 
-
-            GaussianBlur blur = new GaussianBlur(20);
-            mainContent.setEffect(blur);
+            mainContent.setOpacity(0.6);
 
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
@@ -1494,10 +1548,9 @@ private PostService postService = new PostService();
             root.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                mainContent.setEffect(null);
+                mainContent.setOpacity(1);
                 root.getChildren().remove(overlay);
 
-                loadPosts();
             });
 
 
@@ -1505,6 +1558,7 @@ private PostService postService = new PostService();
             e.printStackTrace();
         }
     }
+
 
     private void handleLikes(Post post) {
         try {
@@ -1514,9 +1568,7 @@ private PostService postService = new PostService();
             LikesPopupController controller = loader.getController();
             controller.setPost(post);
 
-
-            GaussianBlur blur = new GaussianBlur(20);
-            mainContent.setEffect(blur);
+            mainContent.setOpacity(0.6);
 
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
@@ -1527,7 +1579,7 @@ private PostService postService = new PostService();
             root.getChildren().add(overlay);
 
             controller.setOnClose(() -> {
-                mainContent.setEffect(null);
+                mainContent.setOpacity(1);
                 root.getChildren().remove(overlay);
             });
 

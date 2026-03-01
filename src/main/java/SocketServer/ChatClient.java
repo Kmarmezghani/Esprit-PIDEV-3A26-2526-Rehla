@@ -29,7 +29,7 @@ public class ChatClient {
     }
     public ChatClient(int userId) throws Exception{
 
-        socket = new Socket("localhost",5000);
+        socket = new Socket("localhost",5002);
 
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(),true);

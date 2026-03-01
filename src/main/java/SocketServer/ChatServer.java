@@ -10,14 +10,21 @@ public class ChatServer {
 
     public static void main(String[] args) throws Exception{
 
-        ServerSocket server = new ServerSocket(5003);
-        System.out.println("Server chat started...");
-        while(true){
-
-            Socket socket = server.accept();
-
-            new ClientHandler(socket).start();
-
+        ServerSocket server = null;
+        try {
+            server = new ServerSocket(5002);
+            System.out.println("Server chat started on port 5002...");
+            while (true) {
+                Socket socket = server.accept();
+                new ClientHandler(socket).start();
+            }
+        } catch (IOException e) {
+            System.err.println("Error starting server: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (server != null) {
+                try { server.close(); } catch(IOException ignored) {}
+            }
         }
     }
 

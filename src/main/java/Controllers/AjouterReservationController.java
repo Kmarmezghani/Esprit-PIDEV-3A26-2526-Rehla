@@ -48,7 +48,7 @@ public class AjouterReservationController {
     private void loadDestinationsFromDB() {
         try {
             Connection conn = DBConnection.getInstance().getConn();
-            String sql = "SELECT id, nom FROM pays";
+            String sql = "SELECT id, nom FROM ville";
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(sql);
 

@@ -775,7 +775,7 @@ public class MyReservationsController {
     @FXML
     void goToPosts(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PostsPage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/PostsPage.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) searchField.getScene().getWindow();
             stage.setScene(new Scene(root));

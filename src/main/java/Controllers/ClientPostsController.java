@@ -162,13 +162,7 @@ private PostService postService = new PostService();
                     .toExternalForm());
     @FXML
     private void initialize() {
-        if(currentUser == null ||
-                currentUser.getRole() == null ||
-                !currentUser.getRole().equalsIgnoreCase("admin")) {
 
-            btnNotif.setVisible(false);
-            btnNotif.setManaged(false);
-        }
 
 //        timeUpdater = new Timeline(
 //                new KeyFrame(javafx.util.Duration.seconds(10), e -> refreshConversationTimes())
@@ -247,7 +241,29 @@ private PostService postService = new PostService();
     @FXML public void goToHome(ActionEvent event) { switchScene(event, "/Frontoffice/HomePage.fxml"); }
     @FXML public void goToDestinations(ActionEvent event) { }
     @FXML public void goToPosts(ActionEvent event) { switchScene(event, "/Frontoffice/PostsPage.fxml"); }
-    @FXML public void goToactivities(ActionEvent event) { }
+
+
+    @FXML
+    public void goToactivities(ActionEvent event) {
+        switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
+    }
+    private void switchSceneKeepSize(Node anyNodeOnScene, String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @FXML
     private void goToMyProfile(ActionEvent event) {
         try {

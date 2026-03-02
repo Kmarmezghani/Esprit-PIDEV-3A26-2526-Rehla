@@ -451,8 +451,10 @@ public class AjouterActiviteController {
             CBstatus.getSelectionModel().select(activite.getStatus());
         }
 
-        String nomDest = activiteService.getDestinationNameById(activite.getDestinationId());
-        if (nomDest != null && !nomDest.isBlank()) CBdestination.setValue(nomDest);
+        String destDisplay = activiteService.getDestinationDisplayById(activite.getDestinationId()); // "Ville, Pays"
+        if (destDisplay != null && !destDisplay.isBlank()) {
+            CBdestination.setValue(destDisplay);
+        }
 
         if (activite.getDateDebut() != null) {
             DPdateDebut.setValue(activite.getDateDebut().toLocalDate());

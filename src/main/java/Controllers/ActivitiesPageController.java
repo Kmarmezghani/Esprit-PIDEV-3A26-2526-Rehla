@@ -929,9 +929,55 @@ public class ActivitiesPageController {
 
     @FXML public void goToHome(ActionEvent event) { switchScene(event, "/Frontoffice/HomePage.fxml"); }
     @FXML public void goToDestinations(ActionEvent event) { }
-    @FXML public void goToPosts(ActionEvent event) { switchScene(event, "/Frontoffice/PostsPage.fxml"); }
+    @FXML
+    void goToPosts(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogAllPosts.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML public void goToactivities(ActionEvent event) { }
-    @FXML public void goToMyProfile(ActionEvent event) { }
+    @FXML
+    private void goToMyProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogProfileView.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/Frontoffice/css/blog_styles.css").toExternalForm()
+            );
+
+            Stage stage;
+
+            if (event.getSource() instanceof javafx.scene.control.MenuItem menuItem) {
+                stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
+            } else {
+                stage = (Stage) ((Node) event.getSource())
+                        .getScene()
+                        .getWindow();
+            }
+
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @FXML public void goToMyPosts(ActionEvent event) { }
 
     @FXML

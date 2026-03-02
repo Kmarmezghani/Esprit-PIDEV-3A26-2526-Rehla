@@ -5,8 +5,7 @@ import util.DBConnection;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ReviewService implements IService<Review> {
 
@@ -157,5 +156,34 @@ public class ReviewService implements IService<Review> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    public Map<Integer, String> getProfilePhotosForUsers(Set<Integer> userIds) {
+        Map<Integer, String> map = new HashMap<>();
+        if (userIds == null || userIds.isEmpty()) return map;
+
+        String placeholders = String.join(",", Collections.nCopies(userIds.size(), "?"));
+
+        String sql = "SELECT id, profile_photo FROM personne WHERE id IN (" + placeholders + ")";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int i = 1;
+            for (Integer id : userIds) {
+                ps.setInt(i++, id);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String path = rs.getString("profile_photo");
+                    map.put(id, path != null ? path.trim() : null);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return map;
     }
 }

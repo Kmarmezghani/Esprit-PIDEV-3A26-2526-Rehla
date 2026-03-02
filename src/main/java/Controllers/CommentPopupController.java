@@ -23,10 +23,7 @@ import services.PersonneService;
 import services.NotificationService;
 import util.Session;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -59,8 +56,25 @@ public class CommentPopupController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources){
         if (currentUserAvatarView != null) {
-            currentUserAvatarView.setImage(defaultAvatar);
+
+            String path = currentUser.getProfilePhoto();
+
+            if (path != null && !path.isBlank()) {
+
+                File file = new File(path.trim());
+
+                if (file.exists()) {
+                    Image img = new Image(file.toURI().toString());
+                    currentUserAvatarView.setImage(img);
+                } else {
+                    currentUserAvatarView.setImage(defaultAvatar);
+                }
+
+            } else {
+                currentUserAvatarView.setImage(defaultAvatar);
+            }
         }
+
     }
     public void setPost(Post post) {
         this.post = post;
@@ -247,15 +261,40 @@ public class CommentPopupController implements Initializable {
         // ================= HEADER =================
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
-        ImageView avatarView = new ImageView(defaultAvatar);
+        ImageView avatarView = new ImageView();
 
         double size = 35;
+
+        Image imageToUse = defaultAvatar;
+
+        String path = currentUser.getProfilePhoto();
+
+        if (path != null && !path.isBlank()) {
+            File file = new File(path.trim());
+
+            if (file.exists()) {
+                imageToUse = new Image(
+                        file.toURI().toString(),
+                        size, size,
+                        true,
+                        true
+                );
+            }
+        }
+
+        avatarView.setImage(imageToUse);
+
         avatarView.setFitWidth(size);
         avatarView.setFitHeight(size);
         avatarView.setPreserveRatio(true);
         avatarView.setSmooth(true);
-        Circle clip = new Circle(size / 2, size / 2, size / 2);
+
+// Clip circulaire propre
+        Circle clip = new Circle(size / 2);
+        clip.centerXProperty().bind(avatarView.fitWidthProperty().divide(2));
+        clip.centerYProperty().bind(avatarView.fitHeightProperty().divide(2));
         avatarView.setClip(clip);
+
 
 
         VBox nameDate = new VBox(2);

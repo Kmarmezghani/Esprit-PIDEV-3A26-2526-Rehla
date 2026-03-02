@@ -71,8 +71,10 @@ public class LikeService {
                 p.setNom(rs.getString("nom"));
                 p.setPrenom(rs.getString("prenom"));
                 p.setEmail(rs.getString("email"));
+                p.setProfilePhoto(rs.getString("profile_photo"));
                 personnes.add(p);
             }
+
 
         } catch (SQLException e) {
             System.out.println("Erreur récupération personnes : " + e.getMessage());

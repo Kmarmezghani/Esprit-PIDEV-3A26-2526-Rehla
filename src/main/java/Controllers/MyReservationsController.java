@@ -775,13 +775,19 @@ public class MyReservationsController {
     @FXML
     void goToPosts(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/PostsPage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogAllPosts.fxml"));
             Parent root = loader.load();
+
             Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+
         } catch (Exception e) {
             e.printStackTrace();
-            showInfo("Posts", "Posts page loading...");
         }
     }
 
@@ -858,9 +864,33 @@ public class MyReservationsController {
         }
     }
     @FXML
-    void goToMyProfile(ActionEvent event) {
-        System.out.println("📱 My Profile - to be implemented");
-        showInfo("Profile", "My Profile page - implement in your module");
+    private void goToMyProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogProfileView.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/Frontoffice/css/blog_styles.css").toExternalForm()
+            );
+
+            Stage stage;
+
+            if (event.getSource() instanceof javafx.scene.control.MenuItem menuItem) {
+                stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
+            } else {
+                stage = (Stage) ((Node) event.getSource())
+                        .getScene()
+                        .getWindow();
+            }
+
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

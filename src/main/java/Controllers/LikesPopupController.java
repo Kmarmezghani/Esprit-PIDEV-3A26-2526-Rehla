@@ -12,6 +12,7 @@ import models.Personne;
 import models.Post;
 import services.LikeService;
 
+import java.io.File;
 import java.util.List;
 
 public class LikesPopupController {
@@ -57,17 +58,41 @@ public class LikesPopupController {
         userBox.setAlignment(Pos.CENTER_LEFT);
         userBox.getStyleClass().add("comment-item");
 
-        ImageView avatarView = new ImageView(defaultAvatar);
+        ImageView avatarView = new ImageView();
 
         double size = 36;
+
+        Image imageToUse = defaultAvatar;
+
+        String path = p.getProfilePhoto(); // ⚠️ important : utiliser p !
+
+        if (path != null && !path.isBlank()) {
+
+            File file = new File(path.trim());
+
+            if (file.exists()) {
+                imageToUse = new Image(
+                        file.toURI().toString(),
+                        size, size,
+                        true,
+                        true
+                );
+            }
+        }
+
+        avatarView.setImage(imageToUse);
+
         avatarView.setFitWidth(size);
         avatarView.setFitHeight(size);
         avatarView.setPreserveRatio(true);
         avatarView.setSmooth(true);
 
-        // Clip pour garder l'aspect circulaire
-        Circle clip = new Circle(size / 2, size / 2, size / 2);
+// Clip circulaire centré dynamiquement
+        Circle clip = new Circle(size / 2);
+        clip.centerXProperty().bind(avatarView.fitWidthProperty().divide(2));
+        clip.centerYProperty().bind(avatarView.fitHeightProperty().divide(2));
         avatarView.setClip(clip);
+
 
         Label name = new Label(p.getPrenom() + " " + p.getNom());
         name.getStyleClass().add("comment-name");

@@ -6,7 +6,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -19,7 +18,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
@@ -39,6 +37,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ActivityDetailsController {
 
@@ -55,7 +54,6 @@ public class ActivityDetailsController {
     @FXML private Button btnNotif;
     @FXML private ContextMenu profileMenu;
     @FXML private Label lblNotifCount;
-    @FXML private TextField searchField;
 
     private final NotificationService notificationService = new NotificationService();
 
@@ -86,8 +84,7 @@ public class ActivityDetailsController {
     @FXML private VBox tipsBox;
     @FXML private VBox tipsItems;
     @FXML private Label tipsMeta;
-    @FXML
-    private MenuItem menuMyActivities;
+    @FXML private MenuItem menuMyActivities;
 
     private final GeminiTipsService tipsService = new GeminiTipsService();
     private final Map<Integer, List<String>> tipsCache = new HashMap<>();
@@ -113,6 +110,11 @@ public class ActivityDetailsController {
     private int selectedRating = 5;
     private int hoverRating = 0;
 
+
+    private final Map<Integer, Image> avatarCache = new ConcurrentHashMap<>();
+
+    private Map<Integer, String> reviewerPhotoPath = new HashMap<>();
+
     // =========================
     // INIT
     // =========================
@@ -132,10 +134,10 @@ public class ActivityDetailsController {
                 overlayRect.heightProperty().bind(headerPane.heightProperty());
             }
         });
+
         Personne u = Session.getCurrentUser();
         boolean isGuide = (u != null) && "GUIDE".equalsIgnoreCase(u.getRole());
-
-        if (!isGuide) {
+        if (!isGuide && profileMenu != null && menuMyActivities != null) {
             profileMenu.getItems().remove(menuMyActivities); // pas d’espace vide
         }
 
@@ -170,22 +172,15 @@ public class ActivityDetailsController {
 
     @FXML
     void goToMyReservations(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = getStageFromEvent(event);
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
-            else stage.getScene().setRoot(root);
-
-            root.applyCss();
-            root.layout();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        switchSceneKeepSize((Node) event.getSource(),
+                "/Frontoffice/MyReservation.fxml");
     }
-    @FXML public void goToMyActivities(ActionEvent event) { switchScene(event, "/Frontoffice/MyActivitiesPage.fxml"); }
+
+    @FXML
+    public void goToMyActivities(ActionEvent event) {
+        switchScene(event, "/Frontoffice/MyActivitiesPage.fxml");
+    }
+
     private void switchScene(ActionEvent event, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -202,6 +197,7 @@ public class ActivityDetailsController {
             e.printStackTrace();
         }
     }
+
     // =========================
     // SET DATA
     // =========================
@@ -250,6 +246,11 @@ public class ActivityDetailsController {
         if (activity == null) return;
 
         List<Review> list = reviewService.getReviewsByActiviteId(activity.getId());
+        Set<Integer> ids = new HashSet<>();
+        for (Review r : list) {
+            if (r != null && r.getPersonneId() > 0) ids.add(r.getPersonneId());
+        }
+        reviewerPhotoPath = reviewService.getProfilePhotosForUsers(ids);
         if (reviewsList != null) reviewsList.setItems(FXCollections.observableArrayList(list));
         if (BTNdeleteMyReview != null) BTNdeleteMyReview.setDisable(true);
 
@@ -582,8 +583,6 @@ public class ActivityDetailsController {
         switchSceneKeepSize((Node) event.getSource(), "/Frontoffice/ActivitiesPage.fxml");
     }
 
-
-
     @FXML
     public void handleLogout(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -618,7 +617,7 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    // ✅ PROFILE MENU + NOTIFS (copié du ActivitiesPageController)
+    // ✅ PROFILE MENU + NOTIFS
     // =========================
     @FXML
     public void openProfileMenu(ActionEvent event) {
@@ -687,7 +686,6 @@ public class ActivityDetailsController {
                         try {
                             notificationService.markRead(n.id);
                             refreshNotifCount();
-                            // si tu veux faire une action spéciale WAITLIST_HOLD ici, tu peux.
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -741,7 +739,7 @@ public class ActivityDetailsController {
     }
 
     // =========================
-    // IMAGE LOADER (inchangé)
+    // IMAGE LOADER (activité)
     // =========================
     private Image loadActivityImage(String path) {
         if (path == null || path.isBlank()) return null;
@@ -796,6 +794,41 @@ public class ActivityDetailsController {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // =========================
+    // ✅ Avatar loader (profilePhoto de Personne)
+    // =========================
+    private Image loadProfilePhoto(String rawPath) {
+        if (rawPath == null) return null;
+        String path = rawPath.trim();
+        if (path.isEmpty()) return null;
+
+        try {
+            // URL
+            if (path.startsWith("http://") || path.startsWith("https://")) {
+                return new Image(path, false);
+            }
+
+            // déjà file:/...
+            if (path.startsWith("file:/")) {
+                return new Image(path, false);
+            }
+
+            // resource "/..."
+            if (path.startsWith("/")) {
+                InputStream is = getClass().getResourceAsStream(path);
+                if (is != null) return new Image(is);
+            }
+
+            // fichier local
+            File file = new File(path);
+            if (!file.exists()) file = new File(System.getProperty("user.dir"), path);
+            if (file.exists()) return new Image(file.toURI().toString(), false);
+
+        } catch (Exception ignored) {}
+
+        return null;
     }
 
     // =========================
@@ -888,24 +921,64 @@ public class ActivityDetailsController {
             setGraphic(card);
         }
 
+        /**
+         * ✅ Avatar avec image si disponible.
+         * Ici on affiche l'image uniquement pour "You" (CURRENT_USER) car tu n’as pas donné PersonneService.
+         * Si tu veux l’image pour TOUS les users, il faut récupérer Personne par id via un service.
+         */
         private StackPane buildAvatar(Review r) {
+            double size = 36;
+
+            int uid = r.getPersonneId();
+            String profilePhoto = reviewerPhotoPath.get(uid); // ✅ photo de ce reviewer (pas currentUser)
+
+            Image img = null;
+            if (profilePhoto != null && !profilePhoto.isBlank()) {
+                img = avatarCache.computeIfAbsent(uid, k -> loadProfilePhoto(profilePhoto));
+                if (img != null && img.isError()) img = null;
+            }
+
+            // border
+            Circle border = new Circle(size / 2);
+            border.setFill(Color.web("#EEF2FF"));
+            border.setStroke(Color.web("#DDE3FF"));
+
+            // ✅ image ronde si existe
+            if (img != null) {
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(size);
+                iv.setFitHeight(size);
+                iv.setPreserveRatio(false);
+                iv.setSmooth(true);
+
+                Circle clip = new Circle(size / 2);
+                clip.setCenterX(size / 2);
+                clip.setCenterY(size / 2);
+                iv.setClip(clip);
+
+
+                border.setFill(Color.TRANSPARENT);
+
+                StackPane wrap = new StackPane(iv, border); // image derrière, bordure au dessus (stroke seulement)
+                wrap.setMinSize(size, size);
+                wrap.setPrefSize(size, size);
+                wrap.setMaxSize(size, size);
+                return wrap;
+            }
+            // fallback: initiales
             String username = (r.getUserName() != null && !r.getUserName().isBlank())
                     ? r.getUserName()
-                    : ("U" + r.getPersonneId());
+                    : ("U" + uid);
 
             String initials = initialsOf(username);
-
-            Circle circle = new Circle(18);
-            circle.setFill(Color.web("#EEF2FF"));
-            circle.setStroke(Color.web("#DDE3FF"));
 
             Label init = new Label(initials);
             init.setFont(Font.font("System", FontWeight.BOLD, 12));
             init.setTextFill(Color.web("#223f91"));
 
-            StackPane avatar = new StackPane(circle, init);
-            avatar.setMinSize(36, 36);
-            avatar.setMaxSize(36, 36);
+            StackPane avatar = new StackPane(border, init);
+            avatar.setMinSize(size, size);
+            avatar.setMaxSize(size, size);
             return avatar;
         }
     }
@@ -947,12 +1020,14 @@ public class ActivityDetailsController {
 
         return "Just now";
     }
+
     @FXML void closewindow(ActionEvent e) { Stage s = getStageFromEvent(e); if (s != null) s.close(); }
     @FXML void minwindow(ActionEvent e) { Stage s = getStageFromEvent(e); if (s != null) s.setIconified(true); }
     @FXML void maxwindow(ActionEvent e) {
         Stage s = getStageFromEvent(e);
         if (s != null) s.setMaximized(!s.isMaximized());
     }
+
     private Stage getStageFromEvent(ActionEvent event) {
         try {
             Object src = event.getSource();
@@ -962,9 +1037,8 @@ public class ActivityDetailsController {
             if (src instanceof Node n) {
                 return (Stage) n.getScene().getWindow();
             }
-            return null ;
+            return null;
         } catch (Exception ignored) {}
         return null;
     }
-
 }

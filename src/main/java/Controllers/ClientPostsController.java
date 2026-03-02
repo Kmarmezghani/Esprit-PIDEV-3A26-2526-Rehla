@@ -112,16 +112,6 @@ private PostService postService = new PostService();
     private Image shareImage;
     private Image editImage;
     private Image deleteImage;
-    private static final Image AVATAR_IMAGE =
-            new Image(
-                    ClientPostsController.class
-                            .getResource("/Backoffice/icons/usericon.png")
-                            .toExternalForm(),
-                    40,   // largeur max
-                    40,   // hauteur max
-                    true,
-                    false // ❗ smooth = false (moins GPU)
-            );
     private static final Image HEART_EMPTY =
             new Image(ClientPostsController.class
                     .getResource("/Backoffice/icons/blackHeart.png")
@@ -271,24 +261,16 @@ private PostService postService = new PostService();
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
-
             scene.getStylesheets().add(
-                    getClass().getResource("/Frontoffice/css/blog_styles.css").toExternalForm()
+                    Objects.requireNonNull(getClass().getResource("/Frontoffice/css/blog_styles.css")).toExternalForm()
             );
 
-            Stage stage;
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
 
-            if (event.getSource() instanceof javafx.scene.control.MenuItem menuItem) {
-                stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
-            } else {
-                stage = (Stage) ((Node) event.getSource())
-                        .getScene()
-                        .getWindow();
-            }
-
-            stage.setScene(scene);
-            stage.show();
-
+            root.applyCss();
+            root.layout();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -322,12 +304,29 @@ private PostService postService = new PostService();
 
             root.applyCss();
             root.layout();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
+    public void goToMyActivities(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyActivitiesPage.fxml"));
+            Parent root = loader.load();
+
+            MenuItem item = (MenuItem) event.getSource();
+            Stage stage = (Stage) item.getParentPopup().getOwnerWindow();
+
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    @FXML public void goToMyActivities(ActionEvent event) { switchScene(event, "/Frontoffice/MyActivitiesPage.fxml"); }
 
     @FXML
     public void handleLogout(ActionEvent event) {
@@ -546,10 +545,29 @@ private PostService postService = new PostService();
                 timeText = formatTime(lastMessage.getSentAt());
             }
 
-            ImageView avatar = new ImageView(AVATAR_IMAGE);
+            String path = currentUser.getProfilePhoto();
+
+            ImageView avatar = new ImageView();
+
+            if (path != null && !path.isBlank()) {
+
+                File file = new File(path.trim());
+
+                if (file.exists()) {
+                    Image img = new Image(file.toURI().toString());
+                    avatar.setImage(img);
+                }
+            }
+
             avatar.setFitWidth(45);
             avatar.setFitHeight(45);
-            avatar.setClip(new Circle(22.5, 22.5, 22.5));
+
+// Clip circulaire propre
+            Circle clip = new Circle(22.5);
+            clip.centerXProperty().bind(avatar.fitWidthProperty().divide(2));
+            clip.centerYProperty().bind(avatar.fitHeightProperty().divide(2));
+            avatar.setClip(clip);
+
 
             Label nameLabel = new Label(
                     otherUser.getNom() + " " + otherUser.getPrenom());
@@ -755,7 +773,23 @@ private PostService postService = new PostService();
         header.setAlignment(Pos.CENTER_LEFT);
 
 // Avatar
-        ImageView avatar = new ImageView(AVATAR_IMAGE);
+        ImageView avatar = new ImageView();
+
+        String path = currentUser.getProfilePhoto();
+
+        if (path != null && !path.isBlank()) {
+
+            File file = new File(path.trim());
+
+            if (file.exists()) {
+                Image img = new Image(file.toURI().toString(),
+                        40, 40,  // resize direct (optimisation)
+                        true,    // preserve ratio
+                        true);   // smooth
+                avatar.setImage(img);
+            }
+        }
+
         avatar.setFitWidth(40);
         avatar.setFitHeight(40);
         avatar.setPreserveRatio(true);
@@ -764,6 +798,7 @@ private PostService postService = new PostService();
         avatar.setCacheHint(CacheHint.SPEED);
 
         avatar.getStyleClass().add("avatar");
+
 
 // User info
         VBox userInfo = new VBox(2);

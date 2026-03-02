@@ -231,10 +231,56 @@ public class MyActivitiesPageController {
     // ======================
     @FXML public void goToHome(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/HomePage.fxml"); }
     @FXML public void goToDestinations(javafx.event.ActionEvent e) { }
-    @FXML public void goToPosts(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/PostsPage.fxml"); }
+    @FXML
+    void goToPosts(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogAllPosts.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML public void goToactivities(javafx.event.ActionEvent e) { switchScene(e, "/Frontoffice/ActivitiesPage.fxml"); }
 
-    @FXML public void goToMyProfile(javafx.event.ActionEvent e) { }
+    @FXML
+    private void goToMyProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogProfileView.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/Frontoffice/css/blog_styles.css").toExternalForm()
+            );
+
+            Stage stage;
+
+            if (event.getSource() instanceof javafx.scene.control.MenuItem menuItem) {
+                stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
+            } else {
+                stage = (Stage) ((Node) event.getSource())
+                        .getScene()
+                        .getWindow();
+            }
+
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @FXML public void goToMyPosts(javafx.event.ActionEvent e) { }
 
     @FXML
@@ -244,7 +290,11 @@ public class MyActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -15,6 +15,9 @@ public class PersonneService implements IService<Personne> {
 
     public PersonneService() {
         this.conn = DBConnection.getInstance().getConn();
+        if (this.conn == null) {
+            throw new IllegalStateException("La connexion à la DB n'a pas été établie !");
+        }
     }
 
     @Override
@@ -44,16 +47,40 @@ public class PersonneService implements IService<Personne> {
     @Override
     public void update(Personne p) {
         if (conn == null) throw new IllegalStateException("DB not connected");
-        String sql = "UPDATE `personne` SET `nom`=?, `prenom`=?, `email`=?, `motDePasse`=?, `role`=?, `statutCompte`=? WHERE `id`=?";
+
+        String sql = """
+        UPDATE `personne` 
+        SET `nom` = ?, 
+            `prenom` = ?, 
+            `email` = ?, 
+            `motDePasse` = ?, 
+            `role` = ?, 
+            `statutCompte` = ?, 
+            `telephone` = ?, 
+            `heureNotif` = ?, 
+            `notifSmsActive` = ?, 
+            `profile_photo` = ? 
+        WHERE `id` = ?
+    """;
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, p.getNom());
             ps.setString(2, p.getPrenom());
             ps.setString(3, p.getEmail());
             ps.setString(4, p.getMotDePasse());
-            ps.setString(5, toDbRole(p.getRole()));
-            ps.setString(6, toDbStatut(p.getStatutCompte()));
-            ps.setInt(7, p.getId());
-            ps.executeUpdate();
+            ps.setString(5, toDbRole(p.getRole()));               // CLIENT, GUIDE, ADMIN
+            ps.setString(6, toDbStatut(p.getStatutCompte()));     // ACTIF, INACTIF, SUSPENDU
+            ps.setString(7, p.getTelephone());
+            ps.setTime(8, p.getHeureNotif() != null ? java.sql.Time.valueOf(p.getHeureNotif()) : java.sql.Time.valueOf("08:00:00"));
+            ps.setBoolean(9, p.getNotifSmsActive() != null ? p.getNotifSmsActive() : true); // par défaut activé
+            ps.setString(10, p.getProfilePhoto());
+            ps.setInt(11, p.getId());
+
+            int rowsUpdated = ps.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw new RuntimeException("Aucune personne trouvée avec l'id " + p.getId());
+            }
+
         } catch (SQLException e) {
             System.err.println("[DB] PersonneService update failed: " + e.getMessage());
             e.printStackTrace();

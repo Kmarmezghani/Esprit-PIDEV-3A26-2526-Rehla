@@ -5,11 +5,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.Personne;
+import services.FaceRecognitionService;
 import services.PersonneService;
 import services.PreferenceService;
 import services.RateLimitService;
@@ -35,7 +41,13 @@ public class RegisterController implements Initializable {
     @FXML private PasswordField confirmPasswordField;
     @FXML private ComboBox<String> roleCombo;
     @FXML private Label errorLabel;
+    @FXML private Label captchaLabel;
+    @FXML private TextField captchaField;
     @FXML private Button registerButton;
+    @FXML private StackPane rootStack;
+    @FXML private StackPane cardContainer;
+    @FXML private StackPane cardRightPanel;
+    @FXML private ImageView cardRightPhoto;
 
     @FXML private TextField searchField;
     @FXML private TextField searchField1;
@@ -56,6 +68,61 @@ public class RegisterController implements Initializable {
         }
         if (errorLabel != null) {
             errorLabel.setVisible(false);
+        }
+        refreshCaptcha(null);
+        loadBlurredBackground();
+        applyEqualRoundedCorners();
+        setupRightImageFill();
+    }
+
+    private void setupRightImageFill() {
+        if (cardRightPhoto != null) {
+            cardRightPhoto.setPreserveRatio(false);
+        }
+        if (cardRightPanel != null && cardRightPhoto != null) {
+            cardRightPhoto.fitWidthProperty().bind(cardRightPanel.widthProperty());
+            cardRightPhoto.fitHeightProperty().bind(cardRightPanel.heightProperty());
+        }
+    }
+
+    private void loadBlurredBackground() {
+        try {
+            java.net.URL url = getClass().getResource("/Frontoffice/images/hero.jpg");
+            Image img = url != null ? new Image(url.toExternalForm(), true) : null;
+            if (rootStack != null && img != null) {
+                ImageView bg = new ImageView(img);
+                bg.setFitWidth(1200);
+                bg.setFitHeight(750);
+                bg.setPreserveRatio(false);
+                bg.setEffect(new GaussianBlur(35));
+                rootStack.getChildren().add(1, bg);
+            }
+            if (cardRightPhoto != null && img != null) {
+                cardRightPhoto.setImage(img);
+                cardRightPhoto.setEffect(null);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void applyEqualRoundedCorners() {
+        double radius = 30;
+        if (cardContainer != null) {
+            Rectangle clip = new Rectangle(900, 540);
+            clip.setArcWidth(radius * 2);
+            clip.setArcHeight(radius * 2);
+            cardContainer.layoutBoundsProperty().addListener((o, oldVal, newVal) -> {
+                clip.setWidth(Math.max(900, newVal.getWidth()));
+                clip.setHeight(Math.max(540, newVal.getHeight()));
+            });
+            cardContainer.setClip(clip);
+        }
+    }
+
+    @FXML
+    void refreshCaptcha(ActionEvent event) {
+        if (captchaLabel != null && rateLimitService != null) {
+            captchaLabel.setText(rateLimitService.generateRegistrationCaptcha());
+            if (captchaField != null) captchaField.clear();
         }
     }
 
@@ -157,6 +224,12 @@ public class RegisterController implements Initializable {
             return;
         }
 
+        if (!rateLimitService.verifyRegistrationCaptcha(captchaField != null ? captchaField.getText() : "")) {
+            showError("Please answer the security question correctly.");
+            refreshCaptcha(null);
+            return;
+        }
+
         if (rateLimitService.isBlocked(email)) {
             long minutes = rateLimitService.getBlockMinutesRemaining(email);
             showError("Too many attempts. Try again in " + minutes + " minutes.");
@@ -185,6 +258,9 @@ public class RegisterController implements Initializable {
         p.setDateInscription(LocalDateTime.now());
         p.setRole(role);
         p.setStatutCompte("actif");
+        // sensible defaults so DB INSERT matches schema
+        p.setHeureNotif(java.time.LocalTime.MIDNIGHT);
+        p.setNotifSmsActive(true);
 
         try {
             personneService.add(p);
@@ -195,15 +271,22 @@ public class RegisterController implements Initializable {
         }
 
         rateLimitService.clearAll(email);
+        rateLimitService.clearRegistrationCaptcha();
 
         securityAuditService.logSecurityEvent(
-            p.getId(),
-            SecurityAuditService.EVENT_LOGIN_SUCCESS,
-            "Account created and logged in"
+                p.getId(),
+                SecurityAuditService.EVENT_LOGIN_SUCCESS,
+                "Account created and logged in"
         );
 
         Session.setCurrentUser(p);
-        navigateTo("Frontoffice/HomePage.fxml", event);
+
+        if (FaceRecognitionService.getInstance().isConfigured()) {
+            FaceEnrollmentController.setComingFromRegistration(true);
+            navigateTo("/Frontoffice/FaceEnrollment.fxml", event);
+        } else {
+            navigateTo("/Frontoffice/HomePage.fxml", event);
+        }
     }
 
     private void showError(String message) {
@@ -234,7 +317,7 @@ public class RegisterController implements Initializable {
 
     @FXML
     void goToLogin(ActionEvent event) {
-        navigateTo("Frontoffice/loginPage.fxml", event);
+        navigateTo("/Frontoffice/loginPage.fxml", event);
     }
 
     @FXML

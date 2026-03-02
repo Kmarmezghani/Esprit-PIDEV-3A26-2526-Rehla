@@ -27,7 +27,7 @@
         <Label text="Face Enrollment" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
         <Label fx:id="userEmailLabel" text="user@email.com"
                style="-fx-font-size: 13; -fx-text-fill: #666666;"/>
-        
+
         <!-- Instructions -->
         <VBox alignment="CENTER" spacing="5" style="-fx-background-color: #e8f4fd; -fx-background-radius: 10; -fx-padding: 12;">
             <Label text="📋 Instructions:" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
@@ -40,7 +40,7 @@
         <!-- Webcam View Container -->
         <StackPane fx:id="webcamContainer" prefWidth="320" prefHeight="240"
                    style="-fx-background-color: #1a1a2e; -fx-background-radius: 15;">
-            
+
             <!-- Webcam Feed -->
             <ImageView fx:id="webcamView" fitWidth="320" fitHeight="240" preserveRatio="true">
                 <clip>
@@ -49,14 +49,14 @@
             </ImageView>
 
             <!-- Face Overlay Guide -->
-            <Rectangle fx:id="faceGuide" width="180" height="220" 
+            <Rectangle fx:id="faceGuide" width="180" height="220"
                        fill="transparent" stroke="#4facfe" strokeWidth="3"
                        arcWidth="90" arcHeight="90" strokeDashArray="15, 10"/>
-            
+
             <!-- Loading Indicator -->
-            <ProgressIndicator fx:id="loadingIndicator" visible="false" 
+            <ProgressIndicator fx:id="loadingIndicator" visible="false"
                                maxWidth="60" maxHeight="60"/>
-            
+
             <!-- No Camera Message -->
             <VBox fx:id="noCameraBox" alignment="CENTER" spacing="10" visible="false">
                 <Label text="📷" style="-fx-font-size: 40;"/>
@@ -65,7 +65,7 @@
         </StackPane>
 
         <!-- Status Label -->
-        <Label fx:id="statusLabel" text="Ready to capture" 
+        <Label fx:id="statusLabel" text="Ready to capture"
                style="-fx-font-size: 14; -fx-text-fill: #666666; -fx-font-weight: bold;"/>
 
         <!-- Error/Success Label -->
@@ -76,7 +76,7 @@
         <HBox fx:id="enrollmentStatus" alignment="CENTER" spacing="8" visible="false"
               style="-fx-background-color: #d4edda; -fx-background-radius: 8; -fx-padding: 8;">
             <Label text="✓" style="-fx-font-size: 16; -fx-text-fill: #155724;"/>
-            <Label fx:id="enrollmentStatusLabel" text="Face already enrolled" 
+            <Label fx:id="enrollmentStatusLabel" text="Face already enrolled"
                    style="-fx-font-size: 12; -fx-text-fill: #155724;"/>
         </HBox>
 
@@ -85,11 +85,11 @@
             <Button fx:id="captureButton" text="📸 Capture Face" onAction="#handleCapture"
                     prefWidth="150" prefHeight="42"
                     style="-fx-background-color: linear-gradient(to right, #4facfe, #00f2fe); -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-background-radius: 22; -fx-cursor: hand;"/>
-            
+
             <Button fx:id="enrollButton" text="✓ Enroll Face" onAction="#handleEnroll" visible="false"
                     prefWidth="140" prefHeight="42"
                     style="-fx-background-color: linear-gradient(to right, #11998e, #38ef7d); -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-background-radius: 22; -fx-cursor: hand;"/>
-            
+
             <Button fx:id="retakeButton" text="🔄 Retake" onAction="#handleRetake" visible="false"
                     prefWidth="100" prefHeight="42"
                     style="-fx-background-color: linear-gradient(to right, #f093fb, #f5576c); -fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold; -fx-background-radius: 22; -fx-cursor: hand;"/>
@@ -103,6 +103,10 @@
         <HBox alignment="CENTER" spacing="15">
             <Rectangle width="120" height="1" fill="#dddddd"/>
         </HBox>
+
+        <!-- Skip Button (shown during registration flow) -->
+        <Button fx:id="skipButton" text="Skip for now →" onAction="#handleSkip" visible="false"
+                style="-fx-background-color: transparent; -fx-text-fill: #999; -fx-font-size: 13; -fx-cursor: hand;"/>
 
         <!-- Back Button -->
         <Button text="← Back to Profile" onAction="#goBack"

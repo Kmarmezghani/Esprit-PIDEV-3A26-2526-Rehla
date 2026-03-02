@@ -548,4 +548,25 @@ public class ReservationService implements IService<Reservation> {
             conn.setAutoCommit(true);
         }
     }
+    public List<Reservation> getConfirmedReservationsForUser(int personneId) {
+        String sql = """
+            SELECT * FROM reservation
+            WHERE personne_id = ?
+              AND UPPER(IFNULL(statut,'')) IN ('RESERVED','PAID')
+        """;
+        ArrayList<Reservation> list = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, personneId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return list;
+    }
+
 }

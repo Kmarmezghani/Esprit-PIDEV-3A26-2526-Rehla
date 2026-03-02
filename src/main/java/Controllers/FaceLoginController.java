@@ -42,13 +42,13 @@ public class FaceLoginController implements Initializable {
     @FXML private VBox noCameraBox;
     @FXML private ProgressIndicator loadingIndicator;
     @FXML private Rectangle faceGuide;
-    
+
     @FXML private Label instructionLabel;
     @FXML private Label statusLabel;
     @FXML private Label errorLabel;
     @FXML private Label confidenceLabel;
     @FXML private HBox confidenceBox;
-    
+
     @FXML private Button captureButton;
     @FXML private Button retryButton;
 
@@ -56,14 +56,14 @@ public class FaceLoginController implements Initializable {
     private FaceRecognitionService faceService;
     private PersonneService personneService;
     private SecurityAuditService auditService;
-    
+
     private String pendingEmail;
     private Personne pendingUser;
 
     public static void setPendingEmail(String email) {
         pendingEmailStatic = email;
     }
-    
+
     private static String pendingEmailStatic;
 
     @Override
@@ -71,7 +71,7 @@ public class FaceLoginController implements Initializable {
         faceService = FaceRecognitionService.getInstance();
         personneService = new PersonneService();
         auditService = SecurityAuditService.getInstance();
-        
+
         pendingEmail = pendingEmailStatic;
         pendingEmailStatic = null;
 
@@ -80,7 +80,38 @@ public class FaceLoginController implements Initializable {
             captureButton.setDisable(true);
         }
 
-        initializeWebcam();
+        retryButton.setVisible(false);
+        initializeWebcamAsync();
+    }
+
+    private void initializeWebcamAsync() {
+        statusLabel.setText("Detecting camera...");
+        errorLabel.setText("");
+        new Thread(() -> {
+            try {
+                Thread.sleep(300);
+                boolean available = WebcamCapture.isWebcamAvailable();
+                boolean started = false;
+                if (available) {
+                    webcamCapture = new WebcamCapture();
+                    started = webcamCapture.start(webcamView);
+                }
+                final boolean ok = started;
+                Platform.runLater(() -> {
+                    if (ok) {
+                        noCameraBox.setVisible(false);
+                        webcamView.setVisible(true);
+                        faceGuide.setVisible(true);
+                        statusLabel.setText("");
+                        retryButton.setVisible(false);
+                    } else {
+                        showNoCamera();
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> showNoCamera());
+            }
+        }).start();
     }
 
     private void initializeWebcam() {
@@ -106,7 +137,9 @@ public class FaceLoginController implements Initializable {
         webcamView.setVisible(false);
         faceGuide.setVisible(false);
         captureButton.setDisable(true);
-        showError("No camera available. Please connect a webcam.");
+        retryButton.setVisible(true);
+        statusLabel.setText("");
+        showError("Camera not available. Close other apps using the webcam, then click Retry.");
     }
 
     @FXML
@@ -118,7 +151,7 @@ public class FaceLoginController implements Initializable {
             dialog.setTitle("Face Login");
             dialog.setHeaderText("Enter your email address");
             dialog.setContentText("Email:");
-            
+
             Optional<String> result = dialog.showAndWait();
             if (result.isPresent() && !result.get().isBlank()) {
                 pendingEmail = result.get().trim();
@@ -145,9 +178,9 @@ public class FaceLoginController implements Initializable {
         new Thread(() -> {
             try {
                 Thread.sleep(500);
-                
+
                 BufferedImage faceImage = webcamCapture.capture();
-                
+
                 if (faceImage == null) {
                     Platform.runLater(() -> {
                         setLoading(false);
@@ -162,7 +195,7 @@ public class FaceLoginController implements Initializable {
 
                 Platform.runLater(() -> {
                     setLoading(false);
-                    
+
                     if (result.success) {
                         handleSuccessfulLogin();
                     } else {
@@ -185,9 +218,9 @@ public class FaceLoginController implements Initializable {
         statusLabel.setStyle("-fx-font-size: 16; -fx-text-fill: #27ae60; -fx-font-weight: bold;");
 
         auditService.logSecurityEvent(
-            pendingUser.getId(),
-            SecurityAuditService.EVENT_LOGIN_SUCCESS,
-            "Face login successful"
+                pendingUser.getId(),
+                SecurityAuditService.EVENT_LOGIN_SUCCESS,
+                "Face login successful"
         );
 
         Session.setCurrentUser(pendingUser);
@@ -205,11 +238,11 @@ public class FaceLoginController implements Initializable {
     private void handleFailedVerification(FaceRecognitionService.FaceResult result) {
         faceGuide.setStroke(javafx.scene.paint.Color.web("#e74c3c"));
         showError(result.message);
-        
+
         if (result.confidence > 0) {
             confidenceBox.setVisible(true);
             confidenceLabel.setText(String.format("%.1f%%", result.confidence));
-            
+
             if (result.confidence >= 70) {
                 confidenceLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #f39c12;");
             } else {
@@ -221,27 +254,38 @@ public class FaceLoginController implements Initializable {
 
         if (pendingUser != null) {
             auditService.logSecurityEvent(
-                pendingUser.getId(),
-                SecurityAuditService.EVENT_LOGIN_FAILED,
-                "Face verification failed (confidence: " + String.format("%.1f", result.confidence) + "%)"
+                    pendingUser.getId(),
+                    SecurityAuditService.EVENT_LOGIN_FAILED,
+                    "Face verification failed (confidence: " + String.format("%.1f", result.confidence) + "%)"
             );
         }
     }
 
     @FXML
     void handleRetry(ActionEvent event) {
+        stopWebcam();
+        webcamCapture = null;
         clearMessages();
         retryButton.setVisible(false);
         confidenceBox.setVisible(false);
         faceGuide.setStroke(javafx.scene.paint.Color.web("#4facfe"));
         instructionLabel.setText("Position your face in the frame");
+        statusLabel.setText("Reconnecting camera...");
+        new Thread(() -> {
+            try {
+                Thread.sleep(800);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            Platform.runLater(this::initializeWebcamAsync);
+        }).start();
     }
 
     @FXML
     void goToLogin(ActionEvent event) {
         stopWebcam();
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/loginPage.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
@@ -253,7 +297,7 @@ public class FaceLoginController implements Initializable {
     private void navigateToHome() {
         stopWebcam();
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/HomePage.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/HomePage.fxml"));
             Stage stage = (Stage) webcamView.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();

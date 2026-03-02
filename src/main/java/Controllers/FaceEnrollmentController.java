@@ -43,25 +43,32 @@ public class FaceEnrollmentController implements Initializable {
     @FXML private VBox noCameraBox;
     @FXML private ProgressIndicator loadingIndicator;
     @FXML private Rectangle faceGuide;
-    
+
     @FXML private Label userEmailLabel;
     @FXML private Label statusLabel;
     @FXML private Label messageLabel;
     @FXML private Label enrollmentStatusLabel;
     @FXML private HBox enrollmentStatus;
-    
+
     @FXML private Button captureButton;
     @FXML private Button enrollButton;
     @FXML private Button retakeButton;
     @FXML private Button removeButton;
+    @FXML private Button skipButton;
 
     private WebcamCapture webcamCapture;
     private FaceRecognitionService faceService;
     private SecurityAuditService auditService;
-    
+
     private Personne currentUser;
     private BufferedImage capturedImage;
     private Image capturedFXImage;
+
+    private static boolean comingFromRegistration;
+
+    public static void setComingFromRegistration(boolean value) {
+        comingFromRegistration = value;
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -83,7 +90,39 @@ public class FaceEnrollmentController implements Initializable {
         }
 
         checkEnrollmentStatus();
-        initializeWebcam();
+        retakeButton.setVisible(false);
+        if (skipButton != null) {
+            skipButton.setVisible(comingFromRegistration);
+            comingFromRegistration = false;
+        }
+        initializeWebcamAsync();
+    }
+
+    private void initializeWebcamAsync() {
+        messageLabel.setText("");
+        new Thread(() -> {
+            try {
+                Thread.sleep(300);
+                boolean available = WebcamCapture.isWebcamAvailable();
+                boolean started = false;
+                if (available) {
+                    webcamCapture = new WebcamCapture();
+                    started = webcamCapture.start(webcamView);
+                }
+                final boolean ok = started;
+                javafx.application.Platform.runLater(() -> {
+                    if (ok) {
+                        noCameraBox.setVisible(false);
+                        webcamView.setVisible(true);
+                        faceGuide.setVisible(true);
+                    } else {
+                        showNoCamera();
+                    }
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> showNoCamera());
+            }
+        }).start();
     }
 
     private void checkEnrollmentStatus() {
@@ -120,7 +159,7 @@ public class FaceEnrollmentController implements Initializable {
         webcamView.setVisible(false);
         faceGuide.setVisible(false);
         captureButton.setDisable(true);
-        showError("No camera available. Please connect a webcam.");
+        showError("Camera not available. Close other apps using the webcam, then retry.");
     }
 
     @FXML
@@ -162,8 +201,8 @@ public class FaceEnrollmentController implements Initializable {
 
         new Thread(() -> {
             FaceRecognitionService.FaceResult result = faceService.enrollFace(
-                currentUser.getEmail(), 
-                capturedImage
+                    currentUser.getEmail(),
+                    capturedImage
             );
 
             Platform.runLater(() -> {
@@ -175,9 +214,9 @@ public class FaceEnrollmentController implements Initializable {
                     faceGuide.setStroke(javafx.scene.paint.Color.web("#27ae60"));
 
                     auditService.logSecurityEvent(
-                        currentUser.getId(),
-                        "FACE_ENROLLED",
-                        "Face enrolled for face login"
+                            currentUser.getId(),
+                            "FACE_ENROLLED",
+                            "Face enrolled for face login"
                     );
 
                     checkEnrollmentStatus();
@@ -186,6 +225,9 @@ public class FaceEnrollmentController implements Initializable {
                     retakeButton.setText("Update Face");
                     retakeButton.setVisible(true);
 
+                    if (skipButton != null && skipButton.isVisible()) {
+                        skipButton.setText("Continue to Home →");
+                    }
                 } else {
                     showError(result.message);
                     statusLabel.setText("Enrollment failed");
@@ -206,13 +248,28 @@ public class FaceEnrollmentController implements Initializable {
         retakeButton.setVisible(false);
 
         faceGuide.setStroke(javafx.scene.paint.Color.web("#4facfe"));
-        statusLabel.setText("Ready to capture");
+        statusLabel.setText("Reconnecting camera...");
 
         if (webcamCapture != null) {
             webcamCapture.stop();
+            webcamCapture = null;
         }
-        webcamCapture = new WebcamCapture();
-        webcamCapture.start(webcamView);
+        new Thread(() -> {
+            try {
+                Thread.sleep(800);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            Platform.runLater(() -> {
+                webcamCapture = new WebcamCapture();
+                boolean started = webcamCapture.start(webcamView);
+                if (started) {
+                    statusLabel.setText("Ready to capture");
+                } else {
+                    showNoCamera();
+                }
+            });
+        }).start();
     }
 
     @FXML
@@ -225,11 +282,11 @@ public class FaceEnrollmentController implements Initializable {
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             faceService.removeEnrollment(currentUser.getEmail());
-            
+
             auditService.logSecurityEvent(
-                currentUser.getId(),
-                "FACE_REMOVED",
-                "Face enrollment removed"
+                    currentUser.getId(),
+                    "FACE_REMOVED",
+                    "Face enrollment removed"
             );
 
             showSuccess("Face enrollment removed successfully.");
@@ -241,15 +298,26 @@ public class FaceEnrollmentController implements Initializable {
     @FXML
     void goBack(ActionEvent event) {
         stopWebcam();
+        navigateTo("/Frontoffice/ProfilePage.fxml");
+    }
+
+    @FXML
+    void handleSkip(ActionEvent event) {
+        stopWebcam();
+        comingFromRegistration = false;
+        navigateTo("/Frontoffice/HomePage.fxml");
+    }
+
+    private void navigateTo(String path) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/profile.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Parent root = FXMLLoader.load(getClass().getResource(path));
+            Stage stage = (Stage) (webcamView != null ? webcamView.getScene().getWindow() : captureButton.getScene().getWindow());
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/HomePage.fxml"));
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/HomePage.fxml"));
+                Stage stage = (Stage) captureButton.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.show();
             } catch (Exception ex) {

@@ -31,7 +31,7 @@
         <!-- Webcam View Container -->
         <StackPane fx:id="webcamContainer" prefWidth="320" prefHeight="240"
                    style="-fx-background-color: #1a1a2e; -fx-background-radius: 15;">
-            
+
             <!-- Webcam Feed -->
             <ImageView fx:id="webcamView" fitWidth="320" fitHeight="240" preserveRatio="true">
                 <clip>
@@ -40,23 +40,24 @@
             </ImageView>
 
             <!-- Face Overlay Guide -->
-            <Rectangle fx:id="faceGuide" width="180" height="220" 
+            <Rectangle fx:id="faceGuide" width="180" height="220"
                        fill="transparent" stroke="#4facfe" strokeWidth="3"
                        arcWidth="90" arcHeight="90" strokeDashArray="15, 10"/>
-            
+
             <!-- Loading Indicator -->
-            <ProgressIndicator fx:id="loadingIndicator" visible="false" 
+            <ProgressIndicator fx:id="loadingIndicator" visible="false"
                                maxWidth="60" maxHeight="60"/>
-            
+
             <!-- No Camera Message -->
             <VBox fx:id="noCameraBox" alignment="CENTER" spacing="10" visible="false">
                 <Label text="📷" style="-fx-font-size: 40;"/>
-                <Label text="No camera detected" style="-fx-text-fill: white; -fx-font-size: 14;"/>
+                <Label text="Camera not detected" style="-fx-text-fill: white; -fx-font-size: 14;"/>
+                <Label text="Close other apps using the webcam, then click Retry below" style="-fx-text-fill: #aaa; -fx-font-size: 12;"/>
             </VBox>
         </StackPane>
 
         <!-- Status Label -->
-        <Label fx:id="statusLabel" text="" 
+        <Label fx:id="statusLabel" text=""
                style="-fx-font-size: 14; -fx-text-fill: #666666; -fx-font-weight: bold;"/>
 
         <!-- Error Label -->
@@ -66,7 +67,7 @@
         <!-- Confidence Bar (shown during verification) -->
         <HBox fx:id="confidenceBox" alignment="CENTER" spacing="10" visible="false">
             <Label text="Confidence:" style="-fx-font-size: 12; -fx-text-fill: #666;"/>
-            <Label fx:id="confidenceLabel" text="0%" 
+            <Label fx:id="confidenceLabel" text="0%"
                    style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #4facfe;"/>
         </HBox>
 
@@ -75,8 +76,8 @@
             <Button fx:id="captureButton" text="📸 Capture &amp; Verify" onAction="#handleCapture"
                     prefWidth="160" prefHeight="45"
                     style="-fx-background-color: linear-gradient(to right, #4facfe, #00f2fe); -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-background-radius: 25; -fx-cursor: hand;"/>
-            
-            <Button fx:id="retryButton" text="🔄 Retry" onAction="#handleRetry" visible="false"
+
+            <Button fx:id="retryButton" text="🔄 Retry Camera" onAction="#handleRetry" visible="false"
                     prefWidth="100" prefHeight="45"
                     style="-fx-background-color: linear-gradient(to right, #f093fb, #f5576c); -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-background-radius: 25; -fx-cursor: hand;"/>
         </HBox>

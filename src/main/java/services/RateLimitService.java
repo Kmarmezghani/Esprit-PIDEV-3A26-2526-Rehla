@@ -126,6 +126,9 @@ public class RateLimitService {
         return data.attempts.size() >= CAPTCHA_THRESHOLD;
     }
 
+    /** Session key for registration captcha (no email yet). */
+    private static final String REGISTRATION_CAPTCHA_KEY = "_registration_";
+
     /**
      * Generates a new math captcha for the email.
      * Returns the question string (e.g., "What is 7 + 4?")
@@ -145,7 +148,34 @@ public class RateLimitService {
     }
 
     /**
-     * Verifies the captcha answer.
+     * Generates an advanced math captcha for registration (always required).
+     * Uses slightly harder math: two-digit numbers.
+     */
+    public String generateRegistrationCaptcha() {
+        int a = random.nextInt(20) + 5;
+        int b = random.nextInt(15) + 3;
+        int answer = a + b;
+        MathCaptcha captcha = new MathCaptcha(a, b, answer);
+        captchaStore.put(REGISTRATION_CAPTCHA_KEY, captcha);
+        return "Security check: What is " + a + " + " + b + "?";
+    }
+
+    /**
+     * Verifies the registration captcha answer.
+     */
+    public boolean verifyRegistrationCaptcha(String answer) {
+        return verifyCaptcha(REGISTRATION_CAPTCHA_KEY, answer);
+    }
+
+    /**
+     * Clears registration captcha after successful registration.
+     */
+    public void clearRegistrationCaptcha() {
+        captchaStore.remove(REGISTRATION_CAPTCHA_KEY);
+    }
+
+    /**
+     * Verifies the captcha answer. Email can be REGISTRATION_CAPTCHA_KEY for registration flow.
      */
     public boolean verifyCaptcha(String email, String answer) {
         if (email == null || answer == null) return false;

@@ -20,12 +20,12 @@ import java.util.Properties;
 
 /**
  * Face Recognition Service using Face++ API.
- * 
+ *
  * Face++ (Megvii) provides:
  * - Free tier: 1000 API calls/month
  * - Face detection and comparison
  * - No need to store images - just face tokens
- * 
+ *
  * Sign up at: https://www.faceplusplus.com/
  * Get API Key and Secret from console.
  */
@@ -33,12 +33,12 @@ public class FaceRecognitionService {
 
     private static final String FACEPP_DETECT_URL = "https://api-us.faceplusplus.com/facepp/v3/detect";
     private static final String FACEPP_COMPARE_URL = "https://api-us.faceplusplus.com/facepp/v3/compare";
-    
+
     private static final String FACE_DATA_FILE = "face_enrollments.json";
     private static final double CONFIDENCE_THRESHOLD = 80.0;
 
     private static FaceRecognitionService instance;
-    
+
     private String apiKey;
     private String apiSecret;
     private Map<String, String> enrolledFaces;
@@ -90,7 +90,7 @@ public class FaceRecognitionService {
             Path dir = Paths.get(System.getProperty("user.home"), ".rehla");
             Files.createDirectories(dir);
             Path path = dir.resolve(FACE_DATA_FILE);
-            
+
             JSONObject json = new JSONObject(enrolledFaces);
             Files.writeString(path, json.toString(2));
             System.out.println("[FaceRecognition] Saved enrolled faces");
@@ -103,9 +103,9 @@ public class FaceRecognitionService {
      * Checks if Face++ API is configured.
      */
     public boolean isConfigured() {
-        return apiKey != null && !apiKey.isBlank() && 
-               !apiKey.equals("YOUR_FACEPP_API_KEY") &&
-               apiSecret != null && !apiSecret.isBlank();
+        return apiKey != null && !apiKey.isBlank() &&
+                !apiKey.equals("YOUR_FACEPP_API_KEY") &&
+                apiSecret != null && !apiSecret.isBlank();
     }
 
     /**
@@ -117,7 +117,7 @@ public class FaceRecognitionService {
 
     /**
      * Enrolls a user's face from an image.
-     * 
+     *
      * @param email User's email
      * @param faceImage BufferedImage of the user's face
      * @return true if enrollment successful
@@ -129,9 +129,9 @@ public class FaceRecognitionService {
 
         try {
             String base64Image = imageToBase64(faceImage);
-            
+
             String faceToken = detectFace(base64Image);
-            
+
             if (faceToken == null) {
                 return new FaceResult(false, "No face detected in the image. Please ensure your face is clearly visible.");
             }
@@ -150,7 +150,7 @@ public class FaceRecognitionService {
 
     /**
      * Verifies a face against the enrolled face for a user.
-     * 
+     *
      * @param email User's email
      * @param faceImage BufferedImage of the face to verify
      * @return FaceResult with success status and confidence score
@@ -167,9 +167,9 @@ public class FaceRecognitionService {
 
         try {
             String base64Image = imageToBase64(faceImage);
-            
+
             String currentFaceToken = detectFace(base64Image);
-            
+
             if (currentFaceToken == null) {
                 return new FaceResult(false, "No face detected. Please position your face in the camera.");
             }
@@ -278,9 +278,9 @@ public class FaceRecognitionService {
         }
 
         int responseCode = conn.getResponseCode();
-        InputStream inputStream = (responseCode >= 200 && responseCode < 300) 
-            ? conn.getInputStream() 
-            : conn.getErrorStream();
+        InputStream inputStream = (responseCode >= 200 && responseCode < 300)
+                ? conn.getInputStream()
+                : conn.getErrorStream();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             StringBuilder response = new StringBuilder();

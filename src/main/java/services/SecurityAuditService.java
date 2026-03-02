@@ -45,7 +45,7 @@ public class SecurityAuditService {
      */
     public void logSecurityEvent(int userId, String eventType, String message) {
         String sql = "INSERT INTO notification (message, type, sender_id, receiver_id, is_read, created_at) " +
-                     "VALUES (?, ?, 0, ?, 0, NOW())";
+                "VALUES (?, ?, 0, ?, 0, NOW())";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -89,8 +89,8 @@ public class SecurityAuditService {
      */
     public String getLastLoginLocation(int userId) {
         String sql = "SELECT message FROM notification " +
-                     "WHERE receiver_id = ? AND type = ? " +
-                     "ORDER BY created_at DESC LIMIT 1";
+                "WHERE receiver_id = ? AND type = ? " +
+                "ORDER BY created_at DESC LIMIT 1";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -157,7 +157,7 @@ public class SecurityAuditService {
      */
     private int countRecentEvents(int userId, String eventType, int hoursBack) {
         String sql = "SELECT COUNT(*) FROM notification " +
-                     "WHERE receiver_id = ? AND type = ? AND created_at > ?";
+                "WHERE receiver_id = ? AND type = ? AND created_at > ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -182,8 +182,8 @@ public class SecurityAuditService {
     public List<SecurityEvent> getSecurityTimeline(int userId, int limit) {
         List<SecurityEvent> events = new ArrayList<>();
         String sql = "SELECT id, message, type, created_at FROM notification " +
-                     "WHERE receiver_id = ? AND type IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                     "ORDER BY created_at DESC LIMIT ?";
+                "WHERE receiver_id = ? AND type IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ORDER BY created_at DESC LIMIT ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {

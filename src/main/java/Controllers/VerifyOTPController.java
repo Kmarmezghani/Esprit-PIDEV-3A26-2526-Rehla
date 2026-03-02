@@ -185,22 +185,22 @@ public class VerifyOTPController implements Initializable {
             }
 
             securityAuditService.logSecurityEvent(
-                pendingUser.getId(),
-                SecurityAuditService.EVENT_OTP_VERIFIED,
-                "OTP verified successfully"
+                    pendingUser.getId(),
+                    SecurityAuditService.EVENT_OTP_VERIFIED,
+                    "OTP verified successfully"
             );
 
             GeoIPService.LocationInfo location = GeoIPService.getInstance().getCurrentLocation();
             securityAuditService.logSecurityEvent(
-                pendingUser.getId(),
-                SecurityAuditService.EVENT_LOGIN_SUCCESS,
-                "Login successful from " + location.city + ", " + location.country
+                    pendingUser.getId(),
+                    SecurityAuditService.EVENT_LOGIN_SUCCESS,
+                    "Login successful from " + location.city + ", " + location.country
             );
 
             Session.setCurrentUser(pendingUser);
 
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/HomePage.fxml"));
+                Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/HomePage.fxml"));
                 Stage stage = (Stage) verifyButton.getScene().getWindow();
                 stage.setScene(new Scene(root));
             } catch (IOException e) {
@@ -212,16 +212,16 @@ public class VerifyOTPController implements Initializable {
             if (remaining > 0) {
                 showError("Invalid code. " + remaining + " attempts remaining.");
                 securityAuditService.logSecurityEvent(
-                    pendingUser.getId(),
-                    SecurityAuditService.EVENT_OTP_FAILED,
-                    "OTP verification failed"
+                        pendingUser.getId(),
+                        SecurityAuditService.EVENT_OTP_FAILED,
+                        "OTP verification failed"
                 );
             } else {
                 showError("Too many failed attempts. Please request a new code.");
                 securityAuditService.logSecurityEvent(
-                    pendingUser.getId(),
-                    SecurityAuditService.EVENT_OTP_FAILED,
-                    "OTP verification failed - max attempts exceeded"
+                        pendingUser.getId(),
+                        SecurityAuditService.EVENT_OTP_FAILED,
+                        "OTP verification failed - max attempts exceeded"
                 );
             }
             clearCode();
@@ -241,9 +241,9 @@ public class VerifyOTPController implements Initializable {
             Platform.runLater(() -> {
                 if (sent) {
                     securityAuditService.logSecurityEvent(
-                        pendingUser.getId(),
-                        SecurityAuditService.EVENT_OTP_SENT,
-                        "OTP resent to " + pendingEmail
+                            pendingUser.getId(),
+                            SecurityAuditService.EVENT_OTP_SENT,
+                            "OTP resent to " + pendingEmail
                     );
 
                     showSuccess("New code sent to your email");

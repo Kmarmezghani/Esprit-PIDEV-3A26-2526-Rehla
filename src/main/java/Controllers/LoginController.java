@@ -9,8 +9,13 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import models.Personne;
 import services.*;
@@ -39,6 +44,10 @@ public class LoginController implements Initializable {
     @FXML private TextField captchaField;
     @FXML private HBox captchaBox;
     @FXML private Label attemptsLabel;
+    @FXML private StackPane rootStack;
+    @FXML private StackPane cardContainer;
+    @FXML private StackPane cardRightPanel;
+    @FXML private ImageView cardRightPhoto;
 
     private final PersonneService personneService = new PersonneService();
     private final OTPService otpService = OTPService.getInstance();
@@ -47,6 +56,7 @@ public class LoginController implements Initializable {
     private final RateLimitService rateLimitService = RateLimitService.getInstance();
     private final SecurityAuditService securityAuditService = SecurityAuditService.getInstance();
     private final FaceRecognitionService faceService = FaceRecognitionService.getInstance();
+    //private final AccountInactivityService accountInactivityService = AccountInactivityService.getInstance();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -59,6 +69,56 @@ public class LoginController implements Initializable {
         }
         if (attemptsLabel != null) {
             attemptsLabel.setVisible(false);
+        }
+        // Periodically mark long-inactive accounts as INACTIF
+        try {
+            //accountInactivityService.runDeactivationJob();
+        } catch (Exception ignored) {}
+        loadBlurredBackground();
+        applyEqualRoundedCorners();
+        setupRightImageFill();
+    }
+
+    private void loadBlurredBackground() {
+        try {
+            java.net.URL url = getClass().getResource("/Frontoffice/images/hero.jpg");
+            Image img = url != null ? new Image(url.toExternalForm(), true) : null;
+            if (rootStack != null && img != null) {
+                ImageView bg = new ImageView(img);
+                bg.setFitWidth(1200);
+                bg.setFitHeight(750);
+                bg.setPreserveRatio(false);
+                bg.setEffect(new GaussianBlur(35));
+                rootStack.getChildren().add(1, bg);
+            }
+            if (cardRightPhoto != null && img != null) {
+                cardRightPhoto.setImage(img);
+                cardRightPhoto.setEffect(null);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void setupRightImageFill() {
+        if (cardRightPhoto != null) {
+            cardRightPhoto.setPreserveRatio(false);
+        }
+        if (cardRightPanel != null && cardRightPhoto != null) {
+            cardRightPhoto.fitWidthProperty().bind(cardRightPanel.widthProperty());
+            cardRightPhoto.fitHeightProperty().bind(cardRightPanel.heightProperty());
+        }
+    }
+
+    private void applyEqualRoundedCorners() {
+        double radius = 30;
+        if (cardContainer != null) {
+            Rectangle clip = new Rectangle(900, 520);
+            clip.setArcWidth(radius * 2);
+            clip.setArcHeight(radius * 2);
+            cardContainer.layoutBoundsProperty().addListener((o, oldVal, newVal) -> {
+                clip.setWidth(Math.max(900, newVal.getWidth()));
+                clip.setHeight(Math.max(520, newVal.getHeight()));
+            });
+            cardContainer.setClip(clip);
         }
     }
 
@@ -146,28 +206,28 @@ public class LoginController implements Initializable {
 
         GeoIPService.LocationInfo location = geoIPService.getCurrentLocation();
         boolean isSuspicious = securityAuditService.isSuspiciousLogin(
-            user.getId(), location.city, location.country
+                user.getId(), location.city, location.country
         );
 
         if (isSuspicious) {
             securityAuditService.logSecurityEvent(
-                user.getId(),
-                SecurityAuditService.EVENT_LOGIN_SUSPICIOUS,
-                "Suspicious login attempt from " + location.city + ", " + location.country
+                    user.getId(),
+                    SecurityAuditService.EVENT_LOGIN_SUSPICIOUS,
+                    "Suspicious login attempt from " + location.city + ", " + location.country
             );
 
             securityAuditService.logSecurityEvent(
-                user.getId(),
-                SecurityAuditService.EVENT_NEW_LOCATION,
-                "New location detected: " + location.city + ", " + location.country
+                    user.getId(),
+                    SecurityAuditService.EVENT_NEW_LOCATION,
+                    "New location detected: " + location.city + ", " + location.country
             );
 
             emailService.sendSecurityAlert(
-                user.getEmail(),
-                user.getPrenom(),
-                "New Login Location Detected",
-                "A login attempt was made from " + location.city + ", " + location.country + 
-                ". If this was you, please verify with the OTP code sent to your email."
+                    user.getEmail(),
+                    user.getPrenom(),
+                    "New Login Location Detected",
+                    "A login attempt was made from " + location.city + ", " + location.country +
+                            ". If this was you, please verify with the OTP code sent to your email."
             );
 
             initiateOTPVerification(user, true);
@@ -177,10 +237,15 @@ public class LoginController implements Initializable {
 
         rateLimitService.clearAll(email);
         securityAuditService.logSecurityEvent(
-            user.getId(),
-            SecurityAuditService.EVENT_LOGIN_SUCCESS,
-            "Login successful from " + location.city + ", " + location.country
+                user.getId(),
+                SecurityAuditService.EVENT_LOGIN_SUCCESS,
+                "Login successful from " + location.city + ", " + location.country
         );
+
+        // mark latest successful login
+        try {
+            personneService.updateLastLogin(user.getId(), java.time.LocalDateTime.now());
+        } catch (Exception ignored) {}
 
         Session.setCurrentUser(user);
         navigateTo("/Frontoffice/HomePage.fxml", event);
@@ -275,27 +340,17 @@ public class LoginController implements Initializable {
 
         FaceLoginController.setPendingEmail(email);
         navigateTo("/Frontoffice/FaceLogin.fxml", event);
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/FaceLogin.fxml"));
-            Parent root = loader.load();
-            Stage st = new Stage();
-            st.setScene(new Scene(root));
-            st.show();
-        } catch (Exception e) {
-            e.printStackTrace(); // IMPORTANT : ça va montrer la vraie cause dans la console
-            showError("Could not load page: /Frontoffice/FaceLogin.fxml\n" + e.getMessage());
-        }
     }
 
     private void initiateOTPVerification(Personne user, boolean isSuspicious) {
         String otp = otpService.generateOTP(user.getEmail());
-        
+
         emailService.sendOTPEmail(user.getEmail(), user.getPrenom(), otp);
 
         securityAuditService.logSecurityEvent(
-            user.getId(),
-            SecurityAuditService.EVENT_OTP_SENT,
-            "OTP sent to " + user.getEmail()
+                user.getId(),
+                SecurityAuditService.EVENT_OTP_SENT,
+                "OTP sent to " + user.getEmail()
         );
 
         VerifyOTPController.setPendingVerification(user.getEmail(), user, isSuspicious);
@@ -306,9 +361,9 @@ public class LoginController implements Initializable {
 
         if (user != null) {
             securityAuditService.logSecurityEvent(
-                user.getId(),
-                SecurityAuditService.EVENT_LOGIN_FAILED,
-                "Login failed: " + message
+                    user.getId(),
+                    SecurityAuditService.EVENT_LOGIN_FAILED,
+                    "Login failed: " + message
             );
         }
 

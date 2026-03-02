@@ -619,7 +619,6 @@
                                                             <TableView fx:id="tablepost" BorderPane.alignment="CENTER">
                                                                 <columns>
 
-                                                                    <TableColumn fx:id="colTitrePost" text="Titre du post" />
                                                                     <TableColumn fx:id="colContenuPost" text="Description" />
                                                                     <TableColumn fx:id="colDatePost" text="Date de publication" />
                                                                     <TableColumn fx:id="colPopularitePost" text="Score de popularité" />

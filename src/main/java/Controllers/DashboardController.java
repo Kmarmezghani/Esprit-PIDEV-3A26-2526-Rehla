@@ -195,7 +195,7 @@ public class DashboardController {
     @FXML private TableView<Post> tablepost;
 
     @FXML private TableColumn<Post, Integer> colIdPost;
-    @FXML private TableColumn<Post, String> colTitrePost;
+
     @FXML private TableColumn<Post, String> colContenuPost;
     @FXML private TableColumn<Post, java.time.LocalDate> colDatePost;
     @FXML private TableColumn<Post, Integer> colPopularitePost;
@@ -1588,8 +1588,6 @@ public class DashboardController {
     /*---------------------------------------posts-------------------------------------------*/
     private void loadPosts() {
 
-
-        colTitrePost.setCellValueFactory(new PropertyValueFactory<>("titre"));
         colContenuPost.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         colDatePost.setCellValueFactory(new PropertyValueFactory<>("datePublication"));
         colPopularitePost.setCellValueFactory(new PropertyValueFactory<>("popularite"));

@@ -58,31 +58,14 @@
                   -fx-min-width: 16;
                   -fx-alignment: center;"/>
                     </StackPane>
-                        <StackPane alignment="TOP_RIGHT">
+                        <StackPane alignment="TOP_RIGHT" maxHeight="-Infinity">
                             <HBox.margin>
-                                <Insets right="10.0"/>
+                                <Insets right="10.0" />
                             </HBox.margin>
 
-                            <Button fx:id="btnNotif"
-                                    onAction="#openNotifications"
-                                    styleClass="iconBtn"
-                                    text="🔔"/>
+                            <Button fx:id="btnNotif" onAction="#openNotifications" styleClass="iconBtn" text="🔔" />
 
-                            <Label fx:id="lblNotifCount"
-                                   text="0"
-                                   visible="false"
-                                   managed="false"
-                                   StackPane.alignment="TOP_RIGHT"
-                                   translateX="8"
-                                   translateY="-6"
-                                   style="-fx-background-color: #ef4444;
-                  -fx-text-fill: white;
-                  -fx-font-weight: 900;
-                  -fx-font-size: 11px;
-                  -fx-padding: 2 6;
-                  -fx-background-radius: 999;
-                  -fx-min-width: 18px;
-                  -fx-alignment: center;"/>
+                            <Label fx:id="lblNotifCount" managed="false" style="-fx-background-color: #ef4444;                   -fx-text-fill: white;                   -fx-font-weight: 900;                   -fx-font-size: 11px;                   -fx-padding: 2 6;                   -fx-background-radius: 999;                   -fx-min-width: 18px;                   -fx-alignment: center;" text="0" translateX="8" translateY="-6" visible="false" StackPane.alignment="TOP_RIGHT" />
                         </StackPane>
                     </HBox>
                     <Button fx:id="btnProfile" onAction="#openProfileMenu" styleClass="iconBtn" text="👤">

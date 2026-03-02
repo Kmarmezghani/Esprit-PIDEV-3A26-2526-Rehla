@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.GaussianBlur?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="750.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.LoginController">
+    <children>
+        <StackPane fx:id="rootStack" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <!-- Blurred background: soft gradient (add hero.jpg to Frontoffice/images/ for photo) -->
+            <Rectangle width="1200" height="750">
+                <fill>
+                    <javafx.scene.paint.LinearGradient startX="0" startY="0" endX="1" endY="1" cycleMethod="NO_CYCLE">
+                        <stops>
+                            <javafx.scene.paint.Stop offset="0" color="#0b1020"/>
+                            <javafx.scene.paint.Stop offset="0.4" color="#141b3f"/>
+                            <javafx.scene.paint.Stop offset="0.7" color="#1f2f6b"/>
+                            <javafx.scene.paint.Stop offset="1" color="#3a5bc7"/>
+                        </stops>
+                    </javafx.scene.paint.LinearGradient>
+                </fill>
+                <effect>
+                    <GaussianBlur radius="30" />
+                </effect>
+            </Rectangle>
+            <!-- Dark overlay -->
+            <Rectangle width="1200" height="750" fill="rgba(0,0,0,0.15)" />
+
+            <!-- Top bar -->
+            <VBox alignment="TOP_CENTER">
+                <HBox alignment="CENTER_LEFT" prefHeight="60" style="-fx-padding: 15 40 0 40;">
+                    <ImageView fitHeight="32.0" preserveRatio="true" pickOnBounds="true">
+                        <image>
+                            <Image url="@../Backoffice/icons/IMG_20260125_122708_191-removebg-preview.png" />
+                        </image>
+                    </ImageView>
+
+                    <!-- ✅ Removed "Rehla" label next to logo -->
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Button onAction="#minwindow"
+                            style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                            text="−" />
+                    <Button onAction="#maxwindow"
+                            style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"
+                            text="□" />
+                    <Button onAction="#closewindow"
+                            style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14; -fx-cursor: hand;"
+                            text="✕" />
+                </HBox>
+
+                <!-- Central white rounded card -->
+                <StackPane fx:id="cardContainer"
+                           style="-fx-background-color: white;
+                      -fx-background-radius: 30;
+                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 40, 0, 0, 15);
+                      -fx-max-width: 950;
+                      -fx-pref-height: 560;
+                      -fx-min-width: 900;">
+                    <HBox alignment="CENTER_LEFT" style="-fx-background-radius: 30; -fx-background-color: white;">
+
+                        <!-- Left: Form -->
+                        <VBox alignment="TOP_LEFT"
+                              style="-fx-padding: 40 50; -fx-spacing: 16; -fx-pref-width: 440;">
+
+                            <!-- ✅ Clean titles -->
+                            <Label text="Connexion"
+                                   style="-fx-text-fill: #1a1a1a; -fx-font-size: 28; -fx-font-weight: bold;"/>
+                            <Label text="Connecte-toi pour continuer ton voyage."
+                                   style="-fx-text-fill: #666; -fx-font-size: 14;"/>
+
+                            <!-- Email -->
+                            <VBox spacing="6">
+                                <Label text="Email"
+                                       style="-fx-text-fill: #333; -fx-font-weight: bold; -fx-font-size: 13;"/>
+                                <TextField fx:id="emailField"
+                                           promptText="ex: rayen@email.com"
+                                           prefHeight="44"
+                                           style="-fx-background-color: #f8f9fa;
+                                      -fx-background-radius: 12;
+                                      -fx-border-color: #e8e8e8;
+                                      -fx-border-radius: 12;
+                                      -fx-font-size: 14;
+                                      -fx-padding: 0 14;"/>
+                            </VBox>
+
+                            <!-- Password -->
+                            <VBox spacing="6">
+                                <Label text="Mot de passe"
+                                       style="-fx-text-fill: #333; -fx-font-weight: bold; -fx-font-size: 13;"/>
+                                <PasswordField fx:id="passwordField"
+                                               promptText="••••••••"
+                                               prefHeight="44"
+                                               style="-fx-background-color: #f8f9fa;
+                                          -fx-background-radius: 12;
+                                          -fx-border-color: #e8e8e8;
+                                          -fx-border-radius: 12;
+                                          -fx-font-size: 14;
+                                          -fx-padding: 0 14;"/>
+                            </VBox>
+
+                            <!-- Captcha -->
+                            <HBox fx:id="captchaBox" alignment="CENTER_LEFT" spacing="10" visible="false" managed="false">
+                                <Label fx:id="captchaLabel" style="-fx-text-fill: #223f91; -fx-font-weight: bold;"/>
+                                <TextField fx:id="captchaField"
+                                           prefWidth="90"
+                                           style="-fx-background-color: #f8f9fa;
+                                      -fx-background-radius: 8;
+                                      -fx-alignment: center;"/>
+                            </HBox>
+
+                            <!-- Errors -->
+                            <Label fx:id="errorLabel"
+                                   style="-fx-text-fill: #e74c3c; -fx-font-size: 12;"
+                                   text=""
+                                   visible="false"
+                                   wrapText="true"/>
+                            <Label fx:id="attemptsLabel"
+                                   style="-fx-text-fill: #f39c12; -fx-font-size: 12;"
+                                   text=""
+                                   visible="false"/>
+
+                            <!-- Primary login -->
+                            <Button fx:id="loginButton"
+                                    onAction="#handleLogin"
+                                    text="Se connecter"
+                                    prefHeight="48"
+                                    maxWidth="Infinity"
+                                    style="-fx-background-color: #3a5bc7;
+                               -fx-text-fill: white;
+                               -fx-background-radius: 24;
+                               -fx-cursor: hand;
+                               -fx-font-weight: bold;
+                               -fx-font-size: 15;"/>
+
+                            <!-- ✅ Separator for alternative methods -->
+                            <HBox alignment="CENTER" spacing="12">
+                                <Separator prefWidth="90"/>
+                                <Label text="Autres méthodes"
+                                       style="-fx-text-fill: #999; -fx-font-size: 12;"/>
+                                <Separator prefWidth="90"/>
+                            </HBox>
+
+                            <!-- OTP + Face -->
+                            <Button fx:id="otpLoginButton"
+                                    onAction="#handleOTPLogin"
+                                    text="📧  Connexion par code email (OTP)"
+                                    prefHeight="46"
+                                    maxWidth="Infinity"
+                                    style="-fx-background-color: white;
+                               -fx-text-fill: #3a5bc7;
+                               -fx-background-radius: 23;
+                               -fx-border-color: #3a5bc7;
+                               -fx-border-radius: 23;
+                               -fx-border-width: 2;
+                               -fx-cursor: hand;
+                               -fx-font-weight: bold;
+                               -fx-font-size: 13;"/>
+
+                            <Button fx:id="faceLoginButton"
+                                    onAction="#handleFaceLogin"
+                                    text="👤  Connexion par visage"
+                                    prefHeight="46"
+                                    maxWidth="Infinity"
+                                    style="-fx-background-color: white;
+                               -fx-text-fill: #11998e;
+                               -fx-background-radius: 23;
+                               -fx-border-color: #11998e;
+                               -fx-border-radius: 23;
+                               -fx-border-width: 2;
+                               -fx-cursor: hand;
+                               -fx-font-weight: bold;
+                               -fx-font-size: 13;"/>
+
+                            <!-- ✅ This makes the register row ALWAYS visible -->
+                            <Region VBox.vgrow="ALWAYS"/>
+
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="Pas encore de compte ?"
+                                       style="-fx-text-fill: #666; -fx-font-size: 13;"/>
+                                <Button onAction="#goToRegister"
+                                        style="-fx-background-color: transparent;
+                                   -fx-text-fill: #3a5bc7;
+                                   -fx-cursor: hand;
+                                   -fx-underline: true;
+                                   -fx-font-weight: bold;
+                                   -fx-font-size: 13;"
+                                        text="Créer un compte"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Right: photo -->
+                        <StackPane fx:id="cardRightPanel"
+                                   style="-fx-background-radius: 0 30 30 0;
+                              -fx-min-width: 430;
+                              -fx-max-width: 430;
+                              -fx-background-color: linear-gradient(to bottom right, #141b3f, #1f2f6b, #3a5bc7);">
+                            <ImageView fx:id="cardRightPhoto" fitWidth="430" fitHeight="560" preserveRatio="false" pickOnBounds="true" />
+                            <Label text="✈" style="-fx-font-size: 80; -fx-text-fill: rgba(255,255,255,0.2);"/>
+                        </StackPane>
+
+                    </HBox>
+                </StackPane>
+            </VBox>
+        </StackPane>
+    </children>
+</AnchorPane>

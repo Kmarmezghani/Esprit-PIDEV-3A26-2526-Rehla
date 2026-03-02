@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.image.ImageView?>
+<VBox spacing="10" alignment="CENTER"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.UpdatePostController">
+
+    <padding>
+        <Insets top="20" bottom="20" left="20" right="20"/>
+    </padding>
+
+    <TextField fx:id="txtTitre" promptText="Titre"/>
+    <TextArea fx:id="txtContenu" promptText="Contenu"/>
+    <TextField fx:id="txtAuteurId"
+               promptText="ID Auteur"
+               editable="false"/>
+
+    <ImageView fx:id="imagePreview"
+               fitWidth="200"
+               fitHeight="120"
+               preserveRatio="true"/>
+
+
+    <Button text="Choisir une image"
+            onAction="#choisirImage"/>
+
+
+    <Button text="Modifier"
+            onAction="#updatePost"/>
+
+</VBox>

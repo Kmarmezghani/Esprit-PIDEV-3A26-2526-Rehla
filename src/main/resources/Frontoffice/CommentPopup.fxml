@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.shape.Circle?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="Controllers.CommentPopupController"
+           fx:id="root">
+
+    <VBox spacing="15"
+          prefWidth="450"
+          prefHeight="500"
+          maxWidth="450"
+          maxHeight="500"
+          alignment="TOP_CENTER"
+          styleClass="comment-popup">
+
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT">
+        <Label text="💬 Commentaires" styleClass="card-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="✕" onAction="#closePopup" styleClass="btn-icon"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- COMMENTS LIST -->
+    <ScrollPane fitToWidth="true" styleClass="scroll">
+        <content>
+            <VBox fx:id="commentsContainer" spacing="15"/>
+        </content>
+    </ScrollPane>
+
+    <Separator/>
+
+    <!-- ADD COMMENT -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <ImageView fx:id="currentUserAvatarView" fitWidth="32" fitHeight="32" preserveRatio="true">
+            <clip>
+                <Circle centerX="16" centerY="16" radius="16"/>
+            </clip>
+        </ImageView>
+
+        <TextField fx:id="txtComment"
+                   promptText="Écrire un commentaire..."
+                   styleClass="comment"
+                   HBox.hgrow="ALWAYS"/>
+
+        <Button text="Envoyer"
+                onAction="#sendComment"
+                styleClass="btn-primary"/>
+    </HBox>
+
+</VBox>
+</StackPane>

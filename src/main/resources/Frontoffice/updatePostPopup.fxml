@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Controllers.UpdatePostPopupController"
+      spacing="15"
+      prefWidth="450"
+      prefHeight="500"
+      maxWidth="450"
+      maxHeight="500"
+      alignment="TOP_CENTER"
+      styleClass="comment-popup">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT">
+        <Label text="✏️ Modifier la publication" styleClass="card-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="✕" onAction="#closePopup" styleClass="btn-icon"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- EDIT CONTENT -->
+    <VBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Contenu :" styleClass="label"/>
+        <TextField fx:id="txtContent"
+                   promptText="Écrire quelque chose..."
+                   styleClass="comment"
+                   prefWidth="400"/>
+
+        <Label text="Image (optionnel) :" styleClass="label"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <ImageView fx:id="imgPreview"
+                       fitWidth="100"
+                       fitHeight="80"
+                       preserveRatio="true"
+                       styleClass="post-img"/>
+            <Button text="Choisir"
+                    onAction="#chooseImage"
+                    styleClass="btn-primary"/>
+        </HBox>
+    </VBox>
+
+    <Separator/>
+
+    <!-- BUTTONS -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Annuler"
+                onAction="#closePopup"
+                styleClass="btn-secondary"/>
+        <Button text="Enregistrer"
+                onAction="#updatePost"
+                styleClass="btn-primary"/>
+    </HBox>
+
+</VBox>

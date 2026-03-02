@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.AddPostController">
+
+    <padding>
+        <Insets top="20" bottom="20" left="20" right="20"/>
+    </padding>
+
+    <TextField fx:id="txtTitre" promptText="Titre"/>
+    <TextArea fx:id="txtContenu" promptText="Contenu"/>
+
+    <!-- ComboBox pour choisir l'auteur -->
+    <ComboBox fx:id="comboAuteur" promptText="Sélectionner l'auteur" prefWidth="300"/>
+
+    <ImageView fx:id="imagePreview"
+               fitWidth="200"
+               fitHeight="120"
+               preserveRatio="true"/>
+
+    <Button text="Choisir une image"
+            onAction="#choisirImage"/>
+
+    <Button text="Ajouter"
+            onAction="#addPost"/>
+</VBox>

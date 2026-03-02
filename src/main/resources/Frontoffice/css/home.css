@@ -1,0 +1,592 @@
+/* =========================
+   HOME.CSS (CLEAN + CONSISTENT)
+   ========================= */
+
+/* -------------------------
+   BASE / PAGE
+   ------------------------- */
+.page { -fx-background-color: transparent; }
+.scroll-pane { -fx-background-color: transparent; }
+.scroll-pane > .viewport { -fx-background-color: transparent; }
+
+/* -------------------------
+   HERO
+   ------------------------- */
+.heroWrap{
+    -fx-pref-height: 560px;
+    -fx-min-height: 560px;
+    -fx-max-height: 560px;
+}
+
+/* Image cover */
+.heroBg{
+    -fx-background-image: url("/Frontoffice/images/hero.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+/* Overlay */
+.heroOverlay{
+    -fx-background-color: linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.12),
+            rgba(0,0,0,0.06),
+            rgba(0,0,0,0.40)
+    );
+}
+
+/* Booking wrapper pinned bottom */
+.heroCenter{
+    -fx-padding: 0 60 0 60;
+    -fx-translate-y: 220; /* ajuste si besoin */
+}
+
+/* -------------------------
+   HEADER OVER HERO (TRANSPARENT)
+   ------------------------- */
+.topGlassOverlay{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.brandLogo{
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.45), 10, 0, 0, 2);
+}
+
+/* Nav buttons */
+.navBtn{
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255,255,255,0.95);
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+    -fx-padding: 8 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.55), 8, 0, 0, 1);
+}
+
+.navBtn:hover{
+    -fx-underline: false;
+    -fx-background-color: rgba(255,255,255,0.14);
+    -fx-background-radius: 999;
+}
+
+/* Icons notif/profile */
+.iconBtn{
+    -fx-background-color: rgba(255,255,255,0.16);
+    -fx-background-radius: 999;
+    -fx-padding: 9 11;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+}
+.iconBtn:hover{
+    -fx-background-color: rgba(255,255,255,0.24);
+}
+
+/* -------------------------
+   WINDOWS CONTROLS (WIN11 CLEAN)
+   ------------------------- */
+.winBox{ -fx-alignment: center-right; -fx-spacing: 0; }
+
+.winBox > .button{
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+
+    -fx-min-width: 48px;
+    -fx-pref-width: 48px;
+    -fx-max-width: 48px;
+
+    -fx-min-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-max-height: 36px;
+
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+
+    -fx-effect: null;
+    -fx-cursor: hand;
+}
+
+.winBox > .button:hover{ -fx-background-color: rgba(255,255,255,0.15); }
+.winBox > .button:pressed{ -fx-background-color: rgba(255,255,255,0.10); }
+.winBox > .button.winCtrlClose:hover{ -fx-background-color: #e81123; }
+
+/* centre le SVG */
+.winBox > .button .graphic{
+    -fx-translate-x: 0;
+    -fx-translate-y: 0;
+}
+
+/* -------------------------
+   BOOKING CARD
+   ------------------------- */
+.bookingCard{
+    -fx-background-color: rgba(255,255,255,0.00);
+    -fx-padding: 0;
+    -fx-max-width: Infinity;
+}
+
+/* Tabs bar */
+.tabsBarInCard{
+    -fx-background-color: rgba(8, 15, 28, 0.58);
+    -fx-background-radius: 18 18 0 0;
+    -fx-padding: 10 10;
+    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-radius: 18 18 0 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.22), 20, 0, 0, 10);
+    -fx-max-width: Infinity;
+}
+
+/* Tabs */
+.tab, .tabActive{
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255,255,255,0.85);
+    -fx-font-weight: 900;
+    -fx-font-size: 14px;
+    -fx-padding: 10 16;
+    -fx-cursor: hand;
+    -fx-background-radius: 12;
+}
+.tab:hover{
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: white;
+}
+.tabActive{
+    -fx-background-color: rgba(58, 91, 199, 0.95);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.30), 16, 0, 0, 6);
+}
+
+/* Search content */
+.searchShellInCard{
+    -fx-background-color: rgba(255,255,255,0.93);
+    -fx-background-radius: 0 0 20 20;
+    -fx-padding: 16;
+    -fx-border-color: rgba(255,255,255,0.60);
+    -fx-border-radius: 0 0 20 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.22), 26, 0, 0, 14);
+    -fx-max-width: Infinity;
+}
+
+/* rows */
+.rowTop{ -fx-padding: 6; }
+.rowBottom{ -fx-padding: 6; }
+
+/* Input */
+.searchMainInput{
+    -fx-background-color: rgba(255,255,255,0.96);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(16,24,40,0.10);
+    -fx-padding: 14 16;
+    -fx-font-size: 14px;
+}
+.searchMainInput:focused{
+    -fx-border-color: rgba(58,91,199,0.55);
+    -fx-effect: dropshadow(three-pass-box, rgba(58,91,199,0.18), 18, 0, 0, 0);
+}
+
+/* Search button */
+.searchBtnDark{
+    -fx-background-color: #0f3d2e;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-size: 14px;
+    -fx-background-radius: 14;
+    -fx-padding: 14 22;
+    -fx-min-width: 120px;
+    -fx-cursor: hand;
+}
+.searchBtnDark:hover{ -fx-background-color: #0b2f24; }
+
+/* small fields */
+.fieldBox{
+    -fx-background-color: rgba(255,255,255,0.92);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: rgba(16,24,40,0.10);
+    -fx-padding: 10 12;
+}
+.fieldLabel{
+    -fx-text-fill: rgba(16,24,40,0.65);
+    -fx-font-size: 12px;
+    -fx-font-weight: 900;
+}
+.fieldValue{
+    -fx-text-fill: rgba(16,24,40,0.88);
+    -fx-font-size: 12px;
+}
+.tip{
+    -fx-text-fill: rgba(16,24,40,0.55);
+    -fx-font-size: 12px;
+    -fx-padding: 6 0 0 10;
+}
+
+/* DatePicker / Spinner clean */
+.date-picker, .spinner{ -fx-background-color: transparent; }
+.date-picker .text-field, .spinner .text-field{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* -------------------------
+   SECTIONS CONTAINER
+   ------------------------- */
+/* container full width */
+.container{
+    -fx-padding: 22 40 22 40;
+    -fx-max-width: Infinity;
+}
+.fullRow{
+    -fx-max-width: Infinity;
+}
+.centerWrap{
+    -fx-max-width: Infinity;
+}
+.centerBox{
+    -fx-max-width: 1100px;
+}
+/* aligne le contenu 1100px à gauche (pas centré) */
+.leftWrap { -fx-alignment: top-left; }
+/* make the scrollpane use all available width */
+/* prevent vertical clipping */
+.fullScroll {
+    -fx-max-width: Infinity;
+    -fx-pref-height: USE_COMPUTED_SIZE;
+}
+
+/* ensure reviews box grows naturally */
+.flashRow {
+    -fx-alignment: top-left;
+}
+
+/* make its content fill width too */
+.fullScroll > .viewport { -fx-background-color: transparent; }
+
+/* content centered + limited */
+.contentBox{
+    -fx-max-width: 1100;
+}
+.heroBgActivities {
+    -fx-background-image: url("/Frontoffice/images/activities-hero.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+}
+
+/* Titles (global sections) */
+.sectionTitle{
+    -fx-font-size: 22px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #0f172a;
+}
+.sectionSub{
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #6b7280;
+}
+
+/* -------------------------
+   FLASH DEALS
+   ------------------------- */
+.dealBanner{
+    -fx-background-color: rgba(255, 241, 240, 1);
+    -fx-background-radius: 18;
+    -fx-padding: 16 18;
+    -fx-border-color: rgba(255,255,255,0.55);
+    -fx-border-radius: 18;
+}
+.dealBannerTitle{
+    -fx-text-fill: #b42318;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+}
+.dealBannerSub{
+    -fx-text-fill: #7a271a;
+    -fx-font-size: 12px;
+}
+
+/* badge flash */
+.badgeDeal{
+    -fx-background-color: #b42318;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-size: 12px;
+    -fx-background-radius: 999;
+    -fx-padding: 6 10;
+}
+
+/* anciens prix */
+.priceOld{
+    -fx-text-fill: #98a2b3;
+    -fx-strikethrough: true;
+    -fx-font-weight: 800;
+}
+.priceNew{
+    -fx-text-fill: #101828;
+    -fx-font-weight: 900;
+}
+
+/* btn simple */
+.searchBtn{
+    -fx-background-color: #223f91;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-background-radius: 12;
+    -fx-padding: 10 14;
+    -fx-cursor: hand;
+}
+.searchBtn:hover{
+    -fx-opacity: 0.92;
+}
+
+/* -------------------------
+   TOP DESTINATIONS (LIKE REF)
+   ------------------------- */
+.sectionHeader{
+    -fx-padding: 0;
+    -fx-alignment: center-left;
+}
+
+/* bouton view all */
+.viewAllBtn{
+    -fx-background-color: #f8fafc;
+    -fx-text-fill: #0f172a;
+    -fx-font-weight: 800;
+    -fx-padding: 10 16;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #dbe3ef;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.viewAllBtn:hover{
+    -fx-background-color: #eef2ff;
+}
+
+/* ✅ cards top destinations */
+.destCard{
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e8eef6;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(16,24,40,0.10), 18, 0, 0, 6);
+}
+.destCard:hover{
+    -fx-effect: dropshadow(three-pass-box, rgba(16,24,40,0.16), 22, 0, 0, 10);
+    -fx-translate-y: -2;
+}
+
+.destBody{
+    -fx-padding: 12 14 14 14;
+}
+
+.destName{
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #0f172a;
+}
+
+.destDesc{
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+/* separator */
+.destSeparator{
+    -fx-background-color: #edf2f7;
+    -fx-pref-height: 1;
+}
+
+/* bottom row */
+.metaRow{
+    -fx-padding: 10 0 0 0;
+    -fx-alignment: center-left;
+}
+
+.metaText{
+    -fx-font-size: 12px;
+    -fx-text-fill: #0f172a;
+    -fx-font-weight: 800;
+}
+
+.exploreBtn{
+    -fx-background-color: #0f3d2e;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-padding: 9 14;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+.exploreBtn:hover{
+    -fx-background-color: #0b2f24;
+}
+/* =========================
+   FLASH DEALS (ACTIVITIES) - CLEAN
+   ========================= */
+
+.flashScroll{
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 2 0 6 0;
+}
+
+.flashScroll > .viewport{
+    -fx-background-color: transparent;
+}
+
+/* barre plus fine */
+.flashScroll .scroll-bar:horizontal{
+    -fx-pref-height: 10px;
+    -fx-background-color: transparent;
+}
+.flashScroll .scroll-bar:horizontal .track{
+    -fx-background-color: rgba(15,23,42,0.08);
+    -fx-background-radius: 999;
+}
+.flashScroll .scroll-bar:horizontal .thumb{
+    -fx-background-color: rgba(15,23,42,0.35);
+    -fx-background-radius: 999;
+}
+
+.flashRow{
+    -fx-padding: 6 2 10 2;
+}
+
+/* Card flash */
+.flashCard{
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e8eef6;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(16,24,40,0.10), 18, 0, 0, 6);
+}
+
+.flashCard:hover{
+    -fx-effect: dropshadow(three-pass-box, rgba(16,24,40,0.16), 22, 0, 0, 10);
+    -fx-translate-y: -2;
+}
+
+.flashBody{
+    -fx-padding: 12 14 14 14;
+}
+
+.flashTitle{
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #0f172a;
+}
+
+.flashSub{
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.flashSep{
+    -fx-background-color: #edf2f7;
+    -fx-pref-height: 1;
+}
+
+.flashBadge{
+    -fx-background-color: #b42318;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-size: 12px;
+    -fx-background-radius: 999;
+    -fx-padding: 6 10;
+}
+
+.flashOld{
+    -fx-text-fill: #98a2b3;
+    -fx-strikethrough: true;
+    -fx-font-weight: 800;
+}
+
+.flashNew{
+    -fx-text-fill: #0f172a;
+    -fx-font-weight: 900;
+}
+
+.flashBtn{
+    -fx-background-color: #0f3d2e;
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-padding: 9 14;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+.flashBtn:hover{
+    -fx-background-color: #0b2f24;
+}
+.postCard{
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e8eef6;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(16,24,40,0.10), 18, 0, 0, 6);
+}
+.postCard:hover{
+    -fx-effect: dropshadow(three-pass-box, rgba(16,24,40,0.16), 24, 0, 0, 10);
+    -fx-translate-y: -2;
+}
+/* =========================
+   Activities HERO overrides
+   ========================= */
+
+/* On force le centre à être en bas (si home.css te le casse) */
+.activitiesHeroCenter {
+    -fx-alignment: center;
+}
+
+/* Search bar limitée */
+.activitiesSearchBar {
+    -fx-pref-width: 780px;
+    -fx-max-width: 780px;
+
+    -fx-background-color: rgba(255,255,255,0.92);
+    -fx-background-radius: 999px;
+    -fx-padding: 12px;
+    -fx-spacing: 10px;
+}
+
+/* Textfield clean */
+.activitiesSearchField {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-padding: 6 6 6 6;
+}
+
+/* Button style */
+.activitiesSearchBtn {
+    -fx-background-color: #3A5BC7;
+    -fx-text-fill: white;
+    -fx-background-radius: 999px;
+    -fx-font-weight: 900;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+/* ===== BLUE NAVBAR VERSION ===== */
+.topBlueBar{
+    -fx-background-color: #223f91;
+}
+
+/* Back button style */
+.backBtn{
+    -fx-background-color: rgba(255,255,255,0.18);
+    -fx-background-radius: 12;
+    -fx-padding: 8 14;
+}
+
+.backBtn:hover{
+    -fx-background-color: rgba(255,255,255,0.28);
+}

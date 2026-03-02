@@ -389,8 +389,13 @@ void goToMyReservations(ActionEvent event) {
 
     private void initProfileInfo() {
         /*--------------------------------------------*/
-        String path = currentUser.getProfilePhoto().trim();
-        File file = new File(path);
+        String photo = currentUser.getProfilePhoto();
+        if (photo != null) {
+            photo = photo.trim();
+        } else {
+            photo = "/Backoffice/icons/default.png"; // ou chemin vers une image par défaut
+        }
+        File file = new File(photo);
 
         if (file.exists()) {
             Image img = new Image(file.toURI().toString());

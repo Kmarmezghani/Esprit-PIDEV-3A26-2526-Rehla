@@ -25,7 +25,9 @@ import services.VilleService;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,21 @@ public class CountryBrowseController implements Initializable {
 
     private void loadAllCountries() {
         allCountries = paysService.getAll();
+
+        // aggregate visits by country from city visit_count
+        Map<Integer, Integer> visitsByPays = villeService.getAll().stream()
+                .collect(Collectors.groupingBy(
+                        v -> v.getPaysId(),
+                        Collectors.summingInt(v -> v.getVisitCount())
+                ));
+
+        // sort countries by total city visits (desc)
+        allCountries = allCountries.stream()
+                .sorted(Comparator.comparingInt(
+                        (Pays p) -> visitsByPays.getOrDefault(p.getId(), 0)
+                ).reversed())
+                .collect(Collectors.toList());
+
         displayCountries(allCountries);
     }
 

@@ -120,4 +120,14 @@ public class VilleService implements IService<Ville> {
         }
         return villes;
     }
+    public void incrementVisitCount(int villeId) {
+        if (conn == null) return;
+        String SQL = "UPDATE ville SET visit_count = visit_count + 1 WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            pstmt.setInt(1, villeId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }

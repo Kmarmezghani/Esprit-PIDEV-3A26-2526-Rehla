@@ -2,6 +2,7 @@ package services;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,9 +13,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 public class DescriptionApiService {
-    private static final Dotenv dotenv = Dotenv.load();
-    private static final String DEFAULT_ENDPOINT = "http://localhost:8080/api/description/country";
-    private static final String ENDPOINT = dotenv.get("COUNTRY_DESCRIPTION_API_URL", DEFAULT_ENDPOINT);
+    private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+    private static final String API_KEY = dotenv.get("GEMINI_API_KEY_SECONDARY");
+    private static final String MODEL = "gemini-2.5-flash";
+    private static final String ENDPOINT =
+            "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL + ":generateContent?key=";
 
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -24,13 +27,28 @@ public class DescriptionApiService {
         if (countryName == null || countryName.isBlank()) {
             throw new IllegalArgumentException("Country name is required.");
         }
+        if (API_KEY == null || API_KEY.isBlank()) {
+            throw new IllegalStateException("Missing GEMINI_API_KEY in .env");
+        }
 
-        JSONObject payload = new JSONObject();
-        payload.put("country", countryName.trim());
-        payload.put("maxSentences", 2);
+        String prompt = """
+                Write a short tourism description for the country "%s".
+                Rules:
+                - exactly 2 sentences
+                - maximum 70 words total
+                - factual, clear, and friendly
+                - no markdown, no emojis, no bullet points
+                - output only the description text
+                """.formatted(countryName.trim());
+
+        JSONObject part = new JSONObject().put("text", prompt);
+        JSONArray parts = new JSONArray().put(part);
+        JSONObject content = new JSONObject().put("parts", parts);
+        JSONArray contents = new JSONArray().put(content);
+        JSONObject payload = new JSONObject().put("contents", contents);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(ENDPOINT))
+                .uri(URI.create(ENDPOINT + API_KEY))
                 .timeout(Duration.ofSeconds(30))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8))
@@ -42,10 +60,25 @@ public class DescriptionApiService {
         }
 
         JSONObject root = new JSONObject(response.body());
-        String description = root.optString("description", "").trim();
-        if (description.isEmpty()) {
-            throw new IOException("Description API returned empty description.");
+        JSONArray candidates = root.optJSONArray("candidates");
+        if (candidates == null || candidates.isEmpty()) {
+            throw new IOException("Gemini response has no candidates.");
         }
-        return description;
+
+        JSONObject first = candidates.getJSONObject(0);
+        JSONObject geminiContent = first.optJSONObject("content");
+        if (geminiContent == null) {
+            throw new IOException("Gemini response missing content.");
+        }
+        JSONArray geminiParts = geminiContent.optJSONArray("parts");
+        if (geminiParts == null || geminiParts.isEmpty()) {
+            throw new IOException("Gemini response missing text parts.");
+        }
+
+        String description = geminiParts.getJSONObject(0).optString("text", "").trim();
+        if (description.isEmpty()) {
+            throw new IOException("Gemini returned empty description.");
+        }
+        return description.replaceAll("\\s+", " ");
     }
 }

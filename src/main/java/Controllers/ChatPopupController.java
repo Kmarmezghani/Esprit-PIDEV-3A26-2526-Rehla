@@ -78,7 +78,7 @@ public class ChatPopupController {
 
             client = new ChatClient(currentUserId);
 
-            // 🔵 Charger historique
+            // Charger historique
             List<Message> history = messageService.getMessagesByConversation(conversationId);
             for (Message m : history) {
                 boolean isMe = m.getSenderId() == currentUserId;
@@ -87,7 +87,7 @@ public class ChatPopupController {
             }
             lblReceiverName.setText(receiver.getNom() + " " + receiver.getPrenom());
 
-            // 🔵 écouter socket
+            //  écouter socket
             client.startListening(msg -> {
                 Platform.runLater(() -> {
                     String[] data = msg.split(";", 2);
@@ -122,18 +122,18 @@ public class ChatPopupController {
             return;
         }
 
-        // 🔵 Heure exacte du message
+        //  Heure exacte du message
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
 
-        // 1️⃣ UI (avec vraie heure)
+        //  UI (avec vraie heure)
         addMessageBubble(text, true, now);
 
-        // 2️⃣ Socket
+        //  Socket
         if(client != null){
             client.send(receiverId, text);
         }
 
-        // 3️⃣ DB
+        //  DB
         Message msg = new Message();
         msg.setConversationId(conversationId);
         msg.setSenderId(currentUserId);

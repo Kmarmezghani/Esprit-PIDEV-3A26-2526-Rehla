@@ -63,6 +63,13 @@ public class CityDetailController {
 
     public void setVille(Ville ville) {
         this.currentVille = ville;
+
+        // increment DB counter each time city detail is opened
+        villeService.incrementVisitCount(ville.getId());
+
+        // keep in-memory value in sync for immediate UI display
+        ville.setVisitCount(ville.getVisitCount() + 1);
+
         displayCityInfo();
         loadAttractions();
     }

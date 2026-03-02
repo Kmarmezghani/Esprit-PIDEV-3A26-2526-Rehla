@@ -545,7 +545,7 @@ private PostService postService = new PostService();
                 timeText = formatTime(lastMessage.getSentAt());
             }
 
-            String path = currentUser.getProfilePhoto();
+            String path = otherUser.getProfilePhoto();
 
             ImageView avatar = new ImageView();
 

@@ -127,52 +127,32 @@ public class RegisterController implements Initializable {
     }
 
     private String getNom() {
-        if (nomField != null && nomField.getText() != null) {
-            return nomField.getText().trim();
-        }
-        if (searchField != null && searchField.getText() != null) {
-            return searchField.getText().trim();
-        }
+        if (nomField != null && nomField.getText() != null) return nomField.getText().trim();
+        if (searchField != null && searchField.getText() != null) return searchField.getText().trim();
         return "";
     }
 
     private String getPrenom() {
-        if (prenomField != null && prenomField.getText() != null) {
-            return prenomField.getText().trim();
-        }
-        if (searchField1 != null && searchField1.getText() != null) {
-            return searchField1.getText().trim();
-        }
+        if (prenomField != null && prenomField.getText() != null) return prenomField.getText().trim();
+        if (searchField1 != null && searchField1.getText() != null) return searchField1.getText().trim();
         return "";
     }
 
     private String getEmail() {
-        if (emailField != null && emailField.getText() != null) {
-            return emailField.getText().trim();
-        }
-        if (searchField2 != null && searchField2.getText() != null) {
-            return searchField2.getText().trim();
-        }
+        if (emailField != null && emailField.getText() != null) return emailField.getText().trim();
+        if (searchField2 != null && searchField2.getText() != null) return searchField2.getText().trim();
         return "";
     }
 
     private String getPassword() {
-        if (passwordField != null && passwordField.getText() != null) {
-            return passwordField.getText();
-        }
-        if (searchField21 != null && searchField21.getText() != null) {
-            return searchField21.getText();
-        }
+        if (passwordField != null && passwordField.getText() != null) return passwordField.getText();
+        if (searchField21 != null && searchField21.getText() != null) return searchField21.getText();
         return "";
     }
 
     private String getConfirmPassword() {
-        if (confirmPasswordField != null && confirmPasswordField.getText() != null) {
-            return confirmPasswordField.getText();
-        }
-        if (searchField211 != null && searchField211.getText() != null) {
-            return searchField211.getText();
-        }
+        if (confirmPasswordField != null && confirmPasswordField.getText() != null) return confirmPasswordField.getText();
+        if (searchField211 != null && searchField211.getText() != null) return searchField211.getText();
         return "";
     }
 
@@ -186,43 +166,16 @@ public class RegisterController implements Initializable {
 
         hideError();
 
-        if (prenom.isEmpty()) {
-            showError("Please enter your first name.");
-            return;
-        }
-        if (nom.isEmpty()) {
-            showError("Please enter your last name.");
-            return;
-        }
-        if (email.isEmpty()) {
-            showError("Please enter your email.");
-            return;
-        }
-        if (password == null || password.isEmpty()) {
-            showError("Please enter a password.");
-            return;
-        }
-        if (!password.equals(confirm)) {
-            showError("Passwords do not match.");
-            return;
-        }
+        if (prenom.isEmpty()) { showError("Please enter your first name."); return; }
+        if (nom.isEmpty()) { showError("Please enter your last name."); return; }
+        if (email.isEmpty()) { showError("Please enter your email."); return; }
+        if (password == null || password.isEmpty()) { showError("Please enter a password."); return; }
+        if (!password.equals(confirm)) { showError("Passwords do not match."); return; }
 
-        if (!ValidationUtil.nameDoesNotStartWithNumber(nom)) {
-            showError("Last name: " + ValidationUtil.nameErrorMessage());
-            return;
-        }
-        if (!ValidationUtil.nameDoesNotStartWithNumber(prenom)) {
-            showError("First name: " + ValidationUtil.nameErrorMessage());
-            return;
-        }
-        if (!ValidationUtil.isValidEmail(email)) {
-            showError(ValidationUtil.emailErrorMessage());
-            return;
-        }
-        if (!ValidationUtil.isStrongPassword(password)) {
-            showError(ValidationUtil.strongPasswordErrorMessage());
-            return;
-        }
+        if (!ValidationUtil.nameDoesNotStartWithNumber(nom)) { showError("Last name: " + ValidationUtil.nameErrorMessage()); return; }
+        if (!ValidationUtil.nameDoesNotStartWithNumber(prenom)) { showError("First name: " + ValidationUtil.nameErrorMessage()); return; }
+        if (!ValidationUtil.isValidEmail(email)) { showError(ValidationUtil.emailErrorMessage()); return; }
+        if (!ValidationUtil.isStrongPassword(password)) { showError(ValidationUtil.strongPasswordErrorMessage()); return; }
 
         if (!rateLimitService.verifyRegistrationCaptcha(captchaField != null ? captchaField.getText() : "")) {
             showError("Please answer the security question correctly.");
@@ -245,9 +198,7 @@ public class RegisterController implements Initializable {
         String role = "user";
         if (roleCombo != null && roleCombo.getSelectionModel().getSelectedItem() != null) {
             String selected = roleCombo.getSelectionModel().getSelectedItem().trim();
-            if ("Guide".equalsIgnoreCase(selected)) {
-                role = "guide";
-            }
+            if ("Guide".equalsIgnoreCase(selected)) role = "guide";
         }
 
         Personne p = new Personne();
@@ -258,12 +209,18 @@ public class RegisterController implements Initializable {
         p.setDateInscription(LocalDateTime.now());
         p.setRole(role);
         p.setStatutCompte("actif");
-        // sensible defaults so DB INSERT matches schema
         p.setHeureNotif(java.time.LocalTime.MIDNIGHT);
         p.setNotifSmsActive(true);
 
         try {
             personneService.add(p);
+
+            // IMPORTANT: si add() ne remplit pas p.id, récupère l'user depuis DB
+            if (p.getId() == 0) {
+                Personne fromDb = personneService.findByEmail(email);
+                if (fromDb != null) p = fromDb;
+            }
+
         } catch (RuntimeException e) {
             showError("Could not create account. Please try again.");
             e.printStackTrace();
@@ -281,11 +238,50 @@ public class RegisterController implements Initializable {
 
         Session.setCurrentUser(p);
 
+        // ✅ NEW: open FaceEnrollment with controller injection + callback
         if (FaceRecognitionService.getInstance().isConfigured()) {
             FaceEnrollmentController.setComingFromRegistration(true);
-            navigateTo("/Frontoffice/FaceEnrollment.fxml", event);
+            goToFaceEnrollment(event, p);
         } else {
             navigateTo("/Frontoffice/HomePage.fxml", event);
+        }
+    }
+
+    // ✅ NEW METHOD: controller injection + callback
+    private void goToFaceEnrollment(ActionEvent event, Personne user) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/FaceEnrollment.fxml"));
+            Parent root = loader.load();
+
+            FaceEnrollmentController ctrl = loader.getController();
+            ctrl.initAfterRegister(user, () -> {
+                // quand enrollment terminé/skip -> Home
+                Session.setCurrentUser(user);
+                navigateToNoEvent("/Frontoffice/HomePage.fxml", root);
+            });
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            else stage.getScene().setRoot(root);
+
+            root.applyCss();
+            root.layout();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load face enrollment page.");
+        }
+    }
+
+    private void navigateToNoEvent(String fxmlPath, Parent anyNodeOnScene) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
+            stage.getScene().setRoot(root);
+            root.applyCss();
+            root.layout();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -299,9 +295,7 @@ public class RegisterController implements Initializable {
     }
 
     private void hideError() {
-        if (errorLabel != null) {
-            errorLabel.setVisible(false);
-        }
+        if (errorLabel != null) errorLabel.setVisible(false);
     }
 
     private void navigateTo(String fxmlPath, ActionEvent event) {

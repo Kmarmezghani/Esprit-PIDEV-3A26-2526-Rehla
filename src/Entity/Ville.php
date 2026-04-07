@@ -32,7 +32,7 @@ class Ville
     #[ORM\Column(type: "float")]
     private float $longitude;
 
-    #[ORM\Column(type: "string")]
+    #[ORM\Column(name: "typeTourisme", type: "string")]
     private string $typeTourisme;
 
     #[ORM\Column(type: "string")]

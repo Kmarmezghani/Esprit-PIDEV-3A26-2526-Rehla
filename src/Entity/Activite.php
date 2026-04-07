@@ -25,10 +25,10 @@ class Activite
     #[ORM\Column(type: "float")]
     private float $prix;
 
-    #[ORM\Column(type: "string", length: 100)]
+    #[ORM\Column(name: "typeActivite", type: "string", length: 100)]
     private string $typeActivite;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(name: "noteMoyenne", type: "float")]
     private float $noteMoyenne;
 
         #[ORM\ManyToOne(targetEntity: Guide::class, inversedBy: "activites")]

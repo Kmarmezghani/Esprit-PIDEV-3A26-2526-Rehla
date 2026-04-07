@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" class="layout-menu-fixed layout-compact" data-assets-path="{{ asset('assetsback/') }}" data-template="vertical-menu-template-free">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <title>{% block title %}Admin{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ asset('assetsback/vendor/fonts/iconify-icons.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsback/vendor/css/core.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsback/css/demo.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsback/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsback/vendor/libs/apex-charts/apex-charts.css') }}">
+  <script src="{{ asset('assetsback/vendor/js/helpers.js') }}"></script>
+  <script src="{{ asset('assetsback/js/config.js') }}"></script>
+</head>
+<body>
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+      {% block sidebar %}{% endblock %}
+      <div class="layout-page">
+        {% block navbar %}{% endblock %}
+        <div class="content-wrapper">
+          <div class="container-xxl flex-grow-1 container-p-y">
+            {% block body %}{% endblock %}
+          </div>
+          <div class="content-backdrop fade"></div>
+        </div>
+      </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+  </div>
+  <script src="{{ asset('assetsback/vendor/libs/jquery/jquery.js') }}"></script>
+  <script src="{{ asset('assetsback/vendor/libs/popper/popper.js') }}"></script>
+  <script src="{{ asset('assetsback/vendor/js/bootstrap.js') }}"></script>
+  <script src="{{ asset('assetsback/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+  <script src="{{ asset('assetsback/vendor/js/menu.js') }}"></script>
+  <script src="{{ asset('assetsback/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+  <script src="{{ asset('assetsback/js/main.js') }}"></script>
+  {% block page_scripts %}{% endblock %}
+</body>
+</html>

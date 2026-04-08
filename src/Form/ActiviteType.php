@@ -10,11 +10,12 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ActiviteType extends AbstractType
 {
@@ -70,13 +71,22 @@ class ActiviteType extends AbstractType
                     new NotBlank(['message' => 'Veuillez fournir une image']),
                     new File([
                         'maxSize' => '2M',
-                        'mimeTypes' => ['image/jpeg','image/png','image/jpg'],
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/jpg'],
                         'mimeTypesMessage' => 'Veuillez uploader une image valide (jpg, jpeg, png)',
                     ]),
                 ],
             ]);
 
-       
+        if ($options['show_max_places']) {
+            $builder->add('max_places', null, [
+                'label' => 'Places maximum',
+                'constraints' => [
+                    new NotBlank(['message' => 'Le nombre maximum de places est obligatoire']),
+                    new Assert\PositiveOrZero(['message' => 'Le nombre de places doit être positif ou nul']),
+                ],
+            ]);
+        }
+
         if ($options['is_edit']) {
             $builder->add('status', ChoiceType::class, [
                 'choices' => [
@@ -88,7 +98,7 @@ class ActiviteType extends AbstractType
         }
     }
 
-    public function validateDates($dateFin, \Symfony\Component\Validator\Context\ExecutionContextInterface $context)
+    public function validateDates($dateFin, ExecutionContextInterface $context): void
     {
         $form = $context->getRoot();
         $dateDebut = $form['date_debut']->getData();
@@ -104,6 +114,7 @@ class ActiviteType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Activite::class,
             'is_edit' => false,
+            'show_max_places' => false,
         ]);
     }
 }

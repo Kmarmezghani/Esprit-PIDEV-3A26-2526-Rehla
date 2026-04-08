@@ -36,8 +36,9 @@ final class AdminController extends AbstractController
     {
         $activite = new Activite();
 
-        $form = $form = $this->createForm(ActiviteType::class, $activite, [
+        $form = $this->createForm(ActiviteType::class, $activite, [
     'is_edit' => false,
+    'show_max_places' => false,
 ]);
         $form->handleRequest($request);
 
@@ -81,8 +82,9 @@ final class AdminController extends AbstractController
     public function edit(Request $request, Activite $activite, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(ActiviteType::class, $activite, [
-            'is_edit' => true,
-        ]);
+    'is_edit' => true,
+    'show_max_places' => false,
+]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

@@ -5,7 +5,7 @@
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
    <div class="container">
-     <a class="navbar-brand" href="index.html">Pacific<span>Travel Agency</span></a>
+     <a class="navbar-brand" href="index.html">Rehla<span>Travel Agency</span></a>
      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
        <span class="oi oi-menu"></span> Menu
      </button>
@@ -13,13 +13,13 @@
      <div class="collapse navbar-collapse" id="ftco-nav">
        <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-				<a href="{{ path('app_home') }}" class="nav-link">Home</a>
+				<a href="{{ path('home') }}" class="nav-link">Home</a>
 				</li>
          <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
          <li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
          <li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
        	<li class="nav-item active">
-				<a href="{{ path('app_blog') }}" class="nav-link">Blog</a>
+				<a href="{{ path('blog') }}" class="nav-link">Blog</a>
 				</li>
          <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
        </ul>
@@ -28,243 +28,878 @@
  </nav>
  <!-- END nav -->
  
- <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('/assets/images/bg_1.jpg') }}');">
-  <div class="overlay"></div>
-  <div class="container">
-    <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
-      <div class="col-md-9 ftco-animate pb-5 text-center">
-       <p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home <i class="fa fa-chevron-right"></i></a></span> <span>Blog <i class="fa fa-chevron-right"></i></span></p>
-       <h1 class="mb-0 bread">Blog</h1>
-     </div>
-   </div>
- </div>
+ <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}');">
+<div class="overlay"></div>
+<div class="container">
+<div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
+<div class="col-md-9 ftco-animate pb-5 text-center">
+<p class="breadcrumbs"><span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span> <span>Posts <i class="fa fa-chevron-right"></i></span></p>
+<h1 class="mb-0 bread">Nos Publications</h1>
+</div>
+</div>
+</div>
 </section>
+<section class="ftco-section pt-5" style="background:#eef2f7;">
+<div class="container">
+<div class="row">
 
-<section class="ftco-section">
-  <div class="container">
-    <div class="row d-flex">
-      <div class="col-md-4 d-flex ftco-animate">
-       <div class="blog-entry justify-content-end">
-        <a href="blog-single.html" class="block-20" style="background-image:  url('{{ asset('/assets/images/image_1.jpg') }}');">
-        </a>
-        <div class="text">
-         <div class="d-flex align-items-center mb-4 topp">
-          <div class="one">
-           <span class="day">11</span>
-         </div>
-         <div class="two">
-           <span class="yr">2020</span>
-           <span class="mos">September</span>
-         </div>
-       </div>
-       <h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
-       <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-       <p><a href="#" class="btn btn-primary">Read more</a></p>
-     </div>
-   </div>
- </div>
- <div class="col-md-4 d-flex ftco-animate">
-   <div class="blog-entry justify-content-end">
-    <a href="blog-single.html" class="block-20" style="background-image:  url('{{ asset('/assets/images/image_2.jpg') }}');">
+<!-- ================= LEFT FEED ================= -->
+<div class="col-lg-8">
+
+<!-- Create post -->
+<div class="card border-0 shadow-sm mb-4 p-3 rounded-4">
+  <div class="d-flex">
+    <input type="text" class="form-control rounded-pill mr-2 px-4"
+           placeholder="Écrivez quelque chose de fort...">
+    <button class="btn btn-primary rounded-pill px-4">Publier</button>
+  </div>
+
+  <div class="d-flex mt-3">
+    <button class="btn btn-outline-primary rounded-pill mr-2">📷 Image</button>
+    <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
+    <button class="btn btn-outline-primary rounded-pill mr-2">📍 Lieu</button>
+    <button class="btn btn-outline-primary rounded-pill">📊 Sondage</button>
+  </div>
+</div>
+
+
+<!-- POST IMAGE -->
+<div class="card border-0 shadow-sm mb-4 rounded-4">
+  <div class="card-body">
+
+    <div class="d-flex align-items-center mb-2">
+      <img src="{{ asset('assets/images/about-1.jpg') }}"
+          class="profile-img mr-2">
+
+      <div>
+        <strong>El Euch Mariem</strong><br>
+        <small class="text-muted">2026-03-02 • Public</small>
+      </div>
+
+
+      <div class="dropdown ms-3">
+  <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle" 
+          type="button" id="postOptions" data-toggle="dropdown" aria-expanded="false">
+    <i class="fa fa-cog"></i>
+  </button>
+
+  <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
+    
+    <a class="dropdown-item" href="#">
+      <i class="fa fa-edit"></i> Modifier
     </a>
-    <div class="text">
-     <div class="d-flex align-items-center mb-4 topp">
-      <div class="one">
-       <span class="day">11</span>
-     </div>
-     <div class="two">
-       <span class="yr">2020</span>
-       <span class="mos">September</span>
-     </div>
-   </div>
-   <h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
-   <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-   <p><a href="#" class="btn btn-primary">Read more</a></p>
- </div>
+
+    <a class="dropdown-item" href="#">
+      <i class="fa fa-trash"></i> Supprimer
+    </a>
+
+   
+
+  </div>
 </div>
+
+    <div class="ml-auto d-flex align-items-center">
+  <!-- Badges existants -->
+  <span class="badge badge-light me-1">#Design</span>
+  <span class="badge badge-primary me-1">#JavaFX</span>
+  <span class="badge badge-pink">Tendance</span>
+
+  <!-- Icône Paramètres avec margin-left -->
+  
 </div>
-<div class="col-md-4 d-flex ftco-animate">
- <div class="blog-entry">
-  <a href="blog-single.html" class="block-20" style="background-image: url('{{ asset('/assets/images/image_3.jpg') }}');">
-  </a>
-  <div class="text">
-   <div class="d-flex align-items-center mb-4 topp">
-    <div class="one">
-     <span class="day">11</span>
-   </div>
-   <div class="two">
-     <span class="yr">2020</span>
-     <span class="mos">September</span>
-   </div>
- </div>
- <h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
- <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
- <p><a href="#" class="btn btn-primary">Read more</a></p>
+
+    
+    </div>
+
+    <p>nouvelle activité est arrivée</p>
+
+    <img src="{{ asset('assets/images/bg_2.jpg') }}"
+         class="img-fluid rounded mt-2">
+
+  
+  
+<div class="d-flex justify-content-between align-items-center mt-3 text-muted">
+
+  <!-- LEFT: LIKE + COMMENT + FAVORIS -->
+  <div class="d-flex">
+
+    <div class="mr-3 post-action">
+      <i class="fa fa-heart"></i> <span>0</span>
+    </div>
+
+    <div class="mr-3 post-action open-comment">
+  <i class="fa fa-comment"></i> 0
 </div>
+
+    <div class="post-action">
+      <i class="fa fa-bookmark"></i>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: SHARE -->
+  <div class="post-action">
+    <i class="fa fa-share-alt"></i>
+  </div>
+
 </div>
+
+
+
+  </div>
 </div>
-<div class="col-md-4 d-flex ftco-animate">
- <div class="blog-entry">
-  <a href="blog-single.html" class="block-20" style="background-image:  url('{{ asset('/assets/images/image_4.jpg') }}');">
-  </a>
-  <div class="text">
-   <div class="d-flex align-items-center mb-4 topp">
-    <div class="one">
-     <span class="day">11</span>
-   </div>
-   <div class="two">
-     <span class="yr">2020</span>
-     <span class="mos">September</span>
-   </div>
- </div>
- <h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
- <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
- <p><a href="#" class="btn btn-primary">Read more</a></p>
+
 </div>
-</div>
-</div>
-<div class="col-md-4 d-flex ftco-animate">
- <div class="blog-entry">
-  <a href="blog-single.html" class="block-20" style="background-image:  url('{{ asset('/assets/images/image_4.jpg') }}');">
-  </a>
-  <div class="text">
-   <div class="d-flex align-items-center mb-4 topp">
-    <div class="one">
-     <span class="day">11</span>
-   </div>
-   <div class="two">
-     <span class="yr">2020</span>
-     <span class="mos">September</span>
-   </div>
- </div>
- <h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
- <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
- <p><a href="#" class="btn btn-primary">Read more</a></p>
-</div>
-</div>
-</div>
-<div class="col-md-4 d-flex ftco-animate">
- <div class="blog-entry">
-  <a href="blog-single.html" class="block-20" style="background-image:  url('{{ asset('/assets/images/image_6.jpg') }}');">
-  </a>
-  <div class="text">
-   <div class="d-flex align-items-center mb-4 topp">
-    <div class="one">
-     <span class="day">11</span>
-   </div>
-   <div class="two">
-     <span class="yr">2020</span>
-     <span class="mos">September</span>
-   </div>
- </div>
- <h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
- <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
- <p><a href="#" class="btn btn-primary">Read more</a></p>
-</div>
-</div>
-</div>
-</div>
-<div class="row mt-5">
-  <div class="col text-center">
-    <div class="block-27">
-      <ul>
-        <li><a href="#">&lt;</a></li>
-        <li class="active"><span>1</span></li>
-        <li><a href="#">2</a></li>
-        <li><a href="#">3</a></li>
-        <li><a href="#">4</a></li>
-        <li><a href="#">5</a></li>
-        <li><a href="#">&gt;</a></li>
-      </ul>
+
+
+<!-- ================= RIGHT SIDEBAR ================= -->
+<div class="col-lg-4 sidebar-sticky">
+
+<!-- Insights -->
+<div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
+  <h6 class="mb-3">⭐ Insights</h6>
+
+  <div class="d-flex justify-content-between text-center">
+    <div class="stat-box">
+      <strong>1.2k</strong><br>
+      <small>Vues</small>
+    </div>
+    <div class="stat-box">
+      <strong>86</strong><br>
+      <small>Likes</small>
+    </div>
+    <div class="stat-box">
+      <strong>14</strong><br>
+      <small>Posts</small>
     </div>
   </div>
 </div>
-</div>
-</section>	
 
-<section class="ftco-intro ftco-section ftco-no-pt">
- <div class="container">
-  <div class="row justify-content-center">
-   <div class="col-md-12 text-center">
-    <div class="img"  style="background-image: url(images/bg_2.jpg);">
-     <div class="overlay"></div>
-     <h2>We Are Pacific A Travel Agency</h2>
-     <p>We can manage your dream building A small river named Duden flows by their place</p>
-     <p class="mb-0"><a href="#" class="btn btn-primary px-4 py-3">Ask For A Quote</a></p>
-   </div>
- </div>
+<!-- Tendances -->
+<div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
+  <h6>🔥 Tendances</h6>
+  <span class="badge badge-light">#Voyage</span>
+  <span class="badge badge-light">#Cuisine</span>
+  <span class="badge badge-light">#Tech</span>
+</div>
+
+<!-- A suivre -->
+<div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
+  <h6>👤 À suivre</h6>
+
+  <div class="d-flex align-items-center mb-2">
+    <img src="{{ asset('assets/images/profile2.jpg') }}"
+         class="rounded-circle mr-2" width="35">
+    <span>Tech Daily</span>
+    <button class="btn btn-sm btn-outline-primary ml-auto">+ Suivre</button>
+  </div>
+
+  <div class="d-flex align-items-center">
+    <img src="{{ asset('assets/images/profile3.jpg') }}"
+         class="rounded-circle mr-2" width="35">
+    <span>Cuisine Pro</span>
+    <button class="btn btn-sm btn-outline-primary ml-auto">+ Suivre</button>
+  </div>
+</div>
+
+<!-- Playlist -->
+<div class="card border-0 shadow-sm rounded-4 p-3">
+  <h6>🎧 Playlist du moment</h6>
+  <small>Lo-fi Focus • 2h 14m</small>
+
+  <div class="progress mt-2" style="height:6px;">
+    <div class="progress-bar" style="width:40%"></div>
+  </div>
+</div>
+
+</div>
+
 </div>
 </div>
 </section>
 
-<footer class="ftco-footer bg-bottom ftco-no-pt" style="background-image:  url('{{ asset('/assets/images/bg_3.jpg') }}');">
-  <div class="container">
-    <div class="row mb-5">
-      <div class="col-md pt-5">
-        <div class="ftco-footer-widget pt-md-5 mb-4">
-          <h2 class="ftco-heading-2">About</h2>
-          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-          <ul class="ftco-footer-social list-unstyled float-md-left float-lft">
-            <li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
-            <li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
-            <li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-md pt-5 border-left">
-        <div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
-          <h2 class="ftco-heading-2">Infromation</h2>
-          <ul class="list-unstyled">
-            <li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
-            <li><a href="#" class="py-2 d-block">General Enquiries</a></li>
-            <li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
-            <li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
-            <li><a href="#" class="py-2 d-block">Refund Policy</a></li>
-            <li><a href="#" class="py-2 d-block">Call Us</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-md pt-5 border-left">
-       <div class="ftco-footer-widget pt-md-5 mb-4">
-        <h2 class="ftco-heading-2">Experience</h2>
-        <ul class="list-unstyled">
-          <li><a href="#" class="py-2 d-block">Adventure</a></li>
-          <li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
-          <li><a href="#" class="py-2 d-block">Beach</a></li>
-          <li><a href="#" class="py-2 d-block">Nature</a></li>
-          <li><a href="#" class="py-2 d-block">Camping</a></li>
-          <li><a href="#" class="py-2 d-block">Party</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="col-md pt-5 border-left">
-      <div class="ftco-footer-widget pt-md-5 mb-4">
-       <h2 class="ftco-heading-2">Have a Questions?</h2>
-       <div class="block-23 mb-3">
-         <ul>
-           <li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
-           <li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
-           <li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
-         </ul>
-       </div>
-     </div>
-   </div>
- </div>
- <div class="row">
-  <div class="col-md-12 text-center">
+{# *-------------------------------------------------------------------------------------------------------- #}
+<!-- OVERLAY FLOU -->
+<div id="commentOverlay" class="overlay-blur"></div>
 
-    <p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-      Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-      <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
-    </div>
+<div id="commentPopup" class="comment-popup">
+  
+  <!-- HEADER -->
+  <div class="popup-header">
+    <h5>💬 Commentaires</h5>
+    <span id="closePopup">&times;</span>
   </div>
+
+  <!-- BODY -->
+  <div class="popup-body">
+
+    <!-- COMMENT 1 -->
+    <div class="comment-box">
+      <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar">
+
+      <div class="comment-bubble">
+        <div class="comment-header">
+          <strong>baya sellami</strong>
+          <small>04 avr. 2026 12:06</small>
+        </div>
+
+        <p>hiiii</p>
+
+        <div class="comment-icons">
+          <i class="fa fa-edit"></i>
+          <i class="fa fa-trash"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMENT 2 -->
+    <div class="comment-box">
+      <img src="{{ asset('assets/images/bg_1.jpg') }}" class="comment-avatar">
+
+      <div class="comment-bubble">
+        <div class="comment-header">
+          <strong>lina mezghani</strong>
+          <small>02 mars 2026 11:06</small>
+        </div>
+
+        <p>c'est une belle ville</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="popup-footer">
+    <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar-small">
+    <input type="text" placeholder="Écrire un commentaire...">
+    <button>Envoyer</button>
+  </div>
+
 </div>
-</footer>
 
 
 
-<!-- loader -->
-<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+<style>
+.search-input .form-control {
+border: 2px solid #e9ecef;
+border-right: none;
+border-radius: 50px 0 0 50px;
+padding: 15px 20px;
+font-size: 16px;
+}
 
+.search-input .btn {
+border-radius: 0 50px 50px 0;
+padding: 15px 30px;
+font-weight: 600;
+}
+
+.badge-purple { background: linear-gradient(45deg, #6f42c1, #8b5cf6); color: white; }
+.badge-blue { background: linear-gradient(45deg, #0d6efd, #4dabf7); color: white; }
+
+.post-card {
+border-radius: 20px !important;
+overflow: hidden;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+.navbar-brand {
+font-size: 1.8rem;
+font-weight: 800;
+}
+
+.breadcrumbs {
+font-size: 1.1rem;
+}
+
+.bread {
+font-size: 3rem;
+font-weight: 700;
+color: white;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.btn-primary {
+background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+border: none;
+padding: 12px 30px;
+border-radius: 50px;
+font-weight: 600;
+transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.fa-heart.text-danger {
+color: #e74c3c !important;
+}
+
+.badge {
+padding: 8px 12px;
+border-radius: 20px;
+font-size: 0.8rem;
+font-weight: 500;
+}
+
+.badge-light { background: #f8f9fa; color: #495057; }
+.badge-primary { background: linear-gradient(45deg, #007bff, #0056b3); color: white; }
+
+.card-body {
+background: linear-gradient(145deg, #ffffff, #f8f9fa);
+
+}
+
+.overlay {
+background: rgba(0,0,0,0.4);
+}
+
+.hero-wrap {
+background-size: cover;
+background-position: center;
+min-height: 500px;
+display: flex;
+align-items: center;
+}
+
+@media (max-width: 768px) {
+.search-input .form-control, .search-input .btn {
+border-radius: 10px;
+margin-bottom: 10px;
+} .col-md-3 { order: -1; margin-bottom: 20px; }
+}
+body {
+  background: #eef2f7;
+}
+
+.rounded-4 {
+  border-radius: 16px !important;
+}
+
+.badge-pink {
+  background: #f8d7da;
+  color: #d63384;
+}
+
+.stat-box {
+  background: #f4f6fb;
+  padding: 10px;
+  border-radius: 12px;
+  width: 30%;
+}
+
+.card {
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+/* POST CARD ULTRA MODERNE */
+.post-card, .card {
+  border-radius: 22px !important;
+  border: none !important;
+  background: linear-gradient(145deg, #ffffff, #f3f6fb);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Hover effet premium */
+.post-card:hover, .card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* IMAGE POST */
+.post-card img, .card img {
+  border-radius: 16px;
+  transition: transform 0.4s ease;
+}
+
+/* zoom image au hover */
+.post-card:hover img {
+  transform: scale(1.03);
+}
+
+/* HEADER USER */
+.card-body .d-flex img {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* BADGES PLUS JOLIS */
+.badge {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* TAG tendance */
+.badge-pink {
+  background: linear-gradient(45deg, #ff7eb3, #ff758c);
+  color: white;
+}
+
+/* ACTIONS (like/comment) */
+.card .text-muted div {
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.card .text-muted div:hover {
+  background: #f1f3f8;
+}
+
+/* INPUT POST */
+/* INPUT PLUS VISIBLE */
+input.form-control {
+  border-radius: 50px !important;
+  border: 1.5px solid #d0d7e2;
+  background: #ffffff;
+  padding: 14px 20px;
+  font-size: 15px;
+  transition: all 0.25s ease;
+}
+
+/* Placeholder plus visible */
+input.form-control::placeholder {
+  color: #9aa4b2;
+  opacity: 1;
+}
+
+/* Focus effet moderne */
+input.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  outline: none;
+  background: #fff;
+}
+
+/* BOUTON */
+.btn-primary {
+  border-radius: 50px !important;
+  background: linear-gradient(45deg, #5a67d8, #667eea);
+  border: none;
+}
+
+/* BOUTONS ICONES */
+.btn-outline-primary {
+  border-radius: 50px;
+  border: 1px solid #dfe3eb;
+  background: white;
+  transition: 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background: #eef2ff;
+}
+.profile-img {
+  width: 45px !important;
+  height: 45px !important;
+  min-width: 45px;   /* 🔥 empêche flex de compresser */
+  min-height: 45px;
+
+  border-radius: 50% !important;
+  object-fit: cover;
+  object-position: center;
+
+  display: block;
+
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.post-action {
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.post-action:hover {
+  background: #eef2ff;
+  transform: scale(1.05);
+}
+
+.post-action i {
+  font-size: 16px;
+}
+
+
+.post-icon-dropdown i:hover {
+  color: #667eea;
+  transform: scale(1.1);
+}
+.dropdown-toggle::after {
+  display: none; /* supprime le petit triangle */
+}
+
+.post-icon-dropdown {
+  margin-left: 12px; /* espace entre badges et icône */
+}
+/* DROPDOWN MODERNE */
+.modern-dropdown {
+  border-radius: 16px;
+  padding: 10px;
+  border: none;
+  background: linear-gradient(145deg, #ffffff, #f3f6fb);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  animation: dropdownFade 0.25s ease;
+  min-width: 180px;
+}
+
+
+/* animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* items */
+.modern-dropdown .dropdown-item {
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+}
+
+/* hover effet premium */
+.modern-dropdown .dropdown-item:hover {
+  background: #eef2ff;
+  transform: translateX(4px);
+}
+
+/* icones */
+.modern-dropdown i {
+  color: #667eea;
+  font-size: 14px;
+}
+
+/* danger (supprimer) */
+.modern-dropdown .fa-trash {
+  color: #e74c3c;
+}
+
+/* signaler */
+.modern-dropdown .fa-flag {
+  color: #f39c12;
+}
+
+/* divider stylé */
+.dropdown-divider {
+  margin: 8px 0;
+  opacity: 0.2;
+}
+.sidebar-sticky {
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+/*--------------------------------popup-----------------------------------------*/
+/* BACKGROUND FLOU */
+.overlay-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 999;
+}
+
+/* POPUP */
+.comment-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  width: 400px;
+  max-width: 90%;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* ACTIVE STATE */
+.comment-popup.active,
+.overlay-blur.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.comment-popup.active {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* HEADER */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.popup-header span {
+  cursor: pointer;
+  font-size: 22px;
+}
+
+/* BODY */
+.popup-body {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.comment {
+  margin-bottom: 10px;
+  background: #f4f6fb;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+/* FOOTER */
+.popup-footer {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.popup-footer input {
+  flex: 1;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.popup-footer button {
+  margin-left: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #4f8cff, #2563eb);
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+  transition: 0.2s;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+}
+/* COMMENT STYLE EXACT IMAGE */
+
+.comment-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* AVATAR */
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eef4ff, #e0ecff);
+  border: 1px solid #c7dbff;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.12);
+}
+
+/* BULLE */
+.comment-bubble {
+  background: #ffffff; /* blanc net */
+  border: 1px solid #dbeafe; /* contour léger bleu */
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15); /* ombre visible */
+  padding: 12px 16px;
+  border-radius: 16px;
+  width: 100%;
+  position: relative;
+  transition: 0.2s;
+}
+
+/* HEADER (nom + date) */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.comment-header strong {
+  color: #1d4ed8;
+}
+
+
+.comment-header small {
+  color: #64748b;
+}
+
+/* TEXTE */
+.comment-bubble p {
+  margin: 4px 0 0;
+  font-size: 14px;
+    color: #0f172a;
+  font-weight: 500;
+}
+
+/* ICONES (edit/delete) */
+.comment-icons {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+}
+
+.comment-icons i {
+  margin-left: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #1877f2;
+}
+
+.comment-icons .fa-trash {
+  color: #e74c3c;
+}
+
+/* FOOTER AVATAR */
+.comment-avatar-small {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/* INPUT STYLE EXACT */
+.popup-footer input {
+  flex: 1;
+  border-radius: 20px;
+  border: none;
+ background: #ffffff;
+  border: 1px solid #cbd5f5;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+  padding: 10px 15px;
+  font-size: 14px;
+}
+
+/* BOUTON BLEU FACEBOOK */
+.popup-footer button {
+  margin-left: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  font-weight: 600;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+
+}
+.popup-header h5 {
+  color: #1e293b;
+}
+
+.popup-header span {
+  color: #64748b;
+}
+
+.popup-header span:hover {
+  color: #ef4444;
+}
+.popup-footer button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  font-weight: 600;
+}
+
+.popup-footer button:hover {
+  background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  transform: scale(1.05);
+}
+
+/* ICONES */
+.comment-icons i {
+  color: #2563eb;
+}
+
+.comment-icons .fa-trash {
+  color: #ef4444;
+}
+/*----------------------------------------------------------------------------------------*/
+
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const hearts = document.querySelectorAll('.fa-heart');
+hearts.forEach(heart => {
+heart.addEventListener('click', function() {
+this.classList.toggle('text-danger');
+const count = this.nextElementSibling;
+const current = parseInt(count.textContent);
+count.textContent = this.classList.contains('text-danger') ? current + 1 : current - 1;
+});
+});
+});
+document.querySelectorAll('.fa-bookmark').forEach(icon => {
+  icon.addEventListener('click', function() {
+    this.classList.toggle('text-warning');
+  });
+});
+
+/*-----------popup----------------------------*/
+document.addEventListener("DOMContentLoaded", function () {
+
+  const openBtns = document.querySelectorAll(".open-comment");
+  const popup = document.getElementById("commentPopup");
+  const overlay = document.getElementById("commentOverlay");
+  const closeBtn = document.getElementById("closePopup");
+
+  openBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      popup.classList.add("active");
+      overlay.classList.add("active");
+    });
+  });
+
+  function closePopup() {
+    popup.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+
+  closeBtn.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
+
+});
+</script>
 
 {% endblock %}

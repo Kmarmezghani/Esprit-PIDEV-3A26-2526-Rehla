@@ -14,17 +14,22 @@
 <div class="container mt-5">
     <div class="card">
         <div class="card-header text-center">
-            <h4>Créer une nouvelle activité</h4>
+            <h4>Modifier une activité</h4>
         </div>
         <div class="card-body">
             {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
 
-            {# --- Preview Image Centered and Bigger --- #}
+            
             <div class="text-center mb-4">
-                <div id="imagePreview"></div>
+                <div id="imagePreview">
+                    {% if activite is defined and activite.image %}
+                        <img src="{{ asset('uploads/activities/' ~ activite.image|replace({'\\':'/'})|split('/')|last) }}"
+                             alt="Aperçu image"
+                             style="max-width: 400px; max-height: 300px; border-radius: 8px;">
+                    {% endif %}
+                </div>
             </div>
 
-            {# --- Image Input Below Preview --- #}
             <div class="mb-3">
                 {{ form_label(form.image) }}
                 {{ form_widget(form.image, {'attr': {'class': 'form-control', 'onchange':'previewImage(event)'}}) }}
@@ -33,7 +38,7 @@
                 {% endfor %}
             </div>
 
-            {# --- Nom and Description --- #}
+            
             <div class="mb-3">
                 {{ form_label(form.nom) }}
                 {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
@@ -50,7 +55,7 @@
                 {% endfor %}
             </div>
 
-            {# --- Prix and TypeActivite in Same Row --- #}
+            
             <div class="row mb-3">
                 <div class="col-md-6">
                     {{ form_label(form.prix) }}
@@ -68,7 +73,7 @@
                 </div>
             </div>
 
-            {# --- Date Debut and Date Fin in Same Row --- #}
+            
             <div class="row mb-3">
                 <div class="col-md-6">
                     {{ form_label(form.date_debut) }}
@@ -86,7 +91,7 @@
                 </div>
             </div>
 
-            {# --- Destination --- #}
+          
             <div class="mb-3">
                 {{ form_label(form.destination) }}
                 {{ form_widget(form.destination, {'attr': {'class': 'form-control'}}) }}
@@ -95,7 +100,7 @@
                 {% endfor %}
             </div>
 
-            {# --- Status (if defined) --- #}
+            
             {% if form.status is defined %}
             <div class="mb-3">
                 {{ form_label(form.status) }}
@@ -106,11 +111,11 @@
             </div>
             {% endif %}
 
-            {# --- Submit Button Centered --- #}
+            
             <div class="text-center">
                 <button type="submit" class="btn"
                         style="background-color: #223f91; color: #fff; border-radius: 25px; padding: 10px 30px;">
-                    Créer
+                    {{ activite is defined ? 'Modifier' : 'Ajouter' }}
                 </button>
             </div>
 

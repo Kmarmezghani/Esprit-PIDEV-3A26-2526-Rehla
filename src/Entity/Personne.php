@@ -23,28 +23,28 @@ class Personne
     #[ORM\Column(type: "string", length: 150)]
     private string $email;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(name: "motDePasse", type: "string", length: 255)]
     private string $motDePasse;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(name: "dateInscription", type: "date")]
     private \DateTimeInterface $dateInscription;
 
     #[ORM\Column(type: "string")]
     private string $role;
 
-    #[ORM\Column(type: "string")]
+    #[ORM\Column(name: "statutCompte", type: "string", columnDefinition: "enum('ACTIF', 'INACTIF', 'SUSPENDU')")]
     private string $statutCompte;
 
     #[ORM\Column(type: "string", length: 20)]
     private string $telephone;
 
-    #[ORM\Column(type: "string")]
-    private string $heureNotif;
+    #[ORM\Column(name: "heureNotif", type: "time")]
+    private \DateTimeInterface $heureNotif;
 
-    #[ORM\Column(type: "boolean")]
+    #[ORM\Column(name: "notifSmsActive", type: "boolean")]
     private bool $notifSmsActive;
 
-    #[ORM\Column(type: "string", length: 500)]
+    #[ORM\Column(name: "profile_photo", type: "string", length: 500)]
     private string $profile_photo;
 
     // ------------------- Relations -------------------
@@ -173,15 +173,15 @@ class Personne
     {
         if (!$this->guides->contains($guide)) {
             $this->guides[] = $guide;
-            $guide->setId($this);
+            $guide->setPersonne($this);
         }
         return $this;
     }
     public function removeGuide(Guide $guide): self
     {
         if ($this->guides->removeElement($guide)) {
-            if ($guide->getId() === $this) {
-                $guide->setId(null);
+            if ($guide->getPersonne() === $this) {
+                $guide->setPersonne(null);
             }
         }
         return $this;
@@ -233,15 +233,15 @@ class Personne
     {
         if (!$this->aviss->contains($avis)) {
             $this->aviss[] = $avis;
-            $avis->setPersonne_id($this);
+            $avis->setPersonne($this);
         }
         return $this;
     }
     public function removeAvis(Avis $avis): self
     {
         if ($this->aviss->removeElement($avis)) {
-            if ($avis->getPersonne_id() === $this) {
-                $avis->setPersonne_id(null);
+            if ($avis->getPersonne() === $this) {
+                $avis->setPersonne(null);
             }
         }
         return $this;

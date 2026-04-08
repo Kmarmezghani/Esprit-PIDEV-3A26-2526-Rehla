@@ -12,7 +12,9 @@ final class ActiviteController extends AbstractController
     #[Route('/activite', name: 'activite')]
     public function index(ActiviteRepository $activiteRepository): Response
     {
-        $activites = $activiteRepository->findAll();
+        $activites = $activiteRepository->findBy([
+            'status' => 'DISPONIBLE'
+        ]);
 
         return $this->render('activite/activite.html.twig', [
             'activites' => $activites

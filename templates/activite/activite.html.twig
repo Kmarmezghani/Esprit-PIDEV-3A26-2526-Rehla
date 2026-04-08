@@ -118,23 +118,23 @@
            {% for activite in activites %}
                <div class="col-md-4 ftco-animate">
                    <div class="project-wrap">
-                       {# On utilise directement le chemin stocké dans la base #}
+                       
                        <a href="#" class="img" 
    style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}');">
     <span class="price">${{ activite.prix }}/person</span>
 </a>
                        <div class="text p-4">
                            <span class="days">
-                               {{ activite.date_debut ? activite.date_debut|date('d M') : 'Date non définie' }} - 
-                               {{ activite.date_fin ? activite.date_fin|date('d M') : 'Date non définie' }}
+                                {{ activite.dateDebut ? activite.dateDebut|date('d M') : 'Date non définie' }}
+                                {{ activite.dateFin ? activite.dateFin|date('d M') : 'Date non définie' }}
                            </span>
                            <h3><a href="#">{{ activite.nom }}</a></h3>
                            <p class="location">
                                <span class="fa fa-map-marker"></span> 
-                               {{ activite.destination_id ? activite.destination_id.nom : 'Non défini' }}
+                               {{ activite.destination ? activite.destination.nom : 'Non défini' }}
                            </p>
                            <ul>
-                               <li><span class="flaticon-shower"></span> {{ activite.max_places ?: '0' }} Places</li>
+                               <li><span class="flaticon-shower"></span> {{ activite.maxPlaces ?: '0' }} Places</li>
                                <li><span class="flaticon-king-size"></span> {{ activite.noteMoyenne|round(1) }}</li>
                                <li><span class="flaticon-sun-umbrella"></span> {{ activite.typeActivite ?: 'Non défini' }}</li>
                            </ul>

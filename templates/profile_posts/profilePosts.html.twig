@@ -1,0 +1,597 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProfilePostsController!{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+   <div class="container">
+     <a class="navbar-brand" href="index.html">Rehla<span>Travel Agency</span></a>
+     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+       <span class="oi oi-menu"></span> Menu
+     </button>
+
+     <div class="collapse navbar-collapse" id="ftco-nav">
+       <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+				<a href="{{ path('home') }}" class="nav-link">Home</a>
+				</li>
+         <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
+         <li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
+         <li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
+       	<li class="nav-item active">
+				<a href="{{ path('blog') }}" class="nav-link">Blog</a>
+				</li>
+         <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
+       </ul>
+     </div>
+   </div>
+ </nav>
+
+<section class="ftco-section pt-5" style="background:#eef2f7;">
+<div class="container">
+<div class="row">
+
+ <div class="page">
+
+
+    <main class="profile-shell">
+      <section class="profile-card">
+        <div class="cover">
+          <img src="https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80" alt="Cover">
+          <div class="cover-overlay"></div>
+        </div>
+
+        <div class="profile-head">
+          <div class="avatar-wrap">
+            <img class="avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" alt="Profile">
+            <span class="online"></span>
+          </div>
+
+          <div class="profile-info">
+            <div class="name-row">
+              <h1>Yosr Amamou</h1>
+              <span class="badge">Pro</span>
+            </div>
+            <p class="meta">454 amis • La Soukra • ISET Charguia</p>
+           
+          </div>
+
+          <div class="actions">
+            <button class="btn primary">+ Ajouter une story</button>
+            <button class="btn secondary">Modifier le profil</button>
+            <button class="btn ghost">⋯</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active">À propos</button>
+          <button class="tab">Amis</button>
+          <button class="tab">Photos</button>
+          <button class="tab">Reels</button>
+          <button class="tab">Plus</button>
+        </div>
+
+        <div class="content-grid">
+          <aside class="sidebar">
+            <div class="panel">
+              <div class="panel-title">
+                <h2>Informations personnelles</h2>
+                <button class="edit-btn">✎</button>
+              </div>
+              <ul class="detail-list">
+                <li><span>📍</span> Vit à La Soukra</li>
+                <li><span>🏠</span> Originaire de Monastir, Tunisie</li>
+                <li><span>🎂</span> 29 novembre 2003</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">
+                <h2>Éducation</h2>
+                <button class="edit-btn">✎</button>
+              </div>
+              <div class="edu-item">
+                <div class="edu-logo">I</div>
+                <div>
+                  <strong>ISET Charguia</strong>
+                  <p>Licence en Technologies de l’Information</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel stats">
+              <div>
+                <strong>1.2K</strong>
+                <span>Abonnés</span>
+              </div>
+              <div>
+                <strong>89</strong>
+                <span>Publications</span>
+              </div>
+            </div>
+          </aside>
+
+          <section class="feed">
+            <div class="composer panel">
+              <div class="composer-top">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="me">
+                <input type="text" placeholder="Quoi de neuf ?" />
+              </div>
+              <div class="composer-actions">
+                <button>📹 Live vidéo</button>
+                <button>🖼️ Photo/Vidéo</button>
+                <button>✨ Humeur</button>
+              </div>
+            </div>
+
+            <article class="post panel">
+              <div class="post-header">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="">
+                <div>
+                  <strong>Yosr Amamou</strong>
+                  <p>19 juin 2025 • Tunis • 🌍</p>
+                </div>
+                <button class="edit-btn">⋯</button>
+              </div>
+
+              <p class="post-text">
+                Diplômée en Licence en Technologies de l’Information avec mention Très Bien 🎓❤️
+                Une belle étape franchie avec fierté !
+              </p>
+
+              <div class="post-visual"></div>
+
+              <div class="post-actions">
+                <button>👍 J’aime</button>
+                <button>💬 Commenter</button>
+                <button>↗ Partager</button>
+              </div>
+            </article>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <style>
+  :root{
+  --bg:#eef2f7;
+  --card:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --line:#e5e7eb;
+  --primary:#1877f2;
+  --shadow:0 18px 50px rgba(15, 23, 42, .10);
+  --radius:22px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:linear-gradient(180deg,#eef4ff 0%, #eef2f7 100%);
+  color:var(--text);
+}
+
+.topbar{
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,.6);
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+.logo{
+  font-size:1.4rem;
+  font-weight:800;
+  color:#0f172a;
+}
+
+.topnav{
+  display:flex;
+  gap:20px;
+}
+
+.topnav a{
+  text-decoration:none;
+  color:var(--muted);
+  font-weight:600;
+}
+
+.topnav a.active,
+.topnav a:hover{
+  color:var(--primary);
+}
+
+.top-actions{
+  display:flex;
+  gap:10px;
+}
+
+.icon-btn, .btn, .tab, .edit-btn, .composer-actions button, .post-actions button{
+  border:none;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.icon-btn{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(15,23,42,.08);
+}
+
+
+.profile-card{
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+.cover{
+  position:relative;
+  height:320px;
+  overflow:hidden;
+}
+
+.cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform:scale(1.03);
+}
+
+.cover-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.25));
+}
+
+.profile-head{
+  display:grid;
+  grid-template-columns:170px 1fr auto;
+  gap:24px;
+  padding:0 30px 26px;
+  margin-top:-70px;
+  align-items:end;
+
+  position:relative;   /* 🔥 IMPORTANT */
+  z-index:10;          /* 🔥 FAIT PASSER DEVANT */
+}
+
+.avatar-wrap{
+  position:relative;
+  width:170px;
+  height:170px;
+}
+
+.avatar{
+  width:170px;
+  height:170px;
+  border-radius:28px;
+  border:6px solid rgba(255,255,255,.95);
+  object-fit:cover;
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+}
+
+.online{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#22c55e;
+  border:3px solid #fff;
+}
+
+.name-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+h1{
+  margin:0;
+  font-size:2.35rem;
+  line-height:1.05;
+}
+
+.badge{
+  background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+  color:#1d4ed8;
+  padding:7px 12px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:.85rem;
+}
+
+.meta{
+  margin:10px 0 8px;
+  color:var(--muted);
+  font-weight:500;
+}
+
+.bio{
+  margin:0;
+  max-width:720px;
+  color:#374151;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  height:46px;
+  padding:0 18px;
+  border-radius:14px;
+  font-weight:700;
+  transition:.2s ease;
+}
+
+.btn.primary{
+  background:var(--primary);
+  color:#fff;
+  box-shadow:0 12px 28px rgba(24,119,242,.28);
+}
+
+.btn.secondary{
+  background:#eef2ff;
+  color:#1e3a8a;
+}
+
+.btn.ghost{
+  width:46px;
+  padding:0;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(15,23,42,.08);
+}
+
+.btn:hover, .tab:hover, .icon-btn:hover, .edit-btn:hover, .composer-actions button:hover, .post-actions button:hover{
+  transform:translateY(-2px);
+}
+
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:0 20px 20px;
+  border-top:1px solid var(--line);
+  margin-top:8px;
+}
+
+.tab{
+  margin-top:14px;
+  padding:12px 18px;
+  border-radius:999px;
+  background:transparent;
+  color:var(--muted);
+  font-weight:700;
+}
+
+.tab.active{
+  background:#111827;
+  color:#fff;
+}
+
+.content-grid{
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:20px;
+  padding:0 20px 24px;
+}
+
+.panel{
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(229,231,235,.9);
+  border-radius:24px;
+  box-shadow:0 10px 28px rgba(15,23,42,.06);
+}
+
+.sidebar{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.panel{
+  padding:20px;
+}
+
+.panel-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+
+.panel-title h2{
+  margin:0;
+  font-size:1.05rem;
+}
+
+.edit-btn{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background:#f3f4f6;
+}
+
+.detail-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap:14px;
+  color:#374151;
+  font-weight:500;
+}
+
+.detail-list li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.edu-item{
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+
+.edu-logo{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#dbeafe,#93c5fd);
+  display:grid;
+  place-items:center;
+  font-weight:800;
+  color:#1d4ed8;
+}
+
+.edu-item p{
+  margin:4px 0 0;
+  color:var(--muted);
+}
+
+.stats{
+  display:flex;
+  justify-content:space-between;
+  text-align:center;
+}
+
+.stats strong{
+  display:block;
+  font-size:1.2rem;
+}
+
+.stats span{
+  color:var(--muted);
+  font-size:.92rem;
+}
+
+.composer-top{
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+
+.composer-top img, .post-header img{
+  width:48px;
+  height:48px;
+  border-radius:16px;
+  object-fit:cover;
+}
+
+.composer-top input{
+  width:100%;
+  height:54px;
+  border:none;
+  outline:none;
+  border-radius:18px;
+  background:#f3f4f6;
+  padding:0 18px;
+  font-size:1rem;
+}
+
+.composer-actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+  flex-wrap:wrap;
+}
+
+.composer-actions button, .post-actions button{
+  padding:12px 14px;
+  border-radius:14px;
+  background:#f8fafc;
+  font-weight:700;
+  color:#334155;
+}
+
+.post{
+  margin-top:18px;
+}
+
+.post-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.post-header p{
+  margin:3px 0 0;
+  color:var(--muted);
+  font-size:.92rem;
+}
+
+.post-text{
+  margin:18px 0;
+  color:#1f2937;
+  line-height:1.7;
+}
+
+.post-visual{
+  height:320px;
+  border-radius:22px;
+  background:url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80') center/cover;
+}
+
+.post-actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+  flex-wrap:wrap;
+}
+
+.profile-shell{
+  margin-top: -120px; 
+}
+@media (max-width: 1100px){
+  .profile-head{
+    grid-template-columns:140px 1fr;
+  }
+  .actions{
+    grid-column:1 / -1;
+  }
+  .content-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 700px){
+  .topnav{
+    display:none;
+  }
+  .profile-head{
+    grid-template-columns:1fr;
+    margin-top:-50px;
+  }
+  .avatar-wrap, .avatar{
+    width:130px;
+    height:130px;
+  }
+  h1{
+    font-size:1.8rem;
+  }
+  .tabs{
+    overflow-x:auto;
+    padding-bottom:10px;
+  }
+}  
+</style>
+{% endblock %}

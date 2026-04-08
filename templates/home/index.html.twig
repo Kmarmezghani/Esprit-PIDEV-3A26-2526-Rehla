@@ -1,36 +1,59 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Welcome To Rehla!{% endblock %}
 
 {% block body %}
 	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 		<div class="container">
-			<a class="navbar-brand" href="index.html">Pacific<span>Travel Agency</span></a>
+			<a class="navbar-brand" href="index.html">
+    
+    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+    
+    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="oi oi-menu"></span> Menu
 			</button>
 
 			<div class="collapse navbar-collapse" id="ftco-nav">
-				<ul class="navbar-nav ml-auto">
-					<li class="nav-item active"><a href="index.html" class="nav-link">Home</a></li>
-					<li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
-					<li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
-					<li class="nav-item"><a href="activite.html" class="nav-link">Activité</a></li>
-					<li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
-					<li class="nav-item"><a href="blog.html" class="nav-link">Blog</a></li>
-					<li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
-				</ul>
-			</div>
+    <ul class="navbar-nav ml-auto">
+    <li class="nav-item active"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+    <li class="nav-item"><a href="{{ path('app_admin') }}" class="nav-link">Contact</a></li>
+
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center" 
+       href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <img src="{{ asset('assets/images/default-user.png') }}" 
+             alt="Photo de profil" 
+             class="rounded-circle"
+             style="width:35px; height:35px; object-fit:cover;">
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+        <li><a class="dropdown-item" href="#">Mon profil</a></li>
+        <li><a class="dropdown-item" href="#">Mes activités</a></li>
+        <li><a class="dropdown-item" href="#">Mes réservations</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#">Déconnexion</a></li>
+    </ul>
+</li>
+</ul>
+</div>
 		</div>
 	</nav>
 	<!-- END nav -->
 	
-	<div class="hero-wrap js-fullheight" style="background-image: url('{{ asset('assets/images/bg_5.jpg')}}');">
+	<div class="hero-wrap js-fullheight" style="background-image: url('{{ asset('assets/images/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg')}}');">
 		<div class="overlay"></div>
 		<div class="container">
 			<div class="row no-gutters slider-text js-fullheight align-items-center" data-scrollax-parent="true">
 				<div class="col-md-7 ftco-animate">
-					<span class="subheading">Welcome to Pacific</span>
+					<span class="subheading">Welcome to Rehla</span>
 					<h1 class="mb-4">Discover Your Favorite Place with Us</h1>
 					<p class="caps">Travel to the any corner of the world, without going around in circles</p>
 				</div>

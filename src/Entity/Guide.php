@@ -3,19 +3,18 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
-use App\Entity\Personne;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use App\Entity\Personne;
 use App\Entity\Activite;
 
 #[ORM\Entity]
 class Guide
 {
-
     #[ORM\Id]
-        #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "guides")]
+    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "guides")]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Personne $id;
+    private Personne $personne;
 
     #[ORM\Column(type: "string", length: 150)]
     private string $specialite;
@@ -26,73 +25,92 @@ class Guide
     #[ORM\Column(type: "string")]
     private string $experience;
 
-    public function getId()
+    #[ORM\OneToMany(mappedBy: "guide_id", targetEntity: Activite::class)]
+    private Collection $activites;
+
+    public function __construct()
     {
-        return $this->id;
+        $this->activites = new ArrayCollection();
     }
 
-    public function setId($value)
+    // ------------------- Getters et setters -------------------
+    public function getPersonne(): ?Personne
     {
-        $this->id = $value;
+        return $this->personne;
     }
 
-    public function getSpecialite()
+    public function setPersonne(?Personne $personne): self
+    {
+        $this->personne = $personne;
+        return $this;
+    }
+
+    public function getSpecialite(): string
     {
         return $this->specialite;
     }
 
-    public function setSpecialite($value)
+    public function setSpecialite(string $specialite): self
     {
-        $this->specialite = $value;
+        $this->specialite = $specialite;
+        return $this;
     }
 
-    public function getLangues()
+    public function getLangues(): string
     {
         return $this->langues;
     }
 
-    public function setLangues($value)
+    public function setLangues(string $langues): self
     {
-        $this->langues = $value;
+        $this->langues = $langues;
+        return $this;
     }
 
-    public function getExperience()
+    public function getExperience(): string
     {
         return $this->experience;
     }
 
-    public function setExperience($value)
+    public function setExperience(string $experience): self
     {
-        $this->experience = $value;
+        $this->experience = $experience;
+        return $this;
     }
 
-    #[ORM\OneToMany(mappedBy: "guide_id", targetEntity: Activite::class)]
-    private Collection $activites;
+    // ------------------- Redirection vers Personne -------------------
+    public function getNom(): ?string
+    {
+        return $this->personne ? $this->personne->getNom() : null;
+    }
 
-        public function getActivites(): Collection
-        {
-            return $this->activites;
+    public function getPrenom(): ?string
+    {
+        return $this->personne ? $this->personne->getPrenom() : null;
+    }
+
+    // ------------------- Activites -------------------
+    public function getActivites(): Collection
+    {
+        return $this->activites;
+    }
+
+    public function addActivite(Activite $activite): self
+    {
+        if (!$this->activites->contains($activite)) {
+            $this->activites[] = $activite;
+            $activite->setGuide($this);
         }
-    
-        public function addActivite(Activite $activite): self
-        {
-            if (!$this->activites->contains($activite)) {
-                $this->activites[] = $activite;
-                $activite->setGuide_id($this);
+        return $this;
+    }
+
+    public function removeActivite(Activite $activite): self
+    {
+        if ($this->activites->removeElement($activite)) {
+            if ($activite->getGuide() === $this) {
+                $activite->setGuide(null);
             }
-    
-            return $this;
         }
-    
-        public function removeActivite(Activite $activite): self
-        {
-            if ($this->activites->removeElement($activite)) {
-                // set the owning side to null (unless already changed)
-                if ($activite->getGuide_id() === $this) {
-                    $activite->setGuide_id(null);
-                }
-            }
-    
-            return $this;
-        }
+        return $this;
+    }
 }

@@ -1,0 +1,1072 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello BlogController!{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+   <div class="container">
+     <a class="navbar-brand" href="index.html">Rehla<span>Travel Agency</span></a>
+     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+       <span class="oi oi-menu"></span> Menu
+     </button>
+
+     <div class="collapse navbar-collapse" id="ftco-nav">
+       <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+				<a href="{{ path('home') }}" class="nav-link">Home</a>
+				</li>
+         <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
+         <li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
+         <li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
+       	<li class="nav-item active">
+				<a href="{{ path('blog') }}" class="nav-link">Blog</a>
+				</li>
+         <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
+       </ul>
+     </div>
+   </div>
+ </nav>
+ <!-- END nav -->
+ 
+ <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}');">
+<div class="overlay"></div>
+<div class="container">
+<div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
+<div class="col-md-9 ftco-animate pb-5 text-center">
+<p class="breadcrumbs"><span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span> <span>Posts <i class="fa fa-chevron-right"></i></span></p>
+<h1 class="mb-0 bread">Nos Publications</h1>
+</div>
+</div>
+</div>
+</section>
+<section class="ftco-section pt-5" style="background:#eef2f7;">
+<div class="container">
+<div class="row">
+
+<!-- ================= LEFT FEED ================= -->
+<div class="col-lg-8">
+
+<div class="card border-0 shadow-sm mb-4 p-3 rounded-4">
+
+  {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+  <div class="d-flex">
+    {{ form_widget(form.contenu) }}
+
+    <button class="btn btn-primary rounded-pill px-4 ml-2">
+      Publier
+    </button>
+  </div>
+
+  <!-- erreurs -->
+  <div class="text-danger mt-2">
+    {{ form_errors(form.contenu) }}
+  </div>
+
+  <!-- boutons -->
+  <div class="d-flex mt-3">
+
+    <button type="button"
+            class="btn btn-outline-primary rounded-pill mr-2"
+            onclick="document.getElementById('post_image').click()">
+      📷 Image
+    </button>
+        <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
+    <button class="btn btn-outline-primary rounded-pill mr-2">📍 Lieu</button>
+    <button class="btn btn-outline-primary rounded-pill">📊 Sondage</button>
+
+    {{ form_widget(form.image) }}
+
+  </div>
+
+  {{ form_end(form) }}
+
+</div>
+
+
+<!-- POST IMAGE -->
+{% for post in posts %}
+
+<div class="card border-0 shadow-sm mb-4 rounded-4">
+  <div class="card-body">
+
+    <div class="d-flex align-items-center mb-2">
+
+      <!-- IMAGE PROFIL -->
+      <img src="{{ post.personne_id.profile_photo ? asset(post.personne_id.profile_photo) : asset('assets/img/bg_1.jpg') }}"
+           class="profile-img mr-2">
+
+      <div>
+        <!-- NOM -->
+        <strong>
+          {{ post.personne_id.nom }} {{ post.personne_id.prenom }}
+        </strong><br>
+
+        <!-- DATE -->
+       <small class="text-muted">
+        {{ post.datePublication ? post.datePublication|date('Y-m-d H:i:s') : '---' }} • Public
+      </small>
+      </div>
+
+      <!-- DROPDOWN (inchangé) -->
+      <div class="dropdown ms-3">
+        <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle"
+                type="button" data-toggle="dropdown">
+          <i class="fa fa-cog"></i>
+        </button>
+
+        <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
+          <a class="dropdown-item open-edit">
+            <i class="fa fa-edit"></i> Modifier
+          </a>
+          <a class="dropdown-item" href="#">
+            <i class="fa fa-trash"></i> Supprimer
+          </a>
+        </div>
+      </div>
+
+      <!-- TAGS -->
+      <div class="ml-auto d-flex align-items-center">
+        <span class="badge badge-light me-1">#Design</span>
+        <span class="badge badge-primary me-1">#JavaFX</span>
+        <span class="badge badge-pink">Tendance</span>
+      </div>
+
+    </div>
+
+    <!-- CONTENU -->
+    <p>{{ post.contenu }}</p>
+
+    <!-- IMAGE POST -->
+    {% if post.image %}
+      <img src="{{ asset(post.image) }}"
+           class="img-fluid rounded mt-2">
+    {% endif %}
+
+    <!-- ACTIONS (inchangées) -->
+    <div class="d-flex justify-content-between align-items-center mt-3 text-muted">
+
+      <div class="d-flex">
+
+        <div class="mr-3 post-action">
+          <i class="fa fa-heart"></i> <span>0</span>
+        </div>
+
+        <div class="mr-3 post-action open-comment">
+          <i class="fa fa-comment"></i> 0
+        </div>
+
+        <div class="post-action">
+          <i class="fa fa-bookmark"></i>
+        </div>
+
+      </div>
+
+      <div class="post-action">
+        <i class="fa fa-share-alt"></i>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% else %}
+  <p class="text-center text-muted">Aucun post disponible</p>
+{% endfor %}
+
+
+</div>
+
+
+<!-- ================= RIGHT SIDEBAR ================= -->
+<div class="col-lg-4 sidebar-sticky">
+
+<!-- Insights -->
+<div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
+  <h6 class="mb-3">⭐ Insights</h6>
+
+  <div class="d-flex justify-content-between text-center">
+    <div class="stat-box">
+      <strong>1.2k</strong><br>
+      <small>Vues</small>
+    </div>
+    <div class="stat-box">
+      <strong>86</strong><br>
+      <small>Likes</small>
+    </div>
+    <div class="stat-box">
+      <strong>14</strong><br>
+      <small>Posts</small>
+    </div>
+  </div>
+</div>
+
+<!-- Tendances -->
+<div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
+  <h6>🔥 Tendances</h6>
+  <span class="badge badge-light">#Voyage</span>
+  <span class="badge badge-light">#Cuisine</span>
+  <span class="badge badge-light">#Tech</span>
+</div>
+
+<!-- A suivre -->
+<div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
+  <h6>👤 À suivre</h6>
+
+  <div class="d-flex align-items-center mb-2">
+    <img src="{{ asset('assets/images/profile2.jpg') }}"
+         class="rounded-circle mr-2" width="35">
+    <span>Tech Daily</span>
+    <button class="btn btn-sm btn-outline-primary ml-auto">+ Suivre</button>
+  </div>
+
+  <div class="d-flex align-items-center">
+    <img src="{{ asset('assets/images/profile3.jpg') }}"
+         class="rounded-circle mr-2" width="35">
+    <span>Cuisine Pro</span>
+    <button class="btn btn-sm btn-outline-primary ml-auto">+ Suivre</button>
+  </div>
+</div>
+
+<!-- Playlist -->
+<div class="card border-0 shadow-sm rounded-4 p-3">
+  <h6>🎧 Playlist du moment</h6>
+  <small>Lo-fi Focus • 2h 14m</small>
+
+  <div class="progress mt-2" style="height:6px;">
+    <div class="progress-bar" style="width:40%"></div>
+  </div>
+</div>
+
+</div>
+
+</div>
+</div>
+</section>
+
+{# *-------------------------------------------pop up comments------------------------------------------------------------- #}
+<!-- OVERLAY FLOU -->
+<div id="commentOverlay" class="overlay-blur"></div>
+
+<div id="commentPopup" class="comment-popup">
+  
+  <!-- HEADER -->
+  <div class="popup-header">
+    <h5>💬 Commentaires</h5>
+    <span id="closePopup">&times;</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="popup-body">
+
+    <!-- COMMENT 1 -->
+    <div class="comment-box">
+      <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar">
+
+      <div class="comment-bubble">
+        <div class="comment-header">
+          <strong>baya sellami</strong>
+          <small>04 avr. 2026 12:06</small>
+        </div>
+
+        <p>hiiii</p>
+
+        <div class="comment-icons">
+          <i class="fa fa-edit"></i>
+          <i class="fa fa-trash"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMENT 2 -->
+    <div class="comment-box">
+      <img src="{{ asset('assets/images/bg_1.jpg') }}" class="comment-avatar">
+
+      <div class="comment-bubble">
+        <div class="comment-header">
+          <strong>lina mezghani</strong>
+          <small>02 mars 2026 11:06</small>
+        </div>
+
+        <p>c'est une belle ville</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="popup-footer">
+    <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar-small">
+    <input type="text" placeholder="Écrire un commentaire...">
+    <button>Envoyer</button>
+  </div>
+
+</div>
+
+{# --------------------------------------------------------popup edit post------------------------------------- #}
+
+<div id="editPostPopup" class="comment-popup">
+  
+  <!-- HEADER -->
+  <div class="popup-header">
+    <h5>📝 Modifier la publication</h5>
+    <span id="closeEditPopup">&times;</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="popup-body">
+
+    <!-- CONTENU -->
+    <label class="popup-label">Contenu :</label>
+
+    <textarea class="edit-textarea"
+      placeholder="Modifier le contenu du post...">je veux m'informer des activités suivantes pour le mois prochain pour Rc</textarea>
+
+    <!-- IMAGE -->
+    <label class="popup-label mt-3">Image (optionnel) :</label>
+
+    <div class="edit-image-box">
+      <img src="{{ asset('assets/images/bg_2.jpg') }}">
+      <button class="choose-btn">Choisir</button>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="popup-footer edit-footer">
+    <button class="btn-cancel">Annuler</button>
+    <button class="btn-save">Enregistrer</button>
+  </div>
+
+</div>
+
+<style>
+.search-input .form-control {
+border: 2px solid #e9ecef;
+border-right: none;
+border-radius: 50px 0 0 50px;
+padding: 15px 20px;
+font-size: 16px;
+}
+
+.search-input .btn {
+border-radius: 0 50px 50px 0;
+padding: 15px 30px;
+font-weight: 600;
+}
+
+.badge-purple { background: linear-gradient(45deg, #6f42c1, #8b5cf6); color: white; }
+.badge-blue { background: linear-gradient(45deg, #0d6efd, #4dabf7); color: white; }
+
+.post-card {
+border-radius: 20px !important;
+overflow: hidden;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+.navbar-brand {
+font-size: 1.8rem;
+font-weight: 800;
+}
+
+.breadcrumbs {
+font-size: 1.1rem;
+}
+
+.bread {
+font-size: 3rem;
+font-weight: 700;
+color: white;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.btn-primary {
+background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+border: none;
+padding: 12px 30px;
+border-radius: 50px;
+font-weight: 600;
+transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.fa-heart.text-danger {
+color: #e74c3c !important;
+}
+
+.badge {
+padding: 8px 12px;
+border-radius: 20px;
+font-size: 0.8rem;
+font-weight: 500;
+}
+
+.badge-light { background: #f8f9fa; color: #495057; }
+.badge-primary { background: linear-gradient(45deg, #007bff, #0056b3); color: white; }
+
+.card-body {
+background: linear-gradient(145deg, #ffffff, #f8f9fa);
+
+}
+
+.overlay {
+background: rgba(0,0,0,0.4);
+}
+
+.hero-wrap {
+background-size: cover;
+background-position: center;
+min-height: 500px;
+display: flex;
+align-items: center;
+}
+
+@media (max-width: 768px) {
+.search-input .form-control, .search-input .btn {
+border-radius: 10px;
+margin-bottom: 10px;
+} .col-md-3 { order: -1; margin-bottom: 20px; }
+}
+body {
+  background: #eef2f7;
+}
+
+.rounded-4 {
+  border-radius: 16px !important;
+}
+
+.badge-pink {
+  background: #f8d7da;
+  color: #d63384;
+}
+
+.stat-box {
+  background: #f4f6fb;
+  padding: 10px;
+  border-radius: 12px;
+  width: 30%;
+}
+
+.card {
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+/* POST CARD ULTRA MODERNE */
+.post-card, .card {
+  border-radius: 22px !important;
+  border: none !important;
+  background: linear-gradient(145deg, #ffffff, #f3f6fb);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Hover effet premium */
+.post-card:hover, .card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* IMAGE POST */
+.post-card img, .card img {
+  border-radius: 16px;
+  transition: transform 0.4s ease;
+}
+
+/* zoom image au hover */
+.post-card:hover img {
+  transform: scale(1.03);
+}
+
+/* HEADER USER */
+.card-body .d-flex img {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* BADGES PLUS JOLIS */
+.badge {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* TAG tendance */
+.badge-pink {
+  background: linear-gradient(45deg, #ff7eb3, #ff758c);
+  color: white;
+}
+
+/* ACTIONS (like/comment) */
+.card .text-muted div {
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.card .text-muted div:hover {
+  background: #f1f3f8;
+}
+
+/* INPUT POST */
+/* INPUT PLUS VISIBLE */
+input.form-control {
+  border-radius: 50px !important;
+  border: 1.5px solid #d0d7e2;
+  background: #ffffff;
+  padding: 14px 20px;
+  font-size: 15px;
+  transition: all 0.25s ease;
+}
+
+/* Placeholder plus visible */
+input.form-control::placeholder {
+  color: #9aa4b2;
+  opacity: 1;
+}
+
+/* Focus effet moderne */
+input.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  outline: none;
+  background: #fff;
+}
+
+/* BOUTON */
+.btn-primary {
+  border-radius: 50px !important;
+  background: linear-gradient(45deg, #5a67d8, #667eea);
+  border: none;
+}
+
+/* BOUTONS ICONES */
+.btn-outline-primary {
+  border-radius: 50px;
+  border: 1px solid #dfe3eb;
+  background: white;
+  transition: 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background: #eef2ff;
+}
+.profile-img {
+  width: 45px !important;
+  height: 45px !important;
+  min-width: 45px;   /* 🔥 empêche flex de compresser */
+  min-height: 45px;
+
+  border-radius: 50% !important;
+  object-fit: cover;
+  object-position: center;
+
+  display: block;
+
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.post-action {
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.post-action:hover {
+  background: #eef2ff;
+  transform: scale(1.05);
+}
+
+.post-action i {
+  font-size: 16px;
+}
+
+
+.post-icon-dropdown i:hover {
+  color: #667eea;
+  transform: scale(1.1);
+}
+.dropdown-toggle::after {
+  display: none; /* supprime le petit triangle */
+}
+
+.post-icon-dropdown {
+  margin-left: 12px; /* espace entre badges et icône */
+}
+/* DROPDOWN MODERNE */
+.modern-dropdown {
+  border-radius: 16px;
+  padding: 10px;
+  border: none;
+  background: linear-gradient(145deg, #ffffff, #f3f6fb);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  animation: dropdownFade 0.25s ease;
+  min-width: 180px;
+}
+
+
+/* animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* items */
+.modern-dropdown .dropdown-item {
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+}
+
+/* hover effet premium */
+.modern-dropdown .dropdown-item:hover {
+  background: #eef2ff;
+  transform: translateX(4px);
+}
+
+/* icones */
+.modern-dropdown i {
+  color: #667eea;
+  font-size: 14px;
+}
+
+/* danger (supprimer) */
+.modern-dropdown .fa-trash {
+  color: #e74c3c;
+}
+
+/* signaler */
+.modern-dropdown .fa-flag {
+  color: #f39c12;
+}
+
+/* divider stylé */
+.dropdown-divider {
+  margin: 8px 0;
+  opacity: 0.2;
+}
+.sidebar-sticky {
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+/*--------------------------------popup-comments----------------------------------------*/
+/* BACKGROUND FLOU */
+.overlay-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 999;
+}
+
+/* POPUP */
+.comment-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  width: 400px;
+  max-width: 90%;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* ACTIVE STATE */
+.comment-popup.active,
+.overlay-blur.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.comment-popup.active {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* HEADER */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.popup-header span {
+  cursor: pointer;
+  font-size: 22px;
+}
+
+/* BODY */
+.popup-body {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.comment {
+  margin-bottom: 10px;
+  background: #f4f6fb;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+/* FOOTER */
+.popup-footer {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.popup-footer input {
+  flex: 1;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.popup-footer button {
+  margin-left: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #4f8cff, #2563eb);
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+  transition: 0.2s;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+}
+/* COMMENT STYLE EXACT IMAGE */
+
+.comment-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* AVATAR */
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eef4ff, #e0ecff);
+  border: 1px solid #c7dbff;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.12);
+}
+
+/* BULLE */
+.comment-bubble {
+  background: #ffffff; /* blanc net */
+  border: 1px solid #dbeafe; /* contour léger bleu */
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15); /* ombre visible */
+  padding: 12px 16px;
+  border-radius: 16px;
+  width: 100%;
+  position: relative;
+  transition: 0.2s;
+}
+
+/* HEADER (nom + date) */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.comment-header strong {
+  color: #1d4ed8;
+}
+
+
+.comment-header small {
+  color: #64748b;
+}
+
+/* TEXTE */
+.comment-bubble p {
+  margin: 4px 0 0;
+  font-size: 14px;
+    color: #0f172a;
+  font-weight: 500;
+}
+
+/* ICONES (edit/delete) */
+.comment-icons {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+}
+
+.comment-icons i {
+  margin-left: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #1877f2;
+}
+
+.comment-icons .fa-trash {
+  color: #e74c3c;
+}
+
+/* FOOTER AVATAR */
+.comment-avatar-small {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/* INPUT STYLE EXACT */
+.popup-footer input {
+  flex: 1;
+  border-radius: 20px;
+  border: none;
+ background: #ffffff;
+  border: 1px solid #cbd5f5;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+  padding: 10px 15px;
+  font-size: 14px;
+}
+
+/* BOUTON BLEU FACEBOOK */
+.popup-footer button {
+  margin-left: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  font-weight: 600;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+
+}
+.popup-header h5 {
+  color: #1e293b;
+}
+
+.popup-header span {
+  color: #64748b;
+}
+
+.popup-header span:hover {
+  color: #ef4444;
+}
+.popup-footer button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  font-weight: 600;
+}
+
+.popup-footer button:hover {
+  background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  transform: scale(1.05);
+}
+
+/* ICONES */
+.comment-icons i {
+  color: #2563eb;
+}
+
+.comment-icons .fa-trash {
+  color: #ef4444;
+}
+/*-------------------------------------------pop up edit---------------------------------------------*/
+
+/* LABEL */
+.popup-label {
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* TEXTAREA STYLE IMAGE */
+.edit-textarea {
+  width: 100%;
+  border-radius: 25px;
+  border: none;
+  background: #f1f5f9;
+  padding: 14px 18px;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+}
+
+/* IMAGE + BUTTON */
+.edit-image-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.edit-image-box img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* BOUTON CHOISIR */
+.choose-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* FOOTER ALIGN RIGHT */
+.edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ANNULER */
+.btn-cancel {
+  background: #e5e7eb;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+/* ENREGISTRER */
+.btn-save {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+#editPostPopup textarea {
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
+  padding: 10px;
+  resize: none;
+}
+
+#editPostPopup input[type="file"] {
+  border-radius: 12px;
+  padding: 8px;
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const hearts = document.querySelectorAll('.fa-heart');
+hearts.forEach(heart => {
+heart.addEventListener('click', function() {
+this.classList.toggle('text-danger');
+const count = this.nextElementSibling;
+const current = parseInt(count.textContent);
+count.textContent = this.classList.contains('text-danger') ? current + 1 : current - 1;
+});
+});
+});
+document.querySelectorAll('.fa-bookmark').forEach(icon => {
+  icon.addEventListener('click', function() {
+    this.classList.toggle('text-warning');
+  });
+});
+
+/*-----------popup comments----------------------------*/
+document.addEventListener("DOMContentLoaded", function () {
+
+  const openBtns = document.querySelectorAll(".open-comment");
+  const popup = document.getElementById("commentPopup");
+  const overlay = document.getElementById("commentOverlay");
+  const closeBtn = document.getElementById("closePopup");
+
+  openBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      popup.classList.add("active");
+      overlay.classList.add("active");
+    });
+  });
+
+  function closePopup() {
+    popup.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+
+  closeBtn.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
+
+});
+
+{# --------------------------pop up edit------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+  const editBtns = document.querySelectorAll(".open-edit");
+  const editPopup = document.getElementById("editPostPopup");
+  const overlay = document.getElementById("commentOverlay"); // 🔥 AJOUT
+  const closeEdit = document.getElementById("closeEditPopup");
+
+  editBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      editPopup.classList.add("active");
+      overlay.classList.add("active");
+    });
+  });
+
+  function closeEditPopup() {
+    editPopup.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+
+  closeEdit.addEventListener("click", closeEditPopup);
+  overlay.addEventListener("click", closeEditPopup);
+
+});
+</script>
+
+{% endblock %}

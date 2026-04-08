@@ -3,14 +3,14 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
 use App\Entity\Personne;
+use App\Entity\Activite;
 
 #[ORM\Entity]
 class Avis
 {
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
@@ -23,71 +23,73 @@ class Avis
     #[ORM\Column(type: "datetime")]
     private \DateTimeInterface $dateAvis;
 
-        #[ORM\ManyToOne(targetEntity: Activite::class, inversedBy: "aviss")]
+    #[ORM\ManyToOne(targetEntity: Activite::class, inversedBy: "aviss")]
     #[ORM\JoinColumn(name: 'activite_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Activite $activite_id;
+    private ?Activite $activite = null;
 
-        #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "aviss")]
+    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "aviss")]
     #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Personne $personne_id;
+    private ?Personne $personne = null;
 
-    public function getId()
+    // --- Getters et Setters ---
+    
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
-
-    public function getNote()
+    public function getNote(): int
     {
         return $this->note;
     }
 
-    public function setNote($value)
+    public function setNote(int $note): self
     {
-        $this->note = $value;
+        $this->note = $note;
+        return $this;
     }
 
-    public function getCommentaire()
+    public function getCommentaire(): string
     {
         return $this->commentaire;
     }
 
-    public function setCommentaire($value)
+    public function setCommentaire(string $commentaire): self
     {
-        $this->commentaire = $value;
+        $this->commentaire = $commentaire;
+        return $this;
     }
 
-    public function getDateAvis()
+    public function getDateAvis(): \DateTimeInterface
     {
         return $this->dateAvis;
     }
 
-    public function setDateAvis($value)
+    public function setDateAvis(\DateTimeInterface $dateAvis): self
     {
-        $this->dateAvis = $value;
+        $this->dateAvis = $dateAvis;
+        return $this;
     }
 
-    public function getActivite_id()
+    public function getActivite(): ?Activite
     {
-        return $this->activite_id;
+        return $this->activite;
     }
 
-    public function setActivite_id($value)
+    public function setActivite(?Activite $activite): self
     {
-        $this->activite_id = $value;
+        $this->activite = $activite;
+        return $this;
     }
 
-    public function getPersonne_id()
+    public function getPersonne(): ?Personne
     {
-        return $this->personne_id;
+        return $this->personne;
     }
 
-    public function setPersonne_id($value)
+    public function setPersonne(?Personne $personne): self
     {
-        $this->personne_id = $value;
+        $this->personne = $personne;
+        return $this;
     }
 }

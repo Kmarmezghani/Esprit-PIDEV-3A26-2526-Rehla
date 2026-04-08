@@ -1,0 +1,125 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block sidebar %}
+  {% include 'admin/partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/partials/navbar.html.twig' %}
+{% endblock %}
+
+
+{% block body %}
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+  
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">List de Tickets</h5>
+    <a href="{{ path('admin_ticket_new') }}" class="btn btn-primary">
+      <i class="bx bx-plus me-1"></i> Ajouter Ticket
+    </a>
+  </div>
+      <div class="table-responsive text-nowrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Destination</th>
+              <th>Prix</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for ticket in tickets %}
+              <tr>
+                <td>
+                  {% if ticket.activite is not empty %}
+                    Activity
+                  {% else %}
+                    {{ ticket.type }}
+                  {% endif %}
+                </td>
+                <td>{{ ticket.destination ? ticket.destination.nom : 'N/A' }}</td>
+                <td>{{ ticket.prix ? ticket.prix ~ ' TND' : 'N/A' }}</td>
+{% set status = ticket.statut ?? 'available' %}
+
+<td>
+  {% if status == 'Available' %}
+    <span class="badge bg-label-success me-1">Disponible</span>
+  {% elseif status == 'Reserved' %}
+    <span class="badge bg-label-warning me-1">Reservé</span>
+  {% elseif status == 'Cancelled' %}
+    <span class="badge bg-label-danger me-1">Annuler</span>
+  {% else %}
+    <span class="badge bg-label-info me-1">{{ status }}</span>
+  {% endif %}
+</td>
+                <td>
+                  <div class="dropdown">
+                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                      <i class="icon-base bx bx-dots-vertical-rounded"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                      <a class="dropdown-item" href="{{ path('admin_ticket_edit', {'id': ticket.id}) }}">
+                        <i class="icon-base bx bx-edit-alt me-1"></i> Modifier
+                      </a>
+                      <button 
+  class="dropdown-item text-danger"
+  data-bs-toggle="modal"
+  data-bs-target="#deleteModal{{ ticket.id }}">
+  <i class="icon-base bx bx-trash me-1"></i> Supprimer
+</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <div class="modal fade" id="deleteModal{{ ticket.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="bx bx-error-circle me-1"></i> Suppression du ticket
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <i class="bx bx-trash display-6 text-danger mb-3"></i>
+        <h5>Voulez-vous vraiment supprimer ce ticket ?</h5>
+        <p class="text-muted mb-0">
+          Cette action est <strong>irréversible</strong>.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          Annuler
+        </button>
+
+        <form method="post" action="{{ path('admin_ticket_delete', {'id': ticket.id}) }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ticket.id) }}">
+          <button class="btn btn-danger">
+            <i class="bx bx-trash me-1"></i> Oui, supprimer
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center">Aucun ticket trouvé </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

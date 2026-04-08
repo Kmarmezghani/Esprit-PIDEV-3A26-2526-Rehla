@@ -46,108 +46,135 @@
 <!-- ================= LEFT FEED ================= -->
 <div class="col-lg-8">
 
-<!-- Create post -->
 <div class="card border-0 shadow-sm mb-4 p-3 rounded-4">
+
+  {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
   <div class="d-flex">
-    <input type="text" class="form-control rounded-pill mr-2 px-4"
-           placeholder="Écrivez quelque chose de fort...">
-    <button class="btn btn-primary rounded-pill px-4">Publier</button>
+    {{ form_widget(form.contenu) }}
+
+    <button class="btn btn-primary rounded-pill px-4 ml-2">
+      Publier
+    </button>
   </div>
 
+  <!-- erreurs -->
+  <div class="text-danger mt-2">
+    {{ form_errors(form.contenu) }}
+  </div>
+
+  <!-- boutons -->
   <div class="d-flex mt-3">
-    <button class="btn btn-outline-primary rounded-pill mr-2">📷 Image</button>
-    <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
+
+    <button type="button"
+            class="btn btn-outline-primary rounded-pill mr-2"
+            onclick="document.getElementById('post_image').click()">
+      📷 Image
+    </button>
+        <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
     <button class="btn btn-outline-primary rounded-pill mr-2">📍 Lieu</button>
     <button class="btn btn-outline-primary rounded-pill">📊 Sondage</button>
+
+    {{ form_widget(form.image) }}
+
   </div>
+
+  {{ form_end(form) }}
+
 </div>
 
 
 <!-- POST IMAGE -->
+{% for post in posts %}
+
 <div class="card border-0 shadow-sm mb-4 rounded-4">
   <div class="card-body">
 
     <div class="d-flex align-items-center mb-2">
-      <img src="{{ asset('assets/images/about-1.jpg') }}"
-          class="profile-img mr-2">
+
+      <!-- IMAGE PROFIL -->
+      <img src="{{ post.personne_id.profile_photo ? asset(post.personne_id.profile_photo) : asset('assets/img/bg_1.jpg') }}"
+           class="profile-img mr-2">
 
       <div>
-        <strong>El Euch Mariem</strong><br>
-        <small class="text-muted">2026-03-02 • Public</small>
+        <!-- NOM -->
+        <strong>
+          {{ post.personne_id.nom }} {{ post.personne_id.prenom }}
+        </strong><br>
+
+        <!-- DATE -->
+       <small class="text-muted">
+        {{ post.datePublication ? post.datePublication|date('Y-m-d H:i:s') : '---' }} • Public
+      </small>
       </div>
 
-
+      <!-- DROPDOWN (inchangé) -->
       <div class="dropdown ms-3">
-  <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle" 
-          type="button" id="postOptions" data-toggle="dropdown" aria-expanded="false">
-    <i class="fa fa-cog"></i>
-  </button>
+        <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle"
+                type="button" data-toggle="dropdown">
+          <i class="fa fa-cog"></i>
+        </button>
 
-  <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
-    
-  <a class="dropdown-item open-edit">
-  <i class="fa fa-edit"></i> Modifier
-</a>
+        <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
+          <a class="dropdown-item open-edit">
+            <i class="fa fa-edit"></i> Modifier
+          </a>
+          <a class="dropdown-item" href="#">
+            <i class="fa fa-trash"></i> Supprimer
+          </a>
+        </div>
+      </div>
 
-    <a class="dropdown-item" href="#">
-      <i class="fa fa-trash"></i> Supprimer
-    </a>
+      <!-- TAGS -->
+      <div class="ml-auto d-flex align-items-center">
+        <span class="badge badge-light me-1">#Design</span>
+        <span class="badge badge-primary me-1">#JavaFX</span>
+        <span class="badge badge-pink">Tendance</span>
+      </div>
 
-   
-
-  </div>
-</div>
-
-    <div class="ml-auto d-flex align-items-center">
-  <!-- Badges existants -->
-  <span class="badge badge-light me-1">#Design</span>
-  <span class="badge badge-primary me-1">#JavaFX</span>
-  <span class="badge badge-pink">Tendance</span>
-
-  <!-- Icône Paramètres avec margin-left -->
-  
-</div>
-
-    
     </div>
 
-    <p>nouvelle activité est arrivée</p>
+    <!-- CONTENU -->
+    <p>{{ post.contenu }}</p>
 
-    <img src="{{ asset('assets/images/bg_2.jpg') }}"
-         class="img-fluid rounded mt-2">
+    <!-- IMAGE POST -->
+    {% if post.image %}
+      <img src="{{ asset(post.image) }}"
+           class="img-fluid rounded mt-2">
+    {% endif %}
 
-  
-  
-<div class="d-flex justify-content-between align-items-center mt-3 text-muted">
+    <!-- ACTIONS (inchangées) -->
+    <div class="d-flex justify-content-between align-items-center mt-3 text-muted">
 
-  <!-- LEFT: LIKE + COMMENT + FAVORIS -->
-  <div class="d-flex">
+      <div class="d-flex">
 
-    <div class="mr-3 post-action">
-      <i class="fa fa-heart"></i> <span>0</span>
+        <div class="mr-3 post-action">
+          <i class="fa fa-heart"></i> <span>0</span>
+        </div>
+
+        <div class="mr-3 post-action open-comment">
+          <i class="fa fa-comment"></i> 0
+        </div>
+
+        <div class="post-action">
+          <i class="fa fa-bookmark"></i>
+        </div>
+
+      </div>
+
+      <div class="post-action">
+        <i class="fa fa-share-alt"></i>
+      </div>
+
     </div>
 
-    <div class="mr-3 post-action open-comment">
-  <i class="fa fa-comment"></i> 0
-</div>
-
-    <div class="post-action">
-      <i class="fa fa-bookmark"></i>
-    </div>
-
-  </div>
-
-  <!-- RIGHT: SHARE -->
-  <div class="post-action">
-    <i class="fa fa-share-alt"></i>
-  </div>
-
-</div>
-
-
-
   </div>
 </div>
+
+{% else %}
+  <p class="text-center text-muted">Aucun post disponible</p>
+{% endfor %}
+
 
 </div>
 

@@ -3,18 +3,18 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
 use App\Entity\Personne;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Notification;
-
-#[ORM\Entity]
+use App\Repository\PostRepository;
+#[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
 
-    #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+   #[ORM\Id]
+#[ORM\GeneratedValue]
+#[ORM\Column(type: "integer")]
+private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 150)]
     private string $titre;
@@ -22,7 +22,7 @@ class Post
     #[ORM\Column(type: "text")]
     private string $contenu;
 
-    #[ORM\Column(type: "datetime")]
+    #[ORM\Column(name: "datePublication", type: "datetime")]
     private \DateTimeInterface $datePublication;
 
     #[ORM\Column(type: "integer")]
@@ -32,8 +32,8 @@ class Post
     #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Personne $personne_id;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $image;
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $image = null;
 
     public function getId()
     {

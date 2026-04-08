@@ -5,14 +5,60 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Post;
+use App\Entity\Personne;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Form\PostType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 final class BlogController extends AbstractController
 {
-    #[Route('/blog', name: 'blog')]
-    public function index(): Response
-    {
-        return $this->render('blog/blog.html.twig', [
-            'controller_name' => 'BlogController',
-        ]);
+
+#[Route('/blog', name: 'blog')]
+public function index(Request $request, EntityManagerInterface $em)
+{   $personne = $em->getRepository(Personne::class)->find(4);
+    $post = new Post();
+    $form = $this->createForm(PostType::class, $post);
+
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+
+      
+        $imageFile = $form->get('image')->getData();
+
+        if ($imageFile) {
+            $newFilename = uniqid().'.'.$imageFile->guessExtension();
+
+            try {
+                $imageFile->move(
+                    $this->getParameter('images_directory'),
+                    $newFilename
+                );
+            } catch (FileException $e) {}
+
+            $post->setImage('uploads/'.$newFilename);
+        }
+
+        $post->setDatePublication(new \DateTime());
+        $post->setPopularite(0);
+
+     
+        $post->setPersonne_id($personne);
+
+        $em->persist($post);
+        $em->flush();
+
+        return $this->redirectToRoute('blog');
     }
+
+    $posts = $em->getRepository(Post::class)->findLatestPosts();
+
+    return $this->render('blog/blog.html.twig', [
+        'posts' => $posts,
+        'form' => $form->createView()
+    ]);
+}
+
 }

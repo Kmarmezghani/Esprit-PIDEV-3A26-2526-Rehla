@@ -85,9 +85,9 @@
 
   <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
     
-    <a class="dropdown-item" href="#">
-      <i class="fa fa-edit"></i> Modifier
-    </a>
+  <a class="dropdown-item open-edit">
+  <i class="fa fa-edit"></i> Modifier
+</a>
 
     <a class="dropdown-item" href="#">
       <i class="fa fa-trash"></i> Supprimer
@@ -218,7 +218,7 @@
 </div>
 </section>
 
-{# *-------------------------------------------------------------------------------------------------------- #}
+{# *-------------------------------------------pop up comments------------------------------------------------------------- #}
 <!-- OVERLAY FLOU -->
 <div id="commentOverlay" class="overlay-blur"></div>
 
@@ -277,7 +277,42 @@
 
 </div>
 
+{# --------------------------------------------------------popup edit post------------------------------------- #}
 
+<div id="editPostPopup" class="comment-popup">
+  
+  <!-- HEADER -->
+  <div class="popup-header">
+    <h5>📝 Modifier la publication</h5>
+    <span id="closeEditPopup">&times;</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="popup-body">
+
+    <!-- CONTENU -->
+    <label class="popup-label">Contenu :</label>
+
+    <textarea class="edit-textarea"
+      placeholder="Modifier le contenu du post...">je veux m'informer des activités suivantes pour le mois prochain pour Rc</textarea>
+
+    <!-- IMAGE -->
+    <label class="popup-label mt-3">Image (optionnel) :</label>
+
+    <div class="edit-image-box">
+      <img src="{{ asset('assets/images/bg_2.jpg') }}">
+      <button class="choose-btn">Choisir</button>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="popup-footer edit-footer">
+    <button class="btn-cancel">Annuler</button>
+    <button class="btn-save">Enregistrer</button>
+  </div>
+
+</div>
 
 <style>
 .search-input .form-control {
@@ -622,7 +657,7 @@ input.form-control:focus {
   max-height: calc(100vh - 120px);
   overflow-y: auto;
 }
-/*--------------------------------popup-----------------------------------------*/
+/*--------------------------------popup-comments----------------------------------------*/
 /* BACKGROUND FLOU */
 .overlay-blur {
   position: fixed;
@@ -853,8 +888,88 @@ input.form-control:focus {
 .comment-icons .fa-trash {
   color: #ef4444;
 }
-/*----------------------------------------------------------------------------------------*/
+/*-------------------------------------------pop up edit---------------------------------------------*/
 
+/* LABEL */
+.popup-label {
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* TEXTAREA STYLE IMAGE */
+.edit-textarea {
+  width: 100%;
+  border-radius: 25px;
+  border: none;
+  background: #f1f5f9;
+  padding: 14px 18px;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+}
+
+/* IMAGE + BUTTON */
+.edit-image-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.edit-image-box img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* BOUTON CHOISIR */
+.choose-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* FOOTER ALIGN RIGHT */
+.edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ANNULER */
+.btn-cancel {
+  background: #e5e7eb;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+/* ENREGISTRER */
+.btn-save {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+#editPostPopup textarea {
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
+  padding: 10px;
+  resize: none;
+}
+
+#editPostPopup input[type="file"] {
+  border-radius: 12px;
+  padding: 8px;
+}
 
 </style>
 
@@ -876,7 +991,7 @@ document.querySelectorAll('.fa-bookmark').forEach(icon => {
   });
 });
 
-/*-----------popup----------------------------*/
+/*-----------popup comments----------------------------*/
 document.addEventListener("DOMContentLoaded", function () {
 
   const openBtns = document.querySelectorAll(".open-comment");
@@ -898,6 +1013,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
   closeBtn.addEventListener("click", closePopup);
   overlay.addEventListener("click", closePopup);
+
+});
+
+{# --------------------------pop up edit------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+  const editBtns = document.querySelectorAll(".open-edit");
+  const editPopup = document.getElementById("editPostPopup");
+  const overlay = document.getElementById("commentOverlay"); // 🔥 AJOUT
+  const closeEdit = document.getElementById("closeEditPopup");
+
+  editBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      editPopup.classList.add("active");
+      overlay.classList.add("active");
+    });
+  });
+
+  function closeEditPopup() {
+    editPopup.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+
+  closeEdit.addEventListener("click", closeEditPopup);
+  overlay.addEventListener("click", closeEditPopup);
 
 });
 </script>

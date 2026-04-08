@@ -61,4 +61,31 @@ public function index(Request $request, EntityManagerInterface $em)
     ]);
 }
 
+
+#[Route('/post/delete/{id}', name: 'post_delete', methods: ['POST'])]
+public function delete(Post $post, EntityManagerInterface $em): Response
+{
+    $em->remove($post);
+    $em->flush();
+
+    return $this->redirectToRoute('blog');
+}
+
+#[Route('/post/edit/{id}', name: 'post_edit', methods: ['POST'])]
+public function edit(Request $request, Post $post, EntityManagerInterface $em): Response
+{
+    $post->setContenu($request->request->get('contenu'));
+
+    $imageFile = $request->files->get('image');
+    if ($imageFile) {
+        $newFilename = uniqid().'.'.$imageFile->guessExtension();
+        $imageFile->move($this->getParameter('images_directory'), $newFilename);
+        $post->setImage('uploads/'.$newFilename);
+    }
+
+    $em->flush();
+
+    return $this->redirectToRoute('blog');
+}
+
 }

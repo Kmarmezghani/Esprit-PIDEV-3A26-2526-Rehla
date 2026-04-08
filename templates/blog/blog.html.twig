@@ -122,10 +122,16 @@
         </button>
 
         <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
-          <a class="dropdown-item open-edit">
+          <<a class="dropdown-item open-edit"
+            data-id="{{ post.id }}"
+            data-contenu="{{ post.contenu }}"
+            data-image="{{ post.image }}">
             <i class="fa fa-edit"></i> Modifier
           </a>
-          <a class="dropdown-item" href="#">
+          <a class="dropdown-item text-danger"
+            href="#"
+            data-url="{{ path('post_delete', {'id': post.id}) }}"
+            onclick="confirmDelete(event, this)">
             <i class="fa fa-trash"></i> Supprimer
           </a>
         </div>
@@ -313,37 +319,48 @@
 {# --------------------------------------------------------popup edit post------------------------------------- #}
 
 <div id="editPostPopup" class="comment-popup">
-  
+
   <!-- HEADER -->
   <div class="popup-header">
     <h5>📝 Modifier la publication</h5>
     <span id="closeEditPopup">&times;</span>
   </div>
 
-  <!-- BODY -->
-  <div class="popup-body">
+  <!-- FORM -->
+  <form id="editForm" method="POST" enctype="multipart/form-data">
 
-    <!-- CONTENU -->
-    <label class="popup-label">Contenu :</label>
+    <!-- BODY -->
+    <div class="popup-body">
 
-    <textarea class="edit-textarea"
-      placeholder="Modifier le contenu du post...">je veux m'informer des activités suivantes pour le mois prochain pour Rc</textarea>
+      <!-- hidden id -->
+      <input type="hidden" id="edit_post_id" name="id">
 
-    <!-- IMAGE -->
-    <label class="popup-label mt-3">Image (optionnel) :</label>
+      <!-- CONTENU -->
+      <label class="popup-label">Contenu :</label>
 
-    <div class="edit-image-box">
-      <img src="{{ asset('assets/images/bg_2.jpg') }}">
-      <button class="choose-btn">Choisir</button>
+      <textarea id="edit_contenu" name="contenu" class="edit-textarea"></textarea>
+
+      <!-- IMAGE -->
+      <label class="popup-label mt-3">Image :</label>
+
+      <div class="edit-image-box">
+        <img id="edit_image_preview" src="">
+        <input type="file" name="image" id="edit_image_input" hidden>
+        <button type="button" class="choose-btn"
+                onclick="document.getElementById('edit_image_input').click()">
+          Choisir
+        </button>
+      </div>
+
     </div>
 
-  </div>
+    <!-- FOOTER -->
+    <div class="popup-footer edit-footer">
+      <button type="button" class="btn-cancel" id="cancelEdit">Annuler</button>
+      <button type="submit" class="btn-save">Enregistrer</button>
+    </div>
 
-  <!-- FOOTER -->
-  <div class="popup-footer edit-footer">
-    <button class="btn-cancel">Annuler</button>
-    <button class="btn-save">Enregistrer</button>
-  </div>
+  </form>
 
 </div>
 
@@ -1027,6 +1044,26 @@ input.form-control:focus {
     border-radius: 10px !important;
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25) !important;
 }
+/*--------------pop up delete--------------------------*/
+.small-swal {
+    border-radius: 12px !important;
+    font-size: 13px !important;
+}
+
+.small-swal .swal2-title {
+    font-size: 15px !important;
+}
+
+.small-swal .swal2-html-container {
+    font-size: 13px !important;
+    margin: 6px 0;
+}
+
+.small-swal .swal2-actions button {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
 </style>
 
 <script>
@@ -1077,28 +1114,71 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const editBtns = document.querySelectorAll(".open-edit");
   const editPopup = document.getElementById("editPostPopup");
-  const overlay = document.getElementById("commentOverlay"); // 🔥 AJOUT
+  const overlay = document.getElementById("commentOverlay");
+
   const closeEdit = document.getElementById("closeEditPopup");
+  const cancelEdit = document.getElementById("cancelEdit");
+
+  const contenuInput = document.getElementById("edit_contenu");
+  const imagePreview = document.getElementById("edit_image_preview");
+  const postIdInput = document.getElementById("edit_post_id");
+  const form = document.getElementById("editForm");
 
   editBtns.forEach(btn => {
     btn.addEventListener("click", () => {
+
+      // 🔥 récupérer data
+      const id = btn.getAttribute("data-id");
+      const contenu = btn.getAttribute("data-contenu");
+      const image = btn.getAttribute("data-image");
+
+      // 🔥 remplir popup
+      postIdInput.value = id;
+      contenuInput.value = contenu;
+
+      if (image) {
+        imagePreview.src = "/" + image;
+      } else {
+        imagePreview.src = "/assets/images/bg_1.jpg";
+      }
+
+      // 🔥 action dynamique (route Symfony)
+      form.action = "/post/edit/" + id;
+
+      // afficher popup
       editPopup.classList.add("active");
       overlay.classList.add("active");
     });
   });
 
-  function closeEditPopup() {
+  function closePopup() {
     editPopup.classList.remove("active");
     overlay.classList.remove("active");
   }
 
-  closeEdit.addEventListener("click", closeEditPopup);
-  overlay.addEventListener("click", closeEditPopup);
+  closeEdit.addEventListener("click", closePopup);
+  cancelEdit.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
 
+});
+document.getElementById("edit_image_input").addEventListener("change", function (event) {
+
+    const file = event.target.files[0];
+    const preview = document.getElementById("edit_image_preview");
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result; 
+        };
+
+        reader.readAsDataURL(file);
+    }
 });
 
 
-{# ------------pop up alerte---------- #}
+{# ------------pop up alerte publier post---------- #}
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -1175,6 +1255,122 @@ Swal.fire({
     });
 
 });
+
+{# ----------------------------------pop up alerte edit post----------------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+    const editForm = document.getElementById("editForm");
+    const editContenu = document.getElementById("edit_contenu");
+
+    if (!editForm || !editContenu) return;
+
+    editForm.addEventListener("submit", function (e) {
+
+        const value = (editContenu.value || "").trim();
+
+        // ❌ champ vide
+        if (value === "") {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'error',
+                text: 'Le contenu est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
+
+            return;
+        }
+
+        // ⚠️ trop court
+        if (value.length < 3) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+
+            return;
+        }
+
+        // ✅ succès
+        Swal.fire({
+            icon: 'success',
+            text: 'Publication modifiée avec succès',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#ecfdf5',
+            color: '#065f46',
+            iconColor: '#10b981',
+            customClass: {
+                popup: 'green-toast'
+            }
+        });
+
+    });
+
+});
+{# -----------------delete post------------------------------------- #}
+function confirmDelete(e, element) {
+    e.preventDefault();
+
+    Swal.fire({
+    title: 'Supprimer ce post ?',
+    text: "Action irréversible",
+    icon: 'warning',
+
+    showCancelButton: true,
+    confirmButtonText: 'Supprimer',
+    cancelButtonText: 'Annuler',
+
+    width: '320px',          // 🔥 taille réduite
+    padding: '12px',         // 🔥 compact
+    heightAuto: false,
+
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+
+    background: '#fff1f2',
+    color: '#7f1d1d',
+
+    customClass: {
+        popup: 'small-swal'
+    }
+}).then((result) => {
+        if (result.isConfirmed) {
+
+            // créer un form dynamique sans toucher ton HTML
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = element.getAttribute('data-url');
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
 </script>
 
 {% endblock %}

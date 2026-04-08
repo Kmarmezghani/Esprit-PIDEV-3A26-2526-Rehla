@@ -13,9 +13,7 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    /**
-     * 🔥 Récupérer tous les posts triés du plus récent au plus ancien
-     */
+
     public function findLatestPosts()
     {
         return $this->createQueryBuilder('p')

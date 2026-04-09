@@ -11,8 +11,9 @@ class Likes
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "boolean")]
     private bool $statut;

@@ -13,20 +13,30 @@ use App\Form\PostType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Entity\Likes;
+
 final class BlogController extends AbstractController
+
 {
 
 #[Route('/blog', name: 'blog')]
 public function index(Request $request, EntityManagerInterface $em)
-{   $personne = $em->getRepository(Personne::class)->find(4);
+{
+    $personne = $em->getRepository(Personne::class)->find(4);
+
     $post = new Post();
     $form = $this->createForm(PostType::class, $post);
-
     $form->handleRequest($request);
+
+    $likes = $request->query->get('likes');
+    $date = $request->query->get('date');
+    $search = $request->query->get('search');
+    $dateExact = $request->query->get('date_exact');
+    $sort = $request->query->get('sort');
+    $order = $request->query->get('order');
 
     if ($form->isSubmitted() && $form->isValid()) {
 
-      
         $imageFile = $form->get('image')->getData();
 
         if ($imageFile) {
@@ -44,8 +54,6 @@ public function index(Request $request, EntityManagerInterface $em)
 
         $post->setDatePublication(new \DateTime());
         $post->setPopularite(0);
-
-     
         $post->setPersonne_id($personne);
 
         $em->persist($post);
@@ -54,7 +62,24 @@ public function index(Request $request, EntityManagerInterface $em)
         return $this->redirectToRoute('blog');
     }
 
-    $posts = $em->getRepository(Post::class)->findLatestPosts();
+        if ($search) {
+        $posts = $em->getRepository(Post::class)->searchByContent($search);
+        }
+        elseif ($likes) {
+            $posts = $em->getRepository(Post::class)->findByLikes($likes);
+        }
+        elseif ($dateExact) {
+        $posts = $em->getRepository(Post::class)->findByExactDate($dateExact);
+        }
+        elseif ($date) {
+            $posts = $em->getRepository(Post::class)->findByDateFilter($date);
+        }
+        elseif ($sort && $order) {
+            $posts = $em->getRepository(Post::class)->findSorted($sort, $order);
+        }
+        else {
+            $posts = $em->getRepository(Post::class)->findLatestPosts();
+        }
 
     return $this->render('blog/blog.html.twig', [
         'posts' => $posts,
@@ -135,6 +160,42 @@ public function editComment(Request $request, Commentaire $comment, EntityManage
 
     return new JsonResponse([
         'contenu' => $contenu
+    ]);
+}
+
+#[Route('/post/like/{id}', name: 'post_like', methods: ['POST'])]
+public function like(Post $post, EntityManagerInterface $em): JsonResponse
+{
+    $personne = $em->getRepository(Personne::class)->find(4); // user connecté
+
+    $likeRepo = $em->getRepository(Likes::class);
+
+    $existing = $likeRepo->findOneBy([
+        'personne_id' => $personne,
+        'post_id' => $post
+    ]);
+
+    if ($existing) {
+        $em->remove($existing);
+        $em->flush();
+
+        return new JsonResponse([
+            'liked' => false,
+            'count' => $likeRepo->count(['post_id' => $post])
+        ]);
+    }
+
+    $like = new Likes();
+    $like->setPersonne_id($personne);
+    $like->setPost_id($post);
+    $like->setStatut(true);
+
+    $em->persist($like);
+    $em->flush();
+
+    return new JsonResponse([
+        'liked' => true,
+        'count' => $likeRepo->count(['post_id' => $post])
     ]);
 }
 

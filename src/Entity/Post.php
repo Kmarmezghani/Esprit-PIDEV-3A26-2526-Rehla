@@ -143,4 +143,30 @@ private ?int $id = null;
 
     #[ORM\OneToMany(mappedBy: "post_id", targetEntity: Notification::class)]
     private Collection $notifications;
+
+    public function getLikess(): Collection
+{
+    return $this->likess;
+}
+
+public function addLikes(Likes $like): self
+{
+    if (!$this->likess->contains($like)) {
+        $this->likess[] = $like;
+        $like->setPost_id($this);
+    }
+
+    return $this;
+}
+
+public function removeLikes(Likes $like): self
+{
+    if ($this->likess->removeElement($like)) {
+        if ($like->getPost_id() === $this) {
+            $like->setPost_id(null);
+        }
+    }
+
+    return $this;
+}
 }

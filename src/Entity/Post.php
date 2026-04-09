@@ -28,9 +28,10 @@ private ?int $id = null;
     #[ORM\Column(type: "integer")]
     private int $popularite;
 
-        #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "posts")]
-    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Personne $personne_id;
+    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "posts")]
+    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    private ?Personne $personne_id = null;
+
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $image = null;
@@ -143,4 +144,30 @@ private ?int $id = null;
 
     #[ORM\OneToMany(mappedBy: "post_id", targetEntity: Notification::class)]
     private Collection $notifications;
+
+    public function getLikess(): Collection
+{
+    return $this->likess;
+}
+
+public function addLikes(Likes $like): self
+{
+    if (!$this->likess->contains($like)) {
+        $this->likess[] = $like;
+        $like->setPost_id($this);
+    }
+
+    return $this;
+}
+
+public function removeLikes(Likes $like): self
+{
+    if ($this->likess->removeElement($like)) {
+        if ($like->getPost_id() === $this) {
+            $like->setPost_id(null);
+        }
+    }
+
+    return $this;
+}
 }

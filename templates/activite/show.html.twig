@@ -4,71 +4,70 @@
 
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-		<div class="container">
-			<a class="navbar-brand" href="index.html">
-    
-    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
-    
-    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
-    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
-</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="oi oi-menu"></span> Menu
-			</button>
+  <div class="container">
+    <a class="navbar-brand" href="index.html">
+      <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+      <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+      <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+    </a>
 
-			<div class="collapse navbar-collapse" id="ftco-nav">
-    <ul class="navbar-nav ml-auto">
-    <li class="nav-item active"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
-    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
-    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="oi oi-menu"></span> Menu
+    </button>
+
+    <div class="collapse navbar-collapse" id="ftco-nav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+        <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+        <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
         {% if app.session.get('user_id') %}
-        <li class="nav-item dropdown ms-2 d-flex align-items-center">
+          <li class="nav-item dropdown ms-2 d-flex align-items-center">
             <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
                href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {% if app.session.get('user_photo') %}
-                    <img src="{{ app.session.get('user_photo') }}" alt="Profil" class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
-                {% else %}
-                    <img src="{{ asset('assets/images/default-user.png') }}" alt="Profil" class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
-                {% endif %}
+              {% if app.session.get('user_photo') %}
+                <img src="{{ app.session.get('user_photo') }}" alt="Profil" class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
+              {% else %}
+                <img src="{{ asset('assets/images/default-user.png') }}" alt="Profil" class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
+              {% endif %}
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
                 style="min-width:200px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
-                <li>
-                    <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
-                        Connecté en tant que<br>
-                        <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
-                    </span>
-                </li>
-                <li><hr class="dropdown-divider my-1"></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}" style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-user" style="width:18px; color:#223f91;"></i><span>Mon profil</span>
-                </a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}" style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i><span>Mes préférences</span>
-                </a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}" style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-compass" style="width:18px; color:#223f91;"></i><span>Mes activités</span>
-                </a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i><span>Mes réservations</span>
-                </a></li>
-                <li><hr class="dropdown-divider my-1"></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
-                       onclick="confirmLogoutShow(event)" style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-sign-out" style="width:18px;"></i><span>Déconnexion</span>
-                </a></li>
+              <li>
+                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                  Connecté en tant que<br>
+                  <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                </span>
+              </li>
+              <li><hr class="dropdown-divider my-1"></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}" style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-user" style="width:18px; color:#223f91;"></i><span>Mon profil</span>
+              </a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}" style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i><span>Mes préférences</span>
+              </a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}" style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-compass" style="width:18px; color:#223f91;"></i><span>Mes activités</span>
+              </a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i><span>Mes réservations</span>
+              </a></li>
+              <li><hr class="dropdown-divider my-1"></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                     onclick="confirmLogoutShow(event)" style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sign-out" style="width:18px;"></i><span>Déconnexion</span>
+              </a></li>
             </ul>
-        </li>
+          </li>
         {% else %}
-        <li class="nav-item ms-2">
+          <li class="nav-item ms-2">
             <a href="{{ path('app_register') }}" class="nav-link">
-                <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+              <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
             </a>
-        </li>
+          </li>
         {% endif %}
       </ul>
     </div>
@@ -170,109 +169,126 @@
         </div>
       </div>
     </div>
+
     <div class="row mt-4">
-  <div class="col-lg-12">
-    <div class="reviews-form-card" id="form-avis">
-      <div class="reviews-header">
-        <div class="reviews-title">
-          ✍️ Laisser un avis
+      <div class="col-lg-12">
+        <div class="reviews-form-card" id="form-avis">
+          <div class="reviews-header">
+            <div class="reviews-title">
+              {{ isEditMode ? '✏️ Modifier mon avis' : '✍️ Laisser un avis' }}
+            </div>
+          </div>
+
+          {% if userAvis and not isEditMode %}
+            <div class="review-hint-box">
+              Vous avez déjà publié un avis pour cette activité.
+              <a href="{{ path('activite_show', {'id': activite.id, 'editAvis': 1}) }}#form-avis">Cliquer ici pour le modifier</a>.
+            </div>
+          {% endif %}
+
+          {{ form_start(avisForm) }}
+
+          <div class="mb-3">
+            <label class="review-form-label">Votre note</label>
+
+            <div class="star-rating-input">
+              {% for child in avisForm.note|reverse %}
+                {{ form_widget(child, {'attr': {'class': 'star-input'}}) }}
+                <label for="{{ child.vars.id }}" class="star-label">★</label>
+              {% endfor %}
+            </div>
+
+            <div class="form-error">
+              {{ form_errors(avisForm.note) }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(avisForm.commentaire, null, {'label_attr': {'class': 'review-form-label'}}) }}
+            {{ form_widget(avisForm.commentaire, {'attr': {'class': 'review-textarea'}}) }}
+            <div class="form-error">
+              {{ form_errors(avisForm.commentaire) }}
+            </div>
+          </div>
+
+          <button type="submit" class="submit-review-btn">
+            {{ isEditMode ? 'Mettre à jour mon avis' : 'Publier mon avis' }}
+          </button>
+
+          {{ form_end(avisForm) }}
         </div>
       </div>
-
-      {{ form_start(avisForm) }}
-
-      <div class="mb-3">
-  <label class="review-form-label">Votre note</label>
-
-  <div class="star-rating-input">
-    {% for child in avisForm.note|reverse %}
-      {{ form_widget(child, {'attr': {'class': 'star-input'}}) }}
-      <label for="{{ child.vars.id }}" class="star-label">★</label>
-    {% endfor %}
-  </div>
-
-  <div class="form-error">
-    {{ form_errors(avisForm.note) }}
-  </div>
-</div>
-
-<div class="mb-3">
-  {{ form_label(avisForm.commentaire, null, {'label_attr': {'class': 'review-form-label'}}) }}
-  {{ form_widget(avisForm.commentaire, {'attr': {'class': 'review-textarea'}}) }}
-  <div class="form-error">
-    {{ form_errors(avisForm.commentaire) }}
-  </div>
-</div>
-
-<button type="submit" class="submit-review-btn">
-  {{ userAvis ? 'Mettre à jour mon avis' : 'Publier mon avis' }}
-</button>
-
-{{ form_end(avisForm) }}
     </div>
-  </div>
-</div>
+
     <div class="row mt-4">
       <div class="col-lg-12">
         <div class="reviews-list-card">
           <div class="reviews-header">
-  <div class="reviews-title">
-    ⭐ Avis des voyageurs
-  </div>
+            <div class="reviews-title">
+              ⭐ Avis des voyageurs
+            </div>
 
-  <div class="reviews-count">
-    {{ totalAvis }} avis
-  </div>
-</div>
+            <div class="reviews-count">
+              {{ totalAvis }} avis
+            </div>
+          </div>
 
           {% if aviss|length > 0 %}
             <div class="reviews-list">
               {% for avis in aviss %}
-                <div class="review-item">
+                <div class="review-item {% if app.session.get('user_id') and avis.personne and avis.personne.id == app.session.get('user_id') %}own-review{% endif %}">
                   <div class="review-top">
-  <div class="review-user">
-    <img src="{{ asset('assets/images/default-user.png') }}"
-         alt="Utilisateur"
-         class="review-user-avatar">
+                    <div class="review-user">
+                      {% if avis.personne and avis.personne.profile_photo %}
+                        <img src="{{ asset(avis.personne.profile_photo) }}"
+                             alt="Photo de profil"
+                             class="review-user-avatar">
+                      {% else %}
+                        <img src="{{ asset('assets/images/default-user.png') }}"
+                             alt="Photo de profil"
+                             class="review-user-avatar">
+                      {% endif %}
 
-    <div class="review-user-info">
-      <h5 class="mb-1">
-        {{ avis.personne ? avis.personne.prenom ~ ' ' ~ avis.personne.nom : 'Utilisateur' }}
-      </h5>
-      <span class="review-date">
-        {{ avis.dateAvis ? avis.dateAvis|date('d/m/Y H:i') : '' }}
-      </span>
-    </div>
-  </div>
+                      <div class="review-user-info">
+                        <h5 class="mb-1">
+                          {{ avis.personne ? avis.personne.prenom ~ ' ' ~ avis.personne.nom : 'Utilisateur' }}
+                        </h5>
+                        <span class="review-date">
+                          {{ avis.dateAvis ? avis.dateAvis|date('d/m/Y H:i') : '' }}
+                        </span>
+                      </div>
+                    </div>
 
-  <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="review-right">
+                      {% if app.session.get('user_id') and avis.personne and avis.personne.id == app.session.get('user_id') %}
+                        <div class="review-actions">
+                          <a href="{{ path('activite_show', {'id': activite.id, 'editAvis': 1}) }}#form-avis"
+                             class="review-action-btn edit-btn"
+                             title="Modifier mon avis">
+                            <i class="fa fa-pencil"></i>
+                          </a>
 
-    <div class="review-stars-inline">
-      {% for i in 1..5 %}
-        {% if i <= avis.note %}
-          <span class="fa fa-star checked-star"></span>
-        {% else %}
-          <span class="fa fa-star empty-star"></span>
-        {% endif %}
-      {% endfor %}
-    </div>
+                          <button type="button"
+                                  class="review-action-btn delete-btn"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#deleteAvisModal{{ avis.id }}"
+                                  title="Supprimer mon avis">
+                            <i class="fa fa-trash"></i>
+                          </button>
+                        </div>
+                      {% endif %}
 
-   
-    {% if app.session.get('user_id') and avis.personne and avis.personne.id == app.session.get('user_id') %}
-
-  <a href="#form-avis" title="Modifier" style="color:#223f91;">
-    <i class="fa fa-edit"></i>
-  </a>
-
-  <button class="btn btn-sm btn-danger"
-          data-bs-toggle="modal"
-          data-bs-target="#deleteAvisModal{{ avis.id }}">
-    <i class="fa fa-trash"></i>
-  </button>
-
-{% endif %}
-  </div>
-</div>
+                      <div class="review-stars-inline">
+                        {% for i in 1..5 %}
+                          {% if i <= avis.note %}
+                            <span class="fa fa-star checked-star"></span>
+                          {% else %}
+                            <span class="fa fa-star empty-star"></span>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
 
                   <p class="review-comment mb-0">{{ avis.commentaire }}</p>
                 </div>
@@ -344,45 +360,45 @@
     </div>
   </div>
 </footer>
+
 {% for avis in aviss %}
-<div class="modal fade" id="deleteAvisModal{{ avis.id }}" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+  <div class="modal fade" id="deleteAvisModal{{ avis.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
 
-      <div class="modal-header">
-        <h5 class="modal-title text-danger">
-          <i class="fa fa-exclamation-circle me-1"></i> Suppression de l'avis
-        </h5>
-        <button type="button" class="custom-modal-close" data-bs-dismiss="modal" aria-label="Fermer">
-  &times;
-</button>
-      </div>
+        <div class="modal-header">
+          <h5 class="modal-title text-danger">
+            <i class="fa fa-exclamation-circle me-1"></i> Suppression de l'avis
+          </h5>
+          <button type="button" class="custom-modal-close" data-bs-dismiss="modal" aria-label="Fermer">&times;</button>
+        </div>
 
-      <div class="modal-body text-center">
-        <i class="fa fa-trash display-6 text-danger mb-3"></i>
-        <h5>Voulez-vous vraiment supprimer cet avis ?</h5>
-        <p class="text-muted mb-0">
-          Cette action est <strong>irréversible</strong>.
-        </p>
-      </div>
+        <div class="modal-body text-center">
+          <i class="fa fa-trash display-6 text-danger mb-3"></i>
+          <h5>Voulez-vous vraiment supprimer cet avis ?</h5>
+          <p class="text-muted mb-0">
+            Cette action est <strong>irréversible</strong>.
+          </p>
+        </div>
 
-      <div class="modal-footer justify-content-center">
-        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-          Annuler
-        </button>
-
-        <form method="post" action="{{ path('avis_delete_front', {'id': avis.id}) }}">
-          <input type="hidden" name="_token" value="{{ csrf_token('delete_avis_front_' ~ avis.id) }}">
-          <button class="btn btn-danger">
-            <i class="fa fa-trash me-1"></i> Oui, supprimer
+        <div class="modal-footer justify-content-center">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Annuler
           </button>
-        </form>
-      </div>
 
+          <form method="post" action="{{ path('avis_delete_front', {'id': avis.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_avis_front_' ~ avis.id) }}">
+            <button class="btn btn-danger">
+              <i class="fa fa-trash me-1"></i> Oui, supprimer
+            </button>
+          </form>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
 {% endfor %}
+
 <style>
   .custom-modal-close {
     background: transparent;
@@ -405,9 +421,7 @@
     outline: none;
     box-shadow: none;
   }
-</style>
 
-<style>
   .activity-hero {
     height: 70vh;
     min-height: 420px;
@@ -555,90 +569,106 @@
     background: #2563eb;
     border-radius: 999px;
   }
+
   .reviews-form-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  padding: 24px;
-  margin-bottom: 22px;
-}
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 24px;
+    margin-bottom: 22px;
+  }
 
-.review-form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  color: #223f91;
-  margin-bottom: 10px;
-}
+  .review-hint-box {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(34, 63, 145, 0.08);
+    color: #223047;
+    font-size: 14px;
+  }
 
-.review-textarea {
-  width: 100%;
-  border: 1px solid #dde5ef;
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 14px;
-  color: #223047;
-  resize: vertical;
-  min-height: 130px;
-  background: #f8f9fb;
-  outline: none;
-}
+  .review-hint-box a {
+    color: #223f91;
+    font-weight: 700;
+    text-decoration: none;
+  }
 
-.review-textarea:focus {
-  border-color: #223f91;
-  background: #fff;
-}
+  .review-form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #223f91;
+    margin-bottom: 10px;
+  }
 
-.submit-review-btn {
-  background: #223f91;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
+  .review-textarea {
+    width: 100%;
+    border: 1px solid #dde5ef;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #223047;
+    resize: vertical;
+    min-height: 130px;
+    background: #f8f9fb;
+    outline: none;
+  }
 
-.submit-review-btn:hover {
-  background: #1a3278;
-}
+  .review-textarea:focus {
+    border-color: #223f91;
+    background: #fff;
+  }
 
-.form-error {
-  color: #dc3545;
-  font-size: 13px;
-  margin-top: 6px;
-}
+  .submit-review-btn {
+    background: #223f91;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
 
-.star-rating-input {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  gap: 6px;
-}
+  .submit-review-btn:hover {
+    background: #1a3278;
+  }
 
-.star-input {
-  display: none;
-}
+  .form-error {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 6px;
+  }
 
-.star-label {
-  font-size: 34px;
-  color: #d1d5db;
-  cursor: pointer;
-  line-height: 1;
-  transition: 0.2s ease;
-}
+  .star-rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 6px;
+  }
 
-.star-label:hover,
-.star-label:hover ~ .star-label {
-  color: #2563eb;
-}
+  .star-input {
+    display: none;
+  }
 
-.star-input:checked + .star-label,
-.star-input:checked + .star-label ~ .star-label {
-  color: #2563eb;
-}
+  .star-label {
+    font-size: 34px;
+    color: #d1d5db;
+    cursor: pointer;
+    line-height: 1;
+    transition: 0.2s ease;
+  }
+
+  .star-label:hover,
+  .star-label:hover ~ .star-label {
+    color: #2563eb;
+  }
+
+  .star-input:checked + .star-label,
+  .star-input:checked + .star-label ~ .star-label {
+    color: #2563eb;
+  }
 
   .reviews-list-card {
     padding: 22px;
@@ -649,42 +679,50 @@
     flex-direction: column;
     gap: 12px;
   }
+
   .reviews-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
 
-.reviews-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #223047;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  .reviews-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #223047;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.reviews-count {
-  font-size: 13px;
-  font-weight: 600;
-  color: #6b7280;
-  background: #f1f5f9;
-  padding: 6px 12px;
-  border-radius: 999px;
-}
+  .reviews-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
 
   .review-item {
+    position: relative;
     background: #f8f9fb;
     border: 1px solid #eef1f5;
-    border-radius: 14px;
-    padding: 16px 18px;
+    border-radius: 16px;
+    padding: 18px 20px;
+    transition: 0.25s ease;
+  }
+
+  .review-item:hover {
+    border-color: #dbe4f0;
+    box-shadow: 0 10px 24px rgba(34, 63, 145, 0.08);
   }
 
   .review-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 14px;
     margin-bottom: 10px;
   }
@@ -696,8 +734,8 @@
   }
 
   .review-user-avatar {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
@@ -716,10 +754,89 @@
     font-size: 12px;
   }
 
+  .review-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 120px;
+  min-height: 44px;
+}
+
+.review-stars-inline {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: transform 0.22s ease;
+}
+
+.review-actions {
+  position: absolute;
+  top: -10px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.own-review:hover .review-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.own-review:hover .review-stars-inline {
+  transform: translateY(18px);
+}
+  .review-action-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+    padding: 0;
+  }
+
+  .review-action-btn i {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .edit-btn {
+    background: rgba(34, 63, 145, 0.10);
+    color: #223f91;
+  }
+
+  .edit-btn:hover {
+    background: #223f91;
+    color: #fff;
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.10);
+    color: #dc3545;
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: #fff;
+  }
+
   .review-stars-inline {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
     font-size: 14px;
     flex-shrink: 0;
   }
@@ -762,46 +879,39 @@
       flex-direction: column;
       align-items: flex-start;
     }
+
+    .review-right {
+      width: 100%;
+      align-items: flex-start;
+    }
+
+    .review-actions {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
   }
 </style>
-<script>
-		function confirmLogoutHome(e) {
-			e.preventDefault();
-			Swal.fire({
-				title: 'Déconnexion',
-				text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
-				icon: 'question',
-				showCancelButton: true,
-				confirmButtonColor: '#223f91',
-				cancelButtonColor: '#6c757d',
-				confirmButtonText: 'Oui, me déconnecter',
-				cancelButtonText: 'Annuler'
-			}).then((result) => {
-				if (result.isConfirmed) {
-					document.getElementById('logoutFormHome').submit();
-				}
-			});
-		}
-		</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <form id="logoutFormShow" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function confirmLogoutShow(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Déconnexion',
-            text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#223f91',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Oui, me déconnecter',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) document.getElementById('logoutFormShow').submit();
-        });
-    }
+  function confirmLogoutShow(e) {
+    e.preventDefault();
+    Swal.fire({
+      title: 'Déconnexion',
+      text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#223f91',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Oui, me déconnecter',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) document.getElementById('logoutFormShow').submit();
+    });
+  }
 </script>
 {% endblock %}

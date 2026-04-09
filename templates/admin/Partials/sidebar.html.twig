@@ -19,7 +19,7 @@
           <ul class="menu-inner py-1">
 
             <!-- Dashboards -->
-            <li class="menu-item {% if app.request.get('_route') starts with 'admin_user' or app.request.get('_route') starts with 'analytics' or app.request.get('_route') starts with 'activite' %}active open{% endif %}">
+            <li class="menu-item {% if app.request.get('_route') starts with 'admin_user' or app.request.get('_route') starts with 'analytics' or app.request.get('_route') starts with 'activite' or app.request.get('_route') starts with 'admin_destination' %}active open{% endif %}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
         <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
@@ -31,14 +31,19 @@
                 <div class="text-truncate" data-i18n="Utilisateurs">Liste des utilisateurs</div>
             </a>
         </li>
-        <li class="menu-item {% if app.request.get('_route') == 'analytics' %}active{% endif %}">
-            <a href="index.html" class="menu-link">
-                <div class="text-truncate" data-i18n="Analytics">Analytics</div>
+        <li class="menu-item {% if app.request.get('_route') == 'admin_blog' %}active{% endif %}">
+            <a href="{{ path('admin_blog') }}" class="menu-link">
+                <div class="text-truncate" data-i18n="Analytics">Blogs</div>
             </a>
         </li>
         <li class="menu-item {% if app.request.get('_route') == 'activite_admin' %}active{% endif %}">
             <a href="{{ path('activite_admin') }}" class="menu-link">
                 <div class="text-truncate" data-i18n="Activite">Activite</div>
+            </a>
+        </li>
+        <li class="menu-item {% if app.request.get('_route') starts with 'admin_destination' %}active{% endif %}">
+            <a href="{{ path('admin_destination_index') }}" class="menu-link">
+                <div class="text-truncate" data-i18n="Destinations">Destinations</div>
             </a>
         </li>
         <li class="menu-item {% if app.request.get('_route') == 'admin_reservations_tickets' %}active{% endif %}">

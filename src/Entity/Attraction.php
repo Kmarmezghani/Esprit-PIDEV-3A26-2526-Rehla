@@ -5,39 +5,42 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Entity\Ville;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity]
+#[UniqueEntity(fields: ['nom'], message: 'Cette attraction existe déjà.')]
 class Attraction
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100)]
     private string $nom;
 
-    #[ORM\Column(type: "text")]
-    private string $description;
+    #[ORM\Column(type: "text", nullable: true)]
+    private ?string $description;
 
     #[ORM\Column(type: "string")]
     private string $type;
 
-    #[ORM\Column(type: "float")]
-    private float $prix;
+    #[ORM\Column(type: "decimal", precision: 10, scale: 2)]
+    private ?float $prix = null;
 
         #[ORM\ManyToOne(targetEntity: Ville::class, inversedBy: "attractions")]
     #[ORM\JoinColumn(name: 'ville_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Ville $ville_id;
 
-    #[ORM\Column(type: "string")]
-    private string $heure_ouverture;
+    #[ORM\Column(type: "time")]
+    private ?\DateTimeInterface $heure_ouverture = null;
 
-    #[ORM\Column(type: "string")]
-    private string $heure_fermeture;
+    #[ORM\Column(type: "time")]
+    private ?\DateTimeInterface $heure_fermeture = null;
 
-    #[ORM\Column(type: "boolean")]
-    private bool $est_ferme;
+    #[ORM\Column(type: "boolean", nullable: true)]
+    private ?bool $est_ferme;
 
     public function getId()
     {
@@ -49,83 +52,91 @@ class Attraction
         $this->id = $value;
     }
 
-    public function getNom()
+    public function getNom(): string
     {
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom(string $value): self
     {
         $this->nom = $value;
+        return $this;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(?string $value): self
     {
         $this->description = $value;
+        return $this;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function setType($value)
+    public function setType(string $value): self
     {
         $this->type = $value;
+        return $this;
     }
 
-    public function getPrix()
+    public function getPrix(): ?float
     {
         return $this->prix;
     }
 
-    public function setPrix($value)
+    public function setPrix(?float $value): self
     {
         $this->prix = $value;
+        return $this;
     }
 
-    public function getVille_id()
+    public function getVilleId(): Ville
     {
         return $this->ville_id;
     }
 
-    public function setVille_id($value)
+    public function setVilleId(Ville $value): self
     {
         $this->ville_id = $value;
+        return $this;
     }
 
-    public function getHeure_ouverture()
+    public function getHeureOuverture(): ?\DateTimeInterface
     {
         return $this->heure_ouverture;
     }
 
-    public function setHeure_ouverture($value)
+    public function setHeureOuverture(?\DateTimeInterface $value): self
     {
         $this->heure_ouverture = $value;
+        return $this;
     }
 
-    public function getHeure_fermeture()
+    public function getHeureFermeture(): ?\DateTimeInterface
     {
         return $this->heure_fermeture;
     }
 
-    public function setHeure_fermeture($value)
+    public function setHeureFermeture(?\DateTimeInterface $value): self
     {
         $this->heure_fermeture = $value;
+        return $this;
     }
 
-    public function getEst_ferme()
+    public function getEstFerme(): ?bool
     {
         return $this->est_ferme;
     }
 
-    public function setEst_ferme($value)
+    public function setEstFerme(?bool $value): self
     {
         $this->est_ferme = $value;
+        return $this;
     }
 }

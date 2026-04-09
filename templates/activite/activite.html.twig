@@ -102,72 +102,89 @@
 
 <section class="ftco-section ftco-no-pb">
    <div class="container">
+    <div class="d-flex justify-content-end mb-2">
+  <a href="{{ path('activite') }}"
+     style="font-size:13px; color:#6c757d; text-decoration:none;">
+    <i class="fa fa-compass me-1"></i> Voir toutes les activités
+  </a>
+</div>
       <div class="row">
        <div class="col-md-12">
           <div class="search-wrap-1 ftco-animate">
-             <form action="#" class="search-property-1">
-                <div class="row no-gutters">
-                   <div class="col-lg d-flex">
-                      <div class="form-group p-4 border-0">
-                         <label for="#">Destination</label>
-                         <div class="form-field">
-                           <div class="icon"><span class="fa fa-search"></span></div>
-                           <input type="text" class="form-control" placeholder="Search place">
-                       </div>
-                   </div>
-               </div>
-               <div class="col-lg d-flex">
-                  <div class="form-group p-4">
-                     <label for="#">Check-in date</label>
-                     <div class="form-field">
-                       <div class="icon"><span class="fa fa-calendar"></span></div>
-                       <input type="text" class="form-control checkin_date" placeholder="Check In Date">
-                   </div>
-               </div>
-           </div>
-           <div class="col-lg d-flex">
-              <div class="form-group p-4">
-                 <label for="#">Check-out date</label>
-                 <div class="form-field">
-                   <div class="icon"><span class="fa fa-calendar"></span></div>
-                   <input type="text" class="form-control checkout_date" placeholder="Check Out Date">
-               </div>
-           </div>
-       </div>
-       <div class="col-lg d-flex">
-          <div class="form-group p-4">
-             <label for="#">Price Limit</label>
-             <div class="form-field">
-               <div class="select-wrap">
-                <div class="icon"><span class="fa fa-chevron-down"></span></div>
-                <select name="" id="" class="form-control">
-                  <option value="">$5,000</option>
-                  <option value="">$10,000</option>
-                  <option value="">$50,000</option>
-                  <option value="">$100,000</option>
-                  <option value="">$200,000</option>
-                  <option value="">$300,000</option>
-                  <option value="">$400,000</option>
-                  <option value="">$500,000</option>
-                  <option value="">$600,000</option>
-                  <option value="">$700,000</option>
-                  <option value="">$800,000</option>
-                  <option value="">$900,000</option>
-                  <option value="">$1,000,000</option>
-                  <option value="">$2,000,000</option>
-              </select>
-          </div>
+            
+<form action="{{ path('activite') }}" method="get" class="search-property-1">
+  <div class="row no-gutters">
+    <div class="col-lg d-flex">
+      <div class="form-group p-4 border-0">
+        <label for="#">Destination</label>
+        <div class="form-field">
+          <div class="icon"><span class="fa fa-search"></span></div>
+          <input
+            type="text"
+            name="destination"
+            class="form-control"
+            placeholder="Search place"
+            value="{{ filters.destination|default('') }}">
+        </div>
       </div>
-  </div>
-</div>
-<div class="col-lg d-flex">
-  <div class="form-group d-flex w-100 border-0">
-     <div class="form-field w-100 align-items-center d-flex">
-        <input type="submit" value="Search" class="align-self-stretch form-control btn btn-primary">
     </div>
-</div>
-</div>
-</div>
+
+    <div class="col-lg d-flex">
+      <div class="form-group p-4">
+        <label for="#">Check-in date</label>
+        <div class="form-field">
+          <div class="icon"><span class="fa fa-calendar"></span></div>
+          <input
+            type="date"
+            name="date_debut"
+            class="form-control"
+            value="{{ filters.date_debut|default('') }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg d-flex">
+      <div class="form-group p-4">
+        <label for="#">Check-out date</label>
+        <div class="form-field">
+          <div class="icon"><span class="fa fa-calendar"></span></div>
+          <input
+            type="date"
+            name="date_fin"
+            class="form-control"
+            value="{{ filters.date_fin|default('') }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg d-flex">
+      <div class="form-group p-4">
+        <label for="#">Price Limit</label>
+        <div class="form-field">
+          <div class="select-wrap">
+            <div class="icon"><span class="fa fa-chevron-down"></span></div>
+            <select name="prix_max" class="form-control">
+              <option value="">No limit</option>
+              <option value="50" {{ filters.prix_max|default('') == '50' ? 'selected' : '' }}>$50</option>
+              <option value="100" {{ filters.prix_max|default('') == '100' ? 'selected' : '' }}>$100</option>
+              <option value="200" {{ filters.prix_max|default('') == '200' ? 'selected' : '' }}>$200</option>
+              <option value="300" {{ filters.prix_max|default('') == '300' ? 'selected' : '' }}>$300</option>
+              <option value="500" {{ filters.prix_max|default('') == '500' ? 'selected' : '' }}>$500</option>
+              <option value="1000" {{ filters.prix_max|default('') == '1000' ? 'selected' : '' }}>$1000</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg d-flex">
+      <div class="form-group d-flex w-100 border-0">
+        <div class="form-field w-100 align-items-center d-flex">
+          <input type="submit" value="Search" class="align-self-stretch form-control btn btn-primary">
+        </div>
+      </div>
+    </div>
+  </div>
 </form>
 </div>
 </div>

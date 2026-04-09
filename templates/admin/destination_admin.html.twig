@@ -1,0 +1,188 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block title %}Gestion des Destinations{% endblock %}
+
+{% block sidebar %}
+  {% include 'admin/partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="row g-6">
+  <div class="col-12">
+    <div class="nav-align-top">
+      <ul class="nav nav-pills mb-4 nav-fill" role="tablist">
+        <li class="nav-item">
+          <button type="button" class="nav-link {{ selectedTab == 'pays' ? 'active' : '' }}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pays">
+            <i class="bx bx-globe me-1"></i> Pays
+          </button>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="nav-link {{ selectedTab == 'ville' ? 'active' : '' }}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-ville">
+            <i class="bx bx-city me-1"></i> Villes
+          </button>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="nav-link {{ selectedTab == 'attraction' ? 'active' : '' }}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-attraction">
+            <i class="bx bx-map-pin me-1"></i> Attractions
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- PAYS TAB -->
+        <div class="tab-pane fade {{ selectedTab == 'pays' ? 'show active' : '' }}" id="navs-pays" role="tabpanel">
+          <div class="card">
+            <div class="d-flex align-items-center mb-3">
+              <h5 class="card-header mb-0">Liste des Pays</h5>
+              <a href="{{ path('admin_pays_new') }}" class="btn rounded-pill btn-primary ms-auto me-3">
+                &#43; Ajouter Pays
+              </a>
+            </div>
+            <div class="table-responsive text-nowrap">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Visites</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in pays %}
+                    <tr>
+                      <td>{{ p.nom }}</td>
+                      <td class="text-truncate" style="max-width: 300px;">{{ p.description }}</td>
+                      <td><span class="badge bg-label-info">{{ p.visitCount|default(0) }}</span></td>
+                      <td>
+                        <div class="d-flex gap-2">
+                          <a href="{{ path('admin_pays_edit', {id: p.id}) }}" class="btn btn-sm btn-icon btn-outline-primary"><i class="bx bx-edit-alt"></i></a>
+                          <button class="btn btn-sm btn-icon btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePays{{ p.id }}"><i class="bx bx-trash"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr><td colspan="4" class="text-center">Aucun pays trouvé</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VILLE TAB -->
+        <div class="tab-pane fade {{ selectedTab == 'ville' ? 'show active' : '' }}" id="navs-ville" role="tabpanel">
+          <div class="card">
+            <div class="d-flex align-items-center mb-3">
+              <h5 class="card-header mb-0">Liste des Villes</h5>
+              <a href="{{ path('admin_ville_new') }}" class="btn rounded-pill btn-primary ms-auto me-3">
+                &#43; Ajouter Ville
+              </a>
+            </div>
+            <div class="table-responsive text-nowrap">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Pays</th>
+                    <th>Visites</th>
+                    <th>Coordonnées</th>
+                    <th>Type</th>
+                    <th>Saison</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for v in villes %}
+                    <tr>
+                      <td>{{ v.nom }}</td>
+                      <td>{{ v.paysId ? v.paysId.nom : 'N/A' }}</td>
+                      <td><span class="badge bg-label-info">{{ v.visitCount|default(0) }}</span></td>
+                      <td class="small">{{ v.latitude }}, {{ v.longitude }}</td>
+                      <td>{{ v.typeTourisme }}</td>
+                      <td>{{ v.saison }}</td>
+                      <td>
+                        <div class="d-flex gap-2">
+                          <a href="{{ path('admin_ville_edit', {id: v.id}) }}" class="btn btn-sm btn-icon btn-outline-primary"><i class="bx bx-edit-alt"></i></a>
+                          <button class="btn btn-sm btn-icon btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteVille{{ v.id }}"><i class="bx bx-trash"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ATTRACTION TAB -->
+        <div class="tab-pane fade {{ selectedTab == 'attraction' ? 'show active' : '' }}" id="navs-attraction" role="tabpanel">
+          <div class="card">
+            <div class="d-flex align-items-center mb-3">
+              <h5 class="card-header mb-0">Liste des Attractions</h5>
+              <a href="{{ path('admin_attraction_new') }}" class="btn rounded-pill btn-primary ms-auto me-3">
+                &#43; Ajouter Attraction
+              </a>
+            </div>
+            <div class="table-responsive text-nowrap">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Ville</th>
+                    <th>Type</th>
+                    <th>Prix</th>
+                    <th>Horaires</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for a in attractions %}
+                    <tr>
+                      <td>{{ a.nom }}</td>
+                      <td>{{ a.villeId ? a.villeId.nom : 'N/A' }}</td>
+                      <td><span class="badge bg-label-secondary">{{ a.type }}</span></td>
+                      <td>{{ a.prix }} DT</td>
+                      <td class="small">
+                        {{ a.heureOuverture ? a.heureOuverture|date('H:i') : '--' }} - {{ a.heureFermeture ? a.heureFermeture|date('H:i') : '--' }}
+                        {% if a.estFerme %}<span class="text-danger">(Fermé)</span>{% endif %}
+                      </td>
+                      <td>
+                        <div class="d-flex gap-2">
+                          <a href="{{ path('admin_attraction_edit', {id: a.id}) }}" class="btn btn-sm btn-icon btn-outline-primary"><i class="bx bx-edit-alt"></i></a>
+                          <button class="btn btn-sm btn-icon btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAttraction{{ a.id }}"><i class="bx bx-trash"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modals de suppression #}
+{% for p in pays %}
+  {{ include('admin/partials/delete_modal.html.twig', {id: p.id, entity: 'Pays', path: path('admin_pays_delete', {id: p.id})}, with_context = false) }}
+{% endfor %}
+{% for v in villes %}
+  {{ include('admin/partials/delete_modal.html.twig', {id: v.id, entity: 'Ville', path: path('admin_ville_delete', {id: v.id})}, with_context = false) }}
+{% endfor %}
+{% for a in attractions %}
+  {{ include('admin/partials/delete_modal.html.twig', {id: a.id, entity: 'Attraction', path: path('admin_attraction_delete', {id: a.id})}, with_context = false) }}
+{% endfor %}
+
+<style>
+  .btn-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
+  .btn-primary { background-color: #223f91; border-color: #223f91; }
+  .btn-primary:hover { background-color: #1a3170; border-color: #1a3170; }
+</style>
+{% endblock %}

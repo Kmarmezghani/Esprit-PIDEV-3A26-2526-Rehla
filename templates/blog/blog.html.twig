@@ -5,23 +5,234 @@
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
    <div class="container">
-     <a class="navbar-brand" href="index.html">Rehla<span>Travel Agency</span></a>
+ <a class="navbar-brand" href="index.html">
+    
+    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+    
+    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+</a>
      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
        <span class="oi oi-menu"></span> Menu
      </button>
 
-     <div class="collapse navbar-collapse" id="ftco-nav">
+      <div class="collapse navbar-collapse" id="ftco-nav">
+        <div class="search-wrapper mr-4">
+          <input type="checkbox" id="searchToggle">
+          
+          <div class="search-box">
+            
+            <form method="GET" action="{{ path('blog') }}">
+                      <input type="text"
+              name="search"
+              onkeyup="this.form.submit()"
+              class="search-input"
+              placeholder="Rechercher..." />
+            </form>
+            
+            <label for="searchToggle" class="search-icon">
+              <svg viewBox="0 0 512 512">
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 
+                12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 
+                0L330.7 376c-34.4 25.2-76.8 
+                40-122.7 40C93.1 416 0 322.9 
+                0 208S93.1 0 208 0S416 93.1 
+                416 208zM208 352a144 144 0 1 
+                0 0-288 144 144 0 1 0 0 288z"/>
+              </svg>
+            </label>
+
+          </div>
+        </div>
+
        <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-				<a href="{{ path('home') }}" class="nav-link">Home</a>
-				</li>
-         <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
-         <li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
-         <li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
-       	<li class="nav-item active">
-				<a href="{{ path('blog') }}" class="nav-link">Blog</a>
-				</li>
-         <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
+      <li class="nav-item d-flex align-items-center mr-3">
+
+        <!-- Icône Filtre -->
+   <div class="dropdown mr-3">
+        <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
+                type="button" data-toggle="dropdown">
+          <svg width="20" height="20" viewBox="0 0 512 512">
+            <path fill="black" d="M3.9 54.7C10.5 39.5 25.5 32 41.6 32H470.4c16.1 
+            0 31.1 7.5 37.7 22.7s3.5 33.1-7.9 
+            45.3L320 288.3V432c0 12.1-6.8 23.2-17.7 
+            28.6s-23.8 4.6-33.9-2.1l-64-48C195.8 
+            404.7 192 398.6 192 392V288.3L11.8 
+            100C.4 87.8-2.7 69.9 3.9 54.7z"/>
+          </svg>
+        </button>
+
+        <!-- MENU -->
+        <div class="dropdown-menu modern-dropdown shadow-lg">
+
+          <!-- Likes -->
+          <a class="dropdown-item" href="{{ path('blog', {likes: 2}) }}">
+            ❤️ Plus de 1000 likes
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <!-- Date -->
+          <a class="dropdown-item" href="{{ path('blog', {date: 'today'}) }}">
+            📅 Aujourd’hui
+          </a>
+
+          <a class="dropdown-item" href="{{ path('blog', {date: 'week'}) }}">
+            📆 Cette semaine
+          </a>
+
+          <a class="dropdown-item" href="{{ path('blog', {date: 'month'}) }}">
+            🗓️ Ce mois
+          </a>
+          
+          <div class="dropdown-divider"></div>
+
+        <form method="GET" action="{{ path('blog') }}" class="px-3 py-2">
+          <input type="date"
+                name="date_exact"
+                class="form-control mb-2"
+                onchange="this.form.submit()">
+        </form>
+
+          <div class="dropdown-divider"></div>
+
+          <!-- Reset -->
+          <a class="dropdown-item text-danger" href="{{ path('blog') }}">
+            ❌ Réinitialiser
+          </a>
+
+        </div>
+      </div>
+
+
+      <div class="dropdown mr-3">
+
+        <!-- Icône TRI -->
+        <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
+                type="button" data-toggle="dropdown">
+          <svg width="20" height="20" viewBox="0 0 512 512">
+            <path fill="black" d="M160 64c0-17.7-14.3-32-32-32S96 46.3 
+            96 64V346.7L73.4 324.1c-12.5-12.5-32.8-12.5-45.3 
+            0s-12.5 32.8 0 45.3l80 80c12.5 12.5 
+            32.8 12.5 45.3 0l80-80c12.5-12.5 
+            12.5-32.8 0-45.3s-32.8-12.5-45.3 
+            0L160 346.7V64zm192 384c17.7 0 32-14.3 
+            32-32V165.3l22.6 22.6c12.5 12.5 
+            32.8 12.5 45.3 0s12.5-32.8 
+            0-45.3l-80-80c-12.5-12.5-32.8-12.5-45.3 
+            0l-80 80c-12.5 12.5-12.5 32.8 
+            0 45.3s32.8 12.5 45.3 
+            0L320 165.3V416c0 17.7 14.3 32 32 32z"/>
+          </svg>
+        </button>
+
+        <!-- MENU -->
+        <div class="dropdown-menu modern-dropdown shadow-lg">
+
+          <!-- TYPE TRI -->
+          <a class="dropdown-item sort-option" data-sort="likes">
+            <i class="fa fa-heart text-danger"></i> Par likes
+          </a>
+
+          <a class="dropdown-item sort-option" data-sort="date">
+            📅 Par date
+          </a>
+
+          <a class="dropdown-item sort-option" data-sort="author">
+            👤 Par auteur
+          </a>
+
+          <div class="dropdown-divider"></div>
+
+          <a class="dropdown-item order-option" data-order="asc">
+            ⬆️ Croissant
+          </a>
+
+          <a class="dropdown-item order-option" data-order="desc">
+            ⬇️ Décroissant
+          </a>
+
+        </div>
+      </div>
+
+    <li class="nav-item "><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+    <li class="nav-item active"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+    {% if app.session.get('user_id') %}
+    {# ── Utilisateur connecté ── #}
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+           href="#" id="userDropdown" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {% if app.session.get('user_photo') %}
+                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% else %}
+                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+            <li>
+                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                    Connecté en tant que<br>
+                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                <span>Mon profil</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                <span>Mes préférences</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+                <span>Mes activités</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                <span>Mes réservations</span>
+            </a></li>
+            {% if app.session.get('user_role') == 'ADMIN' %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-cogs" style="width:18px;"></i>
+                <span>Administration</span>
+            </a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                   onclick="confirmLogoutHome(event)"
+                   style="padding:8px 16px; font-size:14px;">
+                    <i class="fa fa-sign-out" style="width:18px;"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+    {% else %}
+    {# ── Non connecté ── #}
+    <li class="nav-item ms-2">
+        <a href="{{ path('app_register') }}" class="nav-link">
+            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+        </a>
+    </li>
+    {% endif %}
+
        </ul>
      </div>
    </div>
@@ -35,6 +246,8 @@
 <div class="col-md-9 ftco-animate pb-5 text-center">
 <p class="breadcrumbs"><span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span> <span>Posts <i class="fa fa-chevron-right"></i></span></p>
 <h1 class="mb-0 bread">Nos Publications</h1>
+
+
 </div>
 </div>
 </div>
@@ -50,6 +263,7 @@
 
 {{ form_start(form, {
     attr: {
+        id: 'postForm',
         enctype: 'multipart/form-data',
         novalidate: 'novalidate'
     }
@@ -99,14 +313,25 @@
     <div class="d-flex align-items-center mb-2">
 
       <!-- IMAGE PROFIL -->
-      <img src="{{ post.personne_id.profile_photo ? asset(post.personne_id.profile_photo) : asset('assets/img/bg_1.jpg') }}"
-           class="profile-img mr-2">
+    <img src="{{ post.personne_id and post.personne_id.profile_photo 
+    ? asset(post.personne_id.profile_photo) 
+    : asset('assets/img/bg_1.jpg') }}"
+     class="profile-img mr-2">
+
+
 
       <div>
         <!-- NOM -->
-        <strong>
+            <strong>
+        {% if post.personne_id %}
           {{ post.personne_id.nom }} {{ post.personne_id.prenom }}
-        </strong><br>
+        {% else %}
+          Utilisateur inconnu
+        {% endif %}
+      </strong>
+
+        
+        <br>
 
         <!-- DATE -->
        <small class="text-muted">
@@ -163,9 +388,15 @@
 
       <div class="d-flex">
 
-        <div class="mr-3 post-action">
-          <i class="fa fa-heart"></i> <span>0</span>
-        </div>
+       {% set liked = post.likess|filter(l => l.personne_id.id == 4)|length > 0 %}
+
+          <div class="mr-3 post-action like-btn"
+              data-id="{{ post.id }}"
+              data-liked="{{ liked ? 1 : 0 }}">
+
+            <i class="fa fa-heart {{ liked ? 'text-danger' : '' }}"></i>
+            <span>{{ post.likess|length }}</span>
+          </div>
 
         <div class="mr-3 post-action open-comment" data-id="{{ post.id }}">
           <i class="fa fa-comment"></i>  {{ post.commentaires|length }}
@@ -451,6 +682,102 @@ if (closeBtn) {
 overlay.addEventListener("click", closePopup);
 
 
+{# ----------------------------------------- pop up alerte add comment ------------------------------------------ #}
+document.addEventListener("DOMContentLoaded", function () {
+
+    const commentForm = document.getElementById("commentForm");
+    const commentInput = document.getElementById("comment_input");
+    if (!commentForm || !commentInput) return;
+
+    commentForm.addEventListener("submit", function (e) {
+        const value = (commentInput.value || "").trim();
+
+        // ❌ champ vide
+        if (value === "") {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'error',
+                text: 'Le commentaire est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
+
+            return;
+        }
+
+        // ⚠️ trop court
+        if (value.length < 3) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+
+            return;
+        }
+        if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
+
+        // ✅ succès
+        Swal.fire({
+            icon: 'success',
+            text: 'Commentaire ajouté avec succès',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#ecfdf5',
+            color: '#065f46',
+            iconColor: '#10b981',
+            customClass: {
+                popup: 'green-toast'
+            }
+        });
+
+    });
+
+});
+
+
+
+
+
 {# --------------------------pop up edit post------------------------------- #}
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -657,7 +984,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const form = document.querySelector("form");
+    const form = document.getElementById("postForm");
     const contenu = document.getElementById("post_contenu");
 
     if (!form || !contenu) return;
@@ -667,7 +994,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const value = (contenu.value || "").trim();
 
        if (value === "") {
-    e.preventDefault();
 
     Swal.fire({
         icon: 'error',
@@ -798,98 +1124,6 @@ function confirmDelete(e, element) {
 }
 
 
-{# ------------ pop up alerte add comment ---------- #}
-document.addEventListener("DOMContentLoaded", function () {
-
-    const commentForm = document.getElementById("commentForm");
-    const commentInput = document.getElementById("comment_input");
-    if (!commentForm || !commentInput) return;
-
-    commentForm.addEventListener("submit", function (e) {
-
-        const value = (commentInput.value || "").trim();
-
-        // ❌ champ vide
-        if (value === "") {
-            e.preventDefault();
-
-            Swal.fire({
-                icon: 'error',
-                text: 'Le commentaire est obligatoire',
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2500,
-                background: '#fff1f2',
-                color: '#991b1b',
-                iconColor: '#ef4444',
-                customClass: {
-                    popup: 'red-toast'
-                }
-            });
-
-            return;
-        }
-
-        // ⚠️ trop court
-        if (value.length < 3) {
-            e.preventDefault();
-
-            Swal.fire({
-                icon: 'warning',
-                text: 'Minimum 3 caractères',
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2500,
-                background: '#fff7ed',
-                color: '#9a3412',
-                iconColor: '#f59e0b',
-                customClass: {
-                    popup: 'orange-toast'
-                }
-            });
-
-            return;
-        }
-        if (!/^[a-zA-Z0-9]/.test(value)) {
-        e.preventDefault();
-        Swal.fire({
-            icon: 'error',
-            text: 'Le contenu doit commencer par une lettre ou un chiffre',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 2500,
-            background: '#fff1f2',
-            color: '#991b1b',
-            iconColor: '#ef4444',
-            customClass: {
-                    popup: 'red-toast'
-                }
-          });
-          return;
-          }
-
-        // ✅ succès
-        Swal.fire({
-            icon: 'success',
-            text: 'Commentaire ajouté avec succès',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 2500,
-            background: '#ecfdf5',
-            color: '#065f46',
-            iconColor: '#10b981',
-            customClass: {
-                popup: 'green-toast'
-            }
-        });
-
-    });
-
-});
 
 {# ------------------------------pop up delete comment--------------------------------- #}
 document.querySelectorAll(".delete-comment").forEach(icon => {
@@ -1088,6 +1322,77 @@ document.addEventListener("keypress", function (e) {
         e.preventDefault();
         e.target.closest(".comment-box").querySelector(".save-edit").click();
     }
+});
+
+{# -------------------------------------------------add like--------------------------------------------------------- #}
+document.querySelectorAll('.like-btn').forEach(btn => {
+
+  const icon = btn.querySelector('i');
+  const count = btn.querySelector('span');
+
+  // état initial
+  if (btn.dataset.liked === "1") {
+    icon.classList.add('text-danger');
+  }
+
+  btn.addEventListener('click', () => {
+
+    const postId = btn.dataset.id;
+
+    fetch(`/post/like/${postId}`, {
+      method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+
+      if (data.liked) {
+        icon.classList.add('text-danger');
+      } else {
+        icon.classList.remove('text-danger');
+      }
+
+      count.textContent = data.count;
+    });
+
+  });
+
+});
+
+{# ------------------------pop up tri----------------------------------- #}
+let selectedSort = null;
+let selectedOrder = null;
+
+document.querySelectorAll(".sort-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedSort = btn.dataset.sort;
+  });
+});
+
+document.querySelectorAll(".order-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedOrder = btn.dataset.order;
+
+    if (!selectedSort) {
+      Swal.fire({
+                icon: 'warning',
+                text: 'Choisissez d’abord le type de tri',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+      return;
+    }
+
+    // ✅ redirection correcte
+    window.location.href = `/blog?sort=${selectedSort}&order=${selectedOrder}`;
+  });
 });
 </script>
 
@@ -1426,10 +1731,11 @@ input.form-control:focus {
   color: #f39c12;
 }
 
-/* divider stylé */
 .dropdown-divider {
   margin: 8px 0;
-  opacity: 0.2;
+  height: 1px;
+  background-color: #007bff;
+  opacity: 1;
 }
 .sidebar-sticky {
   position: sticky;
@@ -1812,6 +2118,114 @@ input.form-control:focus {
   border-radius: 6px;
   cursor: pointer;
 }
+{# ---------------------------------search---------------------------------------- #}
+/* SEARCH BAR MODERNE */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* cacher checkbox */
+#searchToggle {
+  display: none;
+}
+
+.search-box {
+  position: relative;
+  height: 45px;
+  width: 45px;
+  border-radius: 50px;
+
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  align-items: center;
+
+  transition: 0.4s ease;
+  overflow: hidden;
+  cursor: text;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* INPUT */
+.search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #333;
+
+  width: 0;
+  opacity: 0;
+
+  transition: 0.4s ease;
+  font-size: 14px;
+
+  z-index: 2;
+  pointer-events: none; 
+}
+
+/* ICON */
+.search-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  cursor: pointer;
+  z-index: 3;
+}
+
+.search-icon svg {
+  width: 18px;
+  height: 18px;
+  fill:  #333;;
+  display: block;
+}
+
+/* HOVER ICON */
+.search-icon:hover svg {
+  transform: scale(1.2);
+}
+
+/* ========================= */
+/* 🔥 ETAT OUVERT */
+/* ========================= */
+
+#searchToggle:checked ~ .search-box {
+  width: 220px;
+  padding-left: 10px;
+}
+
+/* input devient utilisable */
+#searchToggle:checked ~ .search-box .search-input {
+  width: 150px;
+  opacity: 1;
+  margin-left: 10px;
+  pointer-events: auto; 
+}
+
+/* icône va à droite */
+#searchToggle:checked ~ .search-box .search-icon {
+  left: auto;
+  right: 10px;
+  transform: translateY(-50%);
+}
+
+/* glow effect */
+.search-box:hover {
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+
+
+
 </style>
 
 {% endblock %}

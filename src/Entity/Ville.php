@@ -23,7 +23,7 @@ class Ville
     #[ORM\Column(type: "string", length: 100)]
     private string $nom;
 
-        #[ORM\ManyToOne(targetEntity: Pays::class, inversedBy: "villes")]
+    #[ORM\ManyToOne(targetEntity: Pays::class, inversedBy: "villes")]
     #[ORM\JoinColumn(name: 'pays_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Pays $pays_id;
 

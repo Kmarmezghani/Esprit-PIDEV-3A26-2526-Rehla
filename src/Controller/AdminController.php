@@ -4,9 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Activite;
 use App\Entity\Avis;
+use App\Entity\Commentaire;
+use App\Entity\Post;
 use App\Form\ActiviteType;
 use App\Repository\ActiviteRepository;
 use App\Repository\AvisRepository;
+use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,39 +28,76 @@ final class AdminController extends AbstractController
             'controller_name' => 'AdminController',
         ]);
     }
+#[Route('/admin/activite', name: 'activite_admin')]
+public function activiteList(
+    Request $request,
+    ActiviteRepository $activiteRepository,
+    AvisRepository $avisRepository
+): Response
+{
+    $tab = $request->query->get('tab', 'activite');
+    $activiteId = $request->query->get('activiteId');
 
-    #[Route('/admin/activite', name: 'activite_admin')]
-    public function activiteList(
-        Request $request,
-        ActiviteRepository $activiteRepository,
-        AvisRepository $avisRepository
-    ): Response
-    {
-        $tab = $request->query->get('tab', 'activite');
-        $activiteId = $request->query->get('activiteId');
+    $search = trim((string) $request->query->get('search', ''));
+    $sort = (string) $request->query->get('sort', 'date_debut');
+    $direction = strtolower((string) $request->query->get('direction', 'desc'));
 
-        $activites = $activiteRepository->findAll();
-
-        $aviss = [];
-        $selectedActivite = null;
-
-        if ($activiteId) {
-            $selectedActivite = $activiteRepository->find($activiteId);
-
-            if ($selectedActivite) {
-                $aviss = $avisRepository->findBy(
-    ['activite' => $selectedActivite]
-);
-            }
-        }
-
-        return $this->render('admin/activite_admin.html.twig', [
-            'activites' => $activites,
-            'aviss' => $aviss,
-            'selectedTab' => $tab,
-            'selectedActivite' => $selectedActivite,
-        ]);
+    $allowedSorts = ['nom', 'prix', 'noteMoyenne', 'date_debut', 'status'];
+    if (!in_array($sort, $allowedSorts, true)) {
+        $sort = 'date_debut';
     }
+
+    $direction = $direction === 'asc' ? 'asc' : 'desc';
+
+    $activites = $activiteRepository->searchAndSortAdmin($search, $sort, $direction);
+
+    $aviss = [];
+    $selectedActivite = null;
+
+    if ($activiteId) {
+        $selectedActivite = $activiteRepository->find($activiteId);
+
+        if ($selectedActivite) {
+            $aviss = $avisRepository->findBy(
+                ['activite' => $selectedActivite],
+                ['dateAvis' => 'DESC']
+            );
+        }
+    }
+
+    return $this->render('admin/activite_admin.html.twig', [
+        'activites' => $activites,
+        'aviss' => $aviss,
+        'selectedTab' => $tab,
+        'selectedActivite' => $selectedActivite,
+        'search' => $search,
+        'sort' => $sort,
+        'direction' => $direction,
+    ]);
+}
+#[Route('/admin/activite/search', name: 'activite_admin_search', methods: ['GET'])]
+public function activiteSearch(
+    Request $request,
+    ActiviteRepository $activiteRepository
+): Response
+{
+    $search = trim((string) $request->query->get('search', ''));
+    $sort = (string) $request->query->get('sort', 'date_debut');
+    $direction = strtolower((string) $request->query->get('direction', 'desc'));
+
+    $allowedSorts = ['nom', 'prix', 'noteMoyenne', 'date_debut', 'status'];
+    if (!in_array($sort, $allowedSorts, true)) {
+        $sort = 'date_debut';
+    }
+
+    $direction = $direction === 'asc' ? 'asc' : 'desc';
+
+    $activites = $activiteRepository->searchAndSortAdmin($search, $sort, $direction);
+
+    return $this->render('admin/_activite_rows.html.twig', [
+        'activites' => $activites,
+    ]);
+}
 
     #[Route('/admin/activite/new', name: 'activite_new')]
     public function activiteNew(
@@ -205,4 +246,35 @@ final class AdminController extends AbstractController
         'activiteId' => $activiteId,
     ]);
 }
+
+
+        #[Route('/admin/blog', name: 'admin_blog')]
+        public function blog(PostRepository $postRepository, CommentRepository $commentRepository): Response
+        {
+            return $this->render('admin/blog_admin.html.twig', [
+                'posts' => $postRepository->findAll(),
+                'comments' => $commentRepository->findAll(),
+            ]);
+        }
+
+
+        #[Route('/admin/post/{id}/delete', name: 'admin_post_delete', methods: ['POST'])]
+        public function deletePost(Post $post, EntityManagerInterface $em): Response
+        {
+            $em->remove($post);
+            $em->flush();
+
+            return $this->redirectToRoute('admin_blog');
+        }
+
+        #[Route('/admin/comment/{id}/delete', name: 'admin_comment_delete', methods: ['POST'])]
+        public function deleteComment(Commentaire $comment, EntityManagerInterface $em): Response
+        {
+            $em->remove($comment);
+            $em->flush();
+
+            return $this->redirectToRoute('admin_blog');
+        }
+
+
 }

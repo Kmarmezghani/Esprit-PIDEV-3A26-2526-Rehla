@@ -58,7 +58,37 @@
                 &#43; Ajouter
               </a>
             </div>
+            <div class="px-4 pb-3 d-flex justify-content-end">
+  <form method="get" action="{{ path('activite_admin') }}" class="d-flex gap-2 align-items-end">
+    <input type="hidden" name="tab" value="activite">
+    <input type="hidden" name="search" value="{{ search|default('') }}">
 
+    <div>
+      <label class="form-label mb-1">Trier par</label>
+      <select name="sort" class="form-select">
+        <option value="date_debut" {{ sort == 'date_debut' ? 'selected' : '' }}>Date début</option>
+        <option value="nom" {{ sort == 'nom' ? 'selected' : '' }}>Nom</option>
+        <option value="prix" {{ sort == 'prix' ? 'selected' : '' }}>Prix</option>
+        <option value="noteMoyenne" {{ sort == 'noteMoyenne' ? 'selected' : '' }}>Note moyenne</option>
+        <option value="status" {{ sort == 'status' ? 'selected' : '' }}>Statut</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="form-label mb-1">Ordre</label>
+      <select name="direction" class="form-select">
+        <option value="asc" {{ direction == 'asc' ? 'selected' : '' }}>Croissant</option>
+        <option value="desc" {{ direction == 'desc' ? 'selected' : '' }}>Décroissant</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary">
+        Appliquer
+      </button>
+    </div>
+  </form>
+</div>
             <div class="table-responsive text-nowrap">
               <table class="table table-striped table-hover">
                 <thead>
@@ -78,73 +108,9 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {% for activite in activites %}
-                    <tr>
-                      <td>
-                        {% if activite.image %}
-                          <img src="{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}"
-                               alt="Image" width="50">
-                        {% endif %}
-                      </td>
-                      <td>{{ activite.nom }}</td>
-                      <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        {{ activite.description }}
-                      </td>
-                      <td>{{ activite.prix|number_format(2, '.', ',') }}</td>
-                      <td>{{ activite.typeActivite }}</td>
-                      <td>{{ activite.noteMoyenne|default(0)|number_format(1, '.', ',') }}</td>
-                      <td>{{ activite.guide ? activite.guide.nom : 'N/A' }}</td>
-                      <td>{{ activite.dateDebut ? activite.dateDebut|date('d-m-Y H:i') : '' }}</td>
-                      <td>{{ activite.dateFin ? activite.dateFin|date('d-m-Y H:i') : '' }}</td>
-                      <td>
-                        {% set status = activite.status|default('DISPONIBLE') %}
-
-                        {% if status == 'DISPONIBLE' %}
-                          <span class="badge bg-label-success me-1">Disponible</span>
-                        {% elseif status == 'INDISPONIBLE' %}
-                          <span class="badge bg-label-danger me-1">Indisponible</span>
-                        {% else %}
-                          <span class="badge bg-label-info me-1">{{ status }}</span>
-                        {% endif %}
-                      </td>
-                      <td>{{ activite.destination ? activite.destination.nom : 'N/A' }}</td>
-                      <td>{{ activite.maxPlaces|default(0) }}</td>
-
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <a href="{{ path('activite_admin', {'tab': 'avis', 'activiteId': activite.id}) }}"
-                            class="btn btn-sm btn-icon btn-outline-primary"
-                            title="Voir les avis">
-
-                              <img src="{{ asset('assetsback/icons/message-circle-star.svg') }}"
-                                  alt="Avis"
-                                  style="width:18px; height:18px;">
-                          </a>
-
-                          <div class="dropdown">
-                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                              <i class="icon-base bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu">
-                              <a class="dropdown-item" href="{{ path('activite_edit', {'id': activite.id}) }}">
-                                <i class="icon-base bx bx-edit-alt me-2"></i> Modifier
-                              </a>
-
-                              <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ activite.id }}">
-                                <i class="icon-base bx bx-trash me-2"></i> Supprimer
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  {% else %}
-                    <tr>
-                      <td colspan="13" class="text-center">Aucune activité trouvée</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
+                <tbody id="activites-table-body">
+  {% include 'admin/_activite_rows.html.twig' with {'activites': activites} %}
+</tbody>
               </table>
             </div>
           </div>
@@ -301,4 +267,33 @@
 
 {% block page_scripts %}
   <script src="{{ asset('assetsback/js/dashboards-analytics.js') }}"></script>
+  <script src="{{ asset('assetsback/js/dashboards-analytics.js') }}"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchInput = document.getElementById('admin-activity-search');
+      const tableBody = document.getElementById('activites-table-body');
+
+      if (!searchInput || !tableBody) return;
+
+      let timeout = null;
+
+      searchInput.addEventListener('input', function () {
+        clearTimeout(timeout);
+
+        timeout = setTimeout(() => {
+          const search = searchInput.value;
+
+          fetch(`{{ path('activite_admin_search') }}?search=${encodeURIComponent(search)}`)
+            .then(response => response.text())
+            .then(html => {
+              tableBody.innerHTML = html;
+            })
+            .catch(error => {
+              console.error('Erreur recherche dynamique:', error);
+            });
+        }, 300);
+      });
+    });
+  </script>
 {% endblock %}

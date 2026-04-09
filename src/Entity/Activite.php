@@ -42,6 +42,10 @@ class Activite
     #[ORM\Column(type: "datetime", nullable: true)]
     #[Assert\NotBlank(message: "La date de début est obligatoire.")]
     #[Assert\Type(\DateTimeInterface::class)]
+    #[Assert\GreaterThanOrEqual(
+        "today",
+        message: "La date de début ne peut pas être antérieure à aujourd'hui."
+    )]
     private ?\DateTimeInterface $date_debut = null;
 
     #[ORM\Column(type: "datetime", nullable: true)]

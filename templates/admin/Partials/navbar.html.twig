@@ -6,20 +6,36 @@
   </div>
   <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
     <div class="navbar-nav align-items-center me-auto">
-  <form method="get" action="{{ path('activite_admin') }}" class="nav-item d-flex align-items-center w-100">
-    <input type="hidden" name="tab" value="activite">
+  {% set currentRoute = app.request.attributes.get('_route') %}
+
+<form method="get"
+      action="{% if currentRoute starts with 'admin_reservation' %}
+                  {{ path('admin_reservations_tickets') }}
+              {% else %}
+                  {{ path('activite_admin') }}
+              {% endif %}"
+      class="nav-item d-flex align-items-center w-100">
+
+    <input type="hidden"
+           name="tab"
+           value="{% if currentRoute starts with 'admin_reservation' %}reservation{% else %}activite{% endif %}">
 
     <span class="w-px-22 h-px-22">
       <i class="icon-base bx bx-search icon-md"></i>
     </span>
 
     <input
-  type="text"
-  id="admin-activity-search"
-  value="{{ search|default('') }}"
-  class="form-control border-0 shadow-none ps-1 ps-sm-2"
-  placeholder="Search..." />
-  </form>
+        type="text"
+        name="search"
+        value="{{ app.request.get('search') }}"
+        class="form-control border-0 shadow-none ps-1 ps-sm-2"
+        placeholder="{% if currentRoute starts with 'admin_reservation' %}
+            Rechercher réservation ou ticket...
+        {% else %}
+            Rechercher activité...
+        {% endif %}"
+    />
+</form>
 </div>
     <ul class="navbar-nav flex-row align-items-center ms-md-auto">
       <li class="nav-item navbar-dropdown dropdown-user dropdown">

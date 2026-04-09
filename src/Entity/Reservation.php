@@ -46,7 +46,9 @@ private int $nb_tickets;
 #[ORM\ManyToOne(targetEntity: Ville::class)]
 #[Assert\NotNull(message: "La destination est obligatoire")]
 private Ville $destination;
-#[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] private Personne $personne_id;
+#[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] 
+#[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] 
+private ?Personne $personne_id = null;
 
     public function getId()
     {

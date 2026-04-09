@@ -51,7 +51,7 @@
                 </thead>
                 <tbody>
                   {% for reservation in reservations %}
-                  <tr>
+                  <tr ondblclick="window.location='{{ path('admin_reservation_tickets', {'id': reservation.id}) }}'" style="cursor:pointer;">
                     <td>{{ reservation.personne_id.nom ?? 'N/A' }}</td>
                     <td>{{ reservation.destination.nom ?? 'N/A' }}</td>
                     <td>{{ reservation.dateReservation ? reservation.dateReservation|date('d-m-Y') : 'N/A' }}</td>
@@ -214,5 +214,12 @@
   </div>
 </div>
 {% endfor %}
+{% if selectedReservation is defined %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector('[data-bs-target="#tab-ticket"]').click();
+});
+</script>
+{% endif %}
 
 {% endblock %}

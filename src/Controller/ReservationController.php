@@ -68,11 +68,54 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/admin/dashboard', name: 'admin_dashboard')]
-    public function dashboard(EntityManagerInterface $em): Response
-    {
-        return $this->render('admin/reservations_tickets.html.twig', [
-            'reservations' => $em->getRepository(Reservation::class)->findAll(),
-            'tickets' => $em->getRepository(Ticket::class)->findAll(),
-        ]);
+public function dashboard(EntityManagerInterface $em): Response
+{
+    return $this->render('admin/reservations_tickets.html.twig', [
+        'reservations' => $em->getRepository(Reservation::class)->findAll(),
+        'tickets' => $em->getRepository(Ticket::class)->findAll(),
+        'selectedReservation' => null
+    ]);
+}
+
+   #[Route('/admin/reservation/{id}/tickets', name: 'admin_reservation_tickets')]
+public function reservationTickets(Reservation $reservation, EntityManagerInterface $em): Response
+{
+    $tickets = $em->getRepository(Ticket::class)
+                  ->findBy(['reservation_id' => $reservation]);
+
+    $reservations = $em->getRepository(Reservation::class)->findAll();
+
+    return $this->render('admin/reservations_tickets.html.twig', [
+        'reservations' => $reservations,
+        'tickets' => $tickets,
+        'selectedReservation' => $reservation
+    ]);
+}
+#[Route('/reservation/{id}/tickets', name: 'reservation_tickets')]
+public function getTickets(Reservation $reservation): Response
+{
+    $tickets = [];
+
+    foreach ($reservation->getTickets() as $ticket) {
+        $tickets[] = [
+            'title' => $ticket->getType(),
+            'start' => $reservation->getDateDebut()->format('Y-m-d'),
+            'end' => $reservation->getDateFin()->format('Y-m-d'),
+        ];
     }
+
+    return $this->json($tickets);
+}
+
+#[Route('/mes-reservations', name: 'mes_reservations')]
+public function mesReservations(EntityManagerInterface $em): Response
+{
+    $reservations = $em->getRepository(Reservation::class)->findAll();
+
+    return $this->render('reservation/mes_reservations.html.twig', [
+        'reservations' => $reservations
+    ]);
+}
+
+
 }

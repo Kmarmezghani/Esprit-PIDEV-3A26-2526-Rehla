@@ -7,6 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Ville;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Ticket;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity]
 class Reservation
@@ -17,30 +19,35 @@ class Reservation
     private int $id;
 
     #[ORM\Column(name: "dateReservation", type: "date")]
-    private \DateTimeInterface $dateReservation;
+#[Assert\NotNull(message: "La date de réservation est obligatoire")]
+private \DateTimeInterface $dateReservation;
 
-    #[ORM\Column(name: "dateDebut",type: "date")]
-    private \DateTimeInterface $dateDebut;
+#[ORM\Column(name: "dateDebut", type: "date")]
+#[Assert\NotNull(message: "La date de début est obligatoire")]
+private \DateTimeInterface $dateDebut;
 
-    #[ORM\Column(name: "dateFin", type: "date")]
-    private \DateTimeInterface $dateFin;
+#[ORM\Column(name: "dateFin", type: "date")]
+#[Assert\NotNull(message: "La date de fin est obligatoire")]
+private \DateTimeInterface $dateFin;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $statut;
+#[ORM\Column(type: "string", length: 50)]
+#[Assert\NotBlank(message: "Le statut est obligatoire")]
+private ?string $statut = null;
 
-    #[ORM\Column(name: "coutTotal", type: "float")]
-    private float $coutTotal;
+#[ORM\Column(name: "coutTotal", type: "float")]
+#[Assert\NotNull(message: "Le coût total est obligatoire")]
+#[Assert\Positive(message: "Le coût doit être positif")]
+private float $coutTotal;
 
-        #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")]
-    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Personne $personne_id;
+#[ORM\Column(type: "integer")]
+#[Assert\NotNull(message: "Le nombre de tickets est obligatoire")]
+#[Assert\Positive(message: "Le nombre de tickets doit être positif")]
+private int $nb_tickets;
 
-        #[ORM\ManyToOne(targetEntity: Ville::class, inversedBy: "reservations")]
-    #[ORM\JoinColumn(name: 'destination_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Ville $destination;
-
-    #[ORM\Column(type: "integer")]
-    private int $nb_tickets;
+#[ORM\ManyToOne(targetEntity: Ville::class)]
+#[Assert\NotNull(message: "La destination est obligatoire")]
+private Ville $destination;
+#[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] private Personne $personne_id;
 
     public function getId()
     {
@@ -162,4 +169,31 @@ public function setDestination(?Ville $destination): self
     
             return $this;
         }
+
+        #[Assert\Callback]
+public function validateDates(ExecutionContextInterface $context): void
+{
+    if (!$this->dateDebut || !$this->dateFin) {
+        return;
+    }
+
+    $today = new \DateTimeImmutable('today');
+
+    $dateDebut = \DateTimeImmutable::createFromInterface($this->dateDebut);
+    $dateFin = \DateTimeImmutable::createFromInterface($this->dateFin);
+
+    // ❌ date début dans le passé
+    if ($dateDebut < $today) {
+        $context->buildViolation('La date de début ne peut pas être avant aujourd’hui.')
+            ->atPath('dateDebut')
+            ->addViolation();
+    }
+
+    // ❌ date fin avant date début
+    if ($dateFin < $dateDebut) {
+        $context->buildViolation('La date de fin doit être après la date de début.')
+            ->atPath('dateFin')
+            ->addViolation();
+    }
+}
 }

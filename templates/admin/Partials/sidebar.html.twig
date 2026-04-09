@@ -17,6 +17,22 @@
           <div class="menu-inner-shadow"></div>
 
           <ul class="menu-inner py-1">
+
+            <!-- Utilisateurs -->
+            <li class="menu-item {% if app.request.get('_route') starts with 'admin_user' %}active open{% endif %}">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-group"></i>
+                <div class="text-truncate" data-i18n="Utilisateurs">Utilisateurs</div>
+              </a>
+              <ul class="menu-sub">
+                <li class="menu-item {% if app.request.get('_route') == 'admin_users' %}active{% endif %}">
+                  <a href="{{ path('admin_users') }}" class="menu-link">
+                    <div class="text-truncate">Liste des comptes</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
             <!-- Dashboards -->
             <li class="menu-item {% if app.request.get('_route') starts with 'analytics' or app.request.get('_route') starts with 'activite' %}active open{% endif %}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">

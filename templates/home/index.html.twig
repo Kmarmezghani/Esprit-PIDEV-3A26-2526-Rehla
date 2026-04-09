@@ -24,24 +24,77 @@
     <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
-    <li class="nav-item"><a href="{{ path('app_admin') }}" class="nav-link">Contact</a></li>
 
+    {% if app.session.get('user_id') %}
+    {# ── Utilisateur connecté ── #}
     <li class="nav-item dropdown ms-2 d-flex align-items-center">
-    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center" 
-       href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <img src="{{ asset('assets/images/default-user.png') }}" 
-             alt="Photo de profil" 
-             class="rounded-circle"
-             style="width:35px; height:35px; object-fit:cover;">
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-        <li><a class="dropdown-item" href="#">Mon profil</a></li>
-        <li><a class="dropdown-item" href="{{ path('mes_activites') }}">Mes activités</a></li>
-        <li><a class="dropdown-item" href="#">Mes réservations</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="#">Déconnexion</a></li>
-    </ul>
-</li>
+        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+           href="#" id="userDropdown" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {% if app.session.get('user_photo') %}
+                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% else %}
+                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+            <li>
+                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                    Connecté en tant que<br>
+                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                <span>Mon profil</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                <span>Mes préférences</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+                <span>Mes activités</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                <span>Mes réservations</span>
+            </a></li>
+            {% if app.session.get('user_role') == 'ADMIN' %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-cogs" style="width:18px;"></i>
+                <span>Administration</span>
+            </a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                   onclick="confirmLogoutHome(event)"
+                   style="padding:8px 16px; font-size:14px;">
+                    <i class="fa fa-sign-out" style="width:18px;"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+    {% else %}
+    {# ── Non connecté ── #}
+    <li class="nav-item ms-2">
+        <a href="{{ path('app_register') }}" class="nav-link">
+            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+        </a>
+    </li>
+    {% endif %}
 </ul>
 </div>
 		</div>
@@ -784,5 +837,27 @@
 			<!-- loader -->
 			<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
 
-		
+		{# ── Formulaire de déconnexion (caché) ── #}
+		<form id="logoutFormHome" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+
+		<script>
+		function confirmLogoutHome(e) {
+			e.preventDefault();
+			Swal.fire({
+				title: 'Déconnexion',
+				text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+				icon: 'question',
+				showCancelButton: true,
+				confirmButtonColor: '#223f91',
+				cancelButtonColor: '#6c757d',
+				confirmButtonText: 'Oui, me déconnecter',
+				cancelButtonText: 'Annuler'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					document.getElementById('logoutFormHome').submit();
+				}
+			});
+		}
+		</script>
+
 {% endblock %}

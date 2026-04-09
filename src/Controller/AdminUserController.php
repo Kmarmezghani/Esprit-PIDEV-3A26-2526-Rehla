@@ -86,7 +86,7 @@ class AdminUserController extends AbstractController
 
             $em->flush();
 
-            $this->addFlash('success', 'Rôle et statut mis à jour avec succès !');
+            $this->addFlash('admin_success', 'Rôle et statut mis à jour avec succès !');
             return $this->redirectToRoute('admin_users');
         }
 
@@ -121,7 +121,7 @@ class AdminUserController extends AbstractController
         $em->remove($personne);
         $em->flush();
 
-        $this->addFlash('success', 'Utilisateur supprimé avec succès.');
+        $this->addFlash('admin_success', 'Utilisateur supprimé avec succès.');
         return $this->redirectToRoute('admin_users');
     }
 

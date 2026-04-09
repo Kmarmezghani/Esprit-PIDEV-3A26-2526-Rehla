@@ -132,7 +132,7 @@ class UserController extends AbstractController
                     $em->persist($personne);
                     $em->flush();
 
-                    $this->addFlash('success', 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
+                    $this->addFlash('login_info', 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
                     return $this->redirectToRoute('app_login');
                 }
             }

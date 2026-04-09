@@ -22,7 +22,8 @@ final class BlogController extends AbstractController
 #[Route('/blog', name: 'blog')]
 public function index(Request $request, EntityManagerInterface $em)
 {
-    $personne = $em->getRepository(Personne::class)->find(4);
+      $userId = $request->getSession()->get('user_id');
+    $personne = $em->getRepository(Personne::class)->find($userId);
 
     $post = new Post();
     $form = $this->createForm(PostType::class, $post);
@@ -116,8 +117,8 @@ public function edit(Request $request, Post $post, EntityManagerInterface $em): 
 
 #[Route('/comment/add/{id}', name: 'comment_add', methods: ['POST'])]
 public function addComment(Request $request, Post $post, EntityManagerInterface $em)
-{
-    $personne = $em->getRepository(Personne::class)->find(4);
+{   $userId = $request->getSession()->get('user_id');
+    $personne = $em->getRepository(Personne::class)->find($userId);
 
     $contenu = $request->request->get('contenu');
 

@@ -28,9 +28,10 @@ private ?int $id = null;
     #[ORM\Column(type: "integer")]
     private int $popularite;
 
-        #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "posts")]
-    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Personne $personne_id;
+    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "posts")]
+    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    private ?Personne $personne_id = null;
+
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $image = null;

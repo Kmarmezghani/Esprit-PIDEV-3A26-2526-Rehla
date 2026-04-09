@@ -35,6 +35,11 @@
                 <div class="text-truncate" data-i18n="Activite">Activite</div>
             </a>
         </li>
+        <li class="menu-item {% if app.request.get('_route') == 'admin_reservations_tickets' %}active{% endif %}">
+            <a href="{{ path('admin_reservations_tickets') }}" class="menu-link">
+                <div class="text-truncate" data-i18n="Reservation">Reservation</div>
+            </a>
+        </li>
         <li class="menu-item {% if app.request.get('_route') == 'ecommerce_dashboard' %}active{% endif %}">
             <a href="https://demos.themeselection.com/sneat-bootstrap-html-admin-template/html/vertical-menu-template/app-ecommerce-dashboard.html"
                target="_blank" class="menu-link">

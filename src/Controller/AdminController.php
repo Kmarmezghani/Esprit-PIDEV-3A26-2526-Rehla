@@ -132,4 +132,5 @@ final class AdminController extends AbstractController
 
         return $this->redirectToRoute('activite_admin');
     }
+    
 }

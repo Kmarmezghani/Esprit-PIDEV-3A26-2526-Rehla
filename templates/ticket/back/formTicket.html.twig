@@ -9,50 +9,42 @@
 {% endblock %}
 
 {% block body %}
-<div class="content-wrapper">
-  <div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y">
+  <div class="row mb-6 gy-6">
+    <div class="col-xl">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Créer un nouveau Ticket</h5>
+        </div>
+        <div class="card-body">
 
-    <div class="row mb-6 gy-6">
-      <div class="col-xl">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Créer un nouveau Ticket</h5>
+          {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+          <div class="mb-3">
+            {{ form_label(form.type) }}
+            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.type) }}
           </div>
 
-          <div class="card-body">
-
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-
-            <div class="mb-3">
-                {{ form_label(form.type) }}
-                {{ form_widget(form.type, {'attr': {'class':'form-control'}}) }}
-                {{ form_errors(form.type) }}
-
-            </div>
-
-            <div class="mb-3">
-                {{ form_label(form.prix) }}
-                {{ form_widget(form.prix, {'attr': {'class':'form-control'}}) }}
-                {{ form_errors(form.prix) }}
-
-            </div>
-
-            <div class="mb-3">
-                {{ form_label(form.destination) }}
-                {{ form_widget(form.destination, {'attr': {'class':'form-select'}}) }}
-                {{ form_errors(form.destination) }}
-
-            </div>
-
-            <button class="btn btn-primary">Créer Ticket</button>
-
-            {{ form_end(form, {'render_rest': false}) }}
-
+          <div class="mb-3">
+            {{ form_label(form.prix) }}
+            {{ form_widget(form.prix, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.prix) }}
           </div>
+
+          <div class="mb-3">
+            {{ form_label(form.destination) }}
+            {{ form_widget(form.destination, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.destination) }}
+          </div>
+
+          <button type="submit" class="btn btn-primary">Créer Ticket</button>
+
+          {{ form_end(form) }}
+
         </div>
       </div>
     </div>
-
   </div>
 </div>
 {% endblock %}

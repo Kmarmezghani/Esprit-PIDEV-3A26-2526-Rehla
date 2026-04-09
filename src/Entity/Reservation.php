@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use App\Entity\Pays;
+use App\Entity\Ville;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Ticket;
 
@@ -16,28 +16,28 @@ class Reservation
     #[ORM\Column(type: "integer")]
     private int $id;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(name: "dateReservation", type: "date")]
     private \DateTimeInterface $dateReservation;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(name: "dateDebut",type: "date")]
     private \DateTimeInterface $dateDebut;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(name: "dateFin", type: "date")]
     private \DateTimeInterface $dateFin;
 
     #[ORM\Column(type: "string", length: 50)]
     private string $statut;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(name: "coutTotal", type: "float")]
     private float $coutTotal;
 
         #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")]
     #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Personne $personne_id;
 
-        #[ORM\ManyToOne(targetEntity: Pays::class, inversedBy: "reservations")]
+        #[ORM\ManyToOne(targetEntity: Ville::class, inversedBy: "reservations")]
     #[ORM\JoinColumn(name: 'destination_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Pays $destination_id;
+    private Ville $destination;
 
     #[ORM\Column(type: "integer")]
     private int $nb_tickets;
@@ -112,15 +112,16 @@ class Reservation
         $this->personne_id = $value;
     }
 
-    public function getDestination_id()
-    {
-        return $this->destination_id;
-    }
+    public function getDestination(): ?Ville
+{
+    return $this->destination;
+}
 
-    public function setDestination_id($value)
-    {
-        $this->destination_id = $value;
-    }
+public function setDestination(?Ville $destination): self
+{
+    $this->destination = $destination;
+    return $this;
+}
 
     public function getNb_tickets()
     {

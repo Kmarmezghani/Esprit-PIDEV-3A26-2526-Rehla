@@ -122,10 +122,16 @@
         </button>
 
         <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
-          <a class="dropdown-item open-edit">
+          <<a class="dropdown-item open-edit"
+            data-id="{{ post.id }}"
+            data-contenu="{{ post.contenu }}"
+            data-image="{{ post.image }}">
             <i class="fa fa-edit"></i> Modifier
           </a>
-          <a class="dropdown-item" href="#">
+          <a class="dropdown-item text-danger"
+            href="#"
+            data-url="{{ path('post_delete', {'id': post.id}) }}"
+            onclick="confirmDelete(event, this)">
             <i class="fa fa-trash"></i> Supprimer
           </a>
         </div>
@@ -158,8 +164,8 @@
           <i class="fa fa-heart"></i> <span>0</span>
         </div>
 
-        <div class="mr-3 post-action open-comment">
-          <i class="fa fa-comment"></i> 0
+        <div class="mr-3 post-action open-comment" data-id="{{ post.id }}">
+          <i class="fa fa-comment"></i>  {{ post.commentaires|length }}
         </div>
 
         <div class="post-action">
@@ -264,88 +270,577 @@
   </div>
 
   <!-- BODY -->
-  <div class="popup-body">
+ <div class="popup-body">
 
-    <!-- COMMENT 1 -->
-    <div class="comment-box">
-      <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar">
+{% for post in posts %}
+  <div class="comments-container" data-post="{{ post.id }}" style="display:none;">
 
-      <div class="comment-bubble">
-        <div class="comment-header">
-          <strong>baya sellami</strong>
-          <small>04 avr. 2026 12:06</small>
-        </div>
+    {% for comment in post.commentaires %}
+      <div class="comment-box">
 
-        <p>hiiii</p>
+        <img src="{{ comment.personne_id.profile_photo ? asset(comment.personne_id.profile_photo) : asset('assets/images/bg_2.jpg') }}"
+             class="comment-avatar">
 
+        <div class="comment-bubble">
+          <div class="comment-header">
+            <strong>{{ comment.personne_id.nom }} {{ comment.personne_id.prenom }}</strong>
+            <small>{{ comment.dateCommentaire|date('d M Y H:i:s') }}</small>
+          </div>
+
+          <p>{{ comment.contenu }}</p>
         <div class="comment-icons">
           <i class="fa fa-edit"></i>
           <i class="fa fa-trash"></i>
         </div>
-      </div>
-    </div>
-
-    <!-- COMMENT 2 -->
-    <div class="comment-box">
-      <img src="{{ asset('assets/images/bg_1.jpg') }}" class="comment-avatar">
-
-      <div class="comment-bubble">
-        <div class="comment-header">
-          <strong>lina mezghani</strong>
-          <small>02 mars 2026 11:06</small>
         </div>
 
-        <p>c'est une belle ville</p>
       </div>
-    </div>
+    {% else %}
+      <p class="text-center text-muted">Aucun commentaire</p>
+    {% endfor %}
 
   </div>
+{% endfor %}
+
+</div>
 
   <!-- FOOTER -->
+<form method="POST" id="commentForm">
   <div class="popup-footer">
+
     <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar-small">
-    <input type="text" placeholder="Écrire un commentaire...">
-    <button>Envoyer</button>
+    <input type="text" name="contenu" id="comment_input"
+           placeholder="Écrire un commentaire...">
+    <input type="hidden" id="comment_post_id">
+
+    <button type="submit">Envoyer</button>
+
   </div>
+</form>
+  
 
 </div>
 
 {# --------------------------------------------------------popup edit post------------------------------------- #}
 
 <div id="editPostPopup" class="comment-popup">
-  
+
   <!-- HEADER -->
   <div class="popup-header">
     <h5>📝 Modifier la publication</h5>
     <span id="closeEditPopup">&times;</span>
   </div>
 
-  <!-- BODY -->
-  <div class="popup-body">
+  <!-- FORM -->
+  <form id="editForm" method="POST" enctype="multipart/form-data">
 
-    <!-- CONTENU -->
-    <label class="popup-label">Contenu :</label>
+    <!-- BODY -->
+    <div class="popup-body">
 
-    <textarea class="edit-textarea"
-      placeholder="Modifier le contenu du post...">je veux m'informer des activités suivantes pour le mois prochain pour Rc</textarea>
+      <!-- hidden id -->
+      <input type="hidden" id="edit_post_id" name="id">
 
-    <!-- IMAGE -->
-    <label class="popup-label mt-3">Image (optionnel) :</label>
+      <!-- CONTENU -->
+      <label class="popup-label">Contenu :</label>
 
-    <div class="edit-image-box">
-      <img src="{{ asset('assets/images/bg_2.jpg') }}">
-      <button class="choose-btn">Choisir</button>
+      <textarea id="edit_contenu" name="contenu" class="edit-textarea"></textarea>
+
+      <!-- IMAGE -->
+      <label class="popup-label mt-3">Image :</label>
+
+      <div class="edit-image-box">
+        <img id="edit_image_preview" src="">
+        <input type="file" name="image" id="edit_image_input" hidden>
+        <button type="button" class="choose-btn"
+                onclick="document.getElementById('edit_image_input').click()">
+          Choisir
+        </button>
+      </div>
+
     </div>
 
-  </div>
+    <!-- FOOTER -->
+    <div class="popup-footer edit-footer">
+      <button type="button" class="btn-cancel" id="cancelEdit">Annuler</button>
+      <button type="submit" class="btn-save">Enregistrer</button>
+    </div>
 
-  <!-- FOOTER -->
-  <div class="popup-footer edit-footer">
-    <button class="btn-cancel">Annuler</button>
-    <button class="btn-save">Enregistrer</button>
-  </div>
+  </form>
 
 </div>
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const hearts = document.querySelectorAll('.fa-heart');
+hearts.forEach(heart => {
+heart.addEventListener('click', function() {
+this.classList.toggle('text-danger');
+const count = this.nextElementSibling;
+const current = parseInt(count.textContent);
+count.textContent = this.classList.contains('text-danger') ? current + 1 : current - 1;
+});
+});
+});
+document.querySelectorAll('.fa-bookmark').forEach(icon => {
+  icon.addEventListener('click', function() {
+    this.classList.toggle('text-warning');
+  });
+});
+
+/*-----------popup comments----------------------------*/
+const openBtns = document.querySelectorAll(".open-comment");
+const popup = document.getElementById("commentPopup");
+const overlay = document.getElementById("commentOverlay");
+const closeBtn = document.getElementById("closePopup");
+const form = document.getElementById("commentForm");
+const postIdInput = document.getElementById("comment_post_id");
+
+openBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const postId = btn.getAttribute("data-id");
+
+    // 🔥 afficher bon bloc commentaires
+    document.querySelectorAll(".comments-container").forEach(div => {
+      div.style.display = "none";
+    });
+
+    const target = document.querySelector(`.comments-container[data-post="${postId}"]`);
+    if (target) target.style.display = "block";
+
+    // 🔥 préparer form
+    postIdInput.value = postId;
+    form.action = "/comment/add/" + postId;
+
+    // 🔥 ouvrir popup
+    popup.classList.add("active");
+    overlay.classList.add("active");
+  });
+});
+
+function closePopup() {
+  popup.classList.remove("active");
+  overlay.classList.remove("active");
+}
+
+if (closeBtn) {
+  closeBtn.addEventListener("click", closePopup);
+}
+
+overlay.addEventListener("click", closePopup);
+
+
+{# --------------------------pop up edit------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+  const editBtns = document.querySelectorAll(".open-edit");
+  const editPopup = document.getElementById("editPostPopup");
+  const overlay = document.getElementById("commentOverlay");
+
+  const closeEdit = document.getElementById("closeEditPopup");
+  const cancelEdit = document.getElementById("cancelEdit");
+
+  const contenuInput = document.getElementById("edit_contenu");
+  const imagePreview = document.getElementById("edit_image_preview");
+  const postIdInput = document.getElementById("edit_post_id");
+  const form = document.getElementById("editForm");
+
+  editBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+      // 🔥 récupérer data
+      const id = btn.getAttribute("data-id");
+      const contenu = btn.getAttribute("data-contenu");
+      const image = btn.getAttribute("data-image");
+
+      // 🔥 remplir popup
+      postIdInput.value = id;
+      contenuInput.value = contenu;
+
+      if (image) {
+        imagePreview.src = "/" + image;
+      } else {
+        imagePreview.src = "/assets/images/bg_1.jpg";
+      }
+
+      // 🔥 action dynamique (route Symfony)
+      form.action = "/post/edit/" + id;
+
+      // afficher popup
+      editPopup.classList.add("active");
+      overlay.classList.add("active");
+    });
+  });
+
+  function closePopup() {
+    editPopup.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+
+  closeEdit.addEventListener("click", closePopup);
+  cancelEdit.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
+
+});
+document.getElementById("edit_image_input").addEventListener("change", function (event) {
+
+    const file = event.target.files[0];
+    const preview = document.getElementById("edit_image_preview");
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result; 
+        };
+
+        reader.readAsDataURL(file);
+    }
+});
+
+
+{# ------------pop up alerte publier post---------- #}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof Swal === "undefined") {
+        console.error("SweetAlert2 non chargé !");
+        return;
+    }
+
+    const form = document.querySelector("form");
+    const contenu = document.getElementById("post_contenu");
+
+    if (!form || !contenu) return;
+
+    form.addEventListener("submit", function (e) {
+
+        const value = (contenu.value || "").trim();
+
+       if (value === "") {
+    e.preventDefault();
+
+    Swal.fire({
+        icon: 'error',
+        text: 'Le contenu est obligatoire',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#fff1f2',   // rouge très léger
+        color: '#991b1b',        // texte rouge foncé
+        iconColor: '#ef4444',    // icône rouge vif
+        customClass: {
+            popup: 'red-toast'
+        }
+    });
+
+    return;
+}
+
+       if (value.length < 3) {
+    e.preventDefault();
+
+    Swal.fire({
+        icon: 'warning',
+        text: 'Minimum 3 caractères',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#fff7ed',
+        color: '#9a3412',
+        iconColor: '#f59e0b',
+        customClass: {
+            popup: 'orange-toast'
+        }
+    });
+
+    return;
+}
+if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
+
+Swal.fire({
+    icon: 'success',
+    text: 'Publication ajoutée avec succès',
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2500,
+    background: '#ecfdf5',
+    color: '#065f46',
+    iconColor: '#10b981',
+    customClass: {
+        popup: 'green-toast'
+    }
+});
+    });
+
+});
+
+{# ----------------------------------pop up alerte edit post----------------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+    const editForm = document.getElementById("editForm");
+    const editContenu = document.getElementById("edit_contenu");
+
+    if (!editForm || !editContenu) return;
+
+    editForm.addEventListener("submit", function (e) {
+
+        const value = (editContenu.value || "").trim();
+
+        // ❌ champ vide
+        if (value === "") {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'error',
+                text: 'Le contenu est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
+
+            return;
+        }
+
+        // ⚠️ trop court
+        if (value.length < 3) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+
+            return;
+        }
+        if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
+
+        // ✅ succès
+        Swal.fire({
+            icon: 'success',
+            text: 'Publication modifiée avec succès',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#ecfdf5',
+            color: '#065f46',
+            iconColor: '#10b981',
+            customClass: {
+                popup: 'green-toast'
+            }
+        });
+
+    });
+
+});
+{# -----------------delete post------------------------------------- #}
+function confirmDelete(e, element) {
+    e.preventDefault();
+
+    Swal.fire({
+    title: 'Supprimer ce post ?',
+    text: "Action irréversible",
+    icon: 'warning',
+
+    showCancelButton: true,
+    confirmButtonText: 'Supprimer',
+    cancelButtonText: 'Annuler',
+
+    width: '320px',        
+    padding: '12px',        
+    heightAuto: false,
+
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+
+    background: '#fff1f2',
+    color: '#7f1d1d',
+
+    customClass: {
+        popup: 'small-swal'
+    }
+}).then((result) => {
+        if (result.isConfirmed) {
+ Swal.fire({
+                icon: 'success',
+                text: 'Post supprimé avec succès',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#ecfdf5',
+                color: '#065f46',
+                iconColor: '#10b981',
+                customClass: { popup: 'green-toast' }
+            });
+
+            // créer un form dynamique sans toucher ton HTML
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = element.getAttribute('data-url');
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+
+{# ------------ pop up alerte add comment ---------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+    const commentForm = document.getElementById("commentForm");
+    const commentInput = document.getElementById("comment_input");
+    if (!commentForm || !commentInput) return;
+
+    commentForm.addEventListener("submit", function (e) {
+
+        const value = (commentInput.value || "").trim();
+
+        // ❌ champ vide
+        if (value === "") {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'error',
+                text: 'Le commentaire est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
+
+            return;
+        }
+
+        // ⚠️ trop court
+        if (value.length < 3) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+
+            return;
+        }
+        if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
+
+        // ✅ succès
+        Swal.fire({
+            icon: 'success',
+            text: 'Commentaire ajouté avec succès',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#ecfdf5',
+            color: '#065f46',
+            iconColor: '#10b981',
+            customClass: {
+                popup: 'green-toast'
+            }
+        });
+
+    });
+
+});
+
+</script>
+
+
+
 
 <style>
 .search-input .form-control {
@@ -1027,154 +1522,26 @@ input.form-control:focus {
     border-radius: 10px !important;
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25) !important;
 }
+/*--------------pop up delete--------------------------*/
+.small-swal {
+    border-radius: 12px !important;
+    font-size: 13px !important;
+}
+
+.small-swal .swal2-title {
+    font-size: 15px !important;
+}
+
+.small-swal .swal2-html-container {
+    font-size: 13px !important;
+    margin: 6px 0;
+}
+
+.small-swal .swal2-actions button {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-const hearts = document.querySelectorAll('.fa-heart');
-hearts.forEach(heart => {
-heart.addEventListener('click', function() {
-this.classList.toggle('text-danger');
-const count = this.nextElementSibling;
-const current = parseInt(count.textContent);
-count.textContent = this.classList.contains('text-danger') ? current + 1 : current - 1;
-});
-});
-});
-document.querySelectorAll('.fa-bookmark').forEach(icon => {
-  icon.addEventListener('click', function() {
-    this.classList.toggle('text-warning');
-  });
-});
-
-/*-----------popup comments----------------------------*/
-document.addEventListener("DOMContentLoaded", function () {
-
-  const openBtns = document.querySelectorAll(".open-comment");
-  const popup = document.getElementById("commentPopup");
-  const overlay = document.getElementById("commentOverlay");
-  const closeBtn = document.getElementById("closePopup");
-
-  openBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      popup.classList.add("active");
-      overlay.classList.add("active");
-    });
-  });
-
-  function closePopup() {
-    popup.classList.remove("active");
-    overlay.classList.remove("active");
-  }
-
-  closeBtn.addEventListener("click", closePopup);
-  overlay.addEventListener("click", closePopup);
-
-});
-
-{# --------------------------pop up edit------------------------------- #}
-document.addEventListener("DOMContentLoaded", function () {
-
-  const editBtns = document.querySelectorAll(".open-edit");
-  const editPopup = document.getElementById("editPostPopup");
-  const overlay = document.getElementById("commentOverlay"); // 🔥 AJOUT
-  const closeEdit = document.getElementById("closeEditPopup");
-
-  editBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      editPopup.classList.add("active");
-      overlay.classList.add("active");
-    });
-  });
-
-  function closeEditPopup() {
-    editPopup.classList.remove("active");
-    overlay.classList.remove("active");
-  }
-
-  closeEdit.addEventListener("click", closeEditPopup);
-  overlay.addEventListener("click", closeEditPopup);
-
-});
-
-
-{# ------------pop up alerte---------- #}
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    if (typeof Swal === "undefined") {
-        console.error("SweetAlert2 non chargé !");
-        return;
-    }
-
-    const form = document.querySelector("form");
-    const contenu = document.getElementById("post_contenu");
-
-    if (!form || !contenu) return;
-
-    form.addEventListener("submit", function (e) {
-
-        const value = (contenu.value || "").trim();
-
-       if (value === "") {
-    e.preventDefault();
-
-    Swal.fire({
-        icon: 'error',
-        text: 'Le contenu est obligatoire',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2500,
-        background: '#fff1f2',   // rouge très léger
-        color: '#991b1b',        // texte rouge foncé
-        iconColor: '#ef4444',    // icône rouge vif
-        customClass: {
-            popup: 'red-toast'
-        }
-    });
-
-    return;
-}
-
-       if (value.length < 3) {
-    e.preventDefault();
-
-    Swal.fire({
-        icon: 'warning',
-        text: 'Minimum 3 caractères',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2500,
-        background: '#fff7ed',
-        color: '#9a3412',
-        iconColor: '#f59e0b',
-        customClass: {
-            popup: 'orange-toast'
-        }
-    });
-
-    return;
-}
-
-Swal.fire({
-    icon: 'success',
-    text: 'Publication ajoutée avec succès',
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2500,
-    background: '#ecfdf5',
-    color: '#065f46',
-    iconColor: '#10b981',
-    customClass: {
-        popup: 'green-toast'
-    }
-});
-    });
-
-});
-</script>
 
 {% endblock %}

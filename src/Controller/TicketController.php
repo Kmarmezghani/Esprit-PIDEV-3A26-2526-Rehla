@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Ticket;
+use App\Entity\Reservation;
 use App\Form\TicketType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,13 +23,11 @@ final class TicketController extends AbstractController
         #[Route('/ticket', name: 'admin_tickets')]
 public function index(EntityManagerInterface $em): Response
 {
-    $tickets = $em->getRepository(Ticket::class)->findAll();
-
     return $this->render('/ticket/index.html.twig', [
-        'tickets' => $tickets
+        'tickets' => $em->getRepository(Ticket::class)->findAll(),
+        'reservations' => $em->getRepository(Reservation::class)->findAll(), // ← ajoute ça
     ]);
 }
-
     #[Route('/ticket/back', name: 'admin_ticket_new')]
 public function newTicket(Request $request, EntityManagerInterface $em): Response
 {

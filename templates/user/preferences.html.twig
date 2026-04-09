@@ -1,0 +1,327 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Préférences – Rehla{% endblock %}
+
+{% block body %}
+
+{# ── Navbar ── #}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('home') }}">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}"
+                 alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}"
+                 alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display:block; font-size:14px; color:#223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.session.get('user_photo') %}
+                            <img src="{{ app.session.get('user_photo') }}" alt="Profil"
+                                 class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Profil"
+                                 class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                        style="min-width:200px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                                Connecté en tant que<br>
+                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                            <span>Mon profil</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 active" href="{{ path('app_preferences') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                            <span>Mes préférences</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+                            <span>Mes activités</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                            <span>Mes réservations</span>
+                        </a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                               onclick="confirmLogout(event)"
+                               style="padding:8px 16px; font-size:14px;">
+                                <i class="fa fa-sign-out" style="width:18px;"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{# ── Hero – style blog ── #}
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}'); min-height:220px !important;">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center" style="min-height:220px !important;">
+            <div class="col-md-9 ftco-animate pb-5 text-center">
+                <p class="breadcrumbs">
+                    <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span>
+                    <span>Mes Préférences <i class="fa fa-chevron-right"></i></span>
+                </p>
+                <h1 class="mb-0 bread">Mes Préférences de Voyage</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Contenu – même bg que blog ── #}
+<section class="ftco-section pt-5" style="background:#eef2f7;">
+    <div class="container">
+
+        {% for msg in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show rounded-4 px-4" role="alert">
+                <i class="fa fa-check-circle me-2"></i> {{ msg }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endfor %}
+        {% for msg in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 px-4" role="alert">
+                <i class="fa fa-exclamation-circle me-2"></i> {{ msg }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endfor %}
+
+        <div class="row justify-content-center">
+
+            {# Sidebar gauche #}
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
+                    {% if personne.profile_photo %}
+                        <img src="{{ personne.profile_photo }}" alt="Photo"
+                             class="rounded-circle mx-auto mb-3"
+                             style="width:90px;height:90px;object-fit:cover;border:3px solid #223f91;">
+                    {% else %}
+                        <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo"
+                             class="rounded-circle mx-auto mb-3"
+                             style="width:90px;height:90px;object-fit:cover;border:3px solid #223f91;">
+                    {% endif %}
+                    <h6 class="mb-0 font-weight-bold">{{ personne.prenom }} {{ personne.nom }}</h6>
+                    <small class="text-muted">{{ personne.email }}</small>
+                    <hr>
+                    <a href="{{ path('app_profile') }}" class="btn btn-sm btn-block btn-outline-secondary mb-2"
+                       style="border-radius:20px;">
+                        <i class="fa fa-user me-1"></i> Informations
+                    </a>
+                    <a href="{{ path('app_preferences') }}" class="btn btn-sm btn-block"
+                       style="background:#223f91; color:#fff; border-radius:20px;">
+                        <i class="fa fa-sliders me-1"></i> Préférences
+                    </a>
+                </div>
+            </div>
+
+            {# Formulaire préférences #}
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm" style="transition: box-shadow .2s; border-radius:20px;">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4 font-weight-bold d-flex align-items-center gap-2" style="color:#223f91; border-bottom:2px solid #e9ecef; padding-bottom:12px;">
+                            <i class="fa fa-sliders"></i> &nbsp;Personnalisez vos préférences
+                        </h5>
+
+                        <form method="post" action="{{ path('app_preferences') }}" novalidate id="prefForm">
+
+                            {# ── Budget ── #}
+                            <h6 class="font-weight-bold mb-3" style="color:#555; font-size:14px;">
+                                <i class="fa fa-money me-2" style="color:#223f91;"></i> Budget de voyage
+                            </h6>
+                            <div class="form-row mb-4">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">Budget minimum (DT)</label>
+                                    <input type="number" name="budgetMin" id="budgetMin"
+                                           class="form-control rounded-pill px-3" min="0" placeholder="0"
+                                           value="{{ budgetMinInput is defined ? budgetMinInput : (preference and preference.budgetMin is not null ? preference.budgetMin : '') }}">
+                                    <div id="err-budgetMin" style="color:#dc3545;font-size:12px;margin-top:4px;display:none;"></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">Budget maximum (DT)</label>
+                                    <input type="number" name="budgetMax" id="budgetMax"
+                                           class="form-control rounded-pill px-3" min="0" placeholder="5000"
+                                           value="{{ budgetMaxInput is defined ? budgetMaxInput : (preference and preference.budgetMax is not null ? preference.budgetMax : '') }}">
+                                    <div id="err-budgetMax" style="color:#dc3545;font-size:12px;margin-top:4px;display:none;"></div>
+                                </div>
+                            </div>
+
+                            {# ── Types de voyage ── #}
+                            <h6 class="font-weight-bold mb-3" style="color:#555; font-size:14px;">
+                                <i class="fa fa-globe me-2" style="color:#223f91;"></i> Types de voyage
+                            </h6>
+                            <div class="form-row mb-4">
+                                {% set types = ['Aventure','Culture','Romantique','Gastronomie','Randonnée','Loisirs','Sport','Nature','Détente','Historique'] %}
+                                {% for type in types %}
+                                    <div class="col-6 col-md-4 mb-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox"
+                                                   class="custom-control-input"
+                                                   name="typesVoyage[]"
+                                                   id="type_{{ loop.index }}"
+                                                   value="{{ type }}"
+                                                   {% if type in selectedTypes %}checked{% endif %}>
+                                            <label class="custom-control-label" for="type_{{ loop.index }}">
+                                                {{ type }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            {# ── Centres d'intérêt ── #}
+                            <h6 class="font-weight-bold mb-3" style="color:#555; font-size:14px;">
+                                <i class="fa fa-heart me-2" style="color:#223f91;"></i> Centres d'intérêt
+                            </h6>
+                            <div class="form-row mb-4">
+                                {% set interets = [
+                                    {label:'Musées',          val:'Museum'},
+                                    {label:'Randonnée',       val:'Hiking'},
+                                    {label:'Plages',          val:'Beach'},
+                                    {label:'Désert',          val:'desert'},
+                                    {label:'Architecture',    val:'Architecture'},
+                                    {label:'Histoire',        val:'history'},
+                                    {label:'Cuisine locale',  val:'Food'},
+                                    {label:'Shopping',        val:'Shopping'},
+                                    {label:'Photographie',    val:'Photography'},
+                                    {label:'Sports nautiques',val:'Water Sports'}
+                                ] %}
+                                {% for interet in interets %}
+                                    <div class="col-6 col-md-4 mb-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox"
+                                                   class="custom-control-input"
+                                                   name="centresInteret[]"
+                                                   id="interet_{{ loop.index }}"
+                                                   value="{{ interet.val }}"
+                                                   {% if interet.val in selectedInterets %}checked{% endif %}>
+                                            <label class="custom-control-label" for="interet_{{ loop.index }}">
+                                                {{ interet.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill px-4"
+                                        style="background:#223f91; border-color:#223f91;">
+                                    <i class="fa fa-save me-2"></i> Enregistrer mes préférences
+                                </button>
+                                <a href="{{ path('app_profile') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                                    Retour au profil
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<form id="logoutForm" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+
+<style>
+.card.border-0.shadow-sm:hover { box-shadow: 0 8px 30px rgba(34,63,145,.15) !important; }
+.form-control.rounded-pill:focus { border-color:#223f91; box-shadow:0 0 0 3px rgba(34,63,145,.12); }
+</style>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        /* ── Validation budget ── */
+        function validateBudget(showMsg) {
+            const minEl  = document.getElementById('budgetMin');
+            const maxEl  = document.getElementById('budgetMax');
+            const errMin = document.getElementById('err-budgetMin');
+            const errMax = document.getElementById('err-budgetMax');
+            const minVal = minEl.value.trim();
+            const maxVal = maxEl.value.trim();
+            let ok = true;
+
+            minEl.style.borderColor = ''; maxEl.style.borderColor = '';
+            errMin.style.display = 'none'; errMax.style.display = 'none';
+
+            if (minVal !== '' && parseFloat(minVal) < 0) {
+                if (showMsg) { minEl.style.borderColor = '#dc3545'; errMin.textContent = 'Le budget minimum ne peut pas être négatif.'; errMin.style.display = 'block'; }
+                ok = false;
+            }
+            if (maxVal !== '' && parseFloat(maxVal) < 0) {
+                if (showMsg) { maxEl.style.borderColor = '#dc3545'; errMax.textContent = 'Le budget maximum ne peut pas être négatif.'; errMax.style.display = 'block'; }
+                ok = false;
+            }
+            if (minVal !== '' && maxVal !== '' && parseFloat(maxVal) <= parseFloat(minVal)) {
+                if (showMsg) { maxEl.style.borderColor = '#dc3545'; errMax.textContent = 'Le budget maximum doit être supérieur au budget minimum.'; errMax.style.display = 'block'; }
+                ok = false;
+            }
+            if (ok && showMsg) {
+                if (minVal !== '') minEl.style.borderColor = '#28a745';
+                if (maxVal !== '') maxEl.style.borderColor = '#28a745';
+            }
+            return ok;
+        }
+
+        document.getElementById('budgetMin').addEventListener('input', () => validateBudget(true));
+        document.getElementById('budgetMax').addEventListener('input', () => validateBudget(true));
+
+        document.getElementById('prefForm').addEventListener('submit', function(e) {
+            if (!validateBudget(true)) {
+                e.preventDefault();
+                document.getElementById('budgetMax').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        /* ── Déconnexion ── */
+        function confirmLogout(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Déconnexion',
+                text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#223f91',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Oui, me déconnecter',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) document.getElementById('logoutForm').submit();
+            });
+        }
+    </script>
+{% endblock %}

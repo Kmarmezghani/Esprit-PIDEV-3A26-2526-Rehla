@@ -11,81 +11,77 @@ class Preference
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
-    #[ORM\Column(type: "float")]
-    private float $budgetMin;
+    #[ORM\Column(name: "budgetMin", type: "float", nullable: true)]
+    private ?float $budgetMin = null;
 
-    #[ORM\Column(type: "float")]
-    private float $budgetMax;
+    #[ORM\Column(name: "budgetMax", type: "float", nullable: true)]
+    private ?float $budgetMax = null;
 
-    #[ORM\Column(type: "text")]
-    private string $typesVoyage;
+    #[ORM\Column(name: "typesVoyage", type: "text", nullable: true)]
+    private ?string $typesVoyage = null;
 
-    #[ORM\Column(type: "text")]
-    private string $centresInteret;
+    #[ORM\Column(name: "centresInteret", type: "text", nullable: true)]
+    private ?string $centresInteret = null;
 
-        #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "preferences")]
-    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Personne $personne_id;
+    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "preferences")]
+    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
+    private ?Personne $personne_id = null;
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
-
-    public function getBudgetMin()
+    public function getBudgetMin(): ?float
     {
         return $this->budgetMin;
     }
 
-    public function setBudgetMin($value)
+    public function setBudgetMin(?float $value): void
     {
         $this->budgetMin = $value;
     }
 
-    public function getBudgetMax()
+    public function getBudgetMax(): ?float
     {
         return $this->budgetMax;
     }
 
-    public function setBudgetMax($value)
+    public function setBudgetMax(?float $value): void
     {
         $this->budgetMax = $value;
     }
 
-    public function getTypesVoyage()
+    public function getTypesVoyage(): ?string
     {
         return $this->typesVoyage;
     }
 
-    public function setTypesVoyage($value)
+    public function setTypesVoyage(?string $value): void
     {
         $this->typesVoyage = $value;
     }
 
-    public function getCentresInteret()
+    public function getCentresInteret(): ?string
     {
         return $this->centresInteret;
     }
 
-    public function setCentresInteret($value)
+    public function setCentresInteret(?string $value): void
     {
         $this->centresInteret = $value;
     }
 
-    public function getPersonne_id()
+    public function getPersonne_id(): ?Personne
     {
         return $this->personne_id;
     }
 
-    public function setPersonne_id($value)
+    public function setPersonne_id(?Personne $value): void
     {
         $this->personne_id = $value;
     }

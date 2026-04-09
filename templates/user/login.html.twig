@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion – Rehla</title>
+    <link rel="icon" type="image/png" href="{{ asset('assetsback/img/logoblue.png') }}">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f1c3f 0%, #223f91 60%, #1a5276 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            width: 100%;
+            max-width: 430px;
+            padding: 45px 40px 35px;
+        }
+
+        .login-logo {
+            display: block;
+            margin: 0 auto 8px;
+            height: 60px;
+        }
+
+        .login-brand {
+            text-align: center;
+            font-size: 13px;
+            color: #223f91;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+
+        .login-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+
+        .login-subtitle {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 28px;
+        }
+
+        .form-label { font-size: 13px; font-weight: 600; color: #444; }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1.5px solid #dee2e6;
+            font-size: 14px;
+            padding: 10px 14px;
+            transition: border-color .2s;
+        }
+        .form-control:focus {
+            border-color: #223f91;
+            box-shadow: 0 0 0 3px rgba(34,63,145,.12);
+        }
+
+        .input-icon { position: relative; }
+        .input-icon .fa {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .btn-connexion {
+            background-color: #223f91;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            transition: background .2s, transform .1s;
+        }
+        .btn-connexion:hover {
+            background-color: #1a2f6e;
+            transform: translateY(-1px);
+        }
+
+        .divider { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 12px; margin: 20px 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+
+        .link-register { color: #223f91; font-weight: 600; text-decoration: none; }
+        .link-register:hover { text-decoration: underline; }
+
+        .alert-error {
+            background: #fff5f5;
+            border: 1px solid #f5c2c7;
+            border-radius: 8px;
+            color: #842029;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+        }
+
+        .flash-success {
+            background: #d1e7dd;
+            border: 1px solid #a3cfbb;
+            border-radius: 8px;
+            color: #0a3622;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+        }
+
+        .field-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        .form-control.is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 3px rgba(220,53,69,.12) !important; }
+        .form-control.is-valid   { border-color: #28a745 !important; box-shadow: 0 0 0 3px rgba(40,167,69,.10) !important; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+
+        <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla" class="login-logo">
+        <p class="login-brand">Explore the World</p>
+
+        <h4 class="login-title">Bon retour ! 👋</h4>
+        <p class="login-subtitle">Connectez-vous à votre espace Rehla</p>
+
+        {% for msg in app.flashes('success') %}
+            <div class="flash-success"><i class="fa fa-check-circle me-1"></i> {{ msg }}</div>
+        {% endfor %}
+
+        {% if error %}
+            <div class="alert-error"><i class="fa fa-exclamation-circle"></i> {{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_login') }}" novalidate id="loginForm">
+
+            <div class="mb-3">
+                <label class="form-label">Adresse e-mail</label>
+                <input type="email" name="email" id="loginEmail"
+                       class="form-control" placeholder="votre@email.com" autofocus>
+                <div class="field-error" id="err-email"></div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Mot de passe</label>
+                <div class="input-icon">
+                    <input type="password" name="motDePasse" id="passwordField"
+                           class="form-control" placeholder="••••••••">
+                    <i class="fa fa-eye" id="togglePwd" onclick="togglePassword()"></i>
+                </div>
+                <div class="field-error" id="err-password"></div>
+            </div>
+
+            <button type="submit" class="btn-connexion">
+                <i class="fa fa-sign-in me-2"></i> Se connecter
+            </button>
+        </form>
+
+        <div class="divider">ou</div>
+
+        <p class="text-center mb-0" style="font-size:13px; color:#555;">
+            Pas encore de compte ?
+            <a href="{{ path('app_register') }}" class="link-register">S'inscrire</a>
+        </p>
+
+        <p class="text-center mt-3 mb-0">
+            <a href="{{ path('home') }}" style="font-size:12px; color:#aaa; text-decoration:none;">
+                <i class="fa fa-arrow-left"></i> Retour à l'accueil
+            </a>
+        </p>
+    </div>
+
+    <script>
+        /* ── Toggle mot de passe ── */
+        function togglePassword() {
+            const field = document.getElementById('passwordField');
+            const icon  = document.getElementById('togglePwd');
+            field.type  = field.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
+        /* ── Helpers ── */
+        function showError(inputId, errId, msg) {
+            const input = document.getElementById(inputId);
+            const err   = document.getElementById(errId);
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            err.textContent = msg;
+            err.style.display = 'block';
+        }
+        function clearError(inputId, errId) {
+            const input = document.getElementById(inputId);
+            const err   = document.getElementById(errId);
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            err.style.display = 'none';
+        }
+        function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+        /* ── Validation en temps réel ── */
+        document.getElementById('loginEmail').addEventListener('blur', function() {
+            const v = this.value.trim();
+            if (!v)                  showError('loginEmail', 'err-email', "L'adresse e-mail est requise.");
+            else if (!isValidEmail(v)) showError('loginEmail', 'err-email', "Format d'e-mail invalide (ex: nom@domaine.com).");
+            else                     clearError('loginEmail', 'err-email');
+        });
+
+        document.getElementById('passwordField').addEventListener('blur', function() {
+            if (!this.value) showError('passwordField', 'err-password', 'Le mot de passe est requis.');
+            else             clearError('passwordField', 'err-password');
+        });
+
+        /* ── Validation à la soumission ── */
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            let ok = true;
+            const email = document.getElementById('loginEmail').value.trim();
+            const pwd   = document.getElementById('passwordField').value;
+
+            if (!email) {
+                showError('loginEmail', 'err-email', "L'adresse e-mail est requise."); ok = false;
+            } else if (!isValidEmail(email)) {
+                showError('loginEmail', 'err-email', "Format d'e-mail invalide (ex: nom@domaine.com)."); ok = false;
+            } else {
+                clearError('loginEmail', 'err-email');
+            }
+
+            if (!pwd) {
+                showError('passwordField', 'err-password', 'Le mot de passe est requis.'); ok = false;
+            } else {
+                clearError('passwordField', 'err-password');
+            }
+
+            if (!ok) e.preventDefault();
+        });
+    </script>
+</body>
+</html>

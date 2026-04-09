@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription – Rehla</title>
+    <link rel="icon" type="image/png" href="{{ asset('assetsback/img/logoblue.png') }}">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f1c3f 0%, #223f91 60%, #1a5276 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+
+        .register-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            width: 100%;
+            max-width: 500px;
+            padding: 45px 40px 35px;
+        }
+
+        .login-logo  { display: block; margin: 0 auto 8px; height: 56px; }
+        .login-brand {
+            text-align: center; font-size: 13px; color: #223f91;
+            font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px;
+        }
+        .register-title  { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+        .register-subtitle { font-size: 13px; color: #6c757d; margin-bottom: 24px; }
+
+        .form-label { font-size: 13px; font-weight: 600; color: #444; }
+
+        .form-control {
+            border-radius: 8px; border: 1.5px solid #dee2e6;
+            font-size: 14px; padding: 10px 14px; transition: border-color .2s;
+        }
+        .form-control:focus {
+            border-color: #223f91;
+            box-shadow: 0 0 0 3px rgba(34,63,145,.12);
+        }
+
+        .btn-register {
+            background-color: #223f91; color: #fff; border: none;
+            border-radius: 8px; padding: 12px; font-size: 15px;
+            font-weight: 600; width: 100%; transition: background .2s;
+        }
+        .btn-register:hover { background-color: #1a2f6e; }
+
+        .link-login { color: #223f91; font-weight: 600; text-decoration: none; }
+        .link-login:hover { text-decoration: underline; }
+
+        .alert-errors {
+            background: #fff5f5; border: 1px solid #f5c2c7;
+            border-radius: 8px; color: #842029; font-size: 13px;
+            padding: 12px 16px; margin-bottom: 18px;
+        }
+        .alert-errors ul { margin: 0; padding-left: 18px; }
+        .optional-label { font-size: 11px; color: #aaa; font-weight: 400; margin-left: 4px; }
+
+        .input-icon { position: relative; }
+        .input-icon .fa {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); color: #aaa; font-size: 15px; cursor: pointer;
+        }
+
+        .field-error { color: #dc3545; font-size: 12px; margin-top: 4px; display: none; }
+        .form-control.is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 3px rgba(220,53,69,.12) !important; }
+        .form-control.is-valid   { border-color: #28a745 !important; box-shadow: 0 0 0 3px rgba(40,167,69,.10) !important; }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+
+        <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla" class="login-logo">
+        <p class="login-brand">Explore the World</p>
+
+        <h4 class="register-title">Créer un compte</h4>
+        <p class="register-subtitle">Rejoignez la communauté Rehla et commencez à explorer</p>
+
+        {% if errors is defined and errors|length > 0 %}
+            <div class="alert-errors">
+                <strong><i class="fa fa-exclamation-circle"></i> Veuillez corriger les erreurs suivantes :</strong>
+                <ul class="mt-1">
+                    {% for err in errors %}
+                        <li>{{ err }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_register') }}" novalidate id="registerForm">
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="nom" id="rNom" class="form-control"
+                           placeholder="Votre nom" value="{{ old.nom ?? '' }}">
+                    <div class="field-error" id="err-nom"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" name="prenom" id="rPrenom" class="form-control"
+                           placeholder="Votre prénom" value="{{ old.prenom ?? '' }}">
+                    <div class="field-error" id="err-prenom"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Adresse e-mail</label>
+                <input type="email" name="email" id="rEmail" class="form-control"
+                       placeholder="votre@email.com" value="{{ old.email ?? '' }}">
+                <div class="field-error" id="err-remail"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Téléphone <span class="optional-label">(optionnel)</span>
+                </label>
+                <input type="text" name="telephone" id="rTel" class="form-control"
+                       placeholder="+216 XX XXX XXX" value="{{ old.tel ?? '' }}">
+                <div class="field-error" id="err-tel"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mot de passe <span class="optional-label">(min. 4 caractères)</span></label>
+                <div class="input-icon">
+                    <input type="password" name="motDePasse" id="pwd1"
+                           class="form-control" placeholder="••••••••">
+                    <i class="fa fa-eye" onclick="togglePwd('pwd1', this)"></i>
+                </div>
+                <div class="field-error" id="err-pwd1"></div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Confirmer le mot de passe</label>
+                <div class="input-icon">
+                    <input type="password" name="confirmPassword" id="pwd2"
+                           class="form-control" placeholder="••••••••">
+                    <i class="fa fa-eye" onclick="togglePwd('pwd2', this)"></i>
+                </div>
+                <div class="field-error" id="err-pwd2"></div>
+            </div>
+
+            <button type="submit" class="btn-register">
+                <i class="fa fa-user-plus me-2"></i> Créer mon compte
+            </button>
+        </form>
+
+        <p class="text-center mt-3 mb-0" style="font-size:13px; color:#555;">
+            Déjà inscrit ?
+            <a href="{{ path('app_login') }}" class="link-login">Se connecter</a>
+        </p>
+
+        <p class="text-center mt-2 mb-0">
+            <a href="{{ path('home') }}" style="font-size:12px; color:#aaa; text-decoration:none;">
+                <i class="fa fa-arrow-left"></i> Retour à l'accueil
+            </a>
+        </p>
+    </div>
+
+    <script>
+        /* ── Toggle mot de passe ── */
+        function togglePwd(id, icon) {
+            const f = document.getElementById(id);
+            f.type  = f.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
+        /* ── Helpers ── */
+        function showErr(id, errId, msg) {
+            document.getElementById(id).classList.add('is-invalid');
+            document.getElementById(id).classList.remove('is-valid');
+            const e = document.getElementById(errId);
+            e.textContent = msg; e.style.display = 'block';
+        }
+        function clearErr(id, errId) {
+            document.getElementById(id).classList.remove('is-invalid');
+            document.getElementById(id).classList.add('is-valid');
+            document.getElementById(errId).style.display = 'none';
+        }
+        function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+        function isPhone(v) { return v === '' || /^[\+\d\s\-\(\)]{6,20}$/.test(v); }
+
+        /* ── Validation en temps réel (blur) ── */
+        const rules = [
+            { id: 'rNom',    errId: 'err-nom',    check: v => v.trim() ? null : 'Le nom est requis.' },
+            { id: 'rPrenom', errId: 'err-prenom',  check: v => v.trim() ? null : 'Le prénom est requis.' },
+            { id: 'rEmail',  errId: 'err-remail',  check: v => !v.trim() ? "L'e-mail est requis." : !isEmail(v) ? "Format invalide (ex: nom@domaine.com)." : null },
+            { id: 'rTel',    errId: 'err-tel',     check: v => isPhone(v) ? null : 'Numéro invalide (chiffres, espaces, + autorisés).' },
+            { id: 'pwd1',    errId: 'err-pwd1',    check: v => !v ? 'Le mot de passe est requis.' : v.length < 4 ? 'Minimum 4 caractères.' : null },
+            { id: 'pwd2',    errId: 'err-pwd2',    check: v => {
+                const p1 = document.getElementById('pwd1').value;
+                return !v ? 'Veuillez confirmer le mot de passe.' : v !== p1 ? 'Les mots de passe ne correspondent pas.' : null;
+            }},
+        ];
+
+        rules.forEach(r => {
+            document.getElementById(r.id).addEventListener('blur', function() {
+                const msg = r.check(this.value);
+                msg ? showErr(r.id, r.errId, msg) : clearErr(r.id, r.errId);
+            });
+        });
+
+        /* Revalider la confirmation quand le premier mdp change */
+        document.getElementById('pwd1').addEventListener('input', function() {
+            const p2 = document.getElementById('pwd2');
+            if (p2.value) {
+                const msg = p2.value !== this.value ? 'Les mots de passe ne correspondent pas.' : null;
+                msg ? showErr('pwd2', 'err-pwd2', msg) : clearErr('pwd2', 'err-pwd2');
+            }
+        });
+
+        /* ── Validation à la soumission ── */
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            let ok = true;
+            rules.forEach(r => {
+                const msg = r.check(document.getElementById(r.id).value);
+                if (msg) { showErr(r.id, r.errId, msg); ok = false; }
+                else     { clearErr(r.id, r.errId); }
+            });
+            if (!ok) e.preventDefault();
+        });
+    </script>
+</body>
+</html>

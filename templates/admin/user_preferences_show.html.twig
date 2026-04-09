@@ -1,0 +1,145 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block title %}Préférences de {{ personne.prenom }} – Rehla Admin{% endblock %}
+
+{% block sidebar %}
+  {% include 'admin/Partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/Partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+
+<div class="row justify-content-center">
+  <div class="col-md-9">
+
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bx bx-arrow-back me-1"></i> Retour
+        </a>
+        <h4 class="mb-0">
+            <i class="bx bx-slider me-2" style="color:#223f91;"></i>
+            Préférences de {{ personne.prenom }} {{ personne.nom }}
+        </h4>
+    </div>
+
+    {# ── Fiche utilisateur ── #}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body d-flex align-items-center p-4">
+            {% if personne.profile_photo %}
+                <img src="{{ personne.profile_photo }}" alt="Photo"
+                     class="rounded-circle me-3"
+                     style="width:70px;height:70px;object-fit:cover;border:3px solid #223f91;">
+            {% else %}
+                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo"
+                     class="rounded-circle me-3"
+                     style="width:70px;height:70px;object-fit:cover;border:3px solid #223f91;">
+            {% endif %}
+            <div>
+                <h5 class="mb-1">{{ personne.prenom }} {{ personne.nom }}</h5>
+                <small class="text-muted">{{ personne.email }}</small><br>
+                {% if personne.role == 'ADMIN' %}
+                    <span class="badge bg-label-danger mt-1">Admin</span>
+                {% elseif personne.role == 'GUIDE' %}
+                    <span class="badge bg-label-warning mt-1">Guide</span>
+                {% else %}
+                    <span class="badge bg-label-primary mt-1">Client</span>
+                {% endif %}
+                <span class="badge {% if personne.statutCompte == 'ACTIF' %}bg-label-success{% else %}bg-label-danger{% endif %} mt-1 ms-1">
+                    {{ personne.statutCompte }}
+                </span>
+            </div>
+            <div class="ms-auto">
+                <a href="{{ path('admin_user_edit', {id: personne.id}) }}"
+                   class="btn btn-sm" style="background:#223f91; color:#fff; border-radius:6px;">
+                    <i class="bx bx-edit me-1"></i> Modifier le compte
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ── Préférences ── #}
+    {% if preference %}
+    <div class="card shadow-sm">
+        <div class="card-header" style="background:#223f91;">
+            <h5 class="mb-0 text-white">
+                <i class="bx bx-slider me-2"></i>Préférences de voyage
+            </h5>
+        </div>
+        <div class="card-body p-4">
+
+            {# Budget #}
+            <div class="mb-4">
+                <h6 class="fw-bold mb-2" style="color:#223f91; border-bottom:2px solid #e9ecef; padding-bottom:6px;">
+                    <i class="bx bx-euro me-2"></i>Budget de voyage
+                </h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 text-center p-3">
+                            <small class="text-muted">Minimum</small>
+                            <h4 class="mb-0" style="color:#223f91;">
+                                {{ preference.budgetMin is not null ? preference.budgetMin ~ ' €' : 'Non défini' }}
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light border-0 text-center p-3">
+                            <small class="text-muted">Maximum</small>
+                            <h4 class="mb-0" style="color:#223f91;">
+                                {{ preference.budgetMax is not null ? preference.budgetMax ~ ' €' : 'Non défini' }}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Types de voyage #}
+            <div class="mb-4">
+                <h6 class="fw-bold mb-2" style="color:#223f91; border-bottom:2px solid #e9ecef; padding-bottom:6px;">
+                    <i class="bx bx-world me-2"></i>Types de voyage
+                </h6>
+                {% if preference.typesVoyage %}
+                    {% for type in preference.typesVoyage|split(',') %}
+                        <span class="badge me-1 mb-1 px-3 py-2" style="background:#223f91; color:#fff; border-radius:50px; font-size:13px;">
+                            {{ type|trim }}
+                        </span>
+                    {% endfor %}
+                {% else %}
+                    <em class="text-muted">Aucun type défini</em>
+                {% endif %}
+            </div>
+
+            {# Centres d'intérêt #}
+            <div class="mb-2">
+                <h6 class="fw-bold mb-2" style="color:#223f91; border-bottom:2px solid #e9ecef; padding-bottom:6px;">
+                    <i class="bx bx-heart me-2"></i>Centres d'intérêt
+                </h6>
+                {% if preference.centresInteret %}
+                    {% for interet in preference.centresInteret|split(',') %}
+                        <span class="badge me-1 mb-1 px-3 py-2 bg-label-primary" style="border-radius:50px; font-size:13px;">
+                            {{ interet|trim }}
+                        </span>
+                    {% endfor %}
+                {% else %}
+                    <em class="text-muted">Aucun centre d'intérêt défini</em>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% else %}
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bx bx-info-circle display-4 text-muted mb-3"></i>
+            <h5 class="text-muted">Aucune préférence enregistrée</h5>
+            <p class="text-muted">Cet utilisateur n'a pas encore défini ses préférences de voyage.</p>
+        </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

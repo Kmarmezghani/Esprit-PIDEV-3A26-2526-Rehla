@@ -223,7 +223,7 @@ class UserController extends AbstractController
                     $session->set('user_prenom', $prenom);
                     $session->set('user_photo',  $personne->getProfile_photo());
 
-                    $this->addFlash('success', 'Profil mis à jour avec succès !');
+                    $this->addFlash('profile_success', 'Profil mis à jour avec succès !');
                     return $this->redirectToRoute('app_profile');
                 }
             }
@@ -261,7 +261,7 @@ class UserController extends AbstractController
         } else {
             $personne->setMotDePasse($nouveau);
             $em->flush();
-            $this->addFlash('success', 'Mot de passe modifié avec succès !');
+            $this->addFlash('profile_success', 'Mot de passe modifié avec succès !');
         }
 
         return $this->redirectToRoute('app_profile');
@@ -334,7 +334,7 @@ class UserController extends AbstractController
             $em->persist($preference);
             $em->flush();
 
-            $this->addFlash('success', 'Préférences enregistrées avec succès !');
+            $this->addFlash('profile_success', 'Préférences enregistrées avec succès !');
             return $this->redirectToRoute('app_preferences');
         }
 

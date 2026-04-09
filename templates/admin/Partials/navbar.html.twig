@@ -26,6 +26,7 @@
 
     <input
         type="text"
+        {% if not (currentRoute starts with 'admin_reservation') %}id="admin-activity-search"{% endif %}
         name="search"
         value="{{ app.request.get('search') }}"
         class="form-control border-0 shadow-none ps-1 ps-sm-2"

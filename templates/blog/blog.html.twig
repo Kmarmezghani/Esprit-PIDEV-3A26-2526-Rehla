@@ -188,6 +188,7 @@
 
 {{ form_start(form, {
     attr: {
+        id: 'postForm',
         enctype: 'multipart/form-data',
         novalidate: 'novalidate'
     }
@@ -897,7 +898,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const form = document.querySelector("form");
+    const form = document.getElementById("postForm");
     const contenu = document.getElementById("post_contenu");
 
     if (!form || !contenu) return;
@@ -907,7 +908,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const value = (contenu.value || "").trim();
 
        if (value === "") {
-    e.preventDefault();
 
     Swal.fire({
         icon: 'error',

@@ -340,6 +340,7 @@
       </div>
 
       <!-- DROPDOWN (inchangé) -->
+      {% if app.session.get('user_id') == post.personne_id.id %}
       <div class="dropdown ms-3">
         <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle"
                 type="button" data-toggle="dropdown">
@@ -361,6 +362,7 @@
           </a>
         </div>
       </div>
+      {% endif %}
 
       <!-- TAGS -->
       <div class="ml-auto d-flex align-items-center">

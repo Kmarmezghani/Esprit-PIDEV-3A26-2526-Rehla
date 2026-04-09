@@ -1,0 +1,55 @@
+# Implementation Plan - Search and Sort for Destinations (Admin)
+
+This plan outlines the integration of search and sorting capabilities for the "Destinations" management module, ensuring a consistent user experience with the existing "Activities" module.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The search and sort logic will be applied to all three tabs (Pays, Villes, Attractions). The search will be "intelligent," looking through names, descriptions, and related entities (e.g., searching for a country name while in the 'Villes' tab).
+
+## Proposed Changes
+
+### 1. Repository Layer [Database Logic]
+
+We will add custom `searchAndSort` methods to our repositories to handle the filtering and ordering at the database level.
+
+#### [MODIFY] [PaysRepository.php](file:///c:/Users/STAR/Desktop/Rehla/src/Repository/PaysRepository.php)
+- Add `searchAndSort(?string $search, string $sort, string $direction)` method.
+- **Searchable fields**: `nom`, `description`.
+- **Sortable fields**: `nom`, `visitCount`.
+
+#### [MODIFY] [VilleRepository.php](file:///c:/Users/STAR/Desktop/Rehla/src/Repository/VilleRepository.php)
+- Add `searchAndSort(?string $search, string $sort, string $direction)` method.
+- **Searchable fields**: `nom`, `typeTourisme`, `saison`, `pays.nom`.
+- **Sortable fields**: `nom`, `visitCount`, `typeTourisme`.
+
+#### [MODIFY] [AttractionRepository.php](file:///c:/Users/STAR/Desktop/Rehla/src/Repository/AttractionRepository.php)
+- Add `searchAndSort(?string $search, string $sort, string $direction)` method.
+- **Searchable fields**: `nom`, `description`, `type`, `ville.nom`.
+- **Sortable fields**: `nom`, `prix`, `heureOuverture`.
+
+---
+
+### 2. Controller Layer [Request Handling]
+
+#### [MODIFY] [AdminDestinationController.php](file:///c:/Users/STAR/Desktop/Rehla/src/Controller/AdminDestinationController.php)
+- Update the `index` action to:
+    - Capture `search`, `sort`, and `direction` query parameters.
+    - Call the new repository methods instead of `findAll()`.
+    - Maintain the `tab` state so search results remain visible in the correct tab.
+
+---
+
+### 3. Template Layer [User Interface]
+
+#### [MODIFY] [destination_admin.html.twig](file:///c:/Users/STAR/Desktop/Rehla/templates/admin/destination_admin.html.twig)
+- Add 3 search forms (one for each tab) with a consistent design.
+- Update table headers to include sorting links (arrows that toggle ASC/DESC).
+- Ensure search parameters are preserved when switching tabs or sorting.
+
+## Verification Plan
+
+### Manual Verification
+1. **Search Test**: Type a keyword in the "Villes" search bar and verify only matching cities (or cities in matching countries) appear.
+2. **Sort Test**: Click on "Prix" in the Attractions tab and verify they are ordered correctly.
+3. **Combination Test**: Perform a search, then try to sort the results. Verify that both filters are applied together.

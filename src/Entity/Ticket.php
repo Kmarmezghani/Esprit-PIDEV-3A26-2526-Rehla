@@ -53,27 +53,68 @@ class Ticket
         $this->statut = 'Disponible';
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getType(): ?string { return $this->type; }
-    public function setType(string $value): self { $this->type = $value; return $this; }
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+    public function setType(string $value): self
+    {
+        $this->type = $value;
+        return $this;
+    }
 
-    public function getStatut(): ?string { return $this->statut; }
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
     public function setStatut(string $statut): self
-{
-    $this->statut = $statut;
-    return $this;
-}
+    {
+        $this->statut = $statut;
+        return $this;
+    }
 
-    public function getPrix(): ?float { return $this->prix; }
-    public function setPrix(float $value): self { $this->prix = $value; return $this; }
+    public function getPrix(): ?float
+    {
+        return $this->prix;
+    }
+    public function setPrix(float $value): self
+    {
+        $this->prix = $value;
+        return $this;
+    }
 
-    public function getReservation_id(): ?Reservation { return $this->reservation_id; }
-    public function setReservation_id(?Reservation $value): self { $this->reservation_id = $value; return $this; }
+    public function getReservation_id(): ?Reservation
+    {
+        return $this->reservation_id;
+    }
+    public function setReservation_id(?Reservation $value): self
+    {
+        $this->reservation_id = $value;
+        return $this;
+    }
 
-    public function getDestination(): ?Ville { return $this->destination; }
-    public function setDestination(?Ville $destination): self { $this->destination = $destination; return $this; }
+    public function getDestination(): ?Ville
+    {
+        return $this->destination;
+    }
+    public function setDestination(?Ville $destination): self
+    {
+        $this->destination = $destination;
+        return $this;
+    }
 
-    public function getActivite(): ?Activite { return $this->activite; }
-    public function setActivite(?Activite $activite): self { $this->activite = $activite; return $this; }
+    public function getActivite(): ?Activite
+    {
+        return $this->activite;
+    }
+    public function setActivite(?Activite $activite): self
+    {
+        $this->activite = $activite;
+        return $this;
+    }
 }

@@ -1,0 +1,236 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Activités{% endblock %}
+
+{% block body %}
+<!-- NAVBAR : inchangée -->
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+                <li class="nav-item"><a href="{{ path('app_admin') }}" class="nav-link">Contact</a></li>
+
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center" 
+                       href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ asset('assets/images/default-user.png') }}" 
+                             alt="Photo de profil" 
+                             class="rounded-circle"
+                             style="width:35px; height:35px; object-fit:cover;">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#">Mon profil</a></li>
+                        <li><a class="dropdown-item" href="{{ path('mes_activites') }}">Mes activités</a></li>
+                        <li><a class="dropdown-item" href="#">Mes réservations</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#">Déconnexion</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
+            <div class="col-md-9 ftco-animate pb-5 text-center">
+                <p class="breadcrumbs">
+                    <span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span> 
+                    <span>Mes Activités <i class="fa fa-chevron-right"></i></span>
+                </p>
+                <h1 class="mb-0 bread">Mes Activités</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="ftco-section">
+    <div class="container">
+        <div class="d-flex justify-content-end mb-4">
+    <a href="{{ path('ajouter_activite') }}" class="btn btn-primary px-4 py-2">
+        <i class="fa fa-plus"></i> Ajouter une activité
+    </a>
+</div>
+        <div class="row">
+            
+            {% if activites is not empty %}
+                {% for activite in activites %}
+                    <div class="col-md-4 ftco-animate">
+                        <div class="project-wrap position-relative">
+
+                            <!-- Icons Modifier / Supprimer -->
+                            <div class="card-icons position-absolute" style="top:10px; right:10px; display:flex; gap:10px; z-index:10;">
+                                <a href="{{ path('modifier_activite', {'id': activite.id}) }}" title="Modifier" style="color:#fff;">
+                                    <i class="fa fa-pencil fa-lg"></i>
+                                </a>
+                                <a href="#"
+                                class="delete-activity-btn"
+                                data-delete-url="{{ path('supprimer_activite', {'id': activite.id}) }}"
+                                data-activity-name="{{ activite.nom }}"
+                                title="Supprimer"
+                                style="color:#fff;">
+                                    <i class="fa fa-trash fa-lg"></i>
+                                </a>
+                            </div>
+
+                            <!-- Image -->
+                            <a href="#" class="img d-block" 
+                               style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}');">
+                                <span class="price">${{ activite.prix }}/person</span>
+                            </a>
+
+                            <!-- Info -->
+                            <div class="text p-4">
+                                <span class="days">
+                                    {{ activite.dateDebut ? activite.dateDebut|date('d M') : 'Date non définie' }}
+                                    {{ activite.dateFin ? activite.dateFin|date('d M') : 'Date non définie' }}
+                                </span>
+                                <h3><a href="#">{{ activite.nom }}</a></h3>
+                                <p class="location">
+                                    <span class="fa fa-map-marker"></span> 
+                                    {{ activite.destination ? activite.destination.nom : 'Non défini' }}
+                                </p>
+
+                                <!-- Places et Note sur la même ligne, Type en dessous -->
+                                <div style="margin-top:10px;">
+                                    <div style="display:flex; align-items:center; gap:20px; margin-bottom:5px;">
+                                        <!-- Places -->
+                                        <div style="display:flex; align-items:center; gap:5px;">
+                                            <img src="{{ asset('assets/icons/community.svg') }}" style="width:25px; height:25px;">
+                                            {{ activite.maxPlaces ?: '0' }} Places
+                                        </div>
+                                        <!-- Note moyenne -->
+                                        <div style="display:flex; align-items:center; gap:5px;">
+                                            <img src="{{ asset('assets/icons/star.svg') }}" style="width:20px; height:20px;">
+                                            {{ activite.noteMoyenne|round(1) }}
+                                        </div>
+                                    </div>
+                                    <!-- Type d'activité -->
+                                    <div>
+                                        <span class="flaticon-sun-umbrella"></span> {{ activite.typeActivite ?: 'Non défini' }}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center">Vous n'avez aucune activité pour le moment.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<footer class="ftco-footer bg-bottom ftco-no-pt" style="background-image: url('{{ asset('assets/images/bg_3.jpg')}}');">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-md pt-5">
+        <div class="ftco-footer-widget pt-md-5 mb-4">
+          <h2 class="ftco-heading-2">About</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+          <ul class="ftco-footer-social list-unstyled float-md-left float-lft">
+            <li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
+            <li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
+            <li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md pt-5 border-left">
+        <div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
+          <h2 class="ftco-heading-2">Information</h2>
+          <ul class="list-unstyled">
+            <li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
+            <li><a href="#" class="py-2 d-block">General Enquiries</a></li>
+            <li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
+            <li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
+            <li><a href="#" class="py-2 d-block">Refund Policy</a></li>
+            <li><a href="#" class="py-2 d-block">Call Us</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md pt-5 border-left">
+        <div class="ftco-footer-widget pt-md-5 mb-4">
+          <h2 class="ftco-heading-2">Experience</h2>
+          <ul class="list-unstyled">
+            <li><a href="#" class="py-2 d-block">Adventure</a></li>
+            <li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
+            <li><a href="#" class="py-2 d-block">Beach</a></li>
+            <li><a href="#" class="py-2 d-block">Nature</a></li>
+            <li><a href="#" class="py-2 d-block">Camping</a></li>
+            <li><a href="#" class="py-2 d-block">Party</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md pt-5 border-left">
+        <div class="ftco-footer-widget pt-md-5 mb-4">
+          <h2 class="ftco-heading-2">Have a Questions?</h2>
+          <div class="block-23 mb-3">
+            <ul>
+              <li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+              <li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+              <li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <p>
+          Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteButtons = document.querySelectorAll('.delete-activity-btn');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const deleteUrl = this.dataset.deleteUrl;
+            const activityName = this.dataset.activityName;
+
+            Swal.fire({
+                title: 'Supprimer cette activité ?',
+                html: `Vous allez supprimer <b>${activityName}</b>.<br>Cette action est irréversible.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#223f91',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = deleteUrl;
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

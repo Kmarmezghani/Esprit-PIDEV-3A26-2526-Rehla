@@ -13,13 +13,14 @@ class Commentaire
 {
 
     #[ORM\Id]
+     #[ORM\GeneratedValue] 
     #[ORM\Column(type: "integer")]
     private int $id;
 
     #[ORM\Column(type: "text")]
     private string $contenu;
 
-    #[ORM\Column(type: "datetime")]
+    #[ORM\Column(name: "dateCommentaire", type: "datetime")]
     private \DateTimeInterface $dateCommentaire;
 
         #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "commentaires")]

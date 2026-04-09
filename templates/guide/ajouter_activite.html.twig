@@ -1,0 +1,579 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter Activité{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display: block; font-size: 14px; color: #223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+                <li class="nav-item"><a href="{{ path('app_admin') }}" class="nav-link">Contact</a></li>
+
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ asset('assets/images/default-user.png') }}"
+                             alt="Photo de profil"
+                             class="rounded-circle"
+                             style="width:35px; height:35px; object-fit:cover;">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#">Mon profil</a></li>
+                        <li><a class="dropdown-item" href="{{ path('mes_activites') }}">Mes activités</a></li>
+                        <li><a class="dropdown-item" href="#">Mes réservations</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#">Déconnexion</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="hero-wrap" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}'); min-height:100vh;">
+    <div class="overlay"></div>
+
+    <div class="ftco-section form-section-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-9 col-lg-7">
+                    <div class="card shadow-sm border-0 p-4 p-md-4 multi-step-card">
+                        <h2 class="mb-4 text-center form-title">Ajouter une activité :</h2>
+
+                        <div class="stepper-wrapper mb-4">
+                            <div class="stepper-line"></div>
+
+                            <div class="stepper-item active" data-step="0">
+                                <div class="step-counter">1</div>
+                                <div class="step-name">Infos générales</div>
+                            </div>
+
+                            <div class="stepper-item" data-step="1">
+                                <div class="step-counter">2</div>
+                                <div class="step-name">Détails</div>
+                            </div>
+
+                            <div class="stepper-item" data-step="2">
+                                <div class="step-counter">3</div>
+                                <div class="step-name">Finalisation</div>
+                            </div>
+                        </div>
+
+                        {{ form_start(form, {
+                            'attr': {
+                                'id': 'multiStepForm',
+                                'novalidate': 'novalidate'
+                            }
+                        }) }}
+
+                        {{ form_errors(form) }}
+
+                       
+                        <div class="form-step active">
+                            <div class="step-content-box">
+
+                                <div class="activity-image-block mb-4">
+                                    <p class="section-mini-title">Image de l'activité</p>
+
+                                    {% if activite.image %}
+                                        <div class="activity-preview-wrapper">
+                                            <img src="{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}"
+                                                 alt="Current Image"
+                                                 class="activity-preview-img">
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="upload-wrapper mt-3">
+                                        {{ form_label(form.image, "Changer l'image", {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.image, {'attr': {'class': 'form-control custom-input file-input-custom'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.image) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.nom, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.nom) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.prix, 'Prix', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.prix, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.prix) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-navigation text-right">
+                                    <button type="button" class="btn btn-primary next-step px-4">Suivant</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 2 -->
+                        <div class="form-step d-none">
+                            <div class="step-content-box">
+                                <div class="mb-3">
+                                    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.description, {'attr': {'class': 'form-control custom-input custom-textarea', 'rows': 5}}) }}
+                                    <div class="form-error">
+                                        {{ form_errors(form.description) }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.date_debut, 'Date début', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.date_debut, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.date_debut) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.date_fin, 'Date fin', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.date_fin, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.date_fin) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.destination, 'Destination', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.destination, {'attr': {'class': 'form-control custom-input'}}) }}
+                                    <div class="form-error">
+                                        {{ form_errors(form.destination) }}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between form-navigation">
+                                    <button type="button" class="btn btn-outline-secondary prev-step px-4">Précédent</button>
+                                    <button type="button" class="btn btn-primary next-step px-4">Suivant</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 3 -->
+                        <div class="form-step d-none">
+                            <div class="step-content-box">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_label(form.typeActivite, "Type d'activité", {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.typeActivite, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.typeActivite) }}
+                                        </div>
+                                    </div>
+
+                                    {% if form.max_places is defined %}
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.max_places, 'Places maximum', {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(form.max_places, {'attr': {'class': 'form-control custom-input'}}) }}
+                                            <div class="form-error">
+                                                {{ form_errors(form.max_places) }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if form.status is defined %}
+                                    <div class="mb-3">
+                                        {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.status, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        <div class="form-error">
+                                            {{ form_errors(form.status) }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <div class="d-flex justify-content-between form-navigation">
+                                    <button type="button" class="btn btn-outline-secondary prev-step px-4">Précédent</button>
+                                    <button type="submit" class="btn btn-success px-4">Enregistrer</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="ftco-footer bg-bottom ftco-no-pt" style="background-image: url('{{ asset('assets/images/bg_3.jpg')}}');">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md pt-5">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">About</h2>
+                    <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+                    <ul class="ftco-footer-social list-unstyled float-md-left float-lft">
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
+                    <h2 class="ftco-heading-2">Information</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
+                        <li><a href="#" class="py-2 d-block">General Enquiries</a></li>
+                        <li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
+                        <li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
+                        <li><a href="#" class="py-2 d-block">Refund Policy</a></li>
+                        <li><a href="#" class="py-2 d-block">Call Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">Experience</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="py-2 d-block">Adventure</a></li>
+                        <li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
+                        <li><a href="#" class="py-2 d-block">Beach</a></li>
+                        <li><a href="#" class="py-2 d-block">Nature</a></li>
+                        <li><a href="#" class="py-2 d-block">Camping</a></li>
+                        <li><a href="#" class="py-2 d-block">Party</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">Have a Questions?</h2>
+                    <div class="block-23 mb-3">
+                        <ul>
+                            <li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                            <li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                            <li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>
+                    Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .hero-wrap {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-wrap .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.45);
+    }
+
+    .hero-wrap .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .form-section-wrapper {
+        padding-top: 120px;
+        padding-bottom: 70px;
+    }
+
+    .multi-step-card {
+        border-radius: 26px;
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 25px 70px rgba(0,0,0,0.18);
+        margin-top: 30px;
+    }
+
+    .form-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.25;
+        margin-bottom: 30px !important;
+    }
+
+    .stepper-wrapper {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin: 10px 0 30px;
+    }
+
+    .stepper-line {
+        position: absolute;
+        top: 18px;
+        left: 12%;
+        right: 12%;
+        height: 4px;
+        background: #d9d9d9;
+        z-index: 1;
+        border-radius: 20px;
+    }
+
+    .stepper-item {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        flex: 1;
+    }
+
+    .step-counter {
+        width: 38px;
+        height: 38px;
+        margin: 0 auto 8px;
+        border-radius: 50%;
+        background: #d9d9d9;
+        color: #fff;
+        font-weight: 700;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .step-name {
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .stepper-item.active .step-counter,
+    .stepper-item.completed .step-counter {
+        background: #223f91;
+    }
+
+    .stepper-item.active .step-name,
+    .stepper-item.completed .step-name {
+        color: #223f91;
+        font-weight: 700;
+    }
+
+    .step-content-box {
+        background: #f8fafc;
+        border: 1px solid #e8edf5;
+        border-radius: 22px;
+        padding: 24px;
+    }
+
+    .section-mini-title {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #223f91;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .activity-image-block {
+        text-align: center;
+    }
+
+    .activity-preview-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .activity-preview-img {
+        width: 170px;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        border: 4px solid #fff;
+    }
+
+    .upload-wrapper {
+        max-width: 420px;
+        margin: 0 auto 10px;
+    }
+
+    .custom-input {
+        height: 46px;
+        border-radius: 12px;
+        border: 1px solid #d7deea;
+        box-shadow: none !important;
+        background: #fff;
+        padding-left: 16px;
+        font-size: 15px;
+    }
+
+    .custom-input:focus {
+        border-color: #223f91;
+    }
+
+    .file-input-custom {
+        padding: 10px 14px;
+        height: auto;
+    }
+
+    .custom-textarea {
+        height: auto !important;
+        min-height: 120px;
+        resize: vertical;
+        padding-top: 14px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #223f91;
+        margin-bottom: 8px;
+        font-size: 14px;
+        display: block;
+    }
+
+    .form-error {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .form-navigation {
+        margin-top: 14px;
+    }
+
+    .btn {
+        border-radius: 999px;
+        font-weight: 700;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .btn-primary {
+        background-color: #223f91;
+        border-color: #223f91;
+    }
+
+    .btn-primary:hover {
+        background-color: #1b3274;
+        border-color: #1b3274;
+    }
+
+    @media (max-width: 768px) {
+        .form-section-wrapper {
+            padding-top: 100px;
+            padding-bottom: 40px;
+        }
+
+        .multi-step-card {
+            padding: 20px !important;
+            border-radius: 20px;
+        }
+
+        .form-title {
+            font-size: 22px;
+        }
+
+        .step-name {
+            font-size: 11px;
+        }
+
+        .step-counter {
+            width: 34px;
+            height: 34px;
+            font-size: 17px;
+        }
+
+        .step-content-box {
+            padding: 18px;
+        }
+
+        .activity-preview-img {
+            width: 135px;
+            height: 135px;
+        }
+
+        .custom-input {
+            height: 42px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const steps = document.querySelectorAll(".form-step");
+    const nextBtns = document.querySelectorAll(".next-step");
+    const prevBtns = document.querySelectorAll(".prev-step");
+    const indicators = document.querySelectorAll(".stepper-item");
+
+    let currentStep = 0;
+
+    function showStep(index) {
+        steps.forEach((step, i) => {
+            step.classList.toggle("d-none", i !== index);
+            step.classList.toggle("active", i === index);
+        });
+
+        indicators.forEach((indicator, i) => {
+            indicator.classList.remove("active", "completed");
+
+            if (i < index) {
+                indicator.classList.add("completed");
+            } else if (i === index) {
+                indicator.classList.add("active");
+            }
+        });
+    }
+
+    nextBtns.forEach(btn => {
+        btn.addEventListener("click", function () {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+    });
+
+    prevBtns.forEach(btn => {
+        btn.addEventListener("click", function () {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    });
+
+    showStep(currentStep);
+});
+</script>
+
+{% endblock %}

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Explore Countries - Rehla{% endblock %}
+{% block title %}Attractions à {{ ville.nom }} - Rehla{% endblock %}
 
 {% block body %}
 	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
@@ -60,8 +60,13 @@
   <div class="container">
     <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
       <div class="col-md-9 ftco-animate pb-5 text-center">
-         <p class="breadcrumbs"><span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span> <span>Destinations <i class="fa fa-chevron-right"></i></span></p>
-         <h1 class="mb-0 bread">Explore Countries</h1>
+         <p class="breadcrumbs">
+            <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span> 
+            <span class="mr-2"><a href="{{ path('app_destination') }}">Destinations <i class="fa fa-chevron-right"></i></a></span>
+            <span class="mr-2"><a href="{{ path('app_destination_villes', {'id': ville.paysId.id}) }}">{{ ville.paysId.nom }} <i class="fa fa-chevron-right"></i></a></span>
+            <span>{{ ville.nom }} <i class="fa fa-chevron-right"></i></span>
+         </p>
+         <h1 class="mb-0 bread">Attractions à {{ ville.nom }}</h1>
      </div>
  </div>
 </div>
@@ -70,49 +75,30 @@
 <section class="ftco-section">
    <div class="container">
     <div class="row">
-    {% for pays in paysList %}
+    {% for attraction in attractions %}
        <div class="col-md-4 ftco-animate">
-          <div class="project-wrap" style="position: relative; overflow: hidden; height: 100%;">
-             <a href="{{ path('app_destination_villes', {'id': pays.id}) }}" style="display: block; color: inherit; text-decoration: none; height: 100%;">
-                <div class="img" style="background-image: url('{{ asset('assets/images/place-' ~ (loop.index % 5 + 1) ~ '.jpg') }}');">
-                    <span class="price">{{ pays.villes|length }} Cities</span>
+          <div class="project-wrap">
+             <div class="img" style="background-image: url('{{ asset('assets/images/destination-' ~ (loop.index % 9 + 1) ~ '.jpg') }}');">
+                <span class="price">${{ attraction.prix }}/personne</span>
+            </div>
+            <div class="text p-4">
+                <div class="mb-2">
+                    <span class="badge badge-primary px-2 py-1" style="background-color: #223f91; border-radius: 20px; font-size: 11px;">
+                        <i class="fa fa-tag"></i> Attraction : {{ attraction.type }}
+                    </span>
                 </div>
-                <div class="text p-4 text-center">
-                    <h3>{{ pays.nom }}</h3>
-                    <p class="location"><span class="fa fa-globe"></span> {{ pays.visitCount|default(0) }} Visites</p>
-                    
-                    {% set categories = [] %}
-                    {% set seasons = [] %}
-                    {% for ville in pays.villes %}
-                        {% if ville.typeTourisme and ville.typeTourisme not in categories %}
-                            {% set categories = categories|merge([ville.typeTourisme]) %}
-                        {% endif %}
-                        {% if ville.saison and ville.saison not in seasons %}
-                            {% set seasons = seasons|merge([ville.saison]) %}
-                        {% endif %}
-                    {% endfor %}
-
-                    <div class="mb-3">
-                        {% for cat in categories|slice(0, 3) %}
-                            <span class="badge badge-primary px-2 py-1 mb-1" style="background-color: #223f91; border-radius: 20px; font-size: 11px;">
-                                <i class="fa fa-tag"></i> {{ cat }}
-                            </span>
-                        {% endfor %}
-                        {% for sea in seasons|slice(0, 2) %}
-                            <span class="badge badge-info px-2 py-1 mb-1" style="background-color: #e8f0fe; color: #223f91; border-radius: 20px; font-size: 11px; border: 1px solid #223f91;">
-                                <i class="fa fa-sun-o"></i> {{ sea }}
-                            </span>
-                        {% endfor %}
-                    </div>
-
-                    <p style="font-size: 14px;">{{ pays.description|slice(0, 100) }}{{ pays.description|length > 100 ? '...' : '' }}</p>
-               </div>
-            </a>
+                <h3>{{ attraction.nom }}</h3>
+                <p class="location"><span class="fa fa-map-marker"></span> {{ ville.nom }}, {{ ville.paysId.nom }}</p>
+                <p>{{ attraction.description|slice(0, 100) }}...</p>
+                <ul>
+                   <li><span class="fa fa-clock-o"></span> {{ attraction.heureOuverture|date('H:i') }} - {{ attraction.heureFermeture|date('H:i') }}</li>
+               </ul>
+           </div>
        </div>
     </div>
     {% else %}
         <div class="col-md-12 text-center">
-            <p>Aucun pays trouvé pour le moment.</p>
+            <p>Aucune attraction trouvée pour cette ville.</p>
         </div>
     {% endfor %}
 </div>

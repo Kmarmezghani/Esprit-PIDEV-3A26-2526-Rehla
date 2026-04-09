@@ -28,12 +28,18 @@ class AdminDestinationController extends AbstractController
         AttractionRepository $attractionRepo
     ): Response {
         $tab = $request->query->get('tab', 'pays');
+        $search = $request->query->get('search');
+        $sort = $request->query->get('sort', 'nom');
+        $direction = $request->query->get('direction', 'asc');
 
         return $this->render('admin/destination_admin.html.twig', [
-            'pays' => $paysRepo->findAll(),
-            'villes' => $villeRepo->findAll(),
-            'attractions' => $attractionRepo->findAll(),
+            'pays' => ($tab === 'pays') ? $paysRepo->searchAndSort($search, $sort, $direction) : $paysRepo->searchAndSort(null, 'nom', 'asc'),
+            'villes' => ($tab === 'ville') ? $villeRepo->searchAndSort($search, $sort, $direction) : $villeRepo->searchAndSort(null, 'nom', 'asc'),
+            'attractions' => ($tab === 'attraction') ? $attractionRepo->searchAndSort($search, $sort, $direction) : $attractionRepo->searchAndSort(null, 'nom', 'asc'),
             'selectedTab' => $tab,
+            'search' => $search,
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 

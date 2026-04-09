@@ -130,6 +130,11 @@ class Ville
     #[ORM\OneToMany(mappedBy: "ville_id", targetEntity: Attraction::class)]
     private Collection $attractions;
 
+    public function getAttractions(): Collection
+    {
+        return $this->attractions;
+    }
+
     #[ORM\OneToMany(mappedBy: "destination_id", targetEntity: Activite::class)]
     private Collection $activites;
 

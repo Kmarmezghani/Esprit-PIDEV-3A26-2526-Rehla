@@ -18,17 +18,33 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteController extends AbstractController
 {
     #[Route('/activite', name: 'activite')]
-    public function index(ActiviteRepository $activiteRepository): Response
-    {
-        $activites = $activiteRepository->findBy([
-            'status' => 'DISPONIBLE'
-        ]);
+public function index(
+    Request $request,
+    ActiviteRepository $activiteRepository
+): Response
+{
+    $destination = trim((string) $request->query->get('destination', ''));
+    $dateDebut = $request->query->get('date_debut');
+    $dateFin = $request->query->get('date_fin');
+    $prixMax = $request->query->get('prix_max');
 
-        return $this->render('activite/activite.html.twig', [
-            'activites' => $activites
-        ]);
-    }
+    $activites = $activiteRepository->searchFront(
+        $destination,
+        $dateDebut,
+        $dateFin,
+        $prixMax
+    );
 
+    return $this->render('activite/activite.html.twig', [
+        'activites' => $activites,
+        'filters' => [
+            'destination' => $destination,
+            'date_debut' => $dateDebut,
+            'date_fin' => $dateFin,
+            'prix_max' => $prixMax,
+        ]
+    ]);
+}
     #[Route('/activite/{id}', name: 'activite_show')]
     public function show(
         Activite $activite,
@@ -58,9 +74,12 @@ final class ActiviteController extends AbstractController
             'activite' => $activite,
         ]);
 
-        $avis = $existingAvis ?? new Avis();
+        $isEditMode = $request->query->getBoolean('editAvis', false);
 
-        if (!$existingAvis) {
+        if ($existingAvis && $isEditMode) {
+            $avis = $existingAvis;
+        } else {
+            $avis = new Avis();
             $avis->setActivite($activite);
             $avis->setPersonne($personne);
         }
@@ -69,10 +88,19 @@ final class ActiviteController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $avis->setDateAvis(new \DateTime());
-
-            if (!$existingAvis) {
+            if ($existingAvis && $isEditMode) {
+                $existingAvis->setNote($avis->getNote());
+                $existingAvis->setCommentaire($avis->getCommentaire());
+                $existingAvis->setDateAvis(new \DateTime());
+            } elseif (!$existingAvis) {
+                $avis->setDateAvis(new \DateTime());
                 $em->persist($avis);
+            } else {
+                $this->addFlash('danger', 'Vous avez déjà publié un avis pour cette activité. Cliquez sur modifier pour le mettre à jour.');
+
+                return $this->redirectToRoute('activite_show', [
+                    'id' => $activite->getId()
+                ]);
             }
 
             $em->flush();
@@ -82,7 +110,7 @@ final class ActiviteController extends AbstractController
 
             $this->addFlash(
                 'success',
-                $existingAvis ? 'Votre avis a été modifié.' : 'Votre avis a été ajouté.'
+                ($existingAvis && $isEditMode) ? 'Votre avis a été modifié.' : 'Votre avis a été ajouté.'
             );
 
             return $this->redirectToRoute('activite_show', [
@@ -112,6 +140,7 @@ final class ActiviteController extends AbstractController
             'totalAvis' => $totalAvis,
             'avisForm' => $form->createView(),
             'userAvis' => $existingAvis,
+            'isEditMode' => $isEditMode,
         ]);
     }
 

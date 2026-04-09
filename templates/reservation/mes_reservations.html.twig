@@ -5,45 +5,104 @@
 {% block body %}
 <!-- NAVBAR : inchangée -->
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-    <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
-            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
-            <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav">
-            <span class="oi oi-menu"></span> Menu
-        </button>
-        <div class="collapse navbar-collapse" id="ftco-nav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
-                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
-                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
-                <li class="nav-item"><a href="{{ path('app_admin') }}" class="nav-link">Contact</a></li>
+		<div class="container">
+			<a class="navbar-brand" href="index.html">
+    
+    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+    
+    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="oi oi-menu"></span> Menu
+			</button>
 
-                <li class="nav-item dropdown ms-2 d-flex align-items-center">
-                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center" 
-                       href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ asset('assets/images/default-user.png') }}" 
-                             alt="Photo de profil" 
-                             class="rounded-circle"
-                             style="width:35px; height:35px; object-fit:cover;">
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="#">Mon profil</a></li>
-                        <li><a class="dropdown-item" href="{{ path('mes_activites') }}">Mes activités</a></li>
-                        <li><a class="dropdown-item" href="{{ path('mes_reservations') }}">Mes réservations</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#">Déconnexion</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+			<div class="collapse navbar-collapse" id="ftco-nav">
+    <ul class="navbar-nav ml-auto">
+    <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+    <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
+    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+    {% if app.session.get('user_id') %}
+    {# ── Utilisateur connecté ── #}
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+           href="#" id="userDropdown" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {% if app.session.get('user_photo') %}
+                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% else %}
+                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+            <li>
+                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                    Connecté en tant que<br>
+                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                <span>Mon profil</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                <span>Mes préférences</span>
+            </a></li>
+            
+			{% if app.session.get('user_role') == 'GUIDE' %}
+<li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+       style="padding:8px 16px; font-size:14px;">
+    <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+    <span>Mes activités</span>
+</a></li>
+{% endif %}
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                <span>Mes réservations</span>
+            </a></li>
+            {% if app.session.get('user_role') == 'ADMIN' %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-cogs" style="width:18px;"></i>
+                <span>Administration</span>
+            </a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                   onclick="confirmLogoutHome(event)"
+                   style="padding:8px 16px; font-size:14px;">
+                    <i class="fa fa-sign-out" style="width:18px;"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+    {% else %}
+    {# ── Non connecté ── #}
+    <li class="nav-item ms-2">
+        <a href="{{ path('app_register') }}" class="nav-link">
+            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+        </a>
+    </li>
+    {% endif %}
+</ul>
+</div>
+		</div>
+	</nav>
 
 
 <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
@@ -131,9 +190,9 @@
         <i class="fa fa-check"></i> Confirmée
     </span>
 
-{% elseif statut == 'en attente' %}
+{% elseif statut == 'réservée' %}
     <span class="badge rounded-pill px-3 py-2 bg-warning text-dark">
-        <i class="fa fa-clock"></i> En attente
+        <i class="fa fa-clock"></i> réservée
     </span>
 
 {% elseif statut == 'annulée' %}

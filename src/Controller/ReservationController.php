@@ -16,19 +16,44 @@ use Symfony\Component\Routing\Annotation\Route;
 class ReservationController extends AbstractController
 {
     #[Route('/admin/reservations-tickets', name: 'admin_reservations_tickets')]
-    public function index(EntityManagerInterface $em): Response
-    {
-        return $this->render('admin/reservations_tickets.html.twig', [
-            'reservations' => $em->getRepository(Reservation::class)->findAll(),
-            'tickets' => $em->getRepository(Ticket::class)->findAll(),
-        ]);
+public function index(Request $request, EntityManagerInterface $em): Response
+{
+    $search = $request->query->get('search');
+
+    if ($search) {
+        $reservations = $em->getRepository(Reservation::class)
+            ->createQueryBuilder('r')
+            ->leftJoin('r.personne_id', 'p')
+            ->leftJoin('r.destination', 'd')
+            ->where('p.nom LIKE :search OR d.nom LIKE :search OR r.statut LIKE :search')
+            ->setParameter('search', '%' . $search . '%')
+            ->getQuery()
+            ->getResult();
+
+        $tickets = $em->getRepository(Ticket::class)
+            ->createQueryBuilder('t')
+            ->leftJoin('t.destination', 'd')
+            ->where('t.type LIKE :search OR d.nom LIKE :search OR t.statut LIKE :search')
+            ->setParameter('search', '%' . $search . '%')
+            ->getQuery()
+            ->getResult();
+    } else {
+        $reservations = $em->getRepository(Reservation::class)->findAll();
+        $tickets = $em->getRepository(Ticket::class)->findAll();
     }
+
+    return $this->render('admin/reservations_tickets.html.twig', [
+        'reservations' => $reservations,
+        'tickets' => $tickets,
+        'search' => $search
+    ]);
+}
 
     #[Route('/admin/reservation/new', name: 'admin_reservation_new')]
     public function newAdmin(Request $request, EntityManagerInterface $em): Response
     {
         $reservation = new Reservation();
-        $form = $this->createForm(ReservationType::class, $reservation);
+        $form = $this->createForm(ReservationType::class, $reservation );
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -46,6 +71,7 @@ class ReservationController extends AbstractController
     public function edit(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(ReservationType::class, $reservation);
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -124,7 +150,7 @@ public function mesReservations(EntityManagerInterface $em): Response
 public function newUser(Request $request, EntityManagerInterface $em): Response
 {
     $reservation = new Reservation();
-    $form = $this->createForm(ReservationUserType::class, $reservation);
+    $form = $this->createForm(ReservationUserType::class, $reservation,['is_edit' => false]);
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
@@ -162,14 +188,15 @@ public function newUser(Request $request, EntityManagerInterface $em): Response
     }
 
     return $this->render('reservation/step1.html.twig', [
-        'form' => $form->createView()
+        'form' => $form->createView(),
+        'isEdit' => false
     ]);
 }
 
 #[Route('/mes-reservations/edit/{id}', name: 'user_reservation_edit')]
 public function editUser(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
 {
-    $form = $this->createForm(ReservationUserType::class, $reservation);
+    $form = $this->createForm(ReservationUserType::class, $reservation,['is_edit' => true]);
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
@@ -178,7 +205,8 @@ public function editUser(Reservation $reservation, Request $request, EntityManag
     }
 
     return $this->render('reservation/step1.html.twig', [
-        'form' => $form->createView()
+        'form' => $form->createView(),
+        'isEdit' => true
     ]);
 }
 

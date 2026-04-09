@@ -40,7 +40,7 @@ class Ticket
     private ?Reservation $reservation_id = null;
 
     #[ORM\ManyToOne(targetEntity: Ville::class)]
-    #[ORM\JoinColumn(name: 'destination_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'destination_id', referencedColumnName: 'id' , onDelete: 'CASCADE')]
     #[Assert\NotNull(message: "Veuillez sélectionner une destination")]
     private ?Ville $destination = null;
 

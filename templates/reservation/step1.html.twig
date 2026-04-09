@@ -84,7 +84,9 @@
             <div class="col-md-9 col-lg-7">
                 <div class="card shadow-sm border-0 p-4 multi-step-card">
 
-                    <h2 class="mb-4 text-center form-title">Nouvelle Réservation</h2>
+                    <h2 class="mb-4 text-center form-title">
+    {{ isEdit ? 'Modifier la réservation' : 'Nouvelle réservation' }}
+</h2>
 
                     <!-- STEPPER -->
                     <div class="stepper-wrapper mb-4">
@@ -127,6 +129,12 @@
                                     {{ form_label(form.dateFin, 'Date fin') }}
                                     {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
                                 </div>
+
+                               <div class="col-md-6 mb-3">
+    {% if form.statut is defined %}
+        {{ form_row(form.statut) }}
+    {% endif %}
+</div>
                             </div>
 
                             <div class="text-end">

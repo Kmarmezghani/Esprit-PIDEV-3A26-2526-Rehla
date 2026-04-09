@@ -90,6 +90,7 @@
                         <th>Tickets</th>
                         <th>Coût Total</th>
                         <th>Statut</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
 
@@ -146,6 +147,44 @@
     </span>
 {% endif %}
                             </td>
+                            <td class="text-center" onclick="event.stopPropagation()">
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+        type="button"
+        data-bs-toggle="dropdown">
+    <i class="fa fa-ellipsis-v"></i>
+</button>
+
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+
+            <li>
+                <a class="dropdown-item"
+                   href="{{ path('user_reservation_edit', {id: reservation.id}) }}">
+                    <i class="fa fa-pencil text-primary me-2"></i> Modifier
+                </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+                <a class="dropdown-item text-danger"
+                   href="#"
+                   onclick="deleteReservation(event, {{ reservation.id }})">
+                    <i class="fa fa-trash me-2"></i> Supprimer
+                </a>
+
+                <form id="delete-form-{{ reservation.id }}"
+                      method="post"
+                      action="{{ path('user_reservation_delete', {id: reservation.id}) }}"
+                      style="display:none;">
+                    <input type="hidden" name="_token"
+                           value="{{ csrf_token('delete' ~ reservation.id) }}">
+                </form>
+            </li>
+
+        </ul>
+    </div>
+</td>
 
                         </tr>
                     {% endfor %}
@@ -243,11 +282,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        events: []
+        events: [],
+
+        // ⭐ ICI on crée le contenu du ticket
+        eventContent: function(arg) {
+
+            let container = document.createElement("div");
+            container.style.display = "flex";
+            container.style.justifyContent = "space-between";
+            container.style.alignItems = "center";
+
+            // Nom ticket
+            let title = document.createElement("span");
+            title.innerHTML = arg.event.title;
+
+            let trash = document.createElement("i");
+trash.className = "fa fa-trash";
+
+// STYLE ✨
+trash.style.cursor = "pointer";
+trash.style.color = "red";
+trash.style.fontSize = "16px";   // plus grande
+trash.style.marginLeft = "12px"; // espace avec le texte
+trash.style.opacity = "0.85";    // effet doux
+
+            // Quand on clique sur la poubelle
+            trash.onclick = function(e) {
+                e.stopPropagation(); // empêche click calendrier
+
+                Swal.fire({
+                    title: "Supprimer ce ticket ?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    confirmButtonText: "Supprimer"
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        fetch('/reservation/ticket/delete-ajax/' + arg.event.id)
+                            .then(res => res.json())
+                            .then(() => {
+
+                                arg.event.remove(); // supprime du calendrier
+                                location.reload();  // refresh tableau + total
+
+                            });
+                    }
+                });
+            };
+
+            container.appendChild(title);
+            container.appendChild(trash);
+
+            return { domNodes: [container] };
+        }
     });
 
     calendar.render();
 
+    // Chargement tickets quand on clique une réservation
     document.querySelectorAll('.reservation-row').forEach(row => {
         row.addEventListener('click', function () {
 
@@ -265,7 +359,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+<script>
+function deleteReservation(e, id) {
+    e.preventDefault();
+
+    Swal.fire({
+        title: "Supprimer la réservation ?",
+        text: "Tous les tickets liés seront libérés",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Oui supprimer"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-'+id).submit();
+        }
+    });
+}
+</script>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

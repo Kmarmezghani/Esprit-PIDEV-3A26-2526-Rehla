@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Post;
 use App\Entity\Personne;
+use App\Entity\Commentaire;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\PostType;
 use Symfony\Component\HttpFoundation\Request;
@@ -70,7 +71,6 @@ public function delete(Post $post, EntityManagerInterface $em): Response
 
     return $this->redirectToRoute('blog');
 }
-
 #[Route('/post/edit/{id}', name: 'post_edit', methods: ['POST'])]
 public function edit(Request $request, Post $post, EntityManagerInterface $em): Response
 {
@@ -83,6 +83,30 @@ public function edit(Request $request, Post $post, EntityManagerInterface $em): 
         $post->setImage('uploads/'.$newFilename);
     }
 
+    $em->flush();
+
+    return $this->redirectToRoute('blog');
+}
+
+
+#[Route('/comment/add/{id}', name: 'comment_add', methods: ['POST'])]
+public function addComment(Request $request, Post $post, EntityManagerInterface $em)
+{
+    $personne = $em->getRepository(Personne::class)->find(4);
+
+    $contenu = $request->request->get('contenu');
+
+    if (!$contenu) {
+        return $this->redirectToRoute('blog');
+    }
+
+    $comment = new Commentaire();
+    $comment->setContenu($contenu);
+    $comment->setDateCommentaire(new \DateTime());
+    $comment->setPost_id($post);
+    $comment->setPersonne_id($personne);
+
+    $em->persist($comment);
     $em->flush();
 
     return $this->redirectToRoute('blog');

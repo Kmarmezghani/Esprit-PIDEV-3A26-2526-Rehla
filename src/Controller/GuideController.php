@@ -121,10 +121,12 @@ public function ajouter(
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        $guide = $guideRepository->find(5);
+        $guideId = $request->getSession()->get('user_id');
+        $guide = $guideRepository->find($guideId);
 
         if (!$guide) {
-            throw $this->createNotFoundException('Guide introuvable.');
+            $this->addFlash('danger', 'Vous devez être connecté en tant que guide pour ajouter une activité.');
+            return $this->redirectToRoute('app_login');
         }
 
         $activite->setGuide($guide);

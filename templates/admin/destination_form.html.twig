@@ -1,0 +1,41 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block sidebar %}
+  {% include 'admin/partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ title }}</h5>
+        <a href="{{ path('admin_destination_index', {tab: entity}) }}" class="btn btn-sm btn-outline-secondary">Retour</a>
+      </div>
+      <div class="card-body">
+        {{ form_start(form) }}
+          <div class="row g-3">
+            <div class="col-12">
+              {{ form_widget(form) }}
+            </div>
+            <div class="col-12 mt-4 text-center">
+              <button type="submit" class="btn btn-primary px-5 rounded-pill">Enregistrer</button>
+            </div>
+          </div>
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-primary { background-color: #223f91; border-color: #223f91; }
+  .btn-primary:hover { background-color: #1a3170; border-color: #1a3170; }
+</style>
+{% endblock %}

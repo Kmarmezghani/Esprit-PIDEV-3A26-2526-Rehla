@@ -7,14 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Pays;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Attraction;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity]
+#[UniqueEntity(fields: ['nom', 'pays_id'], message: 'Cette ville existe déjà dans ce pays.')]
 class Ville
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100)]
     private string $nom;
@@ -23,14 +27,15 @@ class Ville
     #[ORM\JoinColumn(name: 'pays_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Pays $pays_id;
 
-    #[ORM\Column(type: "integer")]
-    private int $visit_count;
+    #[ORM\Column(type: "integer", nullable: true)]
+    #[Assert\PositiveOrZero(message: 'Le nombre de visites ne peut pas être négatif.')]
+    private ?int $visit_count;
 
-    #[ORM\Column(type: "float")]
-    private float $latitude;
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $latitude;
 
-    #[ORM\Column(type: "float")]
-    private float $longitude;
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $longitude;
 
     #[ORM\Column(name: "typeTourisme", type: "string")]
     private string $typeTourisme;
@@ -58,44 +63,48 @@ class Ville
         $this->nom = $value;
     }
 
-    public function getPays_id()
+    public function getPaysId(): Pays
     {
         return $this->pays_id;
     }
 
-    public function setPays_id($value)
+    public function setPaysId(Pays $value): self
     {
         $this->pays_id = $value;
+        return $this;
     }
 
-    public function getVisit_count()
+    public function getVisitCount(): ?int
     {
         return $this->visit_count;
     }
 
-    public function setVisit_count($value)
+    public function setVisitCount(?int $value): self
     {
         $this->visit_count = $value;
+        return $this;
     }
 
-    public function getLatitude()
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude($value)
+    public function setLatitude(?float $value): self
     {
         $this->latitude = $value;
+        return $this;
     }
 
-    public function getLongitude()
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude($value)
+    public function setLongitude(?float $value): self
     {
         $this->longitude = $value;
+        return $this;
     }
 
     public function getTypeTourisme()

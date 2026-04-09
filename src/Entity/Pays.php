@@ -6,23 +6,28 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Reservation;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity]
+#[UniqueEntity(fields: ['nom'], message: 'Ce pays existe déjà.')]
 class Pays
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 100)]
-    private string $nom;
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $nom;
 
     #[ORM\Column(type: "text")]
     private string $description;
 
-    #[ORM\Column(type: "integer")]
-    private int $visit_count;
+    #[ORM\Column(type: "integer", nullable: true)]
+    #[Assert\PositiveOrZero(message: 'Le nombre de visites ne peut pas être négatif.')]
+    private ?int $visit_count;
 
     public function getId()
     {
@@ -34,14 +39,15 @@ class Pays
         $this->id = $value;
     }
 
-    public function getNom()
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom(?string $value): self
     {
         $this->nom = $value;
+        return $this;
     }
 
     public function getDescription()
@@ -54,14 +60,15 @@ class Pays
         $this->description = $value;
     }
 
-    public function getVisit_count()
+    public function getVisitCount(): ?int
     {
         return $this->visit_count;
     }
 
-    public function setVisit_count($value)
+    public function setVisitCount(?int $value): self
     {
         $this->visit_count = $value;
+        return $this;
     }
 
     #[ORM\OneToMany(mappedBy: "pays_id", targetEntity: Ville::class)]

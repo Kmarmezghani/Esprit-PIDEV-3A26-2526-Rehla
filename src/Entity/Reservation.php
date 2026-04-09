@@ -43,19 +43,12 @@ class Reservation
     #[ORM\Column(type: "integer")]
     private int $nb_tickets;
 
-<<<<<<< HEAD
     #[ORM\ManyToOne(targetEntity: Ville::class)]
     #[Assert\NotNull(message: "La destination est obligatoire")]
     private Ville $destination;
-    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] private Personne $personne_id;
-=======
-#[ORM\ManyToOne(targetEntity: Ville::class)]
-#[Assert\NotNull(message: "La destination est obligatoire")]
-private Ville $destination;
-#[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] 
-#[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] 
-private ?Personne $personne_id = null;
->>>>>>> 9008eb414ae98446677fdb1873bbeabc80ed9460
+    #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] 
+    #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] 
+    private ?Personne $personne_id = null;
 
     public function getId()
     {

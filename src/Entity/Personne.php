@@ -11,8 +11,9 @@ use App\Entity\Notification;
 class Personne
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100)]
     private string $nom;
@@ -26,26 +27,26 @@ class Personne
     #[ORM\Column(name: "motDePasse", type: "string", length: 255)]
     private string $motDePasse;
 
-    #[ORM\Column(name: "dateInscription", type: "date")]
-    private \DateTimeInterface $dateInscription;
+    #[ORM\Column(name: "dateInscription", type: "date", nullable: true)]
+    private ?\DateTimeInterface $dateInscription = null;
 
     #[ORM\Column(type: "string")]
-    private string $role;
+    private string $role = 'CLIENT';
 
     #[ORM\Column(name: "statutCompte", type: "string", columnDefinition: "enum('ACTIF', 'INACTIF', 'SUSPENDU')")]
-    private string $statutCompte;
+    private string $statutCompte = 'ACTIF';
 
-    #[ORM\Column(type: "string", length: 20)]
-    private string $telephone;
+    #[ORM\Column(type: "string", length: 20, nullable: true)]
+    private ?string $telephone = null;
 
-    #[ORM\Column(name: "heureNotif", type: "time")]
-    private \DateTimeInterface $heureNotif;
+    #[ORM\Column(name: "heureNotif", type: "time", nullable: true)]
+    private ?\DateTimeInterface $heureNotif = null;
 
     #[ORM\Column(name: "notifSmsActive", type: "boolean")]
-    private bool $notifSmsActive;
+    private bool $notifSmsActive = true;
 
-    #[ORM\Column(name: "profile_photo", type: "string", length: 500)]
-    private string $profile_photo;
+    #[ORM\Column(name: "profile_photo", type: "string", length: 500, nullable: true)]
+    private ?string $profile_photo = null;
 
     // ------------------- Relations -------------------
 

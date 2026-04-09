@@ -17,14 +17,20 @@
           <div class="menu-inner-shadow"></div>
 
           <ul class="menu-inner py-1">
+
             <!-- Dashboards -->
-            <li class="menu-item {% if app.request.get('_route') starts with 'analytics' or app.request.get('_route') starts with 'activite' %}active open{% endif %}">
+            <li class="menu-item {% if app.request.get('_route') starts with 'admin_user' or app.request.get('_route') starts with 'analytics' or app.request.get('_route') starts with 'activite' %}active open{% endif %}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
         <div class="text-truncate" data-i18n="Dashboards">Dashboards</div>
         <span class="badge rounded-pill bg-danger ms-auto">5</span>
     </a>
     <ul class="menu-sub">
+        <li class="menu-item {% if app.request.get('_route') == 'admin_users' %}active{% endif %}">
+            <a href="{{ path('admin_users') }}" class="menu-link">
+                <div class="text-truncate" data-i18n="Utilisateurs">Liste des utilisateurs</div>
+            </a>
+        </li>
         <li class="menu-item {% if app.request.get('_route') == 'analytics' %}active{% endif %}">
             <a href="index.html" class="menu-link">
                 <div class="text-truncate" data-i18n="Analytics">Analytics</div>

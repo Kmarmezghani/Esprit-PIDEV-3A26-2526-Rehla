@@ -24,23 +24,50 @@
               <div class="d-flex">
                 <div class="flex-shrink-0 me-3">
                   <div class="avatar avatar-online">
-                    <img src="{{ asset('assetsback/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                    {% if app.session.get('user_photo') %}
+                      <img src="{{ app.session.get('user_photo') }}" alt class="w-px-40 h-auto rounded-circle" style="object-fit:cover;" />
+                    {% else %}
+                      <img src="{{ asset('assetsback/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                    {% endif %}
                   </div>
                 </div>
                 <div class="flex-grow-1">
-                  <h6 class="mb-0">John Doe</h6>
-                  <small class="text-body-secondary">Admin</small>
+                  <h6 class="mb-0">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</h6>
+                  <small class="text-body-secondary">{{ app.session.get('user_role') }}</small>
                 </div>
               </div>
             </a>
           </li>
           <li><div class="dropdown-divider my-1"></div></li>
           <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
+            <a class="dropdown-item text-danger" href="#" onclick="confirmAdminLogout(event)">
+              <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Déconnexion</span>
             </a>
           </li>
         </ul>
+
+        {# Formulaire de déconnexion caché #}
+        <form id="adminLogoutForm" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+
+        <script>
+        function confirmAdminLogout(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Déconnexion',
+                text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#223f91',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Oui, me déconnecter',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('adminLogoutForm').submit();
+                }
+            });
+        }
+        </script>
       </li>
     </ul>
   </div>

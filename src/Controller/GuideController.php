@@ -18,26 +18,34 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class GuideController extends AbstractController
 {
     #[Route('/guide/mes-activites', name: 'mes_activites')]
-    public function mesActivites(
-        ActiviteRepository $activiteRepository,
-        PersonneRepository $personneRepository
-    ): Response
-    {
-        
-        $guide = $personneRepository->find(5);
+public function mesActivites(
+    Request $request,
+    ActiviteRepository $activiteRepository,
+    GuideRepository $guideRepository
+): Response
+{
+    $guideId = $request->getSession()->get('user_id');
 
-        if (!$guide) {
-            throw $this->createNotFoundException('Guide introuvable.');
-        }
-
-        $activites = $activiteRepository->findBy([
-            'guide' => $guide
-        ]);
-
-        return $this->render('guide/mes_activites.html.twig', [
-            'activites' => $activites
-        ]);
+    if (!$guideId) {
+        $this->addFlash('danger', 'Vous devez être connecté.');
+        return $this->redirectToRoute('app_login');
     }
+
+    $guide = $guideRepository->find($guideId);
+
+    if (!$guide) {
+        throw $this->createNotFoundException('Guide introuvable.');
+    }
+
+   $activites = $activiteRepository->findBy(
+    ['guide' => $guide],
+    ['date_debut' => 'DESC']
+);
+
+    return $this->render('guide/mes_activites.html.twig', [
+        'activites' => $activites
+    ]);
+}
     #[Route('/guide/activite/modifier/{id}', name: 'modifier_activite')]
 public function modifier(
     Request $request,
@@ -113,10 +121,12 @@ public function ajouter(
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        $guide = $guideRepository->find(5);
+        $guideId = $request->getSession()->get('user_id');
+        $guide = $guideRepository->find($guideId);
 
         if (!$guide) {
-            throw $this->createNotFoundException('Guide introuvable.');
+            $this->addFlash('danger', 'Vous devez être connecté en tant que guide pour ajouter une activité.');
+            return $this->redirectToRoute('app_login');
         }
 
         $activite->setGuide($guide);

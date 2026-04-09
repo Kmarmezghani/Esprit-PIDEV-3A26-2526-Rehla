@@ -1,0 +1,313 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil – Rehla{% endblock %}
+
+{% block body %}
+
+{# ── Navbar ── #}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('home') }}">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}"
+                 alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}"
+                 alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display:block; font-size:14px; color:#223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.session.get('user_photo') %}
+                            <img src="{{ app.session.get('user_photo') }}"
+                                 alt="Profil" class="rounded-circle"
+                                 style="width:35px;height:35px;object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}"
+                                 alt="Profil" class="rounded-circle"
+                                 style="width:35px;height:35px;object-fit:cover;">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                        style="min-width:200px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                                Connecté en tant que<br>
+                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 active" href="{{ path('app_profile') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                            <span>Mon profil</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                            <span>Mes préférences</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+                            <span>Mes activités</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                            <span>Mes réservations</span>
+                        </a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                               onclick="confirmLogout(event)"
+                               style="padding:8px 16px; font-size:14px;">
+                                <i class="fa fa-sign-out" style="width:18px;"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{# ── Hero – style blog (bg image + overlay) ── #}
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}'); min-height:220px !important;">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center" style="min-height:220px !important;">
+            <div class="col-md-9 ftco-animate pb-5 text-center">
+                <p class="breadcrumbs">
+                    <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span>
+                    <span>Mon Profil <i class="fa fa-chevron-right"></i></span>
+                </p>
+                <h1 class="mb-0 bread">Mon Profil</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Contenu principal – même bg que blog ── #}
+<section class="ftco-section pt-5" style="background:#eef2f7;">
+    <div class="container">
+
+        {# Flashs #}
+        {% for msg in app.flashes('profile_success') %}
+            <div class="alert alert-success alert-dismissible fade show rounded-4 px-4" role="alert">
+                <i class="fa fa-check-circle me-2"></i> {{ msg }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endfor %}
+        {% for msg in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 px-4" role="alert">
+                <i class="fa fa-exclamation-circle me-2"></i> {{ msg }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endfor %}
+
+        <div class="row justify-content-center">
+
+            {# ── Colonne gauche : avatar + nav ── #}
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
+                    <div class="mb-3">
+                        {% if personne.profile_photo %}
+                            <img src="{{ personne.profile_photo }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-0 font-weight-bold" style="color:#1a1a2e;">
+                        {{ personne.prenom }} {{ personne.nom }}
+                    </h5>
+                    <span class="badge mt-2 px-3 py-1"
+                          style="background-color:{% if personne.role == 'ADMIN' %}#dc3545{% elseif personne.role == 'GUIDE' %}#fd7e14{% else %}#223f91{% endif %}; color:#fff; border-radius:50px; font-size:11px;">
+                        {{ personne.role }}
+                    </span>
+                    <p class="text-muted small mt-2 mb-0">{{ personne.email }}</p>
+                    <hr>
+                    <a href="{{ path('app_profile') }}" class="btn btn-sm btn-block mb-2"
+                       style="background:#223f91; color:#fff; border-radius:20px;">
+                        <i class="fa fa-user me-1"></i> Informations
+                    </a>
+                    <a href="{{ path('app_preferences') }}" class="btn btn-sm btn-block btn-outline-secondary"
+                       style="border-radius:20px;">
+                        <i class="fa fa-sliders me-1"></i> Préférences
+                    </a>
+                </div>
+            </div>
+
+            {# ── Colonne droite : formulaires ── #}
+            <div class="col-md-8">
+
+                {# Erreurs de validation #}
+                {% if errors is defined and errors|length > 0 %}
+                    <div class="alert alert-danger rounded-4">
+                        <ul class="mb-0">
+                            {% for err in errors %}<li>{{ err }}</li>{% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {# ── Card : Informations personnelles ── #}
+                <div class="card border-0 shadow-sm mb-4" style="transition: box-shadow .2s; border-radius:20px;">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4 font-weight-bold d-flex align-items-center gap-2" style="color:#223f91; border-bottom:2px solid #e9ecef; padding-bottom:12px;">
+                            <i class="fa fa-user"></i> &nbsp;Informations personnelles
+                        </h5>
+                        <form method="post" action="{{ path('app_profile') }}"
+                              enctype="multipart/form-data" novalidate>
+                            <input type="hidden" name="_action" value="update_profile">
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">Nom</label>
+                                    <input type="text" name="nom" class="form-control rounded-pill px-3"
+                                           value="{{ personne.nom }}" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold">Prénom</label>
+                                    <input type="text" name="prenom" class="form-control rounded-pill px-3"
+                                           value="{{ personne.prenom }}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">Adresse e-mail</label>
+                                <input type="email" name="email" class="form-control rounded-pill px-3"
+                                       value="{{ personne.email }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">Téléphone</label>
+                                <input type="text" name="telephone" class="form-control rounded-pill px-3"
+                                       value="{{ personne.telephone ?? '' }}"
+                                       placeholder="+216 XX XXX XXX">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">Photo de profil</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input"
+                                           name="profilePhotoFile" id="profilePhotoFile"
+                                           accept="image/*" onchange="previewPhoto(this)">
+                                    <label class="custom-file-label" for="profilePhotoFile">
+                                        Choisir une image…
+                                    </label>
+                                </div>
+                                <small class="text-muted">JPG, PNG, GIF – max 2 Mo</small>
+                                <div class="mt-2">
+                                    <img id="photoPreview" src="#" alt="Aperçu"
+                                         style="display:none; width:80px; height:80px; object-fit:cover; border-radius:50%; border:2px solid #223f91;">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary rounded-pill px-4"
+                                    style="background-color:#223f91; border-color:#223f91;">
+                                <i class="fa fa-save me-2"></i> Enregistrer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {# ── Card : Changement de mot de passe ── #}
+                <div class="card border-0 shadow-sm" style="transition: box-shadow .2s; border-radius:20px;">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4 font-weight-bold d-flex align-items-center gap-2" style="color:#223f91; border-bottom:2px solid #e9ecef; padding-bottom:12px;">
+                            <i class="fa fa-lock"></i> &nbsp;Changer le mot de passe
+                        </h5>
+                        <form method="post" action="{{ path('app_change_password') }}" novalidate>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">Ancien mot de passe</label>
+                                <input type="password" name="ancien_mdp" class="form-control rounded-pill px-3"
+                                       placeholder="••••••••" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">Nouveau mot de passe</label>
+                                <input type="password" name="nouveau_mdp" class="form-control rounded-pill px-3"
+                                       placeholder="••••••••" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold">Confirmer le nouveau mot de passe</label>
+                                <input type="password" name="confirmer_mdp" class="form-control rounded-pill px-3"
+                                       placeholder="••••••••" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fa fa-key me-2"></i> Modifier le mot de passe
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>{# /col #}
+        </div>{# /row #}
+    </div>
+</section>
+
+{# ── Form déconnexion (caché) ── #}
+<form id="logoutForm" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+
+<style>
+.card.border-0.shadow-sm:hover { box-shadow: 0 8px 30px rgba(34,63,145,.15) !important; }
+.form-control.rounded-pill:focus { border-color:#223f91; box-shadow:0 0 0 3px rgba(34,63,145,.12); }
+</style>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmLogout(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Déconnexion',
+                text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#223f91',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Oui, me déconnecter',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
+                }
+            });
+        }
+
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photoPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+                input.nextElementSibling.textContent = input.files[0].name;
+            }
+        }
+    </script>
+{% endblock %}

@@ -78,7 +78,7 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Rôle</label>
-                        <select name="role" class="form-select">
+                        <select name="role" class="form-select" id="roleSelect" onchange="toggleGuideFields()">
                             <option value="CLIENT" {% if personne.role == 'CLIENT' %}selected{% endif %}>CLIENT</option>
                             <option value="GUIDE"  {% if personne.role == 'GUIDE'  %}selected{% endif %}>GUIDE</option>
                             <option value="ADMIN"  {% if personne.role == 'ADMIN'  %}selected{% endif %}>ADMIN</option>
@@ -93,6 +93,35 @@
                             <option value="SUSPENDU" {% if personne.statutCompte == 'SUSPENDU' %}selected{% endif %}>SUSPENDU</option>
                         </select>
                         <small class="text-muted">SUSPENDU bloque la connexion de cet utilisateur.</small>
+                    </div>
+                </div>
+
+                {# ── Champs Guide ── #}
+                <div id="guideFields" style="display:{% if personne.role == 'GUIDE' %}block{% else %}none{% endif %};">
+                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:13px; border-radius:8px;">
+                        <i class="bx bx-info-circle me-1"></i>
+                        Ces champs sont requis pour le rôle GUIDE.
+                        {% if guide %}Enregistré actuellement dans la table guide.{% else %}Aucune entrée guide existante.{% endif %}
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Spécialité</label>
+                            <input type="text" name="specialite" class="form-control"
+                                   placeholder="ex: Randonnée, Culture…"
+                                   value="{{ guide ? guide.specialite : '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Langues parlées</label>
+                            <input type="text" name="langues" class="form-control"
+                                   placeholder="ex: Français, Anglais…"
+                                   value="{{ guide ? guide.langues : '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Expérience</label>
+                            <input type="text" name="experience" class="form-control"
+                                   placeholder="ex: 5 ans, Expert…"
+                                   value="{{ guide ? guide.experience : '' }}">
+                        </div>
                     </div>
                 </div>
 
@@ -114,4 +143,14 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function toggleGuideFields() {
+    const role = document.getElementById('roleSelect').value;
+    document.getElementById('guideFields').style.display = role === 'GUIDE' ? 'block' : 'none';
+}
+</script>
 {% endblock %}

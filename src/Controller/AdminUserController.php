@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Guide;
 use App\Entity\Personne;
 use App\Entity\Preference;
 use Doctrine\ORM\EntityManagerInterface;
@@ -56,12 +57,33 @@ class AdminUserController extends AbstractController
             return $this->redirectToRoute('admin_users');
         }
 
-        if ($request->isMethod('POST')) {
-            $role   = $request->request->get('role', 'CLIENT');
-            $statut = $request->request->get('statutCompte', 'ACTIF');
+        /** @var Guide|null $guide */
+        $guide = $em->getRepository(Guide::class)->findOneBy(['personne' => $personne]);
 
+        if ($request->isMethod('POST')) {
+            $role       = in_array($request->request->get('role'), ['CLIENT', 'GUIDE', 'ADMIN']) ? $request->request->get('role') : 'CLIENT';
+            $statut     = $request->request->get('statutCompte', 'ACTIF');
+            $specialite = trim($request->request->get('specialite', ''));
+            $langues    = trim($request->request->get('langues', ''));
+            $experience = trim($request->request->get('experience', ''));
+
+            $oldRole = $personne->getRole();
             $personne->setRole($role);
             $personne->setStatutCompte($statut);
+
+            if ($role === 'GUIDE') {
+                if (!$guide) {
+                    $guide = new Guide();
+                    $guide->setPersonne($personne);
+                    $em->persist($guide);
+                }
+                $guide->setSpecialite($specialite ?: 'Non précisé');
+                $guide->setLangues($langues ?: 'Non précisé');
+                $guide->setExperience($experience ?: 'Non précisé');
+            } elseif ($oldRole === 'GUIDE' && $guide) {
+                $em->remove($guide);
+            }
+
             $em->flush();
 
             $this->addFlash('success', 'Rôle et statut mis à jour avec succès !');
@@ -70,6 +92,7 @@ class AdminUserController extends AbstractController
 
         return $this->render('admin/user_edit.html.twig', [
             'personne' => $personne,
+            'guide'    => $guide,
         ]);
     }
 

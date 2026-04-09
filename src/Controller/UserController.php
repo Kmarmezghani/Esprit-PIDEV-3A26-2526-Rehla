@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Guide;
 use App\Entity\Personne;
 use App\Entity\Preference;
 use Doctrine\ORM\EntityManagerInterface;
@@ -96,20 +97,29 @@ class UserController extends AbstractController
         $old    = [];   // données du formulaire (pour repopuler en cas d'erreur)
 
         if ($request->isMethod('POST')) {
-            $nom      = trim($request->request->get('nom', ''));
-            $prenom   = trim($request->request->get('prenom', ''));
-            $email    = trim($request->request->get('email', ''));
-            $tel      = trim($request->request->get('telephone', ''));
-            $password = $request->request->get('motDePasse', '');
-            $confirm  = $request->request->get('confirmPassword', '');
+            $nom        = trim($request->request->get('nom', ''));
+            $prenom     = trim($request->request->get('prenom', ''));
+            $email      = trim($request->request->get('email', ''));
+            $tel        = trim($request->request->get('telephone', ''));
+            $password   = $request->request->get('motDePasse', '');
+            $confirm    = $request->request->get('confirmPassword', '');
+            $role       = in_array($request->request->get('role'), ['CLIENT', 'GUIDE']) ? $request->request->get('role') : 'CLIENT';
+            $specialite = trim($request->request->get('specialite', ''));
+            $langues    = trim($request->request->get('langues', ''));
+            $experience = trim($request->request->get('experience', ''));
 
-            $old = compact('nom', 'prenom', 'email', 'tel');
+            $old = compact('nom', 'prenom', 'email', 'tel', 'role', 'specialite', 'langues', 'experience');
 
-            if (empty($nom))                        $errors[] = 'Le nom est requis.';
-            if (empty($prenom))                     $errors[] = 'Le prénom est requis.';
-            if (empty($email))                      $errors[] = "L'email est requis.";
-            if (strlen($password) < 4)              $errors[] = 'Le mot de passe doit contenir au moins 4 caractères.';
-            if ($password !== $confirm)             $errors[] = 'Les mots de passe ne correspondent pas.';
+            if (empty($nom))           $errors[] = 'Le nom est requis.';
+            if (empty($prenom))        $errors[] = 'Le prénom est requis.';
+            if (empty($email))         $errors[] = "L'email est requis.";
+            if (strlen($password) < 4) $errors[] = 'Le mot de passe doit contenir au moins 4 caractères.';
+            if ($password !== $confirm) $errors[] = 'Les mots de passe ne correspondent pas.';
+            if ($role === 'GUIDE') {
+                if (empty($specialite)) $errors[] = 'La spécialité est requise pour un guide.';
+                if (empty($langues))    $errors[] = 'Les langues parlées sont requises pour un guide.';
+                if (empty($experience)) $errors[] = "L'expérience est requise pour un guide.";
+            }
 
             if (empty($errors)) {
                 $existing = $em->getRepository(Personne::class)->findOneBy(['email' => $email]);
@@ -122,7 +132,7 @@ class UserController extends AbstractController
                     $personne->setEmail($email);
                     $personne->setMotDePasse($password);
                     $personne->setTelephone($tel !== '' ? $tel : null);
-                    $personne->setRole('CLIENT');
+                    $personne->setRole($role);
                     $personne->setStatutCompte('ACTIF');
                     $personne->setDateInscription(new \DateTime());
                     $personne->setNotifSmsActive(true);
@@ -131,6 +141,16 @@ class UserController extends AbstractController
 
                     $em->persist($personne);
                     $em->flush();
+
+                    if ($role === 'GUIDE') {
+                        $guide = new Guide();
+                        $guide->setPersonne($personne);
+                        $guide->setSpecialite($specialite);
+                        $guide->setLangues($langues);
+                        $guide->setExperience($experience);
+                        $em->persist($guide);
+                        $em->flush();
+                    }
 
                     $this->addFlash('login_info', 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
                     return $this->redirectToRoute('app_login');

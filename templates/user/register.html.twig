@@ -75,6 +75,19 @@
         .field-error { color: #dc3545; font-size: 12px; margin-top: 4px; display: none; }
         .form-control.is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 3px rgba(220,53,69,.12) !important; }
         .form-control.is-valid   { border-color: #28a745 !important; box-shadow: 0 0 0 3px rgba(40,167,69,.10) !important; }
+
+        .role-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
+        .role-btn {
+            flex: 1; padding: 12px; border: 2px solid #dee2e6; border-radius: 10px;
+            background: #fff; cursor: pointer; text-align: center; transition: all .2s;
+            font-size: 14px; font-weight: 600; color: #555;
+        }
+        .role-btn:hover { border-color: #223f91; color: #223f91; }
+        .role-btn.active { border-color: #223f91; background: #eef2ff; color: #223f91; }
+        .role-btn i { display: block; font-size: 22px; margin-bottom: 4px; }
+
+        .guide-fields { display: none; border-top: 1px solid #eee; padding-top: 16px; margin-top: 4px; }
+        .guide-fields.show { display: block; }
     </style>
 </head>
 <body>
@@ -97,7 +110,18 @@
             </div>
         {% endif %}
 
+        {# ── Sélecteur de rôle ── #}
+        <div class="role-toggle">
+            <div class="role-btn active" id="btn-client" onclick="selectRole('CLIENT')">
+                <i class="fa fa-user"></i> Client
+            </div>
+            <div class="role-btn" id="btn-guide" onclick="selectRole('GUIDE')">
+                <i class="fa fa-map-signs"></i> Guide
+            </div>
+        </div>
+
         <form method="post" action="{{ path('app_register') }}" novalidate id="registerForm">
+            <input type="hidden" name="role" id="roleInput" value="{{ old.role ?? 'CLIENT' }}">
 
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -150,6 +174,34 @@
                 <div class="field-error" id="err-pwd2"></div>
             </div>
 
+            {# ── Champs Guide (masqués par défaut) ── #}
+            <div class="guide-fields" id="guideFields">
+                <p class="mb-2" style="font-size:13px; color:#223f91; font-weight:600;">
+                    <i class="fa fa-info-circle me-1"></i> Informations du guide
+                </p>
+                <div class="mb-3">
+                    <label class="form-label">Spécialité</label>
+                    <input type="text" name="specialite" id="rSpecialite" class="form-control"
+                           placeholder="ex: Randonnée, Culture, Aventure…"
+                           value="{{ old.specialite ?? '' }}">
+                    <div class="field-error" id="err-specialite"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Langues parlées</label>
+                    <input type="text" name="langues" id="rLangues" class="form-control"
+                           placeholder="ex: Français, Anglais, Arabe…"
+                           value="{{ old.langues ?? '' }}">
+                    <div class="field-error" id="err-langues"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Expérience</label>
+                    <input type="text" name="experience" id="rExperience" class="form-control"
+                           placeholder="ex: 5 ans, Débutant, Expert…"
+                           value="{{ old.experience ?? '' }}">
+                    <div class="field-error" id="err-experience"></div>
+                </div>
+            </div>
+
             <button type="submit" class="btn-register">
                 <i class="fa fa-user-plus me-2"></i> Créer mon compte
             </button>
@@ -168,6 +220,19 @@
     </div>
 
     <script>
+        /* ── Sélecteur de rôle ── */
+        function selectRole(role) {
+            document.getElementById('roleInput').value = role;
+            document.getElementById('btn-client').classList.toggle('active', role === 'CLIENT');
+            document.getElementById('btn-guide').classList.toggle('active', role === 'GUIDE');
+            document.getElementById('guideFields').classList.toggle('show', role === 'GUIDE');
+        }
+        // Restaurer le rôle si erreur serveur (repopulation)
+        (function() {
+            const role = document.getElementById('roleInput').value;
+            if (role === 'GUIDE') selectRole('GUIDE');
+        })();
+
         /* ── Toggle mot de passe ── */
         function togglePwd(id, icon) {
             const f = document.getElementById(id);

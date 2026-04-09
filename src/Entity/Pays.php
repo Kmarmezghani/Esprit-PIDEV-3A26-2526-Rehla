@@ -67,7 +67,7 @@ class Pays
 
     public function setVisitCount(?int $value): self
     {
-        $this->visit_count = $value;
+        $this->visit_count = $value !== null ? max(0, $value) : null;
         return $this;
     }
 

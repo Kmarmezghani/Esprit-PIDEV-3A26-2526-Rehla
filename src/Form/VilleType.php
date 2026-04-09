@@ -33,6 +33,7 @@ class VilleType extends AbstractType
             ->add('visit_count', IntegerType::class, [
                 'label' => 'Nombre de visites',
                 'required' => false,
+                'attr' => ['min' => 0],
             ])
             ->add('latitude', NumberType::class, [
                 'label' => 'Latitude',

@@ -31,6 +31,7 @@ class PaysType extends AbstractType
             ->add('visit_count', IntegerType::class, [
                 'label' => 'Nombre de visites',
                 'required' => false,
+                'attr' => ['min' => 0],
             ]);
     }
 

@@ -1,597 +1,2118 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProfilePostsController!{% endblock %}
+{% block title %}Mon Profil – Rehla{% endblock %}
 
 {% block body %}
+
+{# ── Navbar ── #}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-   <div class="container">
-     <a class="navbar-brand" href="index.html">Rehla<span>Travel Agency</span></a>
-     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-       <span class="oi oi-menu"></span> Menu
-     </button>
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('home') }}">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}"
+                 alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}"
+                 alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display:block; font-size:14px; color:#223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+              
 
-     <div class="collapse navbar-collapse" id="ftco-nav">
-       <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-				<a href="{{ path('home') }}" class="nav-link">Home</a>
-				</li>
-         <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
-         <li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
-         <li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
-       	<li class="nav-item active">
-				<a href="{{ path('blog') }}" class="nav-link">Blog</a>
-				</li>
-         <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
-       </ul>
-     </div>
-   </div>
- </nav>
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.session.get('user_photo') %}
+                            <img src="{{ app.session.get('user_photo') }}"
+                                 alt="Profil" class="rounded-circle"
+                                 style="width:35px;height:35px;object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}"
+                                 alt="Profil" class="rounded-circle"
+                                 style="width:35px;height:35px;object-fit:cover;">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                        style="min-width:200px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                                Connecté en tant que<br>
+                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 active" href="{{ path('app_profile') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                            <span>Mon profil</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                            <span>Mes préférences</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+                            <span>Mes activités</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                               style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                            <span>Mes réservations</span>
+                        </a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                               onclick="confirmLogout(event)"
+                               style="padding:8px 16px; font-size:14px;">
+                                <i class="fa fa-sign-out" style="width:18px;"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
+{# ── Hero – style blog (bg image + overlay) ── #}
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}'); min-height:220px !important;">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center" style="min-height:220px !important;">
+            <div class="col-md-9 ftco-animate pb-5 text-center">
+                <p class="breadcrumbs">
+                    <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span>
+                    <span>Mon Profil <i class="fa fa-chevron-right"></i></span>
+                </p>
+                <h1 class="mb-0 bread">Mes publications</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Contenu principal – même bg que blog ── #}
 <section class="ftco-section pt-5" style="background:#eef2f7;">
-<div class="container">
-<div class="row">
+    <div class="container">
 
- <div class="page">
-
-
-    <main class="profile-shell">
-      <section class="profile-card">
-        <div class="cover">
-          <img src="https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80" alt="Cover">
-          <div class="cover-overlay"></div>
-        </div>
-
-        <div class="profile-head">
-          <div class="avatar-wrap">
-            <img class="avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80" alt="Profile">
-            <span class="online"></span>
-          </div>
-
-          <div class="profile-info">
-            <div class="name-row">
-              <h1>Yosr Amamou</h1>
-              <span class="badge">Pro</span>
+        {# Flashs #}
+        {% for msg in app.flashes('profile_success') %}
+            <div class="alert alert-success alert-dismissible fade show rounded-4 px-4" role="alert">
+                <i class="fa fa-check-circle me-2"></i> {{ msg }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
-            <p class="meta">454 amis • La Soukra • ISET Charguia</p>
-           
-          </div>
-
-          <div class="actions">
-            <button class="btn primary">+ Ajouter une story</button>
-            <button class="btn secondary">Modifier le profil</button>
-            <button class="btn ghost">⋯</button>
-          </div>
-        </div>
-
-        <div class="tabs">
-          <button class="tab active">À propos</button>
-          <button class="tab">Amis</button>
-          <button class="tab">Photos</button>
-          <button class="tab">Reels</button>
-          <button class="tab">Plus</button>
-        </div>
-
-        <div class="content-grid">
-          <aside class="sidebar">
-            <div class="panel">
-              <div class="panel-title">
-                <h2>Informations personnelles</h2>
-                <button class="edit-btn">✎</button>
-              </div>
-              <ul class="detail-list">
-                <li><span>📍</span> Vit à La Soukra</li>
-                <li><span>🏠</span> Originaire de Monastir, Tunisie</li>
-                <li><span>🎂</span> 29 novembre 2003</li>
-              </ul>
+        {% endfor %}
+        {% for msg in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 px-4" role="alert">
+                <i class="fa fa-exclamation-circle me-2"></i> {{ msg }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
+        {% endfor %}
 
-            <div class="panel">
-              <div class="panel-title">
-                <h2>Éducation</h2>
-                <button class="edit-btn">✎</button>
-              </div>
-              <div class="edu-item">
-                <div class="edu-logo">I</div>
-                <div>
-                  <strong>ISET Charguia</strong>
-                  <p>Licence en Technologies de l’Information</p>
+        <div class="row justify-content-center">
+
+            {# ── Colonne gauche : avatar + nav ── #}
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
+                    <div class="mb-3">
+                        {% if personne.profile_photo %}
+                            <img src="{{ personne.profile_photo }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-0 font-weight-bold" style="color:#1a1a2e;">
+                        {{ personne.prenom }} {{ personne.nom }}
+                    </h5>
+                    <span class="badge mt-2 px-3 py-1"
+                          style="background-color:{% if personne.role == 'ADMIN' %}#dc3545{% elseif personne.role == 'GUIDE' %}#fd7e14{% else %}#223f91{% endif %}; color:#fff; border-radius:50px; font-size:11px;">
+                        {{ personne.role }}
+                    </span>
+                    <p class="text-muted small mt-2 mb-0">{{ personne.email }}</p>
+                    <hr>
+                    <a href="{{ path('app_profile') }}" class="btn btn-sm btn-block mb-2"
+                       style="background:#223f91; color:#fff; border-radius:20px;">
+                        <i class="fa fa-user me-1"></i> Informations
+                    </a>
+                    <a href="{{ path('app_preferences') }}" class="btn btn-sm btn-block btn-outline-secondary"
+                       style="border-radius:20px;">
+                        <i class="fa fa-sliders me-1"></i> Préférences
+                    </a>
+                      <a href="{{ path('app_profile') }}" class="btn btn-sm btn-block mb-2"
+                       style="background:#223f91; color:#fff; border-radius:20px;">
+                        <i class="fa fa-star me-1"></i> Mes favoris
+                    </a>
                 </div>
-              </div>
             </div>
 
-            <div class="panel stats">
-              <div>
-                <strong>1.2K</strong>
-                <span>Abonnés</span>
-              </div>
-              <div>
-                <strong>89</strong>
-                <span>Publications</span>
-              </div>
-            </div>
-          </aside>
+            {# ── Colonne droite : posts ── #}
+            <div class="col-md-9">
 
-          <section class="feed">
-            <div class="composer panel">
-              <div class="composer-top">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="me">
-                <input type="text" placeholder="Quoi de neuf ?" />
-              </div>
-              <div class="composer-actions">
-                <button>📹 Live vidéo</button>
-                <button>🖼️ Photo/Vidéo</button>
-                <button>✨ Humeur</button>
-              </div>
-            </div>
+                <div class="col-lg-9">
 
-            <article class="post panel">
-              <div class="post-header">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="">
-                <div>
-                  <strong>Yosr Amamou</strong>
-                  <p>19 juin 2025 • Tunis • 🌍</p>
-                </div>
-                <button class="edit-btn">⋯</button>
-              </div>
+<div class="card border-0 shadow-sm mb-4 p-3 rounded-4">
 
-              <p class="post-text">
-                Diplômée en Licence en Technologies de l’Information avec mention Très Bien 🎓❤️
-                Une belle étape franchie avec fierté !
-              </p>
+{{ form_start(form, {
+    attr: {
+        id: 'postForm',
+        enctype: 'multipart/form-data',
+        novalidate: 'novalidate'
+    }
+}) }}
 
-              <div class="post-visual"></div>
+  <div class="d-flex">
+    {{ form_widget(form.contenu, {
+    attr: {
+        class: 'form-control rounded-pill px-4 ',
+        id: 'post_contenu'
+    }
+}) }}
 
-              <div class="post-actions">
-                <button>👍 J’aime</button>
-                <button>💬 Commenter</button>
-                <button>↗ Partager</button>
-              </div>
-            </article>
-          </section>
-        </div>
-      </section>
-    </main>
+    <button type="submit" class="btn btn-primary rounded-pill px-4 ml-2">
+  Publier
+</button>
   </div>
 
-  <style>
-  :root{
-  --bg:#eef2f7;
-  --card:#ffffff;
-  --text:#111827;
-  --muted:#6b7280;
-  --line:#e5e7eb;
-  --primary:#1877f2;
-  --shadow:0 18px 50px rgba(15, 23, 42, .10);
-  --radius:22px;
+
+  <!-- boutons -->
+  <div class="d-flex mt-3">
+
+    <button type="button"
+            class="btn btn-outline-primary rounded-pill mr-2"
+            onclick="document.getElementById('post_image').click()">
+      📷 Image
+    </button>
+        <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
+    <button class="btn btn-outline-primary rounded-pill mr-2">📍 Lieu</button>
+    <button class="btn btn-outline-primary rounded-pill">📊 Sondage</button>
+
+    {{ form_widget(form.image) }}
+
+  </div>
+
+  {{ form_end(form) }}
+
+</div>
+
+
+<!-- POST IMAGE -->
+{% for post in posts %}
+
+<div class="card border-0 shadow-sm mb-4 rounded-4">
+  <div class="card-body">
+
+    <div class="d-flex align-items-center mb-2">
+
+      <!-- IMAGE PROFIL -->
+    <img src="{{ post.personne_id and post.personne_id.profile_photo 
+    ? asset(post.personne_id.profile_photo) 
+    : asset('assets/img/bg_1.jpg') }}"
+     class="profile-img mr-2">
+
+
+
+      <div>
+        <!-- NOM -->
+            <strong>
+        {% if post.personne_id %}
+          {{ post.personne_id.nom }} {{ post.personne_id.prenom }}
+        {% else %}
+          Utilisateur inconnu
+        {% endif %}
+      </strong>
+
+        
+        <br>
+
+        <!-- DATE -->
+       <small class="text-muted">
+        {{ post.datePublication ? post.datePublication|date('Y-m-d H:i:s') : '---' }} 
+      </small>
+      </div>
+
+      <!-- DROPDOWN (inchangé) -->
+      {% if app.session.get('user_id') == post.personne_id.id %}
+      <div class="dropdown ms-3">
+        <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle"
+                type="button" data-toggle="dropdown">
+          <i class="fa fa-cog"></i>
+        </button>
+
+        <div class="dropdown-menu dropdown-menu-end modern-dropdown shadow-lg">
+          <a class="dropdown-item open-edit"
+            data-id="{{ post.id }}"
+            data-contenu="{{ post.contenu }}"
+            data-image="{{ post.image }}">
+            <i class="fa fa-edit"></i> Modifier
+          </a>
+          <a class="dropdown-item text-danger"
+            href="#"
+            data-url="{{ path('post_delete', {'id': post.id}) }}"
+            onclick="confirmDelete(event, this)">
+          <i class="fa fa-trash"></i> Supprimer
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- TAGS -->
+      <div class="ml-auto d-flex align-items-center">
+        <span class="badge badge-light me-1">#Design</span>
+        <span class="badge badge-primary me-1">#JavaFX</span>
+        <span class="badge badge-pink">Tendance</span>
+      </div>
+
+    </div>
+
+    <!-- CONTENU -->
+    <div class="post" data-id="{{ post.id }}">
+    <p class="post-content">{{ post.contenu }}</p>
+  </div>
+
+    <!-- IMAGE POST -->
+   {% if post.image %}
+  <img src="{{ asset(post.image) }}"
+       class="img-fluid rounded mt-2"
+       data-post="{{ post.id }}">
+{% endif %}
+
+    <!-- ACTIONS (inchangées) -->
+    <div class="d-flex justify-content-between align-items-center mt-3 text-muted">
+
+      <div class="d-flex">
+
+       {% set liked = post.likess|filter(l => l.personne_id.id == 4)|length > 0 %}
+
+          <div class="mr-3 post-action like-btn"
+              data-id="{{ post.id }}"
+              data-liked="{{ liked ? 1 : 0 }}">
+
+            <i class="fa fa-heart {{ liked ? 'text-danger' : '' }}"></i>
+            <span>{{ post.likess|length }}</span>
+          </div>
+
+        <div class="mr-3 post-action open-comment" data-id="{{ post.id }}">
+          <i class="fa fa-comment"></i>  {{ post.commentaires|length }}
+        </div>
+
+        <div class="post-action">
+          <i class="fa fa-bookmark"></i>
+        </div>
+
+      </div>
+
+      <div class="post-action">
+        <i class="fa fa-share-alt"></i>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% else %}
+  <p class="text-center text-muted">Aucun post disponible</p>
+{% endfor %}
+
+
+</div>
+
+            </div>{# /col #}
+        </div>{# /row #}
+    </div>
+</section>
+
+{# *-------------------------------------------pop up comments------------------------------------------------------------- #}
+<!-- OVERLAY FLOU -->
+<div id="commentOverlay" class="overlay-blur"></div>
+
+<div id="commentPopup" class="comment-popup">
+  
+  <!-- HEADER -->
+  <div class="popup-header">
+    <h5>💬 Commentaires</h5>
+    <span id="closePopup">&times;</span>
+  </div>
+
+  <!-- BODY -->
+ <div class="popup-body">
+
+{% for post in posts %}
+  <div class="comments-container" data-post="{{ post.id }}" style="display:none;">
+
+    {% for comment in post.commentaires %}
+      <div class="comment-box">
+
+        <img src="{{ comment.personne_id.profile_photo ? asset(comment.personne_id.profile_photo) : asset('assets/images/bg_2.jpg') }}"
+             class="comment-avatar">
+
+        <div class="comment-bubble">
+          <div class="comment-header">
+            <strong>{{ comment.personne_id.nom }} {{ comment.personne_id.prenom }}</strong>
+            <small>{{ comment.dateCommentaire|date('d M Y H:i:s') }}</small>
+          </div>
+
+           <!-- TEXTE -->
+          <p class="comment-text">{{ comment.contenu }}</p>
+
+            <!-- INPUT EDIT (caché) -->
+          <div class="edit-zone" style="display:none;">
+            <input type="text" class="edit-input" value="{{ comment.contenu }}">
+            <button class="save-edit"
+                    data-id="{{ comment.id }}"
+                    data-url="/comment/edit/{{ comment.id }}">
+              ✔
+            </button>
+            <button class="cancel-edit">✖</button>
+          </div>
+
+          <div class="comment-icons">
+            <i class="fa fa-edit edit-comment"></i>
+            <i class="fa fa-trash delete-comment"
+              data-id="{{ comment.id }}"
+              data-url="/comment/delete/{{ comment.id }}"></i>
+          </div>
+        </div>
+
+      </div>
+    {% else %}
+      <p class="text-center text-muted">Aucun commentaire</p>
+    {% endfor %}
+
+  </div>
+{% endfor %}
+
+</div>
+
+  <!-- FOOTER -->
+<form method="POST" id="commentForm">
+  <div class="popup-footer">
+
+    <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar-small">
+    <input type="text" name="contenu" id="comment_input"
+           placeholder="Écrire un commentaire...">
+    <input type="hidden" id="comment_post_id">
+
+    <button type="submit">Envoyer</button>
+
+  </div>
+</form>
+  
+
+</div>
+
+{# --------------------------------------------------------popup edit post------------------------------------- #}
+
+<div id="editPostPopup" class="comment-popup">
+
+  <!-- HEADER -->
+  <div class="popup-header">
+    <h5>📝 Modifier la publication</h5>
+    <span id="closeEditPopup">&times;</span>
+  </div>
+
+  <!-- FORM -->
+  <form id="editForm" method="POST" enctype="multipart/form-data">
+
+    <!-- BODY -->
+    <div class="popup-body">
+
+      <!-- hidden id -->
+      <input type="hidden" id="edit_post_id" name="id">
+
+      <!-- CONTENU -->
+      <label class="popup-label">Contenu :</label>
+
+      <textarea id="edit_contenu" name="contenu" class="edit-textarea"></textarea>
+
+      <!-- IMAGE -->
+      <label class="popup-label mt-3">Image :</label>
+
+      <div class="edit-image-box">
+        <img id="edit_image_preview" src="">
+        <input type="file" name="image" id="edit_image_input" hidden>
+        <button type="button" class="choose-btn"
+                onclick="document.getElementById('edit_image_input').click()">
+          Choisir
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="popup-footer edit-footer">
+      <button type="button" class="btn-cancel" id="cancelEdit">Annuler</button>
+      <button type="submit" class="btn-save">Enregistrer</button>
+    </div>
+
+  </form>
+
+</div>
+
+
+
+{# ── Form déconnexion (caché) ── #}
+<form id="logoutForm" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+
+<style>
+.card.border-0.shadow-sm:hover { box-shadow: 0 8px 30px rgba(34,63,145,.15) !important; }
+.form-control.rounded-pill:focus { border-color:#223f91; box-shadow:0 0 0 3px rgba(34,63,145,.12); }
+</style>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmLogout(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Déconnexion',
+                text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#223f91',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Oui, me déconnecter',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
+                }
+            });
+        }
+
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photoPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+                input.nextElementSibling.textContent = input.files[0].name;
+            }
+        }
+
+
+document.addEventListener('DOMContentLoaded', function() {
+const hearts = document.querySelectorAll('.fa-heart');
+hearts.forEach(heart => {
+heart.addEventListener('click', function() {
+this.classList.toggle('text-danger');
+const count = this.nextElementSibling;
+const current = parseInt(count.textContent);
+count.textContent = this.classList.contains('text-danger') ? current + 1 : current - 1;
+});
+});
+});
+document.querySelectorAll('.fa-bookmark').forEach(icon => {
+  icon.addEventListener('click', function() {
+    this.classList.toggle('text-warning');
+  });
+});
+
+/*-----------popup add comments----------------------------*/
+const openBtns = document.querySelectorAll(".open-comment");
+const popup = document.getElementById("commentPopup");
+const overlay = document.getElementById("commentOverlay");
+const closeBtn = document.getElementById("closePopup");
+const form = document.getElementById("commentForm");
+const postIdInput = document.getElementById("comment_post_id");
+
+openBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const postId = btn.getAttribute("data-id");
+
+    // 🔥 afficher bon bloc commentaires
+    document.querySelectorAll(".comments-container").forEach(div => {
+      div.style.display = "none";
+    });
+
+    const target = document.querySelector(`.comments-container[data-post="${postId}"]`);
+    if (target) target.style.display = "block";
+
+    // 🔥 préparer form
+    postIdInput.value = postId;
+    form.action = "/comment/add/" + postId;
+
+    // 🔥 ouvrir popup
+    popup.classList.add("active");
+    overlay.classList.add("active");
+  });
+});
+
+function closePopup() {
+  popup.classList.remove("active");
+  overlay.classList.remove("active");
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:'Inter',sans-serif;
-  background:linear-gradient(180deg,#eef4ff 0%, #eef2f7 100%);
-  color:var(--text);
+if (closeBtn) {
+  closeBtn.addEventListener("click", closePopup);
 }
 
-.topbar{
-  height:72px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 28px;
-  background:rgba(255,255,255,.72);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(255,255,255,.6);
-  position:sticky;
-  top:0;
-  z-index:20;
-}
-
-.logo{
-  font-size:1.4rem;
-  font-weight:800;
-  color:#0f172a;
-}
-
-.topnav{
-  display:flex;
-  gap:20px;
-}
-
-.topnav a{
-  text-decoration:none;
-  color:var(--muted);
-  font-weight:600;
-}
-
-.topnav a.active,
-.topnav a:hover{
-  color:var(--primary);
-}
-
-.top-actions{
-  display:flex;
-  gap:10px;
-}
-
-.icon-btn, .btn, .tab, .edit-btn, .composer-actions button, .post-actions button{
-  border:none;
-  cursor:pointer;
-  font-family:inherit;
-}
-
-.icon-btn{
-  width:42px;
-  height:42px;
-  border-radius:14px;
-  background:#fff;
-  box-shadow:0 8px 24px rgba(15,23,42,.08);
-}
+overlay.addEventListener("click", closePopup);
 
 
-.profile-card{
-  background:rgba(255,255,255,.72);
-  backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,.7);
-  border-radius:32px;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-}
+{# ----------------------------------------- pop up alerte add comment ------------------------------------------ #}
+document.addEventListener("DOMContentLoaded", function () {
 
-.cover{
-  position:relative;
-  height:320px;
-  overflow:hidden;
-}
+    const commentForm = document.getElementById("commentForm");
+    const commentInput = document.getElementById("comment_input");
+    if (!commentForm || !commentInput) return;
 
-.cover img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transform:scale(1.03);
-}
+    commentForm.addEventListener("submit", function (e) {
+        const value = (commentInput.value || "").trim();
 
-.cover-overlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.25));
-}
+        // ❌ champ vide
+        if (value === "") {
+            e.preventDefault();
 
-.profile-head{
-  display:grid;
-  grid-template-columns:170px 1fr auto;
-  gap:24px;
-  padding:0 30px 26px;
-  margin-top:-70px;
-  align-items:end;
+            Swal.fire({
+                icon: 'error',
+                text: 'Le commentaire est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
 
-  position:relative;   /* 🔥 IMPORTANT */
-  z-index:10;          /* 🔥 FAIT PASSER DEVANT */
-}
+            return;
+        }
 
-.avatar-wrap{
-  position:relative;
-  width:170px;
-  height:170px;
-}
+        // ⚠️ trop court
+        if (value.length < 3) {
+            e.preventDefault();
 
-.avatar{
-  width:170px;
-  height:170px;
-  border-radius:28px;
-  border:6px solid rgba(255,255,255,.95);
-  object-fit:cover;
-  box-shadow:0 18px 40px rgba(0,0,0,.18);
-}
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
 
-.online{
-  position:absolute;
-  right:12px;
-  bottom:12px;
-  width:18px;
-  height:18px;
-  border-radius:50%;
-  background:#22c55e;
-  border:3px solid #fff;
-}
+            return;
+        }
+        if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
 
-.name-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-}
+        // ✅ succès
+        Swal.fire({
+            icon: 'success',
+            text: 'Commentaire ajouté avec succès',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#ecfdf5',
+            color: '#065f46',
+            iconColor: '#10b981',
+            customClass: {
+                popup: 'green-toast'
+            }
+        });
 
-h1{
-  margin:0;
-  font-size:2.35rem;
-  line-height:1.05;
-}
+    });
 
-.badge{
-  background:linear-gradient(135deg,#dbeafe,#bfdbfe);
-  color:#1d4ed8;
-  padding:7px 12px;
-  border-radius:999px;
-  font-weight:700;
-  font-size:.85rem;
-}
+});
 
-.meta{
-  margin:10px 0 8px;
-  color:var(--muted);
-  font-weight:500;
-}
 
-.bio{
-  margin:0;
-  max-width:720px;
-  color:#374151;
-}
 
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
 
-.btn{
-  height:46px;
-  padding:0 18px;
-  border-radius:14px;
-  font-weight:700;
-  transition:.2s ease;
-}
 
-.btn.primary{
-  background:var(--primary);
-  color:#fff;
-  box-shadow:0 12px 28px rgba(24,119,242,.28);
-}
+{# --------------------------pop up edit post------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
 
-.btn.secondary{
-  background:#eef2ff;
-  color:#1e3a8a;
-}
+  const editBtns = document.querySelectorAll(".open-edit");
+  const editPopup = document.getElementById("editPostPopup");
+  const overlay = document.getElementById("commentOverlay");
 
-.btn.ghost{
-  width:46px;
-  padding:0;
-  background:#fff;
-  box-shadow:0 8px 24px rgba(15,23,42,.08);
-}
+  const closeEdit = document.getElementById("closeEditPopup");
+  const cancelEdit = document.getElementById("cancelEdit");
 
-.btn:hover, .tab:hover, .icon-btn:hover, .edit-btn:hover, .composer-actions button:hover, .post-actions button:hover{
-  transform:translateY(-2px);
-}
+  const contenuInput = document.getElementById("edit_contenu");
+  const imagePreview = document.getElementById("edit_image_preview");
+  const postIdInput = document.getElementById("edit_post_id");
+  const form = document.getElementById("editForm");
 
-.tabs{
-  display:flex;
-  gap:10px;
-  padding:0 20px 20px;
-  border-top:1px solid var(--line);
-  margin-top:8px;
-}
+  editBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
 
-.tab{
-  margin-top:14px;
-  padding:12px 18px;
-  border-radius:999px;
-  background:transparent;
-  color:var(--muted);
-  font-weight:700;
-}
+      // 🔥 récupérer data
+      const id = btn.getAttribute("data-id");
+      const contenu = btn.getAttribute("data-contenu");
+      const image = btn.getAttribute("data-image");
 
-.tab.active{
-  background:#111827;
-  color:#fff;
-}
+      // 🔥 remplir popup
+      postIdInput.value = id;
+      contenuInput.value = contenu;
 
-.content-grid{
-  display:grid;
-  grid-template-columns:360px 1fr;
-  gap:20px;
-  padding:0 20px 24px;
-}
+      if (image) {
+        imagePreview.src = "/" + image;
+      } else {
+        imagePreview.src = "/assets/images/bg_1.jpg";
+      }
 
-.panel{
-  background:rgba(255,255,255,.92);
-  border:1px solid rgba(229,231,235,.9);
-  border-radius:24px;
-  box-shadow:0 10px 28px rgba(15,23,42,.06);
-}
+      // 🔥 action dynamique (route Symfony)
+      form.action = "/post/edit/" + id;
 
-.sidebar{
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
+      // afficher popup
+      editPopup.classList.add("active");
+      overlay.classList.add("active");
+    });
+  });
 
-.panel{
-  padding:20px;
-}
-
-.panel-title{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:16px;
-}
-
-.panel-title h2{
-  margin:0;
-  font-size:1.05rem;
-}
-
-.edit-btn{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  background:#f3f4f6;
-}
-
-.detail-list{
-  list-style:none;
-  padding:0;
-  margin:0;
-  display:grid;
-  gap:14px;
-  color:#374151;
-  font-weight:500;
-}
-
-.detail-list li{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.edu-item{
-  display:flex;
-  gap:14px;
-  align-items:center;
-}
-
-.edu-logo{
-  width:52px;
-  height:52px;
-  border-radius:16px;
-  background:linear-gradient(135deg,#dbeafe,#93c5fd);
-  display:grid;
-  place-items:center;
-  font-weight:800;
-  color:#1d4ed8;
-}
-
-.edu-item p{
-  margin:4px 0 0;
-  color:var(--muted);
-}
-
-.stats{
-  display:flex;
-  justify-content:space-between;
-  text-align:center;
-}
-
-.stats strong{
-  display:block;
-  font-size:1.2rem;
-}
-
-.stats span{
-  color:var(--muted);
-  font-size:.92rem;
-}
-
-.composer-top{
-  display:flex;
-  gap:14px;
-  align-items:center;
-}
-
-.composer-top img, .post-header img{
-  width:48px;
-  height:48px;
-  border-radius:16px;
-  object-fit:cover;
-}
-
-.composer-top input{
-  width:100%;
-  height:54px;
-  border:none;
-  outline:none;
-  border-radius:18px;
-  background:#f3f4f6;
-  padding:0 18px;
-  font-size:1rem;
-}
-
-.composer-actions{
-  display:flex;
-  gap:10px;
-  margin-top:16px;
-  flex-wrap:wrap;
-}
-
-.composer-actions button, .post-actions button{
-  padding:12px 14px;
-  border-radius:14px;
-  background:#f8fafc;
-  font-weight:700;
-  color:#334155;
-}
-
-.post{
-  margin-top:18px;
-}
-
-.post-header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.post-header p{
-  margin:3px 0 0;
-  color:var(--muted);
-  font-size:.92rem;
-}
-
-.post-text{
-  margin:18px 0;
-  color:#1f2937;
-  line-height:1.7;
-}
-
-.post-visual{
-  height:320px;
-  border-radius:22px;
-  background:url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80') center/cover;
-}
-
-.post-actions{
-  display:flex;
-  gap:10px;
-  margin-top:16px;
-  flex-wrap:wrap;
-}
-
-.profile-shell{
-  margin-top: -120px; 
-}
-@media (max-width: 1100px){
-  .profile-head{
-    grid-template-columns:140px 1fr;
+  function closePopup() {
+    editPopup.classList.remove("active");
+    overlay.classList.remove("active");
   }
-  .actions{
-    grid-column:1 / -1;
+
+  closeEdit.addEventListener("click", closePopup);
+  cancelEdit.addEventListener("click", closePopup);
+  overlay.addEventListener("click", closePopup);
+
+});
+document.getElementById("edit_image_input").addEventListener("change", function (event) {
+
+    const file = event.target.files[0];
+    const preview = document.getElementById("edit_image_preview");
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result; 
+        };
+
+        reader.readAsDataURL(file);
+    }
+});
+
+
+{# ----------------------------------pop up alerte edit post----------------------------------------- #}
+document.addEventListener("DOMContentLoaded", function () {
+
+    const editForm = document.getElementById("editForm");
+    const editContenu = document.getElementById("edit_contenu");
+
+    if (!editForm || !editContenu) return;
+
+    editForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+        const value = (editContenu.value || "").trim();
+
+        // ❌ champ vide
+        if (value === "") {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'error',
+                text: 'Le contenu est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
+
+            return;
+        }
+
+        // ⚠️ trop court
+        if (value.length < 3) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+
+            return;
+        }
+        if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
+
+
+      fetch(editForm.action, {
+          method: "POST",
+          body: new FormData(editForm)
+      })
+      .then(() => {
+
+          const postId = document.getElementById("edit_post_id").value;
+
+          const postContent = document.querySelector(`.post[data-id="${postId}"] .post-content`);
+          if (postContent) {
+              postContent.textContent = value;
+          }
+
+
+          const imageInput = document.getElementById("edit_image_input");
+
+          if (imageInput.files.length > 0) {
+
+              const postImage = document.querySelector(`img[data-post="${postId}"]`);
+
+              if (postImage && imageInput.files.length > 0) {
+                  postImage.src = URL.createObjectURL(imageInput.files[0]);
+              }
+          }
+
+          document.getElementById("editPostPopup").classList.remove("active");
+          document.getElementById("commentOverlay").classList.remove("active");
+
+
+
+              // ✅ succès
+              Swal.fire({
+                  icon: 'success',
+                  text: 'Publication modifiée avec succès',
+                  toast: true,
+                  position: 'top-end',
+                  showConfirmButton: false,
+                  timer: 2500,
+                  background: '#ecfdf5',
+                  color: '#065f46',
+                  iconColor: '#10b981',
+                  customClass: {
+                      popup: 'green-toast'
+                  }
+
+                  
+              });
+
+          });
+
+      });
+      });
+
+{# --------------------------------------------pop up alerte publier post---------------------------------------------- #}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof Swal === "undefined") {
+        console.error("SweetAlert2 non chargé !");
+        return;
+    }
+
+    const form = document.getElementById("postForm");
+    const contenu = document.getElementById("post_contenu");
+
+    if (!form || !contenu) return;
+
+    form.addEventListener("submit", function (e) {
+
+        const value = (contenu.value || "").trim();
+
+       if (value === "") {
+
+    Swal.fire({
+        icon: 'error',
+        text: 'Le contenu est obligatoire',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#fff1f2',   // rouge très léger
+        color: '#991b1b',        // texte rouge foncé
+        iconColor: '#ef4444',    // icône rouge vif
+        customClass: {
+            popup: 'red-toast'
+        }
+    });
+
+    return;
+}
+
+       if (value.length < 3) {
+    e.preventDefault();
+
+    Swal.fire({
+        icon: 'warning',
+        text: 'Minimum 3 caractères',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#fff7ed',
+        color: '#9a3412',
+        iconColor: '#f59e0b',
+        customClass: {
+            popup: 'orange-toast'
+        }
+    });
+
+    return;
+}
+if (!/^[a-zA-Z0-9]/.test(value)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            text: 'Le contenu doit commencer par une lettre ou un chiffre',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            background: '#fff1f2',
+            color: '#991b1b',
+            iconColor: '#ef4444',
+            customClass: {
+                    popup: 'red-toast'
+                }
+          });
+          return;
+          }
+
+Swal.fire({
+    icon: 'success',
+    text: 'Publication ajoutée avec succès',
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2500,
+    background: '#ecfdf5',
+    color: '#065f46',
+    iconColor: '#10b981',
+    customClass: {
+        popup: 'green-toast'
+    }
+});
+    });
+
+});
+
+
+{# ------------------------------------------delete post------------------------------------- #}
+function confirmDelete(e, element) {
+    e.preventDefault();
+
+    Swal.fire({
+    title: 'Supprimer ce post ?',
+    text: "Action irréversible",
+    icon: 'warning',
+
+    showCancelButton: true,
+    confirmButtonText: 'Supprimer',
+    cancelButtonText: 'Annuler',
+
+    width: '320px',        
+    padding: '12px',        
+    heightAuto: false,
+
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+
+    background: '#fff1f2',
+    color: '#7f1d1d',
+
+    customClass: {
+        popup: 'small-swal'
+    }
+}).then((result) => {
+        if (result.isConfirmed) {
+ Swal.fire({
+                icon: 'success',
+                text: 'Post supprimé avec succès',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#ecfdf5',
+                color: '#065f46',
+                iconColor: '#10b981',
+                customClass: { popup: 'green-toast' }
+            });
+
+            // créer un form dynamique sans toucher ton HTML
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = element.getAttribute('data-url');
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+
+
+{# ------------------------------pop up delete comment--------------------------------- #}
+document.querySelectorAll(".delete-comment").forEach(icon => {
+    icon.addEventListener("click", function (e) {
+
+        e.preventDefault();
+
+        const url = this.getAttribute("data-url");
+
+        Swal.fire({
+            title: 'Supprimer ce commentaire ?',
+            text: "Action irréversible",
+            icon: 'warning',
+
+            showCancelButton: true,
+            confirmButtonText: 'Supprimer',
+            cancelButtonText: 'Annuler',
+
+            width: '320px',        
+            padding: '12px',        
+            heightAuto: false,
+
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+
+            background: '#fff1f2',
+            color: '#7f1d1d',
+
+            customClass: {
+                popup: 'small-swal'
+            }
+
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                Swal.fire({
+                icon: 'success',
+                text: 'Commentaire supprimé avec succès',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#ecfdf5',
+                color: '#065f46',
+                iconColor: '#10b981',
+                customClass: { popup: 'green-toast' }
+                });
+
+          
+                let form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+
+                document.body.appendChild(form);
+               fetch(url, { method: "POST" })
+              .then(() => {
+                  this.closest(".comment-box").remove();
+              });
+            }
+        });
+
+    });
+});
+
+{# -------------------------edit comment--------------------------------------------------------- #}
+
+document.addEventListener("click", function (e) {
+
+    // ✏️ ouvrir edit
+    if (e.target.classList.contains("edit-comment")) {
+
+        const box = e.target.closest(".comment-box");
+
+        box.querySelector(".comment-text").style.display = "none";
+        box.querySelector(".edit-zone").style.display = "block";
+
+        // 🔥 auto focus
+        box.querySelector(".edit-input").focus();
+    }
+
+    // ❌ cancel
+    if (e.target.classList.contains("cancel-edit")) {
+
+        const box = e.target.closest(".comment-box");
+
+        box.querySelector(".edit-zone").style.display = "none";
+        box.querySelector(".comment-text").style.display = "block";
+    }
+
+    // ✅ save edit
+    if (e.target.classList.contains("save-edit")) {
+
+        const btn = e.target;
+        const box = btn.closest(".comment-box");
+        const input = box.querySelector(".edit-input");
+
+        const value = (input.value || "").trim();
+        const url = btn.getAttribute("data-url");
+
+        // ❌ vide
+        if (value === "") {
+            Swal.fire({
+                icon: 'error',
+                text: 'Le commentaire est obligatoire',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                  customClass: {
+                    popup: 'red-toast'
+                }
+            });
+            return;
+        }
+
+        // ⚠️ trop court
+        if (value.length < 3) {
+            Swal.fire({
+                icon: 'warning',
+                text: 'Minimum 3 caractères',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+            return;
+        }
+
+        // ❌ regex
+        if (!/^[a-zA-Z0-9]/.test(value)) {
+            Swal.fire({
+                icon: 'error',
+                text: 'Doit commencer par lettre ou chiffre',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: {
+                    popup: 'red-toast'
+                }
+            });
+            return;
+        }
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "contenu=" + encodeURIComponent(value)
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            box.querySelector(".comment-text").textContent = data.contenu;
+            box.querySelector(".edit-zone").style.display = "none";
+            box.querySelector(".comment-text").style.display = "block";
+
+            // ✅ success toast
+            Swal.fire({
+                icon: 'success',
+                text: 'Commentaire modifié avec succès',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#ecfdf5',
+                color: '#065f46',
+                iconColor: '#10b981',
+                 customClass: {
+                popup: 'green-toast'
+            }
+            });
+
+        });
+
+    }
+
+});
+
+document.addEventListener("keypress", function (e) {
+    if (e.target.classList.contains("edit-input") && e.key === "Enter") {
+        e.preventDefault();
+        e.target.closest(".comment-box").querySelector(".save-edit").click();
+    }
+});
+
+{# -------------------------------------------------add like--------------------------------------------------------- #}
+document.querySelectorAll('.like-btn').forEach(btn => {
+
+  const icon = btn.querySelector('i');
+  const count = btn.querySelector('span');
+
+  // état initial
+  if (btn.dataset.liked === "1") {
+    icon.classList.add('text-danger');
   }
-  .content-grid{
-    grid-template-columns:1fr;
+
+  btn.addEventListener('click', () => {
+
+    const postId = btn.dataset.id;
+
+    fetch(`/post/like/${postId}`, {
+      method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+
+      if (data.liked) {
+        icon.classList.add('text-danger');
+      } else {
+        icon.classList.remove('text-danger');
+      }
+
+      count.textContent = data.count;
+    });
+
+  });
+
+});
+
+{# ------------------------pop up tri----------------------------------- #}
+let selectedSort = null;
+let selectedOrder = null;
+
+document.querySelectorAll(".sort-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedSort = btn.dataset.sort;
+  });
+});
+
+document.querySelectorAll(".order-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedOrder = btn.dataset.order;
+
+    if (!selectedSort) {
+      Swal.fire({
+                icon: 'warning',
+                text: 'Choisissez d’abord le type de tri',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+            });
+      return;
+    }
+
+    // ✅ redirection correcte
+    window.location.href = `/blog?sort=${selectedSort}&order=${selectedOrder}`;
+  });
+});
+</script>
+
+
+
+
+<style>
+.search-input .form-control {
+border: 2px solid #e9ecef;
+border-right: none;
+border-radius: 50px 0 0 50px;
+padding: 15px 20px;
+font-size: 16px;
+}
+
+.search-input .btn {
+border-radius: 0 50px 50px 0;
+padding: 15px 30px;
+font-weight: 600;
+}
+
+.badge-purple { background: linear-gradient(45deg, #6f42c1, #8b5cf6); color: white; }
+.badge-blue { background: linear-gradient(45deg, #0d6efd, #4dabf7); color: white; }
+
+.post-card {
+border-radius: 20px !important;
+overflow: hidden;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+.navbar-brand {
+font-size: 1.8rem;
+font-weight: 800;
+}
+
+.breadcrumbs {
+font-size: 1.1rem;
+}
+
+.bread {
+font-size: 3rem;
+font-weight: 700;
+color: white;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.btn-primary {
+background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+border: none;
+padding: 12px 30px;
+border-radius: 50px;
+font-weight: 600;
+transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.fa-heart.text-danger {
+color: #e74c3c !important;
+}
+
+.badge {
+padding: 8px 12px;
+border-radius: 20px;
+font-size: 0.8rem;
+font-weight: 500;
+}
+
+.badge-light { background: #f8f9fa; color: #495057; }
+.badge-primary { background: linear-gradient(45deg, #007bff, #0056b3); color: white; }
+
+.card-body {
+background: linear-gradient(145deg, #ffffff, #f8f9fa);
+
+}
+
+.overlay {
+background: rgba(0,0,0,0.4);
+}
+
+.hero-wrap {
+background-size: cover;
+background-position: center;
+min-height: 500px;
+display: flex;
+align-items: center;
+}
+
+@media (max-width: 768px) {
+.search-input .form-control, .search-input .btn {
+border-radius: 10px;
+margin-bottom: 10px;
+} .col-md-3 { order: -1; margin-bottom: 20px; }
+}
+body {
+  background: #eef2f7;
+}
+
+.rounded-4 {
+  border-radius: 16px !important;
+}
+
+.badge-pink {
+  background: #f8d7da;
+  color: #d63384;
+}
+
+.stat-box {
+  background: #f4f6fb;
+  padding: 10px;
+  border-radius: 12px;
+  width: 30%;
+}
+
+.card {
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+/* POST CARD ULTRA MODERNE */
+.post-card, .card {
+  border-radius: 22px !important;
+  border: none !important;
+  background: linear-gradient(145deg, #ffffff, #f3f6fb);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Hover effet premium */
+.post-card:hover, .card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* IMAGE POST */
+.post-card img, .card img {
+  border-radius: 16px;
+  transition: transform 0.4s ease;
+}
+
+/* zoom image au hover */
+.post-card:hover img {
+  transform: scale(1.03);
+}
+
+/* HEADER USER */
+.card-body .d-flex img {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* BADGES PLUS JOLIS */
+.badge {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* TAG tendance */
+.badge-pink {
+  background: linear-gradient(45deg, #ff7eb3, #ff758c);
+  color: white;
+}
+
+/* ACTIONS (like/comment) */
+.card .text-muted div {
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.card .text-muted div:hover {
+  background: #f1f3f8;
+}
+
+/* INPUT POST */
+/* INPUT PLUS VISIBLE */
+input.form-control {
+  border-radius: 50px !important;
+  border: 1.5px solid #d0d7e2;
+  background: #ffffff;
+  padding: 14px 20px;
+  font-size: 15px;
+  transition: all 0.25s ease;
+}
+
+/* Placeholder plus visible */
+input.form-control::placeholder {
+  color: #9aa4b2;
+  opacity: 1;
+}
+
+/* Focus effet moderne */
+input.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  outline: none;
+  background: #fff;
+}
+
+/* BOUTON */
+.btn-primary {
+  border-radius: 50px !important;
+  background: linear-gradient(45deg, #5a67d8, #667eea);
+  border: none;
+}
+
+/* BOUTONS ICONES */
+.btn-outline-primary {
+  border-radius: 50px;
+  border: 1px solid #dfe3eb;
+  background: white;
+  transition: 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background: #eef2ff;
+}
+.profile-img {
+  width: 45px !important;
+  height: 45px !important;
+  min-width: 45px;   /* 🔥 empêche flex de compresser */
+  min-height: 45px;
+
+  border-radius: 50% !important;
+  object-fit: cover;
+  object-position: center;
+
+  display: block;
+
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.post-action {
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.post-action:hover {
+  background: #eef2ff;
+  transform: scale(1.05);
+}
+
+.post-action i {
+  font-size: 16px;
+}
+
+
+.post-icon-dropdown i:hover {
+  color: #667eea;
+  transform: scale(1.1);
+}
+.dropdown-toggle::after {
+  display: none; /* supprime le petit triangle */
+}
+
+.post-icon-dropdown {
+  margin-left: 12px; /* espace entre badges et icône */
+}
+/* DROPDOWN MODERNE */
+.modern-dropdown {
+  border-radius: 16px;
+  padding: 10px;
+  border: none;
+  background: linear-gradient(145deg, #ffffff, #f3f6fb);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  animation: dropdownFade 0.25s ease;
+  min-width: 180px;
+}
+
+
+/* animation */
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-@media (max-width: 700px){
-  .topnav{
-    display:none;
-  }
-  .profile-head{
-    grid-template-columns:1fr;
-    margin-top:-50px;
-  }
-  .avatar-wrap, .avatar{
-    width:130px;
-    height:130px;
-  }
-  h1{
-    font-size:1.8rem;
-  }
-  .tabs{
-    overflow-x:auto;
-    padding-bottom:10px;
-  }
-}  
+/* items */
+.modern-dropdown .dropdown-item {
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+}
+
+/* hover effet premium */
+.modern-dropdown .dropdown-item:hover {
+  background: #eef2ff;
+  transform: translateX(4px);
+}
+
+/* icones */
+.modern-dropdown i {
+  color: #667eea;
+  font-size: 14px;
+}
+
+/* danger (supprimer) */
+.modern-dropdown .fa-trash {
+  color: #e74c3c;
+}
+
+/* signaler */
+.modern-dropdown .fa-flag {
+  color: #f39c12;
+}
+
+.dropdown-divider {
+  margin: 8px 0;
+  height: 1px;
+  background-color: #007bff;
+  opacity: 1;
+}
+.sidebar-sticky {
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+/*--------------------------------popup-comments----------------------------------------*/
+/* BACKGROUND FLOU */
+.overlay-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 999;
+}
+
+/* POPUP */
+.comment-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  width: 400px;
+  max-width: 90%;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* ACTIVE STATE */
+.comment-popup.active,
+.overlay-blur.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.comment-popup.active {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* HEADER */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.popup-header span {
+  cursor: pointer;
+  font-size: 22px;
+}
+
+/* BODY */
+.popup-body {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.comment {
+  margin-bottom: 10px;
+  background: #f4f6fb;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+/* FOOTER */
+.popup-footer {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.popup-footer input {
+  flex: 1;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.popup-footer button {
+  margin-left: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #4f8cff, #2563eb);
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+  transition: 0.2s;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+}
+/* COMMENT STYLE EXACT IMAGE */
+
+.comment-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* AVATAR */
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eef4ff, #e0ecff);
+  border: 1px solid #c7dbff;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.12);
+}
+
+/* BULLE */
+.comment-bubble {
+  background: #ffffff; /* blanc net */
+  border: 1px solid #dbeafe; /* contour léger bleu */
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15); /* ombre visible */
+  padding: 12px 16px;
+  border-radius: 16px;
+  width: 100%;
+  position: relative;
+  transition: 0.2s;
+}
+
+/* HEADER (nom + date) */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.comment-header strong {
+  color: #1d4ed8;
+}
+
+
+.comment-header small {
+  color: #64748b;
+}
+
+/* TEXTE */
+.comment-bubble p {
+  margin: 4px 0 0;
+  font-size: 14px;
+    color: #0f172a;
+  font-weight: 500;
+}
+
+/* ICONES (edit/delete) */
+.comment-icons {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+}
+
+.comment-icons i {
+  margin-left: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #1877f2;
+}
+
+.comment-icons .fa-trash {
+  color: #e74c3c;
+}
+
+/* FOOTER AVATAR */
+.comment-avatar-small {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/* INPUT STYLE EXACT */
+.popup-footer input {
+  flex: 1;
+  border-radius: 20px;
+  border: none;
+ background: #ffffff;
+  border: 1px solid #cbd5f5;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+  padding: 10px 15px;
+  font-size: 14px;
+}
+
+/* BOUTON BLEU FACEBOOK */
+.popup-footer button {
+  margin-left: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  font-weight: 600;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+
+}
+.popup-header h5 {
+  color: #1e293b;
+}
+
+.popup-header span {
+  color: #64748b;
+}
+
+.popup-header span:hover {
+  color: #ef4444;
+}
+.popup-footer button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  font-weight: 600;
+}
+
+.popup-footer button:hover {
+  background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  transform: scale(1.05);
+}
+
+/* ICONES */
+.comment-icons i {
+  color: #2563eb;
+}
+
+.comment-icons .fa-trash {
+  color: #ef4444;
+}
+/*-------------------------------------------pop up edit---------------------------------------------*/
+
+/* LABEL */
+.popup-label {
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* TEXTAREA STYLE IMAGE */
+.edit-textarea {
+  width: 100%;
+  border-radius: 25px;
+  border: none;
+  background: #f1f5f9;
+  padding: 14px 18px;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+}
+
+/* IMAGE + BUTTON */
+.edit-image-box {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.edit-image-box img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* BOUTON CHOISIR */
+.choose-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* FOOTER ALIGN RIGHT */
+.edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ANNULER */
+.btn-cancel {
+  background: #e5e7eb;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+/* ENREGISTRER */
+.btn-save {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+#editPostPopup textarea {
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
+  padding: 10px;
+  resize: none;
+}
+
+#editPostPopup input[type="file"] {
+  border-radius: 12px;
+  padding: 8px;
+}
+
+/*---------------------------alerte----------------------*/
+
+.red-toast {
+    border-left: 5px solid #ef4444 !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25) !important;
+}
+.orange-toast {
+    border-left: 5px solid #f59e0b !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25) !important;
+}
+.green-toast {
+    border-left: 5px solid #10b981 !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25) !important;
+}
+/*--------------pop up delete--------------------------*/
+.small-swal {
+    border-radius: 12px !important;
+    font-size: 13px !important;
+}
+
+.small-swal .swal2-title {
+    font-size: 15px !important;
+}
+
+.small-swal .swal2-html-container {
+    font-size: 13px !important;
+    margin: 6px 0;
+}
+
+.small-swal .swal2-actions button {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+}
+
+{# -------------------------input edit comment----------------------------- #}
+.edit-input {
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 5px;
+}
+
+.edit-zone button {
+  margin-top: 5px;
+  margin-right: 5px;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+{# ---------------------------------search---------------------------------------- #}
+/* SEARCH BAR MODERNE */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* cacher checkbox */
+#searchToggle {
+  display: none;
+}
+
+.search-box {
+  position: relative;
+  height: 45px;
+  width: 45px;
+  border-radius: 50px;
+
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  align-items: center;
+
+  transition: 0.4s ease;
+  overflow: hidden;
+  cursor: text;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* INPUT */
+.search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #333;
+
+  width: 0;
+  opacity: 0;
+
+  transition: 0.4s ease;
+  font-size: 14px;
+
+  z-index: 2;
+  pointer-events: none; 
+}
+
+/* ICON */
+.search-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  cursor: pointer;
+  z-index: 3;
+}
+
+.search-icon svg {
+  width: 18px;
+  height: 18px;
+  fill:  #333;;
+  display: block;
+}
+
+/* HOVER ICON */
+.search-icon:hover svg {
+  transform: scale(1.2);
+}
+
+/* ========================= */
+/* 🔥 ETAT OUVERT */
+/* ========================= */
+
+#searchToggle:checked ~ .search-box {
+  width: 220px;
+  padding-left: 10px;
+}
+
+/* input devient utilisable */
+#searchToggle:checked ~ .search-box .search-input {
+  width: 150px;
+  opacity: 1;
+  margin-left: 10px;
+  pointer-events: auto; 
+}
+
+/* icône va à droite */
+#searchToggle:checked ~ .search-box .search-icon {
+  left: auto;
+  right: 10px;
+  transform: translateY(-50%);
+}
+
+/* glow effect */
+.search-box:hover {
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+
+
+
 </style>
 {% endblock %}

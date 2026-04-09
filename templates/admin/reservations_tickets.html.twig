@@ -34,14 +34,24 @@
             <div class="card-header">
               <h5>Liste des Réservations</h5>
             </div>
+            <div class="d-flex justify-content-end mb-3">
+
+  <select id="filterReservationStatus" class="form-select w-auto">
+    <option value="">Tous statuts</option>
+    <option value="Confirmée">Confirmée</option>
+    <option value="Réservée">Réservée</option>
+    <option value="Annulée">Annulée</option>
+  </select>
+
+</div>
             <div class="table-responsive">
               <table class="table table-striped">
                 <thead>
                   <tr>
                     <th>Personne</th>
                     <th>Destination</th>
-                    <th>Date Réservation</th>
-                    <th>Date Début</th>
+                    <th id="sortDate" style="cursor:pointer;">Date Réservation ⬍</th>
+                    <th >Date Début </th>
                     <th>Date Fin</th>
                     <th>Nb Tickets</th>
                     <th>Coût Total</th>
@@ -51,7 +61,7 @@
                 </thead>
                 <tbody>
                   {% for reservation in reservations %}
-                  <tr ondblclick="window.location='{{ path('admin_reservation_tickets', {'id': reservation.id}) }}'" style="cursor:pointer;">
+                  <tr data-date="{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}" class="reservation-row" ondblclick="window.location='{{ path('admin_reservation_tickets', {'id': reservation.id}) }}'" style="cursor:pointer;" data-status="{{ reservation.statut|lower  }}">
                     <td>{{ reservation.personne_id.nom ?? 'N/A' }}</td>
                     <td>{{ reservation.destination.nom ?? 'N/A' }}</td>
                     <td>{{ reservation.dateReservation ? reservation.dateReservation|date('d-m-Y') : 'N/A' }}</td>
@@ -62,8 +72,8 @@
                     <td>
                       {% if reservation.statut == 'Confirmée' %}
                         <span class="badge bg-label-success">Confirmée</span>
-                      {% elseif reservation.statut == 'En attente' %}
-                        <span class="badge bg-label-warning">En attente</span>
+                      {% elseif reservation.statut == 'réservée' %}
+                        <span class="badge bg-label-warning">Réservée</span>
                       {% else %}
                         <span class="badge bg-label-danger">Annulée</span>
                       {% endif %}
@@ -106,12 +116,23 @@
                 <i class="bx bx-plus"></i> Ajouter Ticket
               </a>
             </div>
+            <div class="d-flex justify-content-end mb-3">
+
+  <select id="filterTicketType" class="form-select w-auto">
+    <option value="">Tous types</option>
+    <option value="Vol">Vol</option>
+    <option value="Transport">Transport</option>
+    <option value="Hotel">Hotel</option>
+    <option value="Activité">Activité</option>
+  </select>
+
+</div>
             <div class="table-responsive text-nowrap">
               <table class="table">
                 <thead>
                   <tr>
                     <th>Type</th>
-                    <th>Destination</th>
+                    <th id="sortDestination" style="cursor:pointer;">Destination ⬍</th>
                     <th>Prix</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -119,7 +140,8 @@
                 </thead>
                 <tbody>
                   {% for ticket in tickets %}
-                  <tr>
+                  <tr class="ticket-row"
+    data-type="{{ ticket.activite is not empty ? 'Activité' : ticket.type }}" data-destination="{{ ticket.destination ? ticket.destination.nom|lower : '' }}">
                     <td>{{ ticket.activite is not empty ? 'Activité' : ticket.type }}</td>
                     <td>{{ ticket.destination ? ticket.destination.nom : 'N/A' }}</td>
                     <td>{{ ticket.prix ? ticket.prix ~ ' TND' : 'N/A' }}</td>
@@ -221,5 +243,83 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endif %}
+<script>
+document.getElementById('filterTicketType').addEventListener('change', function () {
+    let value = this.value.toLowerCase();
+
+    document.querySelectorAll('.ticket-row').forEach(row => {
+        let type = row.dataset.type.toLowerCase();
+
+        if (!value || type.includes(value)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+<script>
+document.getElementById('filterReservationStatus').addEventListener('change', function () {
+    let value = this.value.toLowerCase();
+
+    document.querySelectorAll('.reservation-row').forEach(row => {
+        let status = row.dataset.status.toLowerCase();
+
+        if (!value || status.includes(value)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+document.addEventListener('DOMContentLoaded', function () {
+
+    let asc = true;
+
+    document.getElementById('sortDate').addEventListener('click', function () {
+
+        let rows = Array.from(document.querySelectorAll('.reservation-row'));
+        let tbody = rows[0].parentNode;
+
+        rows.sort((a, b) => {
+            let dateA = a.dataset.date;
+            let dateB = b.dataset.date;
+
+            return asc 
+                ? dateA.localeCompare(dateB)
+                : dateB.localeCompare(dateA);
+        });
+
+        asc = !asc;
+
+        rows.forEach(row => tbody.appendChild(row));
+    });
+
+});
+document.addEventListener('DOMContentLoaded', function () {
+
+    let ascDest = true;
+
+    document.getElementById('sortDestination').addEventListener('click', function () {
+
+        let rows = Array.from(document.querySelectorAll('.ticket-row'));
+        let tbody = rows[0].parentNode;
+
+        rows.sort((a, b) => {
+            let A = a.dataset.destination;
+            let B = b.dataset.destination;
+
+            return ascDest 
+                ? A.localeCompare(B)
+                : B.localeCompare(A);
+        });
+
+        ascDest = !ascDest;
+
+        rows.forEach(row => tbody.appendChild(row));
+    });
+
+});
+</script>
 
 {% endblock %}

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Reservation;
 use App\Entity\Ticket;
 use App\Entity\Ville; 
+use App\Entity\Personne;
 use App\Form\ReservationType;
 use App\Form\ReservationUserType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -137,18 +138,30 @@ public function getTickets(Reservation $reservation): Response
 }
 
 #[Route('/mes-reservations', name: 'mes_reservations')]
-public function mesReservations(EntityManagerInterface $em): Response
+public function mesReservations(Request $request, EntityManagerInterface $em): Response
 {
-    $reservations = $em->getRepository(Reservation::class)->findAll();
+    $userId = $request->getSession()->get('user_id');
+
+    if (!$userId) {
+        return $this->redirectToRoute('home'); // or login page
+    }
+
+    $reservations = $em->getRepository(Reservation::class)
+        ->createQueryBuilder('r')
+        ->where('r.personne_id = :id')
+        ->setParameter('id', $userId)
+        ->getQuery()
+        ->getResult();
 
     return $this->render('reservation/mes_reservations.html.twig', [
         'reservations' => $reservations
     ]);
 }
-
 #[Route('/reservation/new', name: 'ajouter_reservation')]
 public function newUser(Request $request, EntityManagerInterface $em): Response
 {
+    $userId = $request->getSession()->get('user_id');
+    $personne = $em->getRepository(Personne::class)->find($userId);
     $reservation = new Reservation();
     $form = $this->createForm(ReservationUserType::class, $reservation,['is_edit' => false]);
     $form->handleRequest($request);
@@ -181,6 +194,7 @@ public function newUser(Request $request, EntityManagerInterface $em): Response
         $reservation->setCoutTotal($total);
         $reservation->setNb_tickets($nbTickets);
 
+        $reservation->setPersonne_id($personne);
         $em->persist($reservation);
         $em->flush();
 

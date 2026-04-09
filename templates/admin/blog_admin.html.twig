@@ -1,0 +1,216 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block sidebar %}
+  {% include 'admin/partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="row g-6">
+  <div class="col-12">
+    <div class="nav-align-top">
+
+    <ul class="nav nav-pills mb-4 nav-fill">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-post">
+            <i class="bx bx-book me-1"></i> Posts
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-comment">
+            <i class="bx bx-message me-1"></i> Comments
+            </button>
+        </li>
+    </ul>
+
+      <div class="tab-content">
+
+        {# ===== posts ===== #}
+        
+<div class="tab-pane fade show active" id="tab-post">
+  <div class="card">
+    <div class="card-header">
+      <h5>Liste des Posts</h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+       
+          
+            <th>Contenu</th>
+            <th>Auteur</th>
+            <th>Date de publication</th>
+        
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+            {% for post in posts %}
+            <tr>
+             
+
+                <td>{{ post.contenu|slice(0, 50) ~ '...' }}</td>
+
+                <td>
+                    {{ post.personne_id ? post.personne_id.nom ~ ' ' ~ post.personne_id.prenom : 'N/A' }}
+                </td>
+
+                <td>
+                {{ post.datePublication ? post.datePublication|date('d-m-Y H:i') : 'N/A' }}
+                </td>
+
+                <td>
+                {% if post.image %}
+                    <img src="{{ asset(post.image) }}" width="100" >
+                {% else %}
+                    N/A
+                {% endif %}
+                </td>
+
+                <td>
+                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deletePostModal{{ post.id }}">
+                    Delete
+                </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">Aucun post</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+        {# ===== comments ===== #}
+<div class="tab-pane fade" id="tab-comment">
+  <div class="card">
+    <div class="card-header">
+      <h5>Liste des Commentaires</h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Contenu</th>
+            <th>Auteur</th>
+            <th>Post</th>
+            <th>Date de publication</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+            {% for comment in comments %}
+            <tr>
+
+                <td>{{ comment.contenu|slice(0, 50) ~ '...' }}</td>
+                
+
+                <td>
+                {{ comment.personne_id ? comment.personne_id.nom : 'N/A' }}
+                </td>
+            <td>{{ comment.post_id.contenu|slice(0, 50) ~ '...' }}</td>
+                <td>
+                {{ comment.dateCommentaire ? comment.dateCommentaire|date('d-m-Y H:i') : 'N/A' }}
+                </td>
+
+                <td>
+                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCommentModal{{ comment.id }}">
+                    Delete
+                </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Aucun commentaire</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ===== MODALS posts ===== #}
+{% for post in posts %}
+<div class="modal fade" id="deletePostModal{{ post.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Supprimer Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer ce post ?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+
+        <form method="post" action="{{ path('admin_post_delete', {'id': post.id}) }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+          <button class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{# ===== MODALS comments ===== #}
+{% for comment in comments %}
+<div class="modal fade" id="deleteCommentModal{{ comment.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Supprimer Commentaire</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer ce commentaire ?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+
+        <form method="post" action="{{ path('admin_comment_delete', {'id': comment.id}) }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+          <button class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% if selectedComment is defined %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector('[data-bs-target="#tab-comment"]').click();
+});
+</script>
+
+{% endif %}
+{% endblock %}

@@ -4,9 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Activite;
 use App\Entity\Avis;
+use App\Entity\Commentaire;
+use App\Entity\Post;
 use App\Form\ActiviteType;
 use App\Repository\ActiviteRepository;
 use App\Repository\AvisRepository;
+use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -205,4 +209,35 @@ final class AdminController extends AbstractController
         'activiteId' => $activiteId,
     ]);
 }
+
+
+        #[Route('/admin/blog', name: 'admin_blog')]
+        public function blog(PostRepository $postRepository, CommentRepository $commentRepository): Response
+        {
+            return $this->render('admin/blog_admin.html.twig', [
+                'posts' => $postRepository->findAll(),
+                'comments' => $commentRepository->findAll(),
+            ]);
+        }
+
+
+        #[Route('/admin/post/{id}/delete', name: 'admin_post_delete', methods: ['POST'])]
+        public function deletePost(Post $post, EntityManagerInterface $em): Response
+        {
+            $em->remove($post);
+            $em->flush();
+
+            return $this->redirectToRoute('admin_blog');
+        }
+
+        #[Route('/admin/comment/{id}/delete', name: 'admin_comment_delete', methods: ['POST'])]
+        public function deleteComment(Commentaire $comment, EntityManagerInterface $em): Response
+        {
+            $em->remove($comment);
+            $em->flush();
+
+            return $this->redirectToRoute('admin_blog');
+        }
+
+
 }

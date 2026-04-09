@@ -148,7 +148,13 @@
         {% endfor %}
 
         {% if error %}
-            <div class="alert-error"><i class="fa fa-exclamation-circle"></i> {{ error }}</div>
+            {% if 'suspendu' in error|lower %}
+                <div class="alert-error" style="background:#fff3cd; border-color:#ffc107; color:#856404;">
+                    <i class="fa fa-ban me-1"></i> {{ error }}
+                </div>
+            {% else %}
+                <div class="alert-error"><i class="fa fa-exclamation-circle"></i> {{ error }}</div>
+            {% endif %}
         {% endif %}
 
         <form method="post" action="{{ path('app_login') }}" novalidate id="loginForm">

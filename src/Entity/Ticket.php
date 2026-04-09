@@ -59,7 +59,11 @@ class Ticket
     public function setType(string $value): self { $this->type = $value; return $this; }
 
     public function getStatut(): ?string { return $this->statut; }
-    public function setStatut(?string $value): self { $this->statut = $value; return $this; }
+    public function setStatut(string $statut): self
+{
+    $this->statut = $statut;
+    return $this;
+}
 
     public function getPrix(): ?float { return $this->prix; }
     public function setPrix(float $value): self { $this->prix = $value; return $this; }

@@ -9,12 +9,15 @@ use Doctrine\Common\Collections\Collection;
 use App\Entity\Ticket;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+
 
 #[ORM\Entity]
 class Reservation
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
@@ -35,13 +38,9 @@ private \DateTimeInterface $dateFin;
 private ?string $statut = null;
 
 #[ORM\Column(name: "coutTotal", type: "float")]
-#[Assert\NotNull(message: "Le coût total est obligatoire")]
-#[Assert\Positive(message: "Le coût doit être positif")]
-private float $coutTotal;
+private float $coutTotal;  // ← remove @Assert\Positive and @Assert\NotNull
 
 #[ORM\Column(type: "integer")]
-#[Assert\NotNull(message: "Le nombre de tickets est obligatoire")]
-#[Assert\Positive(message: "Le nombre de tickets doit être positif")]
 private int $nb_tickets;
 
 #[ORM\ManyToOne(targetEntity: Ville::class)]
@@ -195,5 +194,13 @@ public function validateDates(ExecutionContextInterface $context): void
             ->atPath('dateFin')
             ->addViolation();
     }
+}
+public function __construct()
+{
+    $this->tickets = new ArrayCollection();
+    $this->dateReservation = new \DateTime();
+    $this->statut = 'réservée';
+    $this->coutTotal = 0;
+    $this->nb_tickets = 0;
 }
 }

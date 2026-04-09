@@ -105,7 +105,7 @@
           <tr>
             <th>Contenu</th>
             <th>Auteur</th>
-            <th>Post</th>
+            <th>Publication correspondante</th>
             <th>Date de publication</th>
             <th>Actions</th>
           </tr>
@@ -119,8 +119,10 @@
                 
 
                 <td>
-                {{ comment.personne_id ? comment.personne_id.nom : 'N/A' }}
+                {{ comment.personne_id ? comment.personne_id.nom ~ ' ' ~ comment.personne_id.prenom : 'N/A' }}
                 </td>
+
+                
             <td>{{ comment.post_id.contenu|slice(0, 50) ~ '...' }}</td>
                 <td>
                 {{ comment.dateCommentaire ? comment.dateCommentaire|date('d-m-Y H:i') : 'N/A' }}

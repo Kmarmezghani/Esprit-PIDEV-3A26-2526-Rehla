@@ -5,7 +5,13 @@
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
    <div class="container">
-     <a class="navbar-brand" href="index.html">Rehla<span>Travel Agency</span></a>
+ <a class="navbar-brand" href="index.html">
+    
+    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+    
+    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+</a>
      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
        <span class="oi oi-menu"></span> Menu
      </button>
@@ -149,17 +155,84 @@
         </div>
       </div>
 
-      </li>
-        <li class="nav-item">
-				<a href="{{ path('home') }}" class="nav-link">Home</a>
-				</li>
-         <li class="nav-item"><a href="about.html" class="nav-link">About</a></li>
-         <li class="nav-item"><a href="destination.html" class="nav-link">Destination</a></li>
-         <li class="nav-item"><a href="hotel.html" class="nav-link">Hotel</a></li>
-       	<li class="nav-item active">
-				<a href="{{ path('blog') }}" class="nav-link">Blog</a>
-				</li>
-         <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
+    <li class="nav-item "><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+    <li class="nav-item active"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+    {% if app.session.get('user_id') %}
+    {# ── Utilisateur connecté ── #}
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+           href="#" id="userDropdown" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {% if app.session.get('user_photo') %}
+                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% else %}
+                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+            <li>
+                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                    Connecté en tant que<br>
+                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                <span>Mon profil</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                <span>Mes préférences</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+                <span>Mes activités</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                <span>Mes réservations</span>
+            </a></li>
+            {% if app.session.get('user_role') == 'ADMIN' %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-cogs" style="width:18px;"></i>
+                <span>Administration</span>
+            </a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                   onclick="confirmLogoutHome(event)"
+                   style="padding:8px 16px; font-size:14px;">
+                    <i class="fa fa-sign-out" style="width:18px;"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+    {% else %}
+    {# ── Non connecté ── #}
+    <li class="nav-item ms-2">
+        <a href="{{ path('app_register') }}" class="nav-link">
+            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+        </a>
+    </li>
+    {% endif %}
+
        </ul>
      </div>
    </div>
@@ -173,6 +246,8 @@
 <div class="col-md-9 ftco-animate pb-5 text-center">
 <p class="breadcrumbs"><span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span> <span>Posts <i class="fa fa-chevron-right"></i></span></p>
 <h1 class="mb-0 bread">Nos Publications</h1>
+
+
 </div>
 </div>
 </div>
@@ -238,14 +313,25 @@
     <div class="d-flex align-items-center mb-2">
 
       <!-- IMAGE PROFIL -->
-      <img src="{{ post.personne_id.profile_photo ? asset(post.personne_id.profile_photo) : asset('assets/img/bg_1.jpg') }}"
-           class="profile-img mr-2">
+    <img src="{{ post.personne_id and post.personne_id.profile_photo 
+    ? asset(post.personne_id.profile_photo) 
+    : asset('assets/img/bg_1.jpg') }}"
+     class="profile-img mr-2">
+
+
 
       <div>
         <!-- NOM -->
-        <strong>
+            <strong>
+        {% if post.personne_id %}
           {{ post.personne_id.nom }} {{ post.personne_id.prenom }}
-        </strong><br>
+        {% else %}
+          Utilisateur inconnu
+        {% endif %}
+      </strong>
+
+        
+        <br>
 
         <!-- DATE -->
        <small class="text-muted">
@@ -254,6 +340,7 @@
       </div>
 
       <!-- DROPDOWN (inchangé) -->
+      {% if app.session.get('user_id') == post.personne_id.id %}
       <div class="dropdown ms-3">
         <button class="btn p-0 border-0 bg-transparent post-icon-dropdown dropdown-toggle"
                 type="button" data-toggle="dropdown">
@@ -275,6 +362,7 @@
           </a>
         </div>
       </div>
+      {% endif %}
 
       <!-- TAGS -->
       <div class="ml-auto d-flex align-items-center">
@@ -364,10 +452,23 @@
 
 <!-- Tendances -->
 <div class="card border-0 shadow-sm mb-4 rounded-4 p-3">
-  <h6>🔥 Tendances</h6>
-  <span class="badge badge-light">#Voyage</span>
-  <span class="badge badge-light">#Cuisine</span>
-  <span class="badge badge-light">#Tech</span>
+  <h6 class="mb-3">🔥 Tendances</h6>
+
+  <div style="display:flex; flex-wrap:wrap; gap:8px;">
+    
+    <span style="padding:6px 12px; border-radius:20px; background:#f1f3f5; font-size:13px; color:#333;">
+      #Voyage
+    </span>
+
+    <span style="padding:6px 12px; border-radius:20px; background:#f1f3f5; font-size:13px; color:#333;">
+      #Cuisine
+    </span>
+
+    <span style="padding:6px 12px; border-radius:20px; background:#f1f3f5; font-size:13px; color:#333;">
+      #Tech
+    </span>
+
+  </div>
 </div>
 
 <!-- A suivre -->
@@ -375,15 +476,15 @@
   <h6>👤 À suivre</h6>
 
   <div class="d-flex align-items-center mb-2">
-    <img src="{{ asset('assets/images/profile2.jpg') }}"
-         class="rounded-circle mr-2" width="35">
+    <img src="{{ asset('assets/images/about-1.jpg') }}"
+         class="rounded-circle mr-2" width="30" height="30">
     <span>Tech Daily</span>
     <button class="btn btn-sm btn-outline-primary ml-auto">+ Suivre</button>
   </div>
 
   <div class="d-flex align-items-center">
-    <img src="{{ asset('assets/images/profile3.jpg') }}"
-         class="rounded-circle mr-2" width="35">
+     <img src="{{ asset('assets/images/about-1.jpg') }}"
+         class="rounded-circle mr-2" width="30" height="30">
     <span>Cuisine Pro</span>
     <button class="btn btn-sm btn-outline-primary ml-auto">+ Suivre</button>
   </div>
@@ -471,7 +572,13 @@
 <form method="POST" id="commentForm">
   <div class="popup-footer">
 
-    <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar-small">
+    {% if app.session.get('user_photo') %}
+  <img src="{{ asset(app.session.get('user_photo')) }}" 
+       class="comment-avatar-small">
+{% else %}
+  <img src="{{ asset('assets/images/default-user.png') }}" 
+       class="comment-avatar-small">
+{% endif %}
     <input type="text" name="contenu" id="comment_input"
            placeholder="Écrire un commentaire...">
     <input type="hidden" id="comment_post_id">

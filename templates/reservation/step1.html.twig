@@ -1,0 +1,590 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter Activité{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+		<div class="container">
+			<a class="navbar-brand" href="index.html">
+    
+    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+    
+    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="oi oi-menu"></span> Menu
+			</button>
+
+			<div class="collapse navbar-collapse" id="ftco-nav">
+    <ul class="navbar-nav ml-auto">
+    <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Destinations</a></li>
+    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+                {% if app.session.get('user_id') %}
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.session.get('user_photo') %}
+                            <img src="{{ app.session.get('user_photo') }}" alt="Profil" class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Profil" class="rounded-circle" style="width:35px;height:35px;object-fit:cover;">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                        style="min-width:200px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                                Connecté en tant que<br>
+                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i><span>Mon profil</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i><span>Mes préférences</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i><span>Mes activités</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i><span>Mes réservations</span>
+                        </a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                               onclick="confirmLogout(event)" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sign-out" style="width:18px;"></i><span>Déconnexion</span>
+                        </a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item ms-2">
+                    <a href="{{ path('app_register') }}" class="nav-link">
+                        <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="hero-wrap" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}'); min-height:100vh;">
+    <div class="overlay"></div>
+
+    <div class="ftco-section form-section-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-7">
+                <div class="card shadow-sm border-0 p-4 multi-step-card">
+
+                    <h2 class="mb-4 text-center form-title">Nouvelle Réservation</h2>
+
+                    <!-- STEPPER -->
+                    <div class="stepper-wrapper mb-4">
+                        <div class="stepper-line"></div>
+
+                        <div class="stepper-item active" data-step="0">
+                            <div class="step-counter">1</div>
+                            <div class="step-name">Dates</div>
+                        </div>
+
+                        <div class="stepper-item" data-step="1">
+                            <div class="step-counter">2</div>
+                            <div class="step-name">Destination</div>
+                        </div>
+
+                        <div class="stepper-item" data-step="2">
+                            <div class="step-counter">3</div>
+                            <div class="step-name">Tickets</div>
+                        </div>
+                    </div>
+
+                    {{ form_start(form, {
+                        'attr': {
+                            'id': 'multiStepForm',
+                            'novalidate': 'novalidate'
+                        }
+                    }) }}
+
+                    <!-- STEP 1 -->
+                    <div class="form-step active">
+                        <div class="step-content-box">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.dateDebut, 'Date début') }}
+                                    {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.dateFin, 'Date fin') }}
+                                    {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="button" class="btn btn-primary next-step px-4">
+                                    Suivant
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 -->
+                    <div class="form-step d-none">
+                        <div class="step-content-box">
+
+                            <div class="mb-3">
+                                {{ form_label(form.destination, 'Destination') }}
+                                {{ form_widget(form.destination, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary prev-step">
+                                    Précédent
+                                </button>
+
+                                <button type="button" class="btn btn-primary next-step">
+                                    Suivant
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- STEP 3 -->
+                    <div class="form-step d-none">
+                        <div class="step-content-box">
+
+                            <h5 class="mb-3 text-primary">Choisir vos tickets</h5>
+
+                            <div class="row">
+                                {% for ticket in form.tickets %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card p-3 shadow-sm">
+
+                                            <div class="form-check">
+                                                {{ form_widget(ticket) }}
+                                                {{ form_label(ticket) }}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="button" class="btn btn-outline-secondary prev-step">
+                                    Précédent
+                                </button>
+
+                                <button type="submit" class="btn btn-success px-4">
+                                    Confirmer
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+<footer class="ftco-footer bg-bottom ftco-no-pt" style="background-image: url('{{ asset('assets/images/bg_3.jpg')}}');">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md pt-5">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">About</h2>
+                    <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+                    <ul class="ftco-footer-social list-unstyled float-md-left float-lft">
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
+                    <h2 class="ftco-heading-2">Information</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
+                        <li><a href="#" class="py-2 d-block">General Enquiries</a></li>
+                        <li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
+                        <li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
+                        <li><a href="#" class="py-2 d-block">Refund Policy</a></li>
+                        <li><a href="#" class="py-2 d-block">Call Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">Experience</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="py-2 d-block">Adventure</a></li>
+                        <li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
+                        <li><a href="#" class="py-2 d-block">Beach</a></li>
+                        <li><a href="#" class="py-2 d-block">Nature</a></li>
+                        <li><a href="#" class="py-2 d-block">Camping</a></li>
+                        <li><a href="#" class="py-2 d-block">Party</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">Have a Questions?</h2>
+                    <div class="block-23 mb-3">
+                        <ul>
+                            <li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                            <li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                            <li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>
+                    Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+<script>
+		function confirmLogoutHome(e) {
+			e.preventDefault();
+			Swal.fire({
+				title: 'Déconnexion',
+				text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+				icon: 'question',
+				showCancelButton: true,
+				confirmButtonColor: '#223f91',
+				cancelButtonColor: '#6c757d',
+				confirmButtonText: 'Oui, me déconnecter',
+				cancelButtonText: 'Annuler'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					document.getElementById('logoutFormHome').submit();
+				}
+			});
+		}
+		</script>
+
+
+<style>
+    .hero-wrap {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-wrap .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.45);
+    }
+
+    .hero-wrap .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .form-section-wrapper {
+        padding-top: 120px;
+        padding-bottom: 70px;
+    }
+
+    .multi-step-card {
+        border-radius: 26px;
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 25px 70px rgba(0,0,0,0.18);
+        margin-top: 30px;
+    }
+
+    .form-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.25;
+        margin-bottom: 30px !important;
+    }
+
+    .stepper-wrapper {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin: 10px 0 30px;
+    }
+
+    .stepper-line {
+        position: absolute;
+        top: 18px;
+        left: 12%;
+        right: 12%;
+        height: 4px;
+        background: #d9d9d9;
+        z-index: 1;
+        border-radius: 20px;
+    }
+
+    .stepper-item {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        flex: 1;
+    }
+
+    .step-counter {
+        width: 38px;
+        height: 38px;
+        margin: 0 auto 8px;
+        border-radius: 50%;
+        background: #d9d9d9;
+        color: #fff;
+        font-weight: 700;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .step-name {
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .stepper-item.active .step-counter,
+    .stepper-item.completed .step-counter {
+        background: #223f91;
+    }
+
+    .stepper-item.active .step-name,
+    .stepper-item.completed .step-name {
+        color: #223f91;
+        font-weight: 700;
+    }
+
+    .step-content-box {
+        background: #f8fafc;
+        border: 1px solid #e8edf5;
+        border-radius: 22px;
+        padding: 24px;
+    }
+
+    .section-mini-title {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #223f91;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .activity-image-block {
+        text-align: center;
+    }
+
+    .activity-preview-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .activity-preview-img {
+        width: 170px;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        border: 4px solid #fff;
+    }
+
+    .upload-wrapper {
+        max-width: 420px;
+        margin: 0 auto 10px;
+    }
+
+    .custom-input {
+        height: 46px;
+        border-radius: 12px;
+        border: 1px solid #d7deea;
+        box-shadow: none !important;
+        background: #fff;
+        padding-left: 16px;
+        font-size: 15px;
+    }
+
+    .custom-input:focus {
+        border-color: #223f91;
+    }
+
+    .file-input-custom {
+        padding: 10px 14px;
+        height: auto;
+    }
+
+    .custom-textarea {
+        height: auto !important;
+        min-height: 120px;
+        resize: vertical;
+        padding-top: 14px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #223f91;
+        margin-bottom: 8px;
+        font-size: 14px;
+        display: block;
+    }
+
+    .form-error {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .form-navigation {
+        margin-top: 14px;
+    }
+
+    .btn {
+        border-radius: 999px;
+        font-weight: 700;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .btn-primary {
+        background-color: #223f91;
+        border-color: #223f91;
+    }
+
+    .btn-primary:hover {
+        background-color: #1b3274;
+        border-color: #1b3274;
+    }
+
+    @media (max-width: 768px) {
+        .form-section-wrapper {
+            padding-top: 100px;
+            padding-bottom: 40px;
+        }
+
+        .multi-step-card {
+            padding: 20px !important;
+            border-radius: 20px;
+        }
+
+        .form-title {
+            font-size: 22px;
+        }
+
+        .step-name {
+            font-size: 11px;
+        }
+
+        .step-counter {
+            width: 34px;
+            height: 34px;
+            font-size: 17px;
+        }
+
+        .step-content-box {
+            padding: 18px;
+        }
+
+        .activity-preview-img {
+            width: 135px;
+            height: 135px;
+        }
+
+        .custom-input {
+            height: 42px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    let currentStep = 0;
+    const steps = document.querySelectorAll('.form-step');
+    const stepIndicators = document.querySelectorAll('.stepper-item');
+
+    function showStep(index) {
+        steps.forEach((step, i) => {
+            step.classList.toggle('d-none', i !== index);
+        });
+
+        stepIndicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i <= index);
+        });
+    }
+
+    document.querySelectorAll('.next-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    });
+
+});
+</script>
+
+<form id="logoutForm" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmLogout(e) {
+    e.preventDefault();
+    Swal.fire({
+        title: 'Déconnexion',
+        text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#223f91',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Oui, me déconnecter',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) document.getElementById('logoutForm').submit();
+    });
+}
+</script>
+
+{% endblock %}

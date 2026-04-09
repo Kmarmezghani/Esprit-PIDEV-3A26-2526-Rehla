@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Form\PostType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-
+use Symfony\Component\HttpFoundation\JsonResponse;
 final class BlogController extends AbstractController
 {
 
@@ -110,6 +110,32 @@ public function addComment(Request $request, Post $post, EntityManagerInterface 
     $em->flush();
 
     return $this->redirectToRoute('blog');
+}
+#[Route('/comment/delete/{id}', name: 'comment_delete', methods: ['POST'])]
+public function deleteComment(Commentaire $comment, EntityManagerInterface $em): Response
+{
+    $em->remove($comment);
+    $em->flush();
+
+    return $this->redirectToRoute('blog');
+}
+
+
+#[Route('/comment/edit/{id}', name: 'comment_edit', methods: ['POST'])]
+public function editComment(Request $request, Commentaire $comment, EntityManagerInterface $em)
+{
+    $contenu = $request->request->get('contenu');
+
+    if (!$contenu) {
+        return new JsonResponse(['error' => 'vide'], 400);
+    }
+
+    $comment->setContenu($contenu);
+    $em->flush();
+
+    return new JsonResponse([
+        'contenu' => $contenu
+    ]);
 }
 
 }

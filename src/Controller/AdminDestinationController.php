@@ -32,14 +32,38 @@ class AdminDestinationController extends AbstractController
         $sort = $request->query->get('sort', 'nom');
         $direction = $request->query->get('direction', 'asc');
 
+        // Pays filters
+        $visitMin = $request->query->get('visitMin') !== null ? (int) $request->query->get('visitMin') : null;
+        $visitMax = $request->query->get('visitMax') !== null ? (int) $request->query->get('visitMax') : null;
+
+        // Ville filters
+        $saison = $request->query->get('saison');
+        $typeTourisme = $request->query->get('typeTourisme');
+
+        // Attraction filters
+        $type = $request->query->get('type');
+        $prixMin = $request->query->get('prixMin') !== '' && $request->query->get('prixMin') !== null ? (float) $request->query->get('prixMin') : null;
+        $prixMax = $request->query->get('prixMax') !== '' && $request->query->get('prixMax') !== null ? (float) $request->query->get('prixMax') : null;
+        $estFerme = $request->query->get('estFerme');
+        $estFermeBool = $estFerme === '1' ? true : ($estFerme === '0' ? false : null);
+
         return $this->render('admin/destination_admin.html.twig', [
-            'pays' => ($tab === 'pays') ? $paysRepo->searchAndSort($search, $sort, $direction) : $paysRepo->searchAndSort(null, 'nom', 'asc'),
-            'villes' => ($tab === 'ville') ? $villeRepo->searchAndSort($search, $sort, $direction) : $villeRepo->searchAndSort(null, 'nom', 'asc'),
-            'attractions' => ($tab === 'attraction') ? $attractionRepo->searchAndSort($search, $sort, $direction) : $attractionRepo->searchAndSort(null, 'nom', 'asc'),
+            'pays' => ($tab === 'pays') ? $paysRepo->searchAndSort($search, $sort, $direction, $visitMin, $visitMax) : $paysRepo->searchAndSort(null, 'nom', 'asc'),
+            'villes' => ($tab === 'ville') ? $villeRepo->searchAndSort($search, $sort, $direction, $saison, $typeTourisme) : $villeRepo->searchAndSort(null, 'nom', 'asc'),
+            'attractions' => ($tab === 'attraction') ? $attractionRepo->searchAndSort($search, $sort, $direction, $type, $prixMin, $prixMax, $estFermeBool) : $attractionRepo->searchAndSort(null, 'nom', 'asc'),
             'selectedTab' => $tab,
             'search' => $search,
             'sort' => $sort,
             'direction' => $direction,
+            // Filter values for the form
+            'visitMin' => $visitMin,
+            'visitMax' => $visitMax,
+            'saison' => $saison,
+            'typeTourisme' => $typeTourisme,
+            'type' => $type,
+            'prixMin' => $prixMin,
+            'prixMax' => $prixMax,
+            'estFerme' => $estFerme,
         ]);
     }
 
@@ -59,10 +83,14 @@ class AdminDestinationController extends AbstractController
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'pays']);
         }
 
-        return $this->render('admin/destination_form.html.twig', [
-            'form' => $form->createView(),
-            'title' => $pays->getId() ? 'Modifier Pays' : 'Nouveau Pays',
-            'entity' => 'pays'
+        if ($pays->getId()) {
+            return $this->render('admin/pays_edit.html.twig', [
+                'form' => $form->createView(),
+                'pays' => $pays
+            ]);
+        }
+        return $this->render('admin/pays_new.html.twig', [
+            'form' => $form->createView()
         ]);
     }
 
@@ -93,10 +121,14 @@ class AdminDestinationController extends AbstractController
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'ville']);
         }
 
-        return $this->render('admin/destination_form.html.twig', [
-            'form' => $form->createView(),
-            'title' => $ville->getId() ? 'Modifier Ville' : 'Nouvelle Ville',
-            'entity' => 'ville'
+        if ($ville->getId()) {
+            return $this->render('admin/ville_edit.html.twig', [
+                'form' => $form->createView(),
+                'ville' => $ville
+            ]);
+        }
+        return $this->render('admin/ville_new.html.twig', [
+            'form' => $form->createView()
         ]);
     }
 
@@ -127,10 +159,14 @@ class AdminDestinationController extends AbstractController
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'attraction']);
         }
 
-        return $this->render('admin/destination_form.html.twig', [
-            'form' => $form->createView(),
-            'title' => $attraction->getId() ? 'Modifier Attraction' : 'Nouvelle Attraction',
-            'entity' => 'attraction'
+        if ($attraction->getId()) {
+            return $this->render('admin/attraction_edit.html.twig', [
+                'form' => $form->createView(),
+                'attraction' => $attraction
+            ]);
+        }
+        return $this->render('admin/attraction_new.html.twig', [
+            'form' => $form->createView()
         ]);
     }
 

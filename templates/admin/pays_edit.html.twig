@@ -1,0 +1,57 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block title %}Modifier un Pays{% endblock %}
+
+{% block sidebar %}
+  {% include 'admin/partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header text-center">
+            <h4>Modifier le pays</h4>
+        </div>
+        <div class="card-body">
+            {{ form_start(form) }}
+
+            <div class="mb-3">
+                {{ form_label(form.nom) }}
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.nom.vars.errors %}
+                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.description.vars.errors %}
+                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.visit_count) }}
+                {{ form_widget(form.visit_count, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.visit_count.vars.errors %}
+                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn"
+                        style="background-color: #223f91; color: #fff; border-radius: 25px; padding: 10px 30px;">
+                    Modifier
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

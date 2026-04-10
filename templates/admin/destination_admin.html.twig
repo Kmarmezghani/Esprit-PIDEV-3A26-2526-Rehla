@@ -38,11 +38,11 @@
           <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
               <h5 class="mb-0">Liste des Pays</h5>
-              <div class="d-flex align-items-center gap-2">
-                <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-start gap-2 flex-wrap">
+                <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-start gap-2 flex-wrap">
                   <input type="hidden" name="tab" value="pays">
                   <div class="input-group input-group-merge input-group-sm">
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ search }}">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, description..." value="{{ search }}">
                     {% if search %}
                       <a href="{{ path('admin_destination_index', {tab: 'pays'}) }}" class="input-group-text text-danger" title="Effacer la recherche">
                         <i class="bx bx-x"></i>
@@ -50,10 +50,16 @@
                     {% endif %}
                     <button type="submit" class="input-group-text btn-primary border-0"><i class="bx bx-search"></i></button>
                   </div>
+                  <div class="d-flex gap-2">
+                    <input type="number" name="visitMin" class="form-control form-control-sm" placeholder="Visites min" value="{{ visitMin }}" min="0" style="width: 100px;" onchange="this.form.submit()">
+                    <input type="number" name="visitMax" class="form-control form-control-sm" placeholder="Visites max" value="{{ visitMax }}" min="0" style="width: 100px;" onchange="this.form.submit()">
+                  </div>
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Appliquer</button>
+                  <a href="{{ path('admin_destination_index', {tab: 'pays'}) }}" class="btn btn-sm btn-outline-secondary" title="Réinitialiser les filtres"><i class="bx bx-refresh"></i></a>
+                  <a href="{{ path('admin_pays_new') }}" class="btn btn-sm rounded-pill btn-primary ms-2">
+                    &#43; Ajouter
+                  </a>
                 </form>
-                <a href="{{ path('admin_pays_new') }}" class="btn btn-sm rounded-pill btn-primary">
-                  &#43; Ajouter
-                </a>
               </div>
             </div>
             <div class="table-responsive text-nowrap">
@@ -101,11 +107,11 @@
           <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
               <h5 class="mb-0">Liste des Villes</h5>
-              <div class="d-flex align-items-center gap-2">
-                <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-start gap-2 flex-wrap">
+                <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-start gap-2 flex-wrap">
                   <input type="hidden" name="tab" value="ville">
                   <div class="input-group input-group-merge input-group-sm">
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ search }}">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, pays, type, saison..." value="{{ search }}">
                     {% if search %}
                       <a href="{{ path('admin_destination_index', {tab: 'ville'}) }}" class="input-group-text text-danger" title="Effacer la recherche">
                         <i class="bx bx-x"></i>
@@ -113,10 +119,28 @@
                     {% endif %}
                     <button type="submit" class="input-group-text btn-primary border-0"><i class="bx bx-search"></i></button>
                   </div>
+                  <select name="saison" class="form-select form-select-sm" style="width: 130px;" onchange="this.form.submit()">
+                    <option value="">-- Saison --</option>
+                    <option value="Winter" {{ saison == 'Winter' ? 'selected' : '' }}>Winter</option>
+                    <option value="Spring" {{ saison == 'Spring' ? 'selected' : '' }}>Spring</option>
+                    <option value="Summer" {{ saison == 'Summer' ? 'selected' : '' }}>Summer</option>
+                    <option value="Autumn" {{ saison == 'Autumn' ? 'selected' : '' }}>Autumn</option>
+                    <option value="All Year" {{ saison == 'All Year' ? 'selected' : '' }}>All Year</option>
+                  </select>
+                  <select name="typeTourisme" class="form-select form-select-sm" style="width: 150px;" onchange="this.form.submit()">
+                    <option value="">-- Type --</option>
+                    <option value="Seaside" {{ typeTourisme == 'Seaside' ? 'selected' : '' }}>Seaside</option>
+                    <option value="Desert" {{ typeTourisme == 'Desert' ? 'selected' : '' }}>Desert</option>
+                    <option value="Mountain" {{ typeTourisme == 'Mountain' ? 'selected' : '' }}>Mountain</option>
+                    <option value="Urban" {{ typeTourisme == 'Urban' ? 'selected' : '' }}>Urban</option>
+                    <option value="Cultural" {{ typeTourisme == 'Cultural' ? 'selected' : '' }}>Cultural</option>
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Appliquer</button>
+                  <a href="{{ path('admin_destination_index', {tab: 'ville'}) }}" class="btn btn-sm btn-outline-secondary" title="Réinitialiser les filtres"><i class="bx bx-refresh"></i></a>
+                  <a href="{{ path('admin_ville_new') }}" class="btn btn-sm rounded-pill btn-primary ms-2">
+                    &#43; Ajouter
+                  </a>
                 </form>
-                <a href="{{ path('admin_ville_new') }}" class="btn btn-sm rounded-pill btn-primary">
-                  &#43; Ajouter
-                </a>
               </div>
             </div>
             <div class="table-responsive text-nowrap">
@@ -172,11 +196,11 @@
           <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
               <h5 class="mb-0">Liste des Attractions</h5>
-              <div class="d-flex align-items-center gap-2">
-                <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-start gap-2 flex-wrap">
+                <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-start gap-2 flex-wrap">
                   <input type="hidden" name="tab" value="attraction">
                   <div class="input-group input-group-merge input-group-sm">
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ search }}">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, ville, type, description..." value="{{ search }}">
                     {% if search %}
                       <a href="{{ path('admin_destination_index', {tab: 'attraction'}) }}" class="input-group-text text-danger" title="Effacer la recherche">
                         <i class="bx bx-x"></i>
@@ -184,10 +208,29 @@
                     {% endif %}
                     <button type="submit" class="input-group-text btn-primary border-0"><i class="bx bx-search"></i></button>
                   </div>
+                  <select name="type" class="form-select form-select-sm" style="width: 140px;" onchange="this.form.submit()">
+                    <option value="">-- Type --</option>
+                    <option value="Historical" {{ type == 'Historical' ? 'selected' : '' }}>Historical</option>
+                    <option value="Nature" {{ type == 'Nature' ? 'selected' : '' }}>Nature</option>
+                    <option value="Entertainment" {{ type == 'Entertainment' ? 'selected' : '' }}>Entertainment</option>
+                    <option value="Religious" {{ type == 'Religious' ? 'selected' : '' }}>Religious</option>
+                    <option value="Adventurous" {{ type == 'Adventurous' ? 'selected' : '' }}>Adventurous</option>
+                  </select>
+                  <div class="d-flex gap-1">
+                    <input type="number" name="prixMin" class="form-control form-control-sm" placeholder="Prix min" value="{{ prixMin }}" min="0" step="0.01" style="width: 90px;" onchange="this.form.submit()">
+                    <input type="number" name="prixMax" class="form-control form-control-sm" placeholder="Prix max" value="{{ prixMax }}" min="0" step="0.01" style="width: 90px;" onchange="this.form.submit()">
+                  </div>
+                  <select name="estFerme" class="form-select form-select-sm" style="width: 110px;" onchange="this.form.submit()">
+                    <option value="">-- Status --</option>
+                    <option value="0" {{ estFerme == '0' ? 'selected' : '' }}>Ouvert</option>
+                    <option value="1" {{ estFerme == '1' ? 'selected' : '' }}>Fermé</option>
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Appliquer</button>
+                  <a href="{{ path('admin_destination_index', {tab: 'attraction'}) }}" class="btn btn-sm btn-outline-secondary" title="Réinitialiser les filtres"><i class="bx bx-refresh"></i></a>
+                  <a href="{{ path('admin_attraction_new') }}" class="btn btn-sm rounded-pill btn-primary ms-2">
+                    &#43; Ajouter
+                  </a>
                 </form>
-                <a href="{{ path('admin_attraction_new') }}" class="btn btn-sm rounded-pill btn-primary">
-                  &#43; Ajouter
-                </a>
               </div>
             </div>
             <div class="table-responsive text-nowrap">

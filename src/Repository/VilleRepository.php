@@ -16,7 +16,7 @@ class VilleRepository extends ServiceEntityRepository
         parent::__construct($registry, Ville::class);
     }
 
-    public function searchAndSort(?string $search, string $sort = 'nom', string $direction = 'asc'): array
+    public function searchAndSort(?string $search, string $sort = 'nom', string $direction = 'asc', ?string $saison = null, ?string $typeTourisme = null): array
     {
         $qb = $this->createQueryBuilder('v')
             ->leftJoin('v.pays_id', 'p')
@@ -25,6 +25,16 @@ class VilleRepository extends ServiceEntityRepository
         if (!empty($search)) {
             $qb->andWhere('v.nom LIKE :search OR v.typeTourisme LIKE :search OR v.saison LIKE :search OR p.nom LIKE :search')
                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if (!empty($saison)) {
+            $qb->andWhere('v.saison = :saison')
+               ->setParameter('saison', $saison);
+        }
+
+        if (!empty($typeTourisme)) {
+            $qb->andWhere('v.typeTourisme = :typeTourisme')
+               ->setParameter('typeTourisme', $typeTourisme);
         }
 
         $sortMap = [

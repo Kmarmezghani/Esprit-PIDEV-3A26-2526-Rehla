@@ -16,13 +16,23 @@ class PaysRepository extends ServiceEntityRepository
         parent::__construct($registry, Pays::class);
     }
 
-    public function searchAndSort(?string $search, string $sort = 'nom', string $direction = 'asc'): array
+    public function searchAndSort(?string $search, string $sort = 'nom', string $direction = 'asc', ?int $visitMin = null, ?int $visitMax = null): array
     {
         $qb = $this->createQueryBuilder('p');
 
         if (!empty($search)) {
             $qb->andWhere('p.nom LIKE :search OR p.description LIKE :search')
                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($visitMin !== null) {
+            $qb->andWhere('p.visit_count >= :visitMin')
+               ->setParameter('visitMin', $visitMin);
+        }
+
+        if ($visitMax !== null) {
+            $qb->andWhere('p.visit_count <= :visitMax')
+               ->setParameter('visitMax', $visitMax);
         }
 
         $sortMap = [

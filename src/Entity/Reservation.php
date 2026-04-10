@@ -38,7 +38,7 @@ class Reservation
     private ?string $statut = null;
 
     #[ORM\Column(name: "coutTotal", type: "float")]
-    private float $coutTotal;  // ← remove @Assert\Positive and @Assert\NotNull
+    private float $coutTotal;  
 
     #[ORM\Column(type: "integer")]
     private int $nb_tickets;
@@ -162,7 +162,7 @@ class Reservation
     public function removeTicket(Ticket $ticket): self
     {
         if ($this->tickets->removeElement($ticket)) {
-            // set the owning side to null (unless already changed)
+           
             if ($ticket->getReservation_id() === $this) {
                 $ticket->setReservation_id(null);
             }
@@ -183,14 +183,14 @@ class Reservation
         $dateDebut = \DateTimeImmutable::createFromInterface($this->dateDebut);
         $dateFin = \DateTimeImmutable::createFromInterface($this->dateFin);
 
-        // ❌ date début dans le passé
+        
         if ($dateDebut < $today) {
             $context->buildViolation('La date de début ne peut pas être avant aujourd’hui.')
                 ->atPath('dateDebut')
                 ->addViolation();
         }
 
-        // ❌ date fin avant date début
+       
         if ($dateFin < $dateDebut) {
             $context->buildViolation('La date de fin doit être après la date de début.')
                 ->atPath('dateFin')

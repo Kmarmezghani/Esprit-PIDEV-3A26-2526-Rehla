@@ -143,7 +143,7 @@ public function mesReservations(Request $request, EntityManagerInterface $em): R
     $userId = $request->getSession()->get('user_id');
 
     if (!$userId) {
-        return $this->redirectToRoute('home'); // or login page
+        return $this->redirectToRoute('home'); 
     }
 
     $reservations = $em->getRepository(Reservation::class)
@@ -170,7 +170,7 @@ public function newUser(Request $request, EntityManagerInterface $em): Response
 
         $ticketsChoisis = $form->get('tickets')->getData();
 
-        // ✅ Manual guard — not a validator concern
+      
         if (count($ticketsChoisis) === 0) {
             $this->addFlash('error', 'Veuillez sélectionner au moins un ticket.');
             return $this->render('reservation/step1.html.twig', [

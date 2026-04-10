@@ -22,27 +22,10 @@ class ActiviteType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('nom', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire']),
-                ],
-            ])
-            ->add('description', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'La description est obligatoire']),
-                ],
-            ])
-            ->add('prix', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Le prix est obligatoire']),
-                    new Positive(['message' => 'Le prix doit être positif']),
-                ],
-            ])
-            ->add('typeActivite', null, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Le type d\'activité est obligatoire']),
-                ],
-            ])
+            ->add('nom', null)
+            ->add('description', null)
+            ->add('prix', null)
+            ->add('typeActivite', null)
             ->add('date_debut', DateTimeType::class, [
                 'widget' => 'single_text',
                 'constraints' => [

@@ -34,7 +34,7 @@ class ReservationUserType extends AbstractType
         ],
         'label' => 'Statut',
 
-        // ✅ ONLY control edit/new here
+        
         'disabled' => !$options['is_edit'],
 
         'attr' => [
@@ -57,7 +57,7 @@ class ReservationUserType extends AbstractType
     'by_reference' => false,
     'label' => false,
 
-    // ⭐ tickets disponibles seulement
+   
     'query_builder' => function($repo){
         return $repo->createQueryBuilder('t')
             ->where('t.reservation_id IS NULL');

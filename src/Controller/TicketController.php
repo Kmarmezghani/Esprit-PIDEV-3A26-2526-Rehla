@@ -7,7 +7,7 @@ use App\Entity\Reservation;
 use App\Form\TicketType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;   // ⭐ THIS WAS MISSING
+use Symfony\Component\HttpFoundation\Request;   
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -25,7 +25,7 @@ public function index(EntityManagerInterface $em): Response
 {
     return $this->render('/ticket/index.html.twig', [
         'tickets' => $em->getRepository(Ticket::class)->findAll(),
-        'reservations' => $em->getRepository(Reservation::class)->findAll(), // ← ajoute ça
+        'reservations' => $em->getRepository(Reservation::class)->findAll(), 
     ]);
 }
     #[Route('/ticket/back', name: 'admin_ticket_new')]
@@ -53,13 +53,13 @@ public function editTicket(Ticket $ticket, Request $request, EntityManagerInterf
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        $em->flush(); // no persist needed, entity is already managed
-        return $this->redirectToRoute('admin_tickets'); // go back to the list
+        $em->flush(); 
+        return $this->redirectToRoute('admin_tickets'); 
     }
 
     return $this->render('/ticket/back/editTicket.html.twig', [
         'form' => $form->createView(),
-        'edit' => true, // optional flag to change the heading or button text
+        'edit' => true, 
     ]);
 }
 
@@ -70,7 +70,7 @@ public function delete(Ticket $ticket, EntityManagerInterface $em, Request $requ
         $em->remove($ticket);
         $em->flush();
 
-        $this->addFlash('success', 'Ticket deleted successfully 🗑️');
+        $this->addFlash('success', 'Ticket deleted successfully ');
     }
 
     return $this->redirectToRoute('admin_tickets');

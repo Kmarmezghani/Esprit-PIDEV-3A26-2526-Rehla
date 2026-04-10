@@ -20,9 +20,15 @@ class Pays
     private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}0-9\s\-]+$/u',
+        message: 'Le nom ne doit contenir que des lettres, chiffres, espaces et tirets (pas de caractères spéciaux comme ; ? !)'
+    )]
     private ?string $nom;
 
     #[ORM\Column(type: "text")]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
     private string $description;
 
     #[ORM\Column(type: "integer", nullable: true)]

@@ -9,7 +9,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class PaysType extends AbstractType
 {
@@ -18,15 +17,9 @@ class PaysType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom du Pays',
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire']),
-                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
-                'constraints' => [
-                    new NotBlank(['message' => 'La description est obligatoire']),
-                ],
             ])
             ->add('visit_count', IntegerType::class, [
                 'label' => 'Nombre de visites',

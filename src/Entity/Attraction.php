@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 use App\Entity\Ville;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[UniqueEntity(fields: ['nom'], message: 'Cette attraction existe déjà.')]
@@ -18,6 +19,11 @@ class Attraction
     private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}0-9\s\-]+$/u',
+        message: 'Le nom ne doit contenir que des lettres, chiffres, espaces et tirets (pas de caractères spéciaux comme ; ? !)'
+    )]
     private string $nom;
 
     #[ORM\Column(type: "text", nullable: true)]
@@ -27,6 +33,7 @@ class Attraction
     private string $type;
 
     #[ORM\Column(type: "decimal", precision: 10, scale: 2)]
+    #[Assert\Positive(message: 'Le prix doit être positif')]
     private ?float $prix = null;
 
         #[ORM\ManyToOne(targetEntity: Ville::class, inversedBy: "attractions")]

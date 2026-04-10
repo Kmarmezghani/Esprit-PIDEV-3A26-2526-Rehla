@@ -21,6 +21,11 @@ class Ville
     private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 100)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}0-9\s\-]+$/u',
+        message: 'Le nom ne doit contenir que des lettres, chiffres, espaces et tirets (pas de caractères spéciaux comme ; ? !)'
+    )]
     private string $nom;
 
     #[ORM\ManyToOne(targetEntity: Pays::class, inversedBy: "villes")]

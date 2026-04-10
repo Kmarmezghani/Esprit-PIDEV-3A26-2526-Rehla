@@ -12,7 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class VilleType extends AbstractType
 {
@@ -21,9 +20,6 @@ class VilleType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom de la Ville',
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire']),
-                ],
             ])
             ->add('pays_id', EntityType::class, [
                 'class' => Pays::class,

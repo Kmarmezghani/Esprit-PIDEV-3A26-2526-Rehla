@@ -200,7 +200,7 @@
                 <form action="{{ path('admin_destination_index') }}" method="get" class="d-flex align-items-start gap-2 flex-wrap">
                   <input type="hidden" name="tab" value="attraction">
                   <div class="input-group input-group-merge input-group-sm">
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, ville, type, description..." value="{{ search }}">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, ville, type..." value="{{ search }}">
                     {% if search %}
                       <a href="{{ path('admin_destination_index', {tab: 'attraction'}) }}" class="input-group-text text-danger" title="Effacer la recherche">
                         <i class="bx bx-x"></i>

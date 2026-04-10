@@ -15,6 +15,8 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Positive;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class AttractionType extends AbstractType
 {
@@ -25,6 +27,10 @@ class AttractionType extends AbstractType
                 'label' => 'Nom de l\'attraction',
                 'constraints' => [
                     new NotBlank(['message' => 'Le nom est obligatoire']),
+                    new Regex([
+                        'pattern' => '/^[\p{L}0-9\s\-]+$/u',
+                        'message' => 'Le nom ne doit contenir que des lettres, chiffres, espaces et tirets (pas de caractères spéciaux comme ; ? !)',
+                    ]),
                 ],
             ])
             ->add('description', TextareaType::class, [
@@ -45,6 +51,9 @@ class AttractionType extends AbstractType
             ->add('prix', NumberType::class, [
                 'label' => 'Prix',
                 'required' => false,
+                'constraints' => [
+                    new Positive(['message' => 'Le prix doit être positif']),
+                ],
             ])
             ->add('ville_id', EntityType::class, [
                 'class' => Ville::class,

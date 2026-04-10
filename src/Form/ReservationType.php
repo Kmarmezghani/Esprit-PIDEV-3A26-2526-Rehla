@@ -33,7 +33,7 @@ class ReservationType extends AbstractType
             ->add('statut', ChoiceType::class, [
                 'choices'  => [
                     'Confirmée' => 'Confirmée',
-                    'En attente' => 'En attente',
+                    'Réservée' => 'réservée',
                     'Annulée' => 'Annulée',
                 ],
                 'label' => 'Statut',

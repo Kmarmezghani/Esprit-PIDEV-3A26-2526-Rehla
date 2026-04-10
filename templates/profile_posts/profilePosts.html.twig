@@ -294,7 +294,7 @@
 
       <div class="d-flex">
 
-       {% set liked = post.likess|filter(l => l.personne_id.id == 4)|length > 0 %}
+     {% set liked = post.likess|filter(l => l.personne_id.id == app.session.get('user_id'))|length > 0 %}
 
           <div class="mr-3 post-action like-btn"
               data-id="{{ post.id }}"

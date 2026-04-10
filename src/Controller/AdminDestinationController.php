@@ -33,8 +33,8 @@ class AdminDestinationController extends AbstractController
         $direction = $request->query->get('direction', 'asc');
 
         // Pays filters
-        $visitMin = $request->query->get('visitMin') !== null ? (int) $request->query->get('visitMin') : null;
-        $visitMax = $request->query->get('visitMax') !== null ? (int) $request->query->get('visitMax') : null;
+        $visitMin = $request->query->get('visitMin') !== '' && $request->query->get('visitMin') !== null ? (int) $request->query->get('visitMin') : null;
+        $visitMax = $request->query->get('visitMax') !== '' && $request->query->get('visitMax') !== null ? (int) $request->query->get('visitMax') : null;
 
         // Ville filters
         $saison = $request->query->get('saison');

@@ -7,9 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Ville;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity]
 #[UniqueEntity(fields: ['nom'], message: 'Cette attraction existe déjà.')]
+#[Assert\Callback([self::class, 'validateHeures'])]
 class Attraction
 {
 
@@ -36,8 +38,9 @@ class Attraction
     #[Assert\Positive(message: 'Le prix doit être positif')]
     private ?float $prix = null;
 
-        #[ORM\ManyToOne(targetEntity: Ville::class, inversedBy: "attractions")]
+    #[ORM\ManyToOne(targetEntity: Ville::class, inversedBy: "attractions")]
     #[ORM\JoinColumn(name: 'ville_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "La ville est obligatoire")]
     private Ville $ville_id;
 
     #[ORM\Column(type: "time")]
@@ -145,5 +148,17 @@ class Attraction
     {
         $this->est_ferme = $value;
         return $this;
+    }
+
+    public static function validateHeures(self $attraction, ExecutionContextInterface $context): void
+    {
+        $ouverture = $attraction->getHeureOuverture();
+        $fermeture = $attraction->getHeureFermeture();
+        
+        if ($ouverture && $fermeture && $fermeture <= $ouverture) {
+            $context->buildViolation('L\'heure de fermeture doit être après l\'heure d\'ouverture')
+                ->atPath('heure_fermeture')
+                ->addViolation();
+        }
     }
 }

@@ -46,6 +46,7 @@ class AttractionType extends AbstractType
                 'class' => Ville::class,
                 'choice_label' => 'nom',
                 'label' => 'Ville',
+                'placeholder' => 'Choisir une ville',
             ])
             ->add('heure_ouverture', TimeType::class, [
                 'label' => 'Heure d\'ouverture',

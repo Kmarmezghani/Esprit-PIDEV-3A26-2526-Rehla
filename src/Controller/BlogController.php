@@ -165,12 +165,18 @@ public function editComment(Request $request, Commentaire $comment, EntityManage
 }
 
 #[Route('/post/like/{id}', name: 'post_like', methods: ['POST'])]
-public function like(Post $post, EntityManagerInterface $em): JsonResponse
+public function like(Post $post, EntityManagerInterface $em, Request $request): JsonResponse
 {
-    $personne = $em->getRepository(Personne::class)->find(4); // user connecté
+    $userId = $request->getSession()->get('user_id');
+    $personne = $em->getRepository(Personne::class)->find($userId);
+
+    if (!$personne) {
+        return new JsonResponse(['error' => 'user not connected'], 403);
+    }
 
     $likeRepo = $em->getRepository(Likes::class);
 
+    
     $existing = $likeRepo->findOneBy([
         'personne_id' => $personne,
         'post_id' => $post

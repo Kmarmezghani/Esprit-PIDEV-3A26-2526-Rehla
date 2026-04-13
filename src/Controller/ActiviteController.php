@@ -14,6 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Reservation;
+use App\Entity\Ticket;
 
 final class ActiviteController extends AbstractController
 {
@@ -199,4 +201,75 @@ public function index(
             'id' => $activite->getId()
         ]);
     }
+    #[Route('/activite/{id}/reserver', name: 'activite_reserver', methods: ['POST'])]
+public function reserver(
+    Activite $activite,
+    Request $request,
+    EntityManagerInterface $em,
+    PersonneRepository $personneRepository
+): Response {
+    $userId = $request->getSession()->get('user_id');
+
+    if (!$userId) {
+        $this->addFlash('danger', 'Vous devez être connecté pour réserver.');
+        return $this->redirectToRoute('app_login');
+    }
+
+    $personne = $personneRepository->find($userId);
+
+    if (!$personne) {
+        $this->addFlash('danger', 'Utilisateur introuvable.');
+        return $this->redirectToRoute('activite');
+    }
+
+    $nbTickets = (int) $request->request->get('nb_tickets', 1);
+
+    if ($nbTickets < 1) {
+        $this->addFlash('danger', 'Le nombre de tickets doit être au moins 1.');
+        return $this->redirectToRoute('activite');
+    }
+
+    if ($nbTickets > $activite->getMaxPlaces()) {
+        $this->addFlash('danger', 'Pas assez de places disponibles.');
+        return $this->redirectToRoute('activite');
+    }
+
+    if (!$activite->getDestination()) {
+        $this->addFlash('danger', 'Cette activité n’a pas de destination.');
+        return $this->redirectToRoute('activite');
+    }
+
+    $reservation = new Reservation();
+    $reservation->setDateReservation(new \DateTime());
+    $reservation->setDateDebut($activite->getDateDebut());
+    $reservation->setDateFin($activite->getDateFin());
+    $reservation->setStatut('réservée');
+    $reservation->setCoutTotal($activite->getPrix() * $nbTickets);
+    $reservation->setNb_tickets($nbTickets);
+    $reservation->setPersonne_id($personne);
+    $reservation->setDestination($activite->getDestination());
+
+    $em->persist($reservation);
+
+    for ($i = 0; $i < $nbTickets; $i++) {
+        $ticket = new Ticket();
+        $ticket->setType('Activité');
+        $ticket->setStatut('Reservé');
+        $ticket->setPrix($activite->getPrix());
+        $ticket->setReservation_id($reservation);
+        $ticket->setActivite($activite);
+        $ticket->setDestination($activite->getDestination());
+
+        $em->persist($ticket);
+    }
+
+    $activite->setMaxPlaces($activite->getMaxPlaces() - $nbTickets);
+
+    
+
+    $em->flush();
+
+    $this->addFlash('success', 'Réservation créée avec succès.');
+    return $this->redirectToRoute('activite');
+}
 }

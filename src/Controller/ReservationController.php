@@ -69,32 +69,39 @@ public function index(Request $request, EntityManagerInterface $em): Response
     }
 
     #[Route('/reservation/edit/{id}', name: 'admin_reservation_edit')]
-    public function edit(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
-    {
-        $form = $this->createForm(ReservationType::class, $reservation);
-        
-        $form->handleRequest($request);
+    
+public function edit(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
+{
+    $oldStatut = $reservation->getStatut();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            return $this->redirectToRoute('admin_reservations_tickets');
+    $form = $this->createForm(ReservationType::class, $reservation);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+
+        if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
+            $this->restoreActivityPlacesFromReservation($reservation, $em);
         }
 
-        return $this->render('reservation/back/edit.html.twig', [
-            'form' => $form->createView()
-        ]);
-    }
-
-    #[Route('/reservation/delete/{id}', name: 'admin_reservation_delete')]
-    public function delete(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $reservation->getId(), $request->request->get('_token'))) {
-            $em->remove($reservation);
-            $em->flush();
-        }
-
+        $em->flush();
         return $this->redirectToRoute('admin_reservations_tickets');
     }
+
+    return $this->render('reservation/back/edit.html.twig', [
+        'form' => $form->createView()
+    ]);
+}
+    #[Route('/reservation/delete/{id}', name: 'admin_reservation_delete')]
+public function delete(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
+{
+    if ($this->isCsrfTokenValid('delete' . $reservation->getId(), $request->request->get('_token'))) {
+        $this->restoreActivityPlacesFromReservation($reservation, $em);
+        $em->remove($reservation);
+        $em->flush();
+    }
+
+    return $this->redirectToRoute('admin_reservations_tickets');
+}
 
     #[Route('/admin/dashboard', name: 'admin_dashboard')]
 public function dashboard(EntityManagerInterface $em): Response
@@ -208,12 +215,20 @@ public function newUser(Request $request, EntityManagerInterface $em): Response
 }
 
 #[Route('/mes-reservations/edit/{id}', name: 'user_reservation_edit')]
+
 public function editUser(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
 {
-    $form = $this->createForm(ReservationUserType::class, $reservation,['is_edit' => true]);
+    $oldStatut = $reservation->getStatut();
+
+    $form = $this->createForm(ReservationUserType::class, $reservation, ['is_edit' => true]);
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
+
+        if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
+            $this->restoreActivityPlacesFromReservation($reservation, $em);
+        }
+
         $em->flush();
         return $this->redirectToRoute('mes_reservations');
     }
@@ -223,11 +238,11 @@ public function editUser(Reservation $reservation, Request $request, EntityManag
         'isEdit' => true
     ]);
 }
-
 #[Route('/mes-reservations/delete/{id}', name: 'user_reservation_delete', methods:['POST'])]
 public function deleteUserReservation(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
 {
     if ($this->isCsrfTokenValid('delete'.$reservation->getId(), $request->request->get('_token'))) {
+        $this->restoreActivityPlacesFromReservation($reservation, $em);
         $em->remove($reservation);
         $em->flush();
     }
@@ -239,22 +254,44 @@ public function deleteUserReservation(Reservation $reservation, Request $request
 public function deleteTicketAjax(Ticket $ticket, EntityManagerInterface $em): Response
 {
     $reservation = $ticket->getReservation_id();
+    $activite = $ticket->getActivite();
 
-    $reservation->removeTicket($ticket);
-    $ticket->setReservation_id(null);
-    $ticket->setStatut('Disponible');
-
-    // recalcul
-    $total = 0;
-    foreach ($reservation->getTickets() as $t) {
-        $total += $t->getPrix();
+    if ($activite) {
+        $activite->setMaxPlaces($activite->getMaxPlaces() + 1);
     }
 
-    $reservation->setCoutTotal($total);
-    $reservation->setNb_tickets(count($reservation->getTickets()));
+    $prixTicket = $ticket->getPrix();
+
+    $em->remove($ticket);
+
+    if ($reservation) {
+        $reservation->setCoutTotal($reservation->getCoutTotal() - $prixTicket);
+        $reservation->setNb_tickets($reservation->getNb_tickets() - 1);
+
+        if ($reservation->getNb_tickets() <= 0) {
+            $reservation->setNb_tickets(0);
+            $reservation->setStatut('annulée');
+        }
+    }
 
     $em->flush();
 
-    return $this->json(['success'=>true]);
+    return $this->json(['success' => true]);
+}
+private function restoreActivityPlacesFromReservation(Reservation $reservation, EntityManagerInterface $em): void
+{
+    $tickets = $em->getRepository(Ticket::class)->findBy([
+        'reservation_id' => $reservation
+    ]);
+
+    foreach ($tickets as $ticket) {
+        $activite = $ticket->getActivite();
+
+        if ($activite) {
+            $activite->setMaxPlaces($activite->getMaxPlaces() + 1);
+        }
+
+        $em->remove($ticket);
+    }
 }
 }

@@ -209,54 +209,164 @@
 <section class="ftco-section">
    <div class="container">
        <div class="row">
-           {% for activite in activites %}
-               <div class="col-md-4 ftco-animate">
-                   <div class="project-wrap">
-                       
-                       <a href="{{ path('activite_show', {'id': activite.id}) }}" class="img" 
-   style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}');">
-    <span class="price">${{ activite.prix }}/person</span>
-</a>
-                       <div class="text p-4">
-                           <span class="days">
-                                {{ activite.dateDebut ? activite.dateDebut|date('d M') : 'Date non définie' }}
-                                {{ activite.dateFin ? activite.dateFin|date('d M') : 'Date non définie' }}
-                           </span>
-                           <h3><a href="{{ path('activite_show', {'id': activite.id}) }}">{{ activite.nom }}</a></h3>
-                           <p class="location">
-                               <span class="fa fa-map-marker"></span> 
-                               {{ activite.destination ? activite.destination.nom : 'Non défini' }}
-                           </p>
-                          <ul style="display: flex; align-items: center; gap: 15px;">
-   <ul style="list-style: none; padding: 0; margin: 0;">
-    
-    
-    <li style="display: flex; align-items: center; gap: 15px;">
-        
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <img src="{{ asset('assets/icons/community.svg') }}" style="width: 25px; height: 25px;">
-            {{ activite.maxPlaces ?: '0' }} Places
+{% for activite in activites %}
+    <div class="col-md-4 ftco-animate">
+        <div class="project-wrap">
+
+            <a href="{{ path('activite_show', {'id': activite.id}) }}" class="img"
+               style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}');">
+                <span class="price">${{ activite.prix }}/person</span>
+            </a>
+
+            <div class="text p-4">
+                <span class="days">
+                    {{ activite.dateDebut ? activite.dateDebut|date('d M') : 'Date non définie' }}
+                    {{ activite.dateFin ? activite.dateFin|date('d M') : 'Date non définie' }}
+                </span>
+
+                <h3>
+                    <a href="{{ path('activite_show', {'id': activite.id}) }}">
+                        {{ activite.nom }}
+                    </a>
+                </h3>
+
+                <p class="location">
+                    <span class="fa fa-map-marker"></span>
+                    {{ activite.destination ? activite.destination.nom : 'Non défini' }}
+                </p>
+
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="display: flex; align-items: center; gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <img src="{{ asset('assets/icons/community.svg') }}" style="width: 25px; height: 25px;">
+                            {{ activite.maxPlaces ?: '0' }} Places
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <img src="{{ asset('assets/icons/star.svg') }}" style="width: 20px; height: 20px;">
+                            {{ activite.noteMoyenne|round(1) }}
+                        </div>
+                    </li>
+
+                    <li style="margin-top: 10px;">
+                        <span class="flaticon-sun-umbrella"></span>
+                        {{ activite.typeActivite ?: 'Non défini' }}
+                    </li>
+
+                    <li style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            data-toggle="modal"
+                            data-target="#reservationModal{{ activite.id }}"
+                            {% if activite.maxPlaces <= 0 %}disabled{% endif %}
+                        >
+                            Book now
+                        </button>
+
+                        {% if activite.maxPlaces <= 0 %}
+                            <span style="background: #f8d7da; color: #dc3545; padding: 3px 8px; border-radius: 10px; font-size: 12px;">
+                                Complet
+                            </span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
         </div>
+    </div>
 
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <img src="{{ asset('assets/icons/star.svg') }}" style="width: 20px; height: 20px;">
-            {{ activite.noteMoyenne|round(1) }}
+    {% if activite.maxPlaces > 0 %}
+    <div class="modal fade" id="reservationModal{{ activite.id }}" tabindex="-1" role="dialog" aria-labelledby="reservationModalLabel{{ activite.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0" style="border-radius: 22px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.18);">
+
+                <div style="background: linear-gradient(135deg, #223f91, #3459c2); padding: 22px 26px; color: white; position: relative;">
+                    <h5 class="modal-title mb-1" id="reservationModalLabel{{ activite.id }}" style="font-size: 28px; font-weight: 700; color: white;">
+                        Réserver {{ activite.nom }}
+                    </h5>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">
+                        Choisissez le nombre de tickets pour cette activité
+                    </p>
+
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            style="position: absolute; top: 18px; right: 20px; color: white; opacity: 1; font-size: 28px; text-shadow: none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <form method="post" action="{{ path('activite_reserver', {'id': activite.id}) }}">
+                    <div class="modal-body" style="padding: 28px 26px; background: #ffffff;">
+
+                        <div style="display: flex; gap: 15px; margin-bottom: 24px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 180px; background: #f8faff; border: 1px solid #e8eefc; border-radius: 16px; padding: 16px;">
+                                <div style="font-size: 13px; color: #7a7a7a; margin-bottom: 6px;">Prix par personne</div>
+                                <div style="font-size: 26px; font-weight: 700; color: #223f91;">${{ activite.prix }}</div>
+                            </div>
+
+                            <div style="flex: 1; min-width: 180px; background: #f8faff; border: 1px solid #e8eefc; border-radius: 16px; padding: 16px;">
+                                <div style="font-size: 13px; color: #7a7a7a; margin-bottom: 6px;">Places disponibles</div>
+                                <div style="font-size: 26px; font-weight: 700; color: #223f91;">{{ activite.maxPlaces }}</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0">
+                            <label for="nbTickets{{ activite.id }}" style="font-size: 15px; font-weight: 600; color: #2b2b2b; margin-bottom: 10px;">
+                                Nombre de tickets
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+
+    <button type="button"
+        onclick="decreaseTickets({{ activite.id }})"
+        style="width: 45px; height: 45px; border-radius: 12px; border: none; background: #f1f4fb; font-size: 22px;">
+        −
+    </button>
+
+    <input
+        type="number"
+        id="nbTickets{{ activite.id }}"
+        name="nb_tickets"
+        value="1"
+        min="1"
+        max="{{ activite.maxPlaces }}"
+        readonly
+        style="width: 70px; text-align: center; height: 45px; border-radius: 12px; border: 1px solid #d9e2f2; font-size: 18px;"
+    >
+
+    <button type="button"
+        onclick="increaseTickets({{ activite.id }}, {{ activite.maxPlaces }})"
+        style="width: 45px; height: 45px; border-radius: 12px; border: none; background: #223f91; color: white; font-size: 22px;">
+        +
+    </button>
+
+</div>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer border-0" style="padding: 0 26px 26px 26px; background: white; display: flex; gap: 12px; justify-content: flex-end;">
+                        <button type="button"
+                                class="btn"
+                                data-dismiss="modal"
+                                style="background: #f1f4fb; color: #223f91; border-radius: 12px; padding: 12px 22px; font-weight: 600; border: none;">
+                            Annuler
+                        </button>
+
+                        <button type="submit"
+                                class="btn"
+                                style="background: linear-gradient(135deg, #223f91, #3459c2); color: white; border-radius: 12px; padding: 12px 24px; font-weight: 600; border: none; box-shadow: 0 8px 20px rgba(34,63,145,0.25);">
+                            Confirmer
+                        </button>
+                    </div>
+                </form>
+
+            </div>
         </div>
-
-    </li>
-
-   
-    <li>
-        <span class="flaticon-sun-umbrella"></span> {{ activite.typeActivite ?: 'Non défini' }}
-    </li>
-
-</ul>
-                       </div>
-                   </div>
-               </div>
-           {% else %}
-               <p>Aucune activité disponible</p>
-           {% endfor %}
+    </div>
+{% endif %}
+{% else %}
+    <p>Aucune activité disponible</p>
+{% endfor %}
        </div>
 
        <div class="row mt-5">
@@ -403,4 +513,23 @@
             });
         }
     </script>
+    <script>
+function increaseTickets(id, max) {
+    let input = document.getElementById('nbTickets' + id);
+    let value = parseInt(input.value);
+
+    if (value < max) {
+        input.value = value + 1;
+    }
+}
+
+function decreaseTickets(id) {
+    let input = document.getElementById('nbTickets' + id);
+    let value = parseInt(input.value);
+
+    if (value > 1) {
+        input.value = value - 1;
+    }
+}
+</script>
 {% endblock %}

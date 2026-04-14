@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Reservation;
 use App\Entity\Ticket;
+use App\Service\BookingEmailService;
 
 final class ActiviteController extends AbstractController
 {
@@ -206,7 +207,8 @@ public function reserver(
     Activite $activite,
     Request $request,
     EntityManagerInterface $em,
-    PersonneRepository $personneRepository
+    PersonneRepository $personneRepository,
+    BookingEmailService $bookingEmailService
 ): Response {
     $userId = $request->getSession()->get('user_id');
 
@@ -268,6 +270,19 @@ public function reserver(
     
 
     $em->flush();
+    try {
+    if ($personne->getEmail()) {
+        $bookingEmailService->sendBookingConfirmation(
+            $personne->getEmail(),
+            $personne->getNom() . ' ' . $personne->getPrenom(),
+            $activite->getNom(),
+            $reservation->getCoutTotal()
+        );
+    }
+} catch (\Exception $e) {
+    dd($e->getMessage());
+}
+
 
     $this->addFlash('success', 'Réservation créée avec succès.');
     return $this->redirectToRoute('activite');

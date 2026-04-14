@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Entity\Activite;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GeminiRecommendationService
@@ -12,11 +14,40 @@ class GeminiRecommendationService
 
     public function __construct(
         private HttpClientInterface $httpClient,
-        private string $geminiApiKey
+        private string $geminiApiKey,
+        private CacheInterface $cache
     ) {
     }
 
     /**
+     * Cached version:
+     * Gemini is called again only if user preferences or activities changed.
+     *
+     * @param Activite[] $candidates
+     * @return int[]
+     */
+    public function rankActivityIdsMax3Cached(
+        int $userId,
+        array $candidates,
+        string $userProfileText
+    ): array {
+        if (empty($candidates) || empty($userProfileText) || empty($this->geminiApiKey)) {
+            return [];
+        }
+
+        $cacheKey = $this->buildCacheKey($userId, $userProfileText, $candidates);
+
+        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($candidates, $userProfileText) {
+            // Long lifetime, but real refresh happens when cache key changes
+            $item->expiresAfter(60 * 60 * 24 * 30); // 30 days
+
+            return $this->rankActivityIdsMax3($candidates, $userProfileText);
+        });
+    }
+
+    /**
+     * Real Gemini API call
+     *
      * @param Activite[] $candidates
      * @return int[]
      */
@@ -112,14 +143,20 @@ Règles:
 
             preg_match('/"ranked_ids"\s*:\s*\[(.*?)\]/s', $modelText, $matches);
 
-            if (empty($matches[1])) {
+            if (!isset($matches[1])) {
+                return [];
+            }
+
+            $inside = trim($matches[1]);
+
+            if ($inside === '') {
                 return [];
             }
 
             $ids = array_filter(array_map(function ($value) {
                 $value = trim($value);
                 return is_numeric($value) ? (int) $value : null;
-            }, explode(',', $matches[1])));
+            }, explode(',', $inside)));
 
             $ids = array_values(array_unique($ids));
 
@@ -131,6 +168,46 @@ Règles:
 
             return [];
         }
+    }
+
+    private function buildPreferencesFingerprint(string $userProfileText): string
+    {
+        return md5($userProfileText);
+    }
+
+    /**
+     * @param Activite[] $candidates
+     */
+    private function buildActivitiesFingerprint(array $candidates): string
+    {
+        $data = array_map(function (Activite $a) {
+            return [
+                'id' => $a->getId(),
+                'nom' => (string) $a->getNom(),
+                'type' => (string) $a->getTypeActivite(),
+                'prix' => (float) $a->getPrix(),
+                'rating' => (float) $a->getNoteMoyenne(),
+                'description' => (string) $a->getDescription(),
+                'status' => method_exists($a, 'getStatus') ? (string) $a->getStatus() : null,
+                'maxPlaces' => method_exists($a, 'getMaxPlaces') ? (int) $a->getMaxPlaces() : null,
+            ];
+        }, $candidates);
+
+        return md5(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * @param Activite[] $candidates
+     */
+    private function buildCacheKey(
+        int $userId,
+        string $userProfileText,
+        array $candidates
+    ): string {
+        $preferencesFingerprint = $this->buildPreferencesFingerprint($userProfileText);
+        $activitiesFingerprint = $this->buildActivitiesFingerprint($candidates);
+
+        return 'gemini_reco_' . $userId . '_' . $preferencesFingerprint . '_' . $activitiesFingerprint;
     }
 
     private function safe(?string $value): string

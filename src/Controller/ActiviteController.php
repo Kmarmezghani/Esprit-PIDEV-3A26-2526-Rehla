@@ -56,10 +56,11 @@ public function index(
 
             $userProfileText = $this->buildUserProfileText($personne->getPreferences());
 
-            $rankedIds = $geminiRecommendationService->rankActivityIdsMax3(
-                $allActivities,
-                $userProfileText
-            );
+           $rankedIds = $geminiRecommendationService->rankActivityIdsMax3Cached(
+    $personne->getId(),
+    $allActivities,
+    $userProfileText
+);
 
             if (!empty($rankedIds)) {
                 $map = [];

@@ -110,7 +110,7 @@ private function handlePostCreation( $form, Post $post, $personne, ImageUploader
         $notification = new Notification();
 
         $message = $personne->getNom() . ' ' . $personne->getPrenom()
-            . ' a publié un post suspect (score: ' . round($score, 2) . ') | Post ID: ' . $post->getId();
+            . ' a publié un post jugée suspect (score: ' . round($score, 2) . ') | Post ID: ' . $post->getId();
 
         $notification->setMessage($message);
         $notification->setType('POST');
@@ -216,16 +216,34 @@ public function edit(Request $request, Post $post, EntityManagerInterface $em): 
 
 
 #[Route('/comment/add/{id}', name: 'comment_add', methods: ['POST'])]
-public function addComment(Request $request, Post $post, EntityManagerInterface $em)
-{   $userId = $request->getSession()->get('user_id');
+public function addComment(
+    Request $request, 
+    Post $post, 
+    EntityManagerInterface $em,
+    ToxicityChecker $toxicityChecker
+) {
+    $userId = $request->getSession()->get('user_id');
     $personne = $em->getRepository(Personne::class)->find($userId);
 
-    $contenu = $request->request->get('contenu');
+    $contenu = trim($request->request->get('contenu'));
 
     if (!$contenu) {
         return $this->redirectToRoute('blog');
     }
 
+    // 🔥 Analyse toxicité
+    $result = $toxicityChecker->check($contenu);
+    $score = $result['score'];
+
+    // ❌ REFUS
+    if ($score > 0.7) {
+        $this->addFlash('error', '❌ Commentaire refusé (toxique)');
+        return $this->redirectToRoute('blog');
+    }
+
+    $status = ($score > 0.1) ? 'warning' : 'ok';
+
+    // ✅ Création commentaire
     $comment = new Commentaire();
     $comment->setContenu($contenu);
     $comment->setDateCommentaire(new \DateTime());
@@ -234,6 +252,43 @@ public function addComment(Request $request, Post $post, EntityManagerInterface 
 
     $em->persist($comment);
     $em->flush();
+
+    // ⚠️ Notification admin si warning
+    if ($status === 'warning') {
+
+        $admins = $em->getRepository(Personne::class)
+                     ->findBy(['role' => 'ADMIN']);
+
+        foreach ($admins as $admin) {
+
+            $notification = new Notification();
+
+            $message = $personne->getNom() . ' ' . $personne->getPrenom()
+                . ' a ajouté  un commentaire jugée suspect (score: ' . round($score, 2) . ')'
+                . ' | Comment ID: ' . $comment->getId();
+
+            $notification->setMessage($message);
+            $notification->setType('COMMENT');
+            $notification->setComment_id($comment); 
+            $notification->setPost_id($post);
+            $notification->setSender_id($personne);
+            $notification->setReceiver_id($admin);
+            $notification->setIs_read(false);
+            $notification->setCreated_at(new \DateTime());
+            $notification->setIs_sent_sms(false);
+
+            $em->persist($notification);
+        }
+
+        $em->flush();
+    }
+
+    // 🔥 Flash message UX
+    if ($status === 'warning') {
+        $this->addFlash('warning', '⚠️ Commentaire sensible publié');
+    } else {
+        $this->addFlash('success', '✅ Commentaire ajouté');
+    }
 
     return $this->redirectToRoute('blog');
 }

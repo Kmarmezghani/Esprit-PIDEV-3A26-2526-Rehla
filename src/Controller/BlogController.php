@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Likes;
 use App\Service\ImageUploader;
 use App\Service\FlaskClient\ToxicityChecker;
+use App\Entity\Notification;
 final class BlogController extends AbstractController
 
 {
@@ -67,14 +68,7 @@ private function getConnectedUser(Request $request, EntityManagerInterface $em):
     $userId = $request->getSession()->get('user_id');
     return $em->getRepository(Personne::class)->find($userId);
 }
-private function handlePostCreation(
-    $form,
-    Post $post,
-    $personne,
-    ImageUploader $uploader,
-    EntityManagerInterface $em,
-    ToxicityChecker $toxicityChecker // ✅ AJOUT
-): ?string
+private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
     if (!$form->isSubmitted() || !$form->isValid()) {
         return null;
@@ -82,19 +76,15 @@ private function handlePostCreation(
 
     $contenu = $post->getContenu();
 
-    // 🔥 APPEL AU MODELE FLASK
     $result = $toxicityChecker->check($contenu);
     $score = $result['score'];
 
-    // ❌ CAS 1 : REFUS
     if ($score > 0.7) {
         return 'refused';
     }
 
-    // ⚠️ CAS 2 : WARNING
     $status = ($score > 0.1) ? 'warning' : 'ok';
 
-    // ✅ CONTINUE (publication autorisée)
 
     $imageFile = $form->get('image')->getData();
     $imagePath = $uploader->upload($imageFile, $this->getParameter('images_directory'));
@@ -109,6 +99,33 @@ private function handlePostCreation(
 
     $em->persist($post);
     $em->flush();
+    if ($status === 'warning') {
+
+    // récupérer tous les admins
+    $admins = $em->getRepository(Personne::class)
+                 ->findBy(['role' => 'ADMIN']); 
+
+    foreach ($admins as $admin) {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a publié un post suspect (score: ' . round($score, 2) . ') | Post ID: ' . $post->getId();
+
+        $notification->setMessage($message);
+        $notification->setType('POST');
+        $notification->setPost_id($post); 
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($admin);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+    }
+
+    $em->flush();
+}
 
     return $status;
 }

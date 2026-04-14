@@ -39,6 +39,53 @@
 </form>
 </div>
     <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+    <li class="nav-item dropdown me-3">
+  <a class="nav-link position-relative" href="#" data-bs-toggle="dropdown">
+    <i class="icon-base bx bx-bell icon-md"></i>
+
+    <!-- badge notification -->
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+       {% if notifications is defined %}
+          {{ notifications|length }}
+      {% else %}
+          0
+      {% endif %}
+    </span>
+  </a>
+
+  <!-- dropdown notifications -->
+  <ul class="dropdown-menu dropdown-menu-end p-2" style="width: 300px;">
+  <li class="dropdown-header">Notifications</li>
+  <li><hr class="dropdown-divider"></li>
+
+  {% if notifications is defined and notifications|length > 0 %}
+
+  {% for notif in notifications %}
+    <li>
+  <a class="dropdown-item notif-item" href="#" title="{{ notif.message }}">
+    🔔 {{ notif.message|length > 40 ? notif.message|slice(0, 40) ~ '...' : notif.message }}
+  </a>
+</li>
+  {% endfor %}
+
+{% else %}
+
+  <li>
+    <a class="dropdown-item text-muted text-center">
+      Aucune notification
+    </a>
+  </li>
+
+{% endif %}
+
+<li>
+  <a class="dropdown-item text-center text-success"
+     href="{{ path('admin_notifications_clear') }}">
+    ✔ Marquer comme lues
+  </a>
+</li>
+</ul>
+</li>
       <li class="nav-item navbar-dropdown dropdown-user dropdown">
         <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
           <div class="avatar avatar-online">
@@ -95,6 +142,16 @@
             });
         }
         </script>
+        <style>
+        .notif-item {
+        display: block;
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+        </style>
+
       </li>
     </ul>
   </div>

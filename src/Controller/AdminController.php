@@ -18,14 +18,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Service\AvisService;
+use App\Entity\Notification;
+use App\Entity\Personne;
 
 final class AdminController extends AbstractController
 {
-    #[Route('/admin', name: 'app_admin')]
-    public function index(): Response
+        #[Route('/admin', name: 'app_admin')]
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
+        $admin = $this->getConnectedUser($request, $em);
+        $notifications = $this->getNotifications($admin, $em);
+
         return $this->render('admin/base_admin.html.twig', [
             'controller_name' => 'AdminController',
+            'notifications' => $notifications
         ]);
     }
 #[Route('/admin/activite', name: 'activite_admin')]
@@ -249,13 +255,18 @@ public function activiteSearch(
 
 
         #[Route('/admin/blog', name: 'admin_blog')]
-        public function blog(PostRepository $postRepository, CommentRepository $commentRepository): Response
-        {
-            return $this->render('admin/blog_admin.html.twig', [
-                'posts' => $postRepository->findAll(),
-                'comments' => $commentRepository->findAll(),
-            ]);
-        }
+       public function blog( Request $request, EntityManagerInterface $em, PostRepository $postRepository,CommentRepository $commentRepository): Response
+   {
+    $admin = $this->getConnectedUser($request, $em);
+    $notifications = $this->getNotifications($admin, $em);
+
+    return $this->render('admin/blog_admin.html.twig', [
+        'posts' => $postRepository->findAll(),
+        'comments' => $commentRepository->findAll(),
+        'notifications' => $notifications
+    ]);
+   }
+
 
 
         #[Route('/admin/post/{id}/delete', name: 'admin_post_delete', methods: ['POST'])]
@@ -275,6 +286,44 @@ public function activiteSearch(
 
             return $this->redirectToRoute('admin_blog');
         }
+
+            private function getConnectedUser(Request $request, EntityManagerInterface $em): ?Personne
+            {
+                $userId = $request->getSession()->get('user_id');
+                return $em->getRepository(Personne::class)->find($userId);
+            }
+
+            private function getNotifications(Personne $admin, EntityManagerInterface $em)
+            {
+                return $em->getRepository(Notification::class)
+                    ->findBy(
+                        ['receiver_id' => $admin],
+                        ['created_at' => 'DESC']
+                    );
+            }
+
+
+
+               #[Route('/admin/notifications/clear', name: 'admin_notifications_clear')]
+            public function clearNotifications(
+                Request $request,
+                EntityManagerInterface $em
+            ): Response
+            {
+                $admin = $this->getConnectedUser($request, $em);
+                    //supprimer que les notifs ayant le receiver admin ----------on peut apres supprimer all notifs *********
+                $notifications = $em->getRepository(Notification::class)
+                    ->findBy(['receiver_id' => $admin]);
+
+                foreach ($notifications as $notif) {
+                    $em->remove($notif);
+                }
+
+                $em->flush();
+
+                return $this->redirectToRoute('app_admin'); // ou la page actuelle
+            }
+
 
 
 }

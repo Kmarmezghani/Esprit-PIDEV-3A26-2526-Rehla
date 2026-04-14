@@ -6,6 +6,7 @@
 parameters:
     activities_directory: '%kernel.project_dir%/public/uploads/activities'
     images_directory: '%kernel.project_dir%/public/uploads'
+    gemini_api_key: '%env(GEMINI_API_KEY)%'
 
 
 services:
@@ -23,6 +24,9 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Service\GeminiRecommendationService:
+        arguments:
+            $geminiApiKey: '%gemini_api_key%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

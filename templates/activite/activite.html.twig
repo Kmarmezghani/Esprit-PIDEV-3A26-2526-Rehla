@@ -212,11 +212,30 @@
 {% for activite in activites %}
     <div class="col-md-4 ftco-animate">
         <div class="project-wrap">
+<a href="{{ path('activite_show', {'id': activite.id}) }}" class="img"
+   style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}'); position: relative;">
 
-            <a href="{{ path('activite_show', {'id': activite.id}) }}" class="img"
-               style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}');">
-                <span class="price">${{ activite.prix }}/person</span>
-            </a>
+    <span class="price">${{ activite.prix }}/person</span>
+
+    {% if recommendedIds is defined and activite.id in recommendedIds %}
+        <span style="
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 5;
+            background: #223f91;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(34,63,145,0.30);
+            display: inline-block;
+        ">
+            ✨ Top IA
+        </span>
+    {% endif %}
+</a>
 
             <div class="text p-4">
                 <span class="days">

@@ -305,13 +305,10 @@ public function activiteSearch(
 
 
                #[Route('/admin/notifications/clear', name: 'admin_notifications_clear')]
-            public function clearNotifications(
-                Request $request,
-                EntityManagerInterface $em
-            ): Response
+            public function clearNotifications(Request $request,EntityManagerInterface $em  ): Response
             {
                 $admin = $this->getConnectedUser($request, $em);
-                    //supprimer que les notifs ayant le receiver admin ----------on peut apres supprimer all notifs *********
+                    //supprimer que les notifs ayant le receiver admin ----------
                 $notifications = $em->getRepository(Notification::class)
                     ->findBy(['receiver_id' => $admin]);
 

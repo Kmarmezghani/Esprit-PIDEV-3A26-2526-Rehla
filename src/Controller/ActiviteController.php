@@ -16,13 +16,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Reservation;
 use App\Entity\Ticket;
+use App\Service\BookingEmailService;
+use App\Service\GeminiRecommendationService;
 
 final class ActiviteController extends AbstractController
 {
-    #[Route('/activite', name: 'activite')]
+#[Route('/activite', name: 'activite')]
 public function index(
     Request $request,
-    ActiviteRepository $activiteRepository
+    ActiviteRepository $activiteRepository,
+    PersonneRepository $personneRepository,
+    GeminiRecommendationService $geminiRecommendationService
 ): Response
 {
     $destination = trim((string) $request->query->get('destination', ''));
@@ -37,8 +41,52 @@ public function index(
         $prixMax
     );
 
+    $recommendedActivities = [];
+    $recommendedIds = [];
+
+    $userId = $request->getSession()->get('user_id');
+
+    if ($userId) {
+        $personne = $personneRepository->find($userId);
+
+        if ($personne) {
+            $allActivities = $activiteRepository->findBy([
+                'status' => 'DISPONIBLE'
+            ]);
+
+            $userProfileText = $this->buildUserProfileText($personne->getPreferences());
+
+           $rankedIds = $geminiRecommendationService->rankActivityIdsMax3Cached(
+    $personne->getId(),
+    $allActivities,
+    $userProfileText
+);
+
+            if (!empty($rankedIds)) {
+                $map = [];
+
+                foreach ($allActivities as $activity) {
+                    $map[$activity->getId()] = $activity;
+                }
+
+                foreach ($rankedIds as $id) {
+                    if (isset($map[$id])) {
+                        $recommendedActivities[] = $map[$id];
+                    }
+                }
+            }
+        }
+    }
+
+    $recommendedIds = array_map(
+        fn($activity) => $activity->getId(),
+        $recommendedActivities
+    );
+
     return $this->render('activite/activite.html.twig', [
         'activites' => $activites,
+        'recommendedActivities' => $recommendedActivities,
+        'recommendedIds' => $recommendedIds,
         'filters' => [
             'destination' => $destination,
             'date_debut' => $dateDebut,
@@ -206,7 +254,8 @@ public function reserver(
     Activite $activite,
     Request $request,
     EntityManagerInterface $em,
-    PersonneRepository $personneRepository
+    PersonneRepository $personneRepository,
+    BookingEmailService $bookingEmailService
 ): Response {
     $userId = $request->getSession()->get('user_id');
 
@@ -268,8 +317,54 @@ public function reserver(
     
 
     $em->flush();
+    try {
+    if ($personne->getEmail()) {
+        $bookingEmailService->sendBookingConfirmation(
+            $personne->getEmail(),
+            $personne->getNom() . ' ' . $personne->getPrenom(),
+            $activite->getNom(),
+            $reservation->getCoutTotal()
+        );
+    }
+} catch (\Exception $e) {
+    dd($e->getMessage());
+}
+
 
     $this->addFlash('success', 'Réservation créée avec succès.');
     return $this->redirectToRoute('activite');
+}
+private function buildUserProfileText($preferences): string
+{
+    $budgetMin = null;
+    $budgetMax = null;
+    $typesVoyage = [];
+    $centresInteret = [];
+
+    foreach ($preferences as $preference) {
+        if ($preference->getBudgetMin() !== null) {
+            $budgetMin = $preference->getBudgetMin();
+        }
+
+        if ($preference->getBudgetMax() !== null) {
+            $budgetMax = $preference->getBudgetMax();
+        }
+
+        if ($preference->getTypesVoyage()) {
+            $typesVoyage[] = $preference->getTypesVoyage();
+        }
+
+        if ($preference->getCentresInteret()) {
+            $centresInteret[] = $preference->getCentresInteret();
+        }
+    }
+
+    return sprintf(
+        "budgetMin: %s\nbudgetMax: %s\ntypesVoyage: %s\ncentresInteret: %s",
+        $budgetMin ?? 'not specified',
+        $budgetMax ?? 'not specified',
+        !empty($typesVoyage) ? implode(', ', $typesVoyage) : 'not specified',
+        !empty($centresInteret) ? implode(', ', $centresInteret) : 'not specified'
+    );
 }
 }

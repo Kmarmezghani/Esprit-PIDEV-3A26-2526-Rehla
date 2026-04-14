@@ -36,7 +36,7 @@ class Ticket
     private float $prix;
 
     #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: "tickets")]
-    #[ORM\JoinColumn(name: 'reservation_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'reservation_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
     private ?Reservation $reservation_id = null;
 
     #[ORM\ManyToOne(targetEntity: Ville::class)]

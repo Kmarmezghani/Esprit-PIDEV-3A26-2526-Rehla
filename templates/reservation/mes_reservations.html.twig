@@ -3,107 +3,88 @@
 {% block title %}Mes Réservations{% endblock %}
 
 {% block body %}
-<!-- NAVBAR : inchangée -->
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-		<div class="container">
-			<a class="navbar-brand" href="index.html">
-    
-    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
-    
-    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
-    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
-</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="oi oi-menu"></span> Menu
-			</button>
-
-			<div class="collapse navbar-collapse" id="ftco-nav">
-    <ul class="navbar-nav ml-auto">
-    <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
-    <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
-    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
-    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
-
-    {% if app.session.get('user_id') %}
-    {# ── Utilisateur connecté ── #}
-    <li class="nav-item dropdown ms-2 d-flex align-items-center">
-        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
-           href="#" id="userDropdown" role="button"
-           data-bs-toggle="dropdown" aria-expanded="false">
-            {% if app.session.get('user_photo') %}
-                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
-                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-            {% else %}
-                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-            {% endif %}
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
-            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
-            <li>
-                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
-                    Connecté en tant que<br>
-                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
-                </span>
-            </li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
-                <span>Mon profil</span>
-            </a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
-                <span>Mes préférences</span>
-            </a></li>
-            
-			{% if app.session.get('user_role') == 'GUIDE' %}
-<li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
-       style="padding:8px 16px; font-size:14px;">
-    <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
-    <span>Mes activités</span>
-</a></li>
-{% endif %}
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
-                <span>Mes réservations</span>
-            </a></li>
-            {% if app.session.get('user_role') == 'ADMIN' %}
-            <li><hr class="dropdown-divider my-1"></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-cogs" style="width:18px;"></i>
-                <span>Administration</span>
-            </a></li>
-            {% endif %}
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
-                   onclick="confirmLogoutHome(event)"
-                   style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-sign-out" style="width:18px;"></i>
-                    <span>Déconnexion</span>
-                </a>
-            </li>
-        </ul>
-    </li>
-    {% else %}
-    {# ── Non connecté ── #}
-    <li class="nav-item ms-2">
-        <a href="{{ path('app_register') }}" class="nav-link">
-            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
-        </a>
-    </li>
-    {% endif %}
-</ul>
-</div>
-		</div>
-	</nav>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="oi oi-menu"></span> Menu
+        </button>
 
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+                {% if app.session.get('user_id') %}
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.session.get('user_photo') %}
+                            <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                        style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                                Connecté en tant que<br>
+                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i><span>Mon profil</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i><span>Mes préférences</span>
+                        </a></li>
+                        {% if app.session.get('user_role') == 'GUIDE' %}
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i><span>Mes activités</span>
+                        </a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i><span>Mes réservations</span>
+                        </a></li>
+                        {% if app.session.get('user_role') == 'ADMIN' %}
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-cogs" style="width:18px;"></i><span>Administration</span>
+                        </a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                               onclick="confirmLogoutHome(event)" style="padding:8px 16px; font-size:14px;">
+                                <i class="fa fa-sign-out" style="width:18px;"></i><span>Déconnexion</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item ms-2">
+                    <a href="{{ path('app_register') }}" class="nav-link">
+                        <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
     <div class="overlay"></div>
@@ -111,7 +92,7 @@
         <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
             <div class="col-md-9 ftco-animate pb-5 text-center">
                 <p class="breadcrumbs">
-                    <span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span> 
+                    <span class="mr-2"><a href="{{ path('home') }}">Home <i class="fa fa-chevron-right"></i></a></span>
                     <span>Mes Réservations <i class="fa fa-chevron-right"></i></span>
                 </p>
                 <h1 class="mb-0 bread">Mes Réservations</h1>
@@ -120,219 +101,215 @@
     </div>
 </section>
 
-
 <section class="ftco-section">
     <div class="container">
         <div class="d-flex justify-content-end mb-4">
-    <a href="{{ path('ajouter_reservation') }}" class="btn btn-primary px-4 py-2">
-        <i class="fa fa-plus"></i> Ajouter une réservation
-    </a>
-</div>
+            <a href="{{ path('ajouter_reservation') }}" class="btn btn-primary px-4 py-2">
+                <i class="fa fa-plus"></i> Ajouter une réservation
+            </a>
+        </div>
         <div class="row">
 
             <!-- TABLE -->
             <div class="col-12 mb-4">
-    <div class="card shadow-sm border-0">
-
-        <div class="card-header bg-white border-0">
-            <h4 class="mb-0">Mes Réservations</h4>
-        </div>
-
-        <div class="table-responsive p-3">
-            <table class="table align-middle table-hover">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>Date Début</th>
-                        <th>Date Fin</th>
-                        <th>Destination</th>
-                        <th>Tickets</th>
-                        <th>Coût Total</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for reservation in reservations %}
-                        <tr class="reservation-row" data-id="{{ reservation.id }}">
-
-                            <td>
-                                {{ reservation.dateDebut|date('d M Y') }}
-                            </td>
-
-                            <td>
-                                {{ reservation.dateFin|date('d M Y') }}
-                            </td>
-
-                            <td>
-                                <i class="fa fa-map-marker text-primary"></i>
-                                {{ reservation.destination ? reservation.destination.nom : 'Non défini' }}
-                            </td>
-
-                            <td>
-                                <span >
-                                    {{ reservation.nb_Tickets }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <strong >
-                                    {{ reservation.coutTotal }} TND
-                                </strong>
-                            </td>
-
-                            <td>
-                                {% set statut = reservation.statut|lower %}
-
-{% if statut == 'confirmée' %}
-    <span class="badge rounded-pill px-3 py-2 bg-success">
-        <i class="fa fa-check"></i> Confirmée
-    </span>
-
-{% elseif statut == 'réservée' %}
-    <span class="badge rounded-pill px-3 py-2 bg-warning text-dark">
-        <i class="fa fa-clock"></i> réservée
-    </span>
-
-{% elseif statut == 'annulée' %}
-    <span class="badge rounded-pill px-3 py-2 bg-danger">
-        <i class="fa fa-times"></i> Annulée
-    </span>
-
-{% else %}
-    <span class="badge rounded-pill px-3 py-2 bg-secondary">
-        {{ reservation.statut }}
-    </span>
-{% endif %}
-                            </td>
-                            <td class="text-center" onclick="event.stopPropagation()">
-    <div class="dropdown">
-        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"
-        type="button"
-        data-bs-toggle="dropdown">
-    <i class="fa fa-ellipsis-v"></i>
-</button>
-
-        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-
-            <li>
-                <a class="dropdown-item"
-                   href="{{ path('user_reservation_edit', {id: reservation.id}) }}">
-                    <i class="fa fa-pencil text-primary me-2"></i> Modifier
-                </a>
-            </li>
-
-            <li><hr class="dropdown-divider"></li>
-
-            <li>
-                <a class="dropdown-item text-danger"
-                   href="#"
-                   onclick="deleteReservation(event, {{ reservation.id }})">
-                    <i class="fa fa-trash me-2"></i> Supprimer
-                </a>
-
-                <form id="delete-form-{{ reservation.id }}"
-                      method="post"
-                      action="{{ path('user_reservation_delete', {id: reservation.id}) }}"
-                      style="display:none;">
-                    <input type="hidden" name="_token"
-                           value="{{ csrf_token('delete' ~ reservation.id) }}">
-                </form>
-            </li>
-
-        </ul>
-    </div>
-</td>
-
-                        </tr>
-                    {% endfor %}
-                </tbody>
-
-            </table>
-        </div>
-
-    </div>
-</div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-0">
+                        <h4 class="mb-0">Mes Réservations</h4>
+                    </div>
+                    <div class="table-responsive p-3">
+                        <table class="table align-middle table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date Début</th>
+                                    <th>Date Fin</th>
+                                    <th>Destination</th>
+                                    <th>Tickets</th>
+                                    <th>Coût Total</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in reservations %}
+                                    <tr class="reservation-row" data-id="{{ reservation.id }}" style="cursor:pointer;">
+                                        <td>{{ reservation.dateDebut|date('d M Y') }}</td>
+                                        <td>{{ reservation.dateFin|date('d M Y') }}</td>
+                                        <td>
+                                            <i class="fa fa-map-marker text-primary"></i>
+                                            {{ reservation.destination ? reservation.destination.nom : 'Non défini' }}
+                                        </td>
+                                        <td><span>{{ reservation.nb_Tickets }}</span></td>
+                                        <td><strong>{{ reservation.coutTotal }} TND</strong></td>
+                                        <td>
+                                            {% set statut = reservation.statut|lower %}
+                                            {% if statut == 'confirmée' %}
+                                                <span class="badge rounded-pill px-3 py-2 bg-success"><i class="fa fa-check"></i> Confirmée</span>
+                                            {% elseif statut == 'réservée' %}
+                                                <span class="badge rounded-pill px-3 py-2 bg-warning text-dark"><i class="fa fa-clock"></i> réservée</span>
+                                            {% elseif statut == 'annulée' %}
+                                                <span class="badge rounded-pill px-3 py-2 bg-danger"><i class="fa fa-times"></i> Annulée</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill px-3 py-2 bg-secondary">{{ reservation.statut }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center" onclick="event.stopPropagation()">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ path('user_reservation_edit', {id: reservation.id}) }}">
+                                                            <i class="fa fa-pencil text-primary me-2"></i> Modifier
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="#" onclick="deleteReservation(event, {{ reservation.id }})">
+                                                            <i class="fa fa-trash me-2"></i> Supprimer
+                                                        </a>
+                                                        <form id="delete-form-{{ reservation.id }}" method="post"
+                                                              action="{{ path('user_reservation_delete', {id: reservation.id}) }}" style="display:none;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
             <!-- CALENDAR -->
             <div class="col-12">
                 <div class="card p-4">
-
                     <h4 class="mb-3">Calendrier des Tickets</h4>
-
+                    
                     <div id="calendar"></div>
-
                 </div>
             </div>
 
         </div>
     </div>
 </section>
+
+<!-- ── Weather Modal ── -->
+<div id="weather-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:20px; padding:28px 24px; width:380px; max-width:95vw; position:relative;">
+        <button onclick="closeWeatherModal()"
+                style="position:absolute; top:14px; right:18px; border:none; background:none; font-size:22px; cursor:pointer; color:#aaa; line-height:1;">&times;</button>
+        <div id="weather-modal-title" style="font-size:15px; font-weight:600; color:#223f91; margin-bottom:18px;"></div>
+        <div id="weather-modal-body" style="min-height:100px; display:flex; align-items:center; justify-content:center;">
+            <span style="color:#aaa;">Chargement...</span>
+        </div>
+    </div>
+</div>
+
 <footer class="ftco-footer bg-bottom ftco-no-pt" style="background-image: url('{{ asset('assets/images/bg_3.jpg')}}');">
-  <div class="container">
-    <div class="row mb-5">
-      <div class="col-md pt-5">
-        <div class="ftco-footer-widget pt-md-5 mb-4">
-          <h2 class="ftco-heading-2">About</h2>
-          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-          <ul class="ftco-footer-social list-unstyled float-md-left float-lft">
-            <li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
-            <li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
-            <li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
-          </ul>
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md pt-5">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">About</h2>
+                    <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+                    <ul class="ftco-footer-social list-unstyled float-md-left float-lft">
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
+                        <li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
+                    <h2 class="ftco-heading-2">Information</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
+                        <li><a href="#" class="py-2 d-block">General Enquiries</a></li>
+                        <li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
+                        <li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
+                        <li><a href="#" class="py-2 d-block">Refund Policy</a></li>
+                        <li><a href="#" class="py-2 d-block">Call Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">Experience</h2>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="py-2 d-block">Adventure</a></li>
+                        <li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
+                        <li><a href="#" class="py-2 d-block">Beach</a></li>
+                        <li><a href="#" class="py-2 d-block">Nature</a></li>
+                        <li><a href="#" class="py-2 d-block">Camping</a></li>
+                        <li><a href="#" class="py-2 d-block">Party</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md pt-5 border-left">
+                <div class="ftco-footer-widget pt-md-5 mb-4">
+                    <h2 class="ftco-heading-2">Have a Questions?</h2>
+                    <div class="block-23 mb-3">
+                        <ul>
+                            <li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                            <li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                            <li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="col-md pt-5 border-left">
-        <div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
-          <h2 class="ftco-heading-2">Information</h2>
-          <ul class="list-unstyled">
-            <li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
-            <li><a href="#" class="py-2 d-block">General Enquiries</a></li>
-            <li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
-            <li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
-            <li><a href="#" class="py-2 d-block">Refund Policy</a></li>
-            <li><a href="#" class="py-2 d-block">Call Us</a></li>
-          </ul>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></p>
+            </div>
         </div>
-      </div>
-      <div class="col-md pt-5 border-left">
-        <div class="ftco-footer-widget pt-md-5 mb-4">
-          <h2 class="ftco-heading-2">Experience</h2>
-          <ul class="list-unstyled">
-            <li><a href="#" class="py-2 d-block">Adventure</a></li>
-            <li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
-            <li><a href="#" class="py-2 d-block">Beach</a></li>
-            <li><a href="#" class="py-2 d-block">Nature</a></li>
-            <li><a href="#" class="py-2 d-block">Camping</a></li>
-            <li><a href="#" class="py-2 d-block">Party</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-md pt-5 border-left">
-        <div class="ftco-footer-widget pt-md-5 mb-4">
-          <h2 class="ftco-heading-2">Have a Questions?</h2>
-          <div class="block-23 mb-3">
-            <ul>
-              <li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
-              <li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
-              <li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
-    <div class="row">
-      <div class="col-md-12 text-center">
-        <p>
-          Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-        </p>
-      </div>
-    </div>
-  </div>
 </footer>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<style>
+/* ── Calendar weather button ── */
+.fc-daygrid-day-top {
+    flex-direction: row !important;
+    align-items: center;
+}
+.weather-btn {
+    font-size: 10px;
+    background: #e8f0fe;
+    color: #185FA5;
+    border: none;
+    border-radius: 10px;
+    padding: 2px 7px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 4px;
+    margin-top: 3px;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.weather-btn:hover {
+    background: #c5d8fb;
+}
+.fc-daygrid-event {
+    white-space: normal !important;
+}
+/* ── Weather modal overlay click-outside ── */
+#weather-modal {
+    cursor: pointer;
+}
+#weather-modal > div {
+    cursor: default;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -343,101 +320,172 @@ document.addEventListener('DOMContentLoaded', function () {
         initialView: 'dayGridMonth',
         events: [],
 
-        // ⭐ ICI on crée le contenu du ticket
+        /* ── Ticket row: title + trash icon ── */
         eventContent: function(arg) {
+    let container = document.createElement('div');
+    container.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; padding:1px 4px;';
 
-            let container = document.createElement("div");
-            container.style.display = "flex";
-            container.style.justifyContent = "space-between";
-            container.style.alignItems = "center";
+    let title = document.createElement('span');
+    title.textContent = arg.event.title;
+    title.style.cssText = 'font-size:12px; overflow:hidden; text-overflow:ellipsis;';
 
-            // Nom ticket
-            let title = document.createElement("span");
-            title.innerHTML = arg.event.title;
+    let trash = document.createElement('i');
+    trash.className = 'fa fa-trash';
+    trash.style.cssText = 'cursor:pointer; color:#e55; margin-left:6px; font-size:11px; flex-shrink:0;';
+    trash.title = 'Supprimer ce ticket';
 
-            let trash = document.createElement("i");
-trash.className = "fa fa-trash";
+    // ← use ticketId, not the composite event id
+    let ticketId = arg.event.extendedProps.ticketId;
 
-// STYLE ✨
-trash.style.cursor = "pointer";
-trash.style.color = "red";
-trash.style.fontSize = "16px";   // plus grande
-trash.style.marginLeft = "12px"; // espace avec le texte
-trash.style.opacity = "0.85";    // effet doux
+    trash.onclick = function(e) {
+        e.stopPropagation();
+        Swal.fire({
+            title: 'Supprimer ce ticket ?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonText: 'Annuler',
+            confirmButtonText: 'Supprimer'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                fetch('/reservation/ticket/delete-ajax/' + ticketId)
+                    .then(function(res) { return res.json(); })
+                    .then(function() { location.reload(); });
+            }
+        });
+    };
 
-            // Quand on clique sur la poubelle
-            trash.onclick = function(e) {
-                e.stopPropagation(); // empêche click calendrier
+    container.appendChild(title);
+    container.appendChild(trash);
+    return { domNodes: [container] };
+},
 
-                Swal.fire({
-                    title: "Supprimer ce ticket ?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    confirmButtonText: "Supprimer"
-                }).then((result) => {
+        /* ── After event mount: inject weather button above tickets in that day cell ── */
+        eventDidMount: function(arg) {
+            let ville = arg.event.extendedProps.ville;
+            let date  = arg.event.startStr;
 
-                    if (result.isConfirmed) {
+            let dayCell = arg.el.closest('.fc-daygrid-day');
+            if (!dayCell) return;
 
-                        fetch('/reservation/ticket/delete-ajax/' + arg.event.id)
-                            .then(res => res.json())
-                            .then(() => {
+            /* Only add one button per day cell */
+            if (dayCell.querySelector('.weather-btn')) return;
 
-                                arg.event.remove(); // supprime du calendrier
-                                location.reload();  // refresh tableau + total
+            let btn = document.createElement('button');
+            btn.className = 'weather-btn';
+            btn.innerHTML = '&#9729; Météo';
+            btn.dataset.ville = ville;
+            btn.dataset.date  = date;
 
-                            });
-                    }
-                });
-            };
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openWeatherModal(this.dataset.ville, this.dataset.date);
+            });
 
-            container.appendChild(title);
-            container.appendChild(trash);
-
-            return { domNodes: [container] };
+            let topBar = dayCell.querySelector('.fc-daygrid-day-top');
+            if (topBar) topBar.appendChild(btn);
         }
     });
 
     calendar.render();
 
-    // Chargement tickets quand on clique une réservation
-    document.querySelectorAll('.reservation-row').forEach(row => {
-        row.addEventListener('click', function () {
-
+    /* ── Load tickets when a reservation row is clicked ── */
+    document.querySelectorAll('.reservation-row').forEach(function(row) {
+        row.addEventListener('click', function() {
             let id = this.dataset.id;
 
+            /* Remove old weather buttons before loading new events */
+            document.querySelectorAll('.weather-btn').forEach(function(b) { b.remove(); });
+
             fetch('/reservation/' + id + '/tickets')
-                .then(res => res.json())
-                .then(data => {
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
                     calendar.removeAllEvents();
                     calendar.addEventSource(data);
-                });
 
+                    /* Scroll to calendar */
+                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
         });
     });
 
 });
-</script>
-<script>
+
+/* ── Weather modal functions ── */
+function openWeatherModal(ville, date) {
+    let modal = document.getElementById('weather-modal');
+    let title = document.getElementById('weather-modal-title');
+    let body  = document.getElementById('weather-modal-body');
+
+    /* Format date nicely */
+    let parts = date.split('-');
+    let dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
+
+    title.textContent = '\u2601 Météo à ' + ville + ' — ' + dateFormatted;
+    body.innerHTML = '<span style="color:#aaa;">Chargement...</span>';
+
+    modal.style.display = 'flex';
+
+    fetch('/meteo/' + encodeURIComponent(ville) + '/' + date)
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function(w) {
+            body.innerHTML =
+                '<div style="text-align:center; width:100%;">' +
+                    '<img src="https://openweathermap.org/img/wn/' + w.icon + '@2x.png" style="width:72px; height:72px;">' +
+                    '<div style="font-size:42px; font-weight:700; color:#223f91; margin:4px 0; line-height:1;">' + w.temp + '°C</div>' +
+                    '<div style="font-size:15px; color:#555; text-transform:capitalize; margin-bottom:16px;">' + w.description + '</div>' +
+                    '<div style="display:flex; gap:12px; justify-content:center;">' +
+                        '<div style="background:#f0f4ff; border-radius:12px; padding:10px 18px; text-align:center;">' +
+                            '<div style="font-size:18px; font-weight:600; color:#223f91;">' + (w.humidity !== undefined ? w.humidity + '%' : '--') + '</div>' +
+                            '<div style="font-size:12px; color:#888; margin-top:2px;">Humidité</div>' +
+                        '</div>' +
+                        '<div style="background:#f0f4ff; border-radius:12px; padding:10px 18px; text-align:center;">' +
+                            '<div style="font-size:18px; font-weight:600; color:#223f91;">' + (w.wind !== undefined ? w.wind + ' km/h' : '--') + '</div>' +
+                            '<div style="font-size:12px; color:#888; margin-top:2px;">Vent</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+        })
+        .catch(function(err) {
+            console.error('Météo erreur:', err, '| Ville:', ville, '| Date:', date);
+            body.innerHTML =
+                '<div style="text-align:center; color:#c00;">' +
+                    '<div style="font-size:28px; margin-bottom:8px;">&#9888;</div>' +
+                    '<div>Impossible de charger la météo.</div>' +
+                    '<div style="font-size:12px; color:#aaa; margin-top:6px;">Vérifiez que la ville "' + ville + '" est reconnue par OpenWeather.</div>' +
+                '</div>';
+        });
+}
+
+function closeWeatherModal() {
+    document.getElementById('weather-modal').style.display = 'none';
+}
+
+/* Click outside modal to close */
+document.getElementById('weather-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeWeatherModal();
+});
+
+/* ── Reservation delete confirm ── */
 function deleteReservation(e, id) {
     e.preventDefault();
-
     Swal.fire({
-        title: "Supprimer la réservation ?",
-        text: "Tous les tickets liés seront libérés",
-        icon: "warning",
+        title: 'Supprimer la réservation ?',
+        text: 'Tous les tickets liés seront libérés',
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        confirmButtonText: "Oui supprimer"
-    }).then((result) => {
+        confirmButtonColor: '#d33',
+        cancelButtonText: 'Annuler',
+        confirmButtonText: 'Oui, supprimer'
+    }).then(function(result) {
         if (result.isConfirmed) {
-            document.getElementById('delete-form-'+id).submit();
+            document.getElementById('delete-form-' + id).submit();
         }
     });
 }
 </script>
 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

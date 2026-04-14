@@ -131,14 +131,28 @@ public function reservationTickets(Reservation $reservation, EntityManagerInterf
 public function getTickets(Reservation $reservation): Response
 {
     $events = [];
+    $ville = $reservation->getDestination()->getNom();
 
     foreach ($reservation->getTickets() as $ticket) {
-        $events[] = [
-            'id' => $ticket->getId(), 
-            'title' => $ticket->getType(),
-            'start' => $reservation->getDateDebut()->format('Y-m-d'),
-            'end' => $reservation->getDateFin()->format('Y-m-d'),
-        ];
+        $start = clone $reservation->getDateDebut();
+        $end   = clone $reservation->getDateFin();
+
+        // Loop through every day of the reservation
+        $current = clone $start;
+        while ($current <= $end) {
+            $events[] = [
+                'id'    => $ticket->getId() . '-' . $current->format('Y-m-d'),
+                'realId' => $ticket->getId(), // ← used for deletion
+                'title' => $ticket->getType(),
+                'start' => $current->format('Y-m-d'),
+                'end'   => $current->format('Y-m-d'),
+                'extendedProps' => [
+                    'ville'   => $ville,
+                    'ticketId' => $ticket->getId()
+                ]
+            ];
+            $current->modify('+1 day');
+        }
     }
 
     return $this->json($events);
@@ -288,10 +302,14 @@ private function restoreActivityPlacesFromReservation(Reservation $reservation, 
         $activite = $ticket->getActivite();
 
         if ($activite) {
+            // Ticket linked to an activity → restore place and delete
             $activite->setMaxPlaces($activite->getMaxPlaces() + 1);
+            $em->remove($ticket);
+        } else {
+            // Ticket not linked to an activity → free it up
+            $ticket->setStatut('Disponible');
+            $ticket->setReservation_id(null);
         }
-
-        $em->remove($ticket);
     }
 }
 }

@@ -17,6 +17,7 @@ use App\Entity\Likes;
 use App\Service\ImageUploader;
 use App\Service\FlaskClient\ToxicityChecker;
 use App\Entity\Notification;
+use App\Service\FlaskClient\GeoLocalisationService;
 final class BlogController extends AbstractController
 
 {
@@ -360,5 +361,33 @@ public function like(Post $post, EntityManagerInterface $em, Request $request): 
         'count' => $likeRepo->count(['post_id' => $post])
     ]);
 }
+
+
+#[Route('/localiser-image', name: 'localiser_image', methods: ['POST'])]
+    public function localiserImage(
+        Request $request,
+        GeoLocalisationService $geoService
+    ): JsonResponse {
+
+        $file = $request->files->get('image');
+
+        if (!$file) {
+            return $this->json([
+                'error' => 'Aucune image envoyée'
+            ], 400);
+        }
+
+        try {
+            $result = $geoService->localize($file->getPathname());
+
+            return $this->json($result);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur serveur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 }

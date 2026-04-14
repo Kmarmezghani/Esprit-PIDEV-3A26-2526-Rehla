@@ -292,7 +292,11 @@
       📷 Image
     </button>
         <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
-    <button class="btn btn-outline-primary rounded-pill mr-2">📍 Lieu</button>
+      <button type="button"
+            id="btnLocaliser"
+            class="btn btn-outline-primary rounded-pill mr-2">
+      📍 Lieu
+    </button>
     <button class="btn btn-outline-primary rounded-pill">📊 Sondage</button>
 
     {{ form_widget(form.image) }}
@@ -1556,6 +1560,110 @@ document.querySelectorAll(".order-option").forEach(btn => {
     window.location.href = `/blog?sort=${selectedSort}&order=${selectedOrder}`;
   });
 });
+
+
+//-----------------------------------geolocalisation------------------------------------------------
+document.getElementById("post_image").addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (file) {
+        Swal.fire({
+                icon: 'success',
+                text: 'Image sélectionnée',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#ecfdf5',
+                color: '#065f46',
+                iconColor: '#10b981',
+                 customClass: {
+                popup: 'green-toast'
+            }
+
+
+        });
+    }
+});
+
+document.getElementById("btnLocaliser").addEventListener("click", async function () {
+
+    const inputFile = document.getElementById("post_image");
+    const file = inputFile.files[0];
+
+    if (!file) {
+        Swal.fire({
+                icon: 'warning',
+                text: 'Veuillez sélectionner une image !',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff7ed',
+                color: '#9a3412',
+                iconColor: '#f59e0b',
+                customClass: {
+                    popup: 'orange-toast'
+                }
+
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+        const response = await fetch("/localiser-image", {
+            method: "POST",
+            body: formData
+        });
+
+        const text = await response.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur serveur',
+                text: 'Réponse invalide du serveur'
+            });
+            return;
+        }
+
+        if (data.error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: data.error
+            });
+            return;
+        }
+
+        Swal.fire({
+            icon: 'info',
+            title: '📍 Lieu détecté',
+            html:
+                `<b>Ville:</b> ${data.city}<br>` +
+                `<b>Pays:</b> ${data.country}<br>` +
+                `<b>Adresse:</b> ${data.address}`
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur serveur',
+            text: 'Impossible de contacter le serveur'
+        });
+    }
+});
+
+
 </script>
 
 

@@ -104,18 +104,26 @@
 <section class="ftco-section">
     <div class="container">
         <div class="d-flex justify-content-end mb-4">
-            <a href="{{ path('ajouter_reservation') }}" class="btn btn-primary px-4 py-2">
-                <i class="fa fa-plus"></i> Ajouter une réservation
-            </a>
-        </div>
-        <div class="row">
+    <a href="{{ path('ajouter_reservation') }}" class="btn btn-primary px-4 py-2">
+        <i class="fa fa-plus"></i> Ajouter une réservation
+    </a>
+</div>        <div class="row">
 
             <!-- TABLE -->
             <div class="col-12 mb-4">
                 <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white border-0">
-                        <h4 class="mb-0">Mes Réservations</h4>
-                    </div>
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h4 class="mb-0">Mes Réservations</h4>
+    <div class="d-flex align-items-center gap-2">
+        
+        <div class="btn-group" role="group" id="currency-toggle">
+            <button type="button" class="btn btn-currency active" data-currency="TND">🇹🇳 TND</button>
+            <button type="button" class="btn btn-currency" data-currency="EUR">🇪🇺 EUR</button>
+            <button type="button" class="btn btn-currency" data-currency="USD">🇺🇸 USD</button>
+        </div>
+        <span id="rate-badge" style="display:none; font-size:11px; background:#f0f4ff; color:#223f91; border-radius:8px; padding:3px 10px;"></span>
+    </div>
+</div>
                     <div class="table-responsive p-3">
                         <table class="table align-middle table-hover">
                             <thead class="table-light">
@@ -139,7 +147,11 @@
                                             {{ reservation.destination ? reservation.destination.nom : 'Non défini' }}
                                         </td>
                                         <td><span>{{ reservation.nb_Tickets }}</span></td>
-                                        <td><strong>{{ reservation.coutTotal }} TND</strong></td>
+                                        <td>
+                                            <strong class="price-cell" data-tnd="{{ reservation.coutTotal }}">
+                                                {{ reservation.coutTotal }} TND
+                                            </strong>
+                                        </td>
                                         <td>
                                             {% set statut = reservation.statut|lower %}
                                             {% if statut == 'confirmée' %}
@@ -309,6 +321,33 @@
 #weather-modal > div {
     cursor: default;
 }
+/* Currency switcher */
+.btn-currency {
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 1.5px solid #d0d9f0;
+    background: #fff;
+    color: #555;
+    border-radius: 0;
+    transition: all 0.18s;
+    font-weight: 500;
+}
+.btn-currency:first-child { border-radius: 20px 0 0 20px; }
+.btn-currency:last-child  { border-radius: 0 20px 20px 0; }
+.btn-currency.active {
+    background: #223f91;
+    color: #fff;
+    border-color: #223f91;
+}
+.btn-currency:hover:not(.active) {
+    background: #f0f4ff;
+    border-color: #223f91;
+    color: #223f91;
+}
+.price-cell {
+    transition: opacity 0.2s;
+}
+.price-loading { opacity: 0.4; }
 </style>
 
 <script>
@@ -486,6 +525,82 @@ function deleteReservation(e, id) {
         }
     });
 }
+/* ── Currency Converter ── */
+(function () {
+    const API_KEY = 'YOUR_EXCHANGERATE_API_KEY'; // ← paste your key here
+    const BASE    = 'TND';
+    let rates     = { TND: 1, EUR: null, USD: null };
+    let currentCurrency = 'TND';
+    const symbols = { TND: 'TND', EUR: '€', USD: '$' };
+
+    /* Fetch rates once, cache in memory */
+    async function fetchRates() {
+        try {
+            const res  = await fetch('/api/exchange-rates');
+            const data = await res.json();
+            if (data.result === 'success') {
+                rates.EUR = data.conversion_rates.EUR;
+                rates.USD = data.conversion_rates.USD;
+            }
+        } catch (e) {
+            console.error('ExchangeRate API error:', e);
+        }
+    }
+
+    function updatePrices(currency) {
+        const rate   = rates[currency];
+        const badge  = document.getElementById('rate-badge');
+        const cells  = document.querySelectorAll('.price-cell');
+
+        if (!rate) {
+            /* Show loading shimmer while fetching */
+            cells.forEach(c => c.classList.add('price-loading'));
+            return;
+        }
+
+        cells.forEach(c => {
+            c.classList.remove('price-loading');
+            const tnd      = parseFloat(c.dataset.tnd);
+            const converted = (tnd * rate).toFixed(2);
+            const sym      = symbols[currency];
+            c.textContent  = currency === 'TND'
+                ? `${converted} TND`
+                : `${sym} ${converted}`;
+        });
+
+        /* Show exchange rate info badge */
+        if (currency !== 'TND') {
+            badge.style.display = 'inline-block';
+            badge.textContent   = `1 TND = ${rate.toFixed(4)} ${currency}`;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    /* Init: fetch rates in background */
+    fetchRates();
+
+    /* Button clicks */
+    document.querySelectorAll('.btn-currency').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const currency = this.dataset.currency;
+            if (currency === currentCurrency) return;
+
+            /* Toggle active state */
+            document.querySelectorAll('.btn-currency').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentCurrency = currency;
+
+            /* Fetch rates if not yet loaded */
+            if (currency !== 'TND' && rates[currency] === null) {
+                document.querySelectorAll('.price-cell').forEach(c => c.classList.add('price-loading'));
+                await fetchRates();
+            }
+
+            updatePrices(currency);
+        });
+    });
+})();
 </script>
 
 {% endblock %}

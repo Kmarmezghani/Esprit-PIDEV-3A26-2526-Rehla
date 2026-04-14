@@ -312,4 +312,11 @@ private function restoreActivityPlacesFromReservation(Reservation $reservation, 
         }
     }
 }
+#[Route('/api/exchange-rates', name: 'exchange_rates')]
+public function getRates(): Response
+{
+    $key = $_ENV['EXCHANGE_RATE_API_KEY'];
+    $data = file_get_contents("https://v6.exchangerate-api.com/v6/{$key}/latest/TND");
+    return new Response($data, 200, ['Content-Type' => 'application/json']);
+}
 }

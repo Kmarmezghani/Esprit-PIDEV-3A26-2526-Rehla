@@ -14,73 +14,46 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Likes;
-
+use App\Service\ImageUploader;
+use App\Service\FlaskClient\ToxicityChecker;
 final class BlogController extends AbstractController
 
 {
 
 #[Route('/blog', name: 'blog')]
-public function index(Request $request, EntityManagerInterface $em)
+public function index(Request $request, EntityManagerInterface $em, ImageUploader $uploader, ToxicityChecker $toxicityChecker): Response
 {
-      $userId = $request->getSession()->get('user_id');
-    $personne = $em->getRepository(Personne::class)->find($userId);
+    $personne = $this->getConnectedUser($request, $em);
 
     $post = new Post();
     $form = $this->createForm(PostType::class, $post);
     $form->handleRequest($request);
 
-    $likes = $request->query->get('likes');
-    $date = $request->query->get('date');
-    $search = $request->query->get('search');
-    $dateExact = $request->query->get('date_exact');
-    $sort = $request->query->get('sort');
-    $order = $request->query->get('order');
+   $status = $this->handlePostCreation(
+    $form,
+    $post,
+    $personne,
+    $uploader,
+    $em,
+    $toxicityChecker
+);
 
-    if ($form->isSubmitted() && $form->isValid()) {
+if ($status === 'refused') {
+    $this->addFlash('error', '❌ Contenu refusé (toxique)');
+    return $this->redirectToRoute('blog');
+}
 
-        $imageFile = $form->get('image')->getData();
+if ($status === 'warning') {
+    $this->addFlash('warning', '⚠️ Contenu sensible publié (admin notifié)');
+    return $this->redirectToRoute('blog');
+}
 
-        if ($imageFile) {
-            $newFilename = uniqid().'.'.$imageFile->guessExtension();
+if ($status === 'ok') {
+    $this->addFlash('success', '✅ Publication ajoutée');
+    return $this->redirectToRoute('blog');
+}
 
-            try {
-                $imageFile->move(
-                    $this->getParameter('images_directory'),
-                    $newFilename
-                );
-            } catch (FileException $e) {}
-
-            $post->setImage('uploads/'.$newFilename);
-        }
-
-        $post->setDatePublication(new \DateTime());
-        $post->setPopularite(0);
-        $post->setPersonne_id($personne);
-
-        $em->persist($post);
-        $em->flush();
-
-        return $this->redirectToRoute('blog');
-    }
-
-        if ($search) {
-        $posts = $em->getRepository(Post::class)->searchByContent($search);
-        }
-        elseif ($likes) {
-            $posts = $em->getRepository(Post::class)->findByLikes($likes);
-        }
-        elseif ($dateExact) {
-        $posts = $em->getRepository(Post::class)->findByExactDate($dateExact);
-        }
-        elseif ($date) {
-            $posts = $em->getRepository(Post::class)->findByDateFilter($date);
-        }
-        elseif ($sort && $order) {
-            $posts = $em->getRepository(Post::class)->findSorted($sort, $order);
-        }
-        else {
-            $posts = $em->getRepository(Post::class)->findLatestPosts();
-        }
+    $posts = $this->getFilteredPosts($request, $em);
 
     return $this->render('blog/blog.html.twig', [
         'posts' => $posts,
@@ -88,6 +61,116 @@ public function index(Request $request, EntityManagerInterface $em)
     ]);
 }
 
+
+private function getConnectedUser(Request $request, EntityManagerInterface $em): ?Personne
+{
+    $userId = $request->getSession()->get('user_id');
+    return $em->getRepository(Personne::class)->find($userId);
+}
+private function handlePostCreation(
+    $form,
+    Post $post,
+    $personne,
+    ImageUploader $uploader,
+    EntityManagerInterface $em,
+    ToxicityChecker $toxicityChecker // ✅ AJOUT
+): ?string
+{
+    if (!$form->isSubmitted() || !$form->isValid()) {
+        return null;
+    }
+
+    $contenu = $post->getContenu();
+
+    // 🔥 APPEL AU MODELE FLASK
+    $result = $toxicityChecker->check($contenu);
+    $score = $result['score'];
+
+    // ❌ CAS 1 : REFUS
+    if ($score > 0.7) {
+        return 'refused';
+    }
+
+    // ⚠️ CAS 2 : WARNING
+    $status = ($score > 0.1) ? 'warning' : 'ok';
+
+    // ✅ CONTINUE (publication autorisée)
+
+    $imageFile = $form->get('image')->getData();
+    $imagePath = $uploader->upload($imageFile, $this->getParameter('images_directory'));
+
+    if ($imagePath) {
+        $post->setImage($imagePath);
+    }
+
+    $post->setDatePublication(new \DateTime());
+    $post->setPopularite(0);
+    $post->setPersonne_id($personne);
+
+    $em->persist($post);
+    $em->flush();
+
+    return $status;
+}
+
+#[Route('/check-toxicity', name: 'check_toxicity', methods: ['POST'])]
+public function checkToxicity(Request $request, ToxicityChecker $toxicityChecker): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
+
+    $text = $data['text'] ?? '';
+
+    if (!$text) {
+        return new JsonResponse(['error' => 'empty text'], 400);
+    }
+
+    try {
+        $result = $toxicityChecker->check($text);
+
+        return new JsonResponse([
+            'score' => $result['score'],
+            'label' => $result['label'] ?? null
+        ]);
+
+    } catch (\Exception $e) {
+        return new JsonResponse([
+            'error' => 'Flask error'
+        ], 500);
+    }
+}
+private function getFilteredPosts(Request $request, EntityManagerInterface $em)
+{
+    $search = $request->query->get('search');
+    $likes = $request->query->get('likes');
+    $date = $request->query->get('date');
+    $dateExact = $request->query->get('date_exact');
+    $sort = $request->query->get('sort');
+    $order = $request->query->get('order');
+
+    $repo = $em->getRepository(Post::class);
+
+    if ($search) {
+        return $repo->searchByContent($search);
+    }
+
+    if ($likes) {
+        return $repo->findByLikes($likes);
+    }
+
+    if ($dateExact) {
+        return $repo->findByExactDate($dateExact);
+    }
+
+    if ($date) {
+        return $repo->findByDateFilter($date);
+    }
+
+    if ($sort && $order) {
+        return $repo->findSorted($sort, $order);
+    }
+
+    return $repo->findLatestPosts();
+}
 
 #[Route('/post/delete/{id}', name: 'post_delete', methods: ['POST'])]
 public function delete(Post $post, EntityManagerInterface $em): Response

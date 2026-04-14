@@ -1010,12 +1010,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!form || !contenu) return;
 
-    form.addEventListener("submit", function (e) {
-
+    form.addEventListener("submit", async function (e) {
+    e.preventDefault();
         const value = (contenu.value || "").trim();
 
        if (value === "") {
-
+    e.preventDefault();
     Swal.fire({
         icon: 'error',
         text: 'Le contenu est obligatoire',
@@ -1034,7 +1034,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
 }
 
-       if (value.length < 3) {
+    if (value.length < 3) {
     e.preventDefault();
 
     Swal.fire({
@@ -1054,7 +1054,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return;
 }
-if (!/^[a-zA-Z0-9]/.test(value)) {
+    if (!/^[a-zA-Z0-9]/.test(value)) {
         e.preventDefault();
         Swal.fire({
             icon: 'error',
@@ -1073,21 +1073,93 @@ if (!/^[a-zA-Z0-9]/.test(value)) {
           return;
           }
 
-Swal.fire({
-    icon: 'success',
-    text: 'Publication ajoutée avec succès',
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2500,
-    background: '#ecfdf5',
-    color: '#065f46',
-    iconColor: '#10b981',
-    customClass: {
-        popup: 'green-toast'
-    }
-});
+      try {
+            const response = await fetch("/check-toxicity", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: value })
+            });
+            
+
+            const data = await response.json();
+            console.log("Réponse API :", data);
+            console.log("Score de toxicité :", data.score);
+            const score = data.score;
+
+            // ❌ REFUS
+            if (score > 0.7) {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'Contenu refusé, ne respecte pas nos règles',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    background: '#fff1f2',
+                    color: '#991b1b',
+                    iconColor: '#ef4444',
+                    customClass: { popup: 'red-toast' }
+                });
+                return;
+            }
+
+            // ⚠️ WARNING
+            if (score > 0.1) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Contenu sensible publié, admin notifié',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    background: '#fff7ed',
+                    color: '#9a3412',
+                    iconColor: '#f59e0b',
+                    customClass: { popup: 'orange-toast' }
+                });
+
+                setTimeout(() => form.submit(), 500); // petit delay UX
+                return;
+            }
+
+            // ✅ OK
+            Swal.fire({
+                icon: 'success',
+                text: 'Publication ajoutée avec succès',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#ecfdf5',
+                color: '#065f46',
+                iconColor: '#10b981',
+                customClass: { popup: 'green-toast' }
+            });
+
+            setTimeout(() => form.submit(), 500);
+
+        } catch (error) {
+            console.error(error);
+
+            // 🔥 fallback si Flask down
+            Swal.fire({
+                icon: 'error',
+                text: 'Erreur serveur IA, réessayez',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                background: '#fff1f2',
+                color: '#991b1b',
+                iconColor: '#ef4444',
+                customClass: { popup: 'red-toast' }
+            });
+        }
+
     });
+
 
 });
 

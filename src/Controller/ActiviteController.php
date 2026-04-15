@@ -332,14 +332,17 @@ $reservation->setCoutTotal($unitPrice * $nbTickets);
     try {
     if ($personne->getEmail()) {
         $bookingEmailService->sendBookingConfirmation(
-            $personne->getEmail(),
-            $personne->getNom() . ' ' . $personne->getPrenom(),
-            $activite->getNom(),
-            $reservation->getCoutTotal()
-        );
+    $personne->getEmail(),
+    $personne->getNom() . ' ' . $personne->getPrenom(),
+    $activite->getNom(),
+    $reservation->getCoutTotal(),
+    $reservation->getId(),
+    $personne->getId(),
+    $activite->getId()
+);
     }
 } catch (\Exception $e) {
-    dd($e->getMessage());
+    $this->addFlash('warning', 'Réservation créée, mais le mail n’a pas pu être envoyé.');
 }
 
 

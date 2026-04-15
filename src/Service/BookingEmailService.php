@@ -3,15 +3,12 @@
 namespace App\Service;
 
 use Endroid\QrCode\Builder\BuilderInterface;
-use Endroid\QrCode\Builder\BuilderInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
 class BookingEmailService
 {
     public function __construct(
-        private MailerInterface $mailer,
-        private BuilderInterface $defaultQrCodeBuilder
         private MailerInterface $mailer,
         private BuilderInterface $defaultQrCodeBuilder
     ) {
@@ -25,12 +22,7 @@ class BookingEmailService
         int $reservationId,
         int $userId,
         int $activityId
-        float $price,
-        int $reservationId,
-        int $userId,
-        int $activityId
     ): void {
-      
         $safeName = !empty(trim($userName)) ? htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') : 'there';
         $safeActivity = !empty(trim($activityName)) ? htmlspecialchars($activityName, ENT_QUOTES, 'UTF-8') : 'your activity';
         $safePrice = number_format($price, 2, '.', '');
@@ -82,7 +74,6 @@ class BookingEmailService
           <div style="font-size:14px;margin:0 0 6px;color:#111827;">
             <strong>Activity:</strong> {$safeActivity}
           </div>
-          <div style="font-size:14px;margin:0 0 6px;color:#111827;">
           <div style="font-size:14px;margin:0 0 6px;color:#111827;">
             <strong>Price:</strong> {$safePrice} TND
           </div>
@@ -187,15 +178,8 @@ HTML;
             ->from('rehla.noreply@gmail.com')
             ->to($toEmail)
             ->subject($subject)
-            ->html($html)
-            ->attachFromPath($tempQrPath, 'ticket-qr.png', 'image/png');
+            ->html($html);
 
-        try {
-            $this->mailer->send($email);
-        } finally {
-            if (file_exists($tempQrPath)) {
-                unlink($tempQrPath);
-            }
-        }
+        $this->mailer->send($email);
     }
 }

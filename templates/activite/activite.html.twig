@@ -237,7 +237,7 @@
 {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
     <span style="
         position: absolute;
-        top: 58px;
+        top: {% if recommendedIds is defined and activite.id in recommendedIds %}58px{% else %}14px{% endif %};
         right: 14px;
         z-index: 6;
         background: linear-gradient(135deg, #ff8c42, #f06d06);
@@ -253,7 +253,6 @@
         🔥 FLASH
     </span>
 {% endif %}
-
 {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
     <span class="price">
         <span style="

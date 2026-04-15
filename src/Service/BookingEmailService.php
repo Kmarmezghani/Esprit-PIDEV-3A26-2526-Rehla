@@ -5,6 +5,8 @@ namespace App\Service;
 use Endroid\QrCode\Builder\BuilderInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class BookingEmailService
 {

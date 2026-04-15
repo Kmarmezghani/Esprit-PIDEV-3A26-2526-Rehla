@@ -2,13 +2,15 @@
 
 namespace App\Service;
 
+use Endroid\QrCode\Builder\BuilderInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
 class BookingEmailService
 {
     public function __construct(
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
+        private BuilderInterface $defaultQrCodeBuilder
     ) {
     }
 
@@ -16,11 +18,31 @@ class BookingEmailService
         string $toEmail,
         string $userName,
         string $activityName,
-        float $price
+        float $price,
+        int $reservationId,
+        int $userId,
+        int $activityId
     ): void {
-        $safeName = !empty(trim($userName)) ? htmlspecialchars($userName) : 'there';
-        $safeActivity = !empty(trim($activityName)) ? htmlspecialchars($activityName) : 'your activity';
+      
+        $safeName = !empty(trim($userName)) ? htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') : 'there';
+        $safeActivity = !empty(trim($activityName)) ? htmlspecialchars($activityName, ENT_QUOTES, 'UTF-8') : 'your activity';
         $safePrice = number_format($price, 2, '.', '');
+
+        $qrContent = sprintf(
+            'RESERVATION#%d | USER#%d | ACTIVITE#%d',
+            $reservationId,
+            $userId,
+            $activityId
+        );
+
+        $result = $this->defaultQrCodeBuilder->build(
+            data: $qrContent,
+            size: 250,
+            margin: 10
+        );
+
+        $tempQrPath = sys_get_temp_dir() . '/qr_reservation_' . $reservationId . '.png';
+        $result->saveToFile($tempQrPath);
 
         $subject = 'Booking confirmed - ' . $safeActivity;
 
@@ -53,17 +75,17 @@ class BookingEmailService
           <div style="font-size:14px;margin:0 0 6px;color:#111827;">
             <strong>Activity:</strong> {$safeActivity}
           </div>
-          <div style="font-size:14px;margin:0;color:#111827;">
+          <div style="font-size:14px;margin:0 0 6px;color:#111827;">
             <strong>Price:</strong> {$safePrice} TND
+          </div>
+          <div style="font-size:14px;margin:0;color:#111827;">
+            <strong>Reservation ID:</strong> {$reservationId}
           </div>
         </div>
 
-        <div style="margin-top:16px;">
-          <a href="#" style="display:inline-block;background:#3A5BC7;color:#fff;text-decoration:none;
-                             padding:10px 16px;border-radius:12px;font-weight:700;font-size:14px;">
-            View my booking
-          </a>
-        </div>
+        <p style="margin-top:16px;font-size:14px;color:#374151;">
+          Your QR ticket is attached to this email as a PNG file.
+        </p>
 
         <hr style="border:none;border-top:1px solid #eef2ff;margin:18px 0;" />
 
@@ -86,8 +108,15 @@ HTML;
             ->from('rehla.noreply@gmail.com')
             ->to($toEmail)
             ->subject($subject)
-            ->html($html);
+            ->html($html)
+            ->attachFromPath($tempQrPath, 'ticket-qr.png', 'image/png');
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } finally {
+            if (file_exists($tempQrPath)) {
+                unlink($tempQrPath);
+            }
+        }
     }
 }

@@ -215,21 +215,64 @@
 <a href="{{ path('activite_show', {'id': activite.id}) }}" class="img"
    style="background-image: url('{{ asset('uploads/activities/' ~ activite.image|split('\\')|last) }}'); position: relative;">
 
-    <span class="price">{{ activite.prix }} TND/person</span>
-{% if recommendedIds is defined and activite.id in recommendedIds %}
-    <span style=" position: absolute; top: 14px;
-     right: 14px; 
-     z-index: 5; 
-     background: #ffffff;
-      color: #223f91;
-       padding: 8px 14px; border-radius: 20px; 
-      font-size: 12px; font-weight: 700;
-     box-shadow: 0 8px 20px rgba(34,63,145,0.30); 
-     display: inline-block; "> ✨ Top IA </span>
+    {% if recommendedIds is defined and activite.id in recommendedIds %}
+    <span style="
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 7;
+        background: #ffffff;
+        color: #223f91;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(34,63,145,0.30);
+        display: inline-block;
+    ">
+        ✨ Top IA
+    </span>
 {% endif %}
-</a>
 
-            <div class="text p-4">
+{% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
+    <span style="
+        position: absolute;
+        top: 58px;
+        right: 14px;
+        z-index: 6;
+        background: linear-gradient(135deg, #ff8c42, #f06d06);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 18px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgba(240,109,6,0.28);
+        display: inline-block;
+        letter-spacing: 0.4px;
+    ">
+        🔥 FLASH
+    </span>
+{% endif %}
+
+{% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
+    <span class="price">
+        <span style="
+            display: block;
+            font-size: 11px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: line-through;
+            font-weight: 600;
+            margin-bottom: 2px;
+        ">
+            {{ activite.prix|number_format(2, '.', '') }} TND
+        </span>
+
+        {{ activite.flashPrice|number_format(2, '.', '') }} TND/person
+    </span>
+{% else %}
+    <span class="price">{{ activite.prix|number_format(2, '.', '') }} TND/person</span>
+{% endif %}
+</a>            <div class="text p-4">
                 <span class="days">
                     {{ activite.dateDebut ? activite.dateDebut|date('d M') : 'Date non définie' }}
                     {{ activite.dateFin ? activite.dateFin|date('d M') : 'Date non définie' }}
@@ -245,6 +288,38 @@
                     <span class="fa fa-map-marker"></span>
                     {{ activite.destination ? activite.destination.nom : 'Non défini' }}
                 </p>
+                <div class="flash-row-holder">
+    {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+            <span style="
+                display:inline-flex;
+                align-items:center;
+                gap:6px;
+                border:1px solid rgba(255,140,66,0.45);
+                color:#f06d06;
+                background:rgba(255,140,66,0.08);
+                padding:6px 12px;
+                border-radius:999px;
+                font-size:12px;
+                font-weight:700;
+                line-height:1;
+            ">
+                🔥 SALE
+            </span>
+
+            <span class="flash-timer"
+                  data-expires-at="{{ activite.flashExpiresAt|date('c') }}"
+                  style="
+                    font-size:13px;
+                    font-weight:700;
+                    color:#8a4b08;
+                    line-height:1.2;
+                  ">
+                Expires in --
+            </span>
+        </div>
+    {% endif %}
+</div>
 
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <li style="display: flex; align-items: center; gap: 15px;">
@@ -264,16 +339,29 @@
                         {{ activite.typeActivite ?: 'Non défini' }}
                     </li>
 
-                    <li style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-                        <button
-                            type="button"
-                            class="btn btn-primary btn-sm"
-                            data-toggle="modal"
-                            data-target="#reservationModal{{ activite.id }}"
-                            {% if activite.maxPlaces <= 0 %}disabled{% endif %}
-                        >
-                            Book now
-                        </button>
+                    <li style="margin-top: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <button
+        type="button"
+        class="btn btn-sm"
+        data-toggle="modal"
+        data-target="#reservationModal{{ activite.id }}"
+        {% if activite.maxPlaces <= 0 %}disabled{% endif %}
+        style="
+            background: {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}linear-gradient(135deg, #ff8c42, #f06d06){% else %}#223f91{% endif %};
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-weight: 700;
+            box-shadow: {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}0 8px 18px rgba(240,109,6,0.25){% else %}none{% endif %};
+        "
+    >
+        {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
+            Book (Sale)
+        {% else %}
+            Book now
+        {% endif %}
+    </button>
 
                         {% if activite.maxPlaces <= 0 %}
                             <span style="background: #f8d7da; color: #dc3545; padding: 3px 8px; border-radius: 10px; font-size: 12px;">
@@ -310,9 +398,52 @@
 
                         <div style="display: flex; gap: 15px; margin-bottom: 24px; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 180px; background: #f8faff; border: 1px solid #e8eefc; border-radius: 16px; padding: 16px;">
-                                <div style="font-size: 13px; color: #7a7a7a; margin-bottom: 6px;">Prix par personne</div>
-                                <div style="font-size: 26px; font-weight: 700; color: #223f91;">${{ activite.prix }}</div>
-                            </div>
+    <div style="font-size: 13px; color: #7a7a7a; margin-bottom: 6px;">Prix par personne</div>
+
+    {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+            <span style="
+                font-size: 14px;
+                color: #9aa0b4;
+                text-decoration: line-through;
+                font-weight: 600;
+                line-height: 1;
+            ">
+                {{ activite.prix|number_format(2, '.', '') }} TND
+            </span>
+
+            <span style="
+                font-size: 26px;
+                font-weight: 700;
+                color: #f06d06;
+                line-height: 1.1;
+            ">
+                {{ activite.flashPrice|number_format(2, '.', '') }} TND
+            </span>
+
+            <span style="
+                display:inline-flex;
+                align-items:center;
+                gap:6px;
+                border:1px solid rgba(255,140,66,0.45);
+                color:#f06d06;
+                background:rgba(255,140,66,0.08);
+                padding:4px 10px;
+                border-radius:999px;
+                font-size:11px;
+                font-weight:700;
+                line-height:1;
+                margin-top:4px;
+            ">
+                🔥 Flash Sale
+            </span>
+        </div>
+    {% else %}
+        <div style="font-size: 26px; font-weight: 700; color: #223f91;">
+            {{ activite.prix|number_format(2, '.', '') }} TND
+        </div>
+    {% endif %}
+</div>
 
                             <div style="flex: 1; min-width: 180px; background: #f8faff; border: 1px solid #e8eefc; border-radius: 16px; padding: 16px;">
                                 <div style="font-size: 13px; color: #7a7a7a; margin-bottom: 6px;">Places disponibles</div>
@@ -542,5 +673,43 @@ function decreaseTickets(id) {
         input.value = value - 1;
     }
 }
+</script>
+<script>
+function startFlashSaleTimers() {
+    const timers = document.querySelectorAll('.flash-timer');
+
+    timers.forEach((timer) => {
+        const expiresAt = new Date(timer.dataset.expiresAt).getTime();
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = expiresAt - now;
+
+            if (distance <= 0) {
+                timer.innerHTML = 'Expired';
+                timer.style.color = '#d62828';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            if (days > 0) {
+                timer.innerHTML = `Expires in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                timer.innerHTML = `Expires in ${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    startFlashSaleTimers();
+});
 </script>
 {% endblock %}

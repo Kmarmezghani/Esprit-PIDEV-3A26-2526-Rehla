@@ -126,7 +126,9 @@ class Activite
     public function getDateDebut(): \DateTimeInterface { return $this->date_debut ?? new \DateTime(); }
     public function setDateDebut(?\DateTimeInterface $date_debut): self { $this->date_debut = $date_debut ?? new \DateTime(); return $this; }
 
-    public function getDateFin(): \DateTimeInterface { return $this->date_fin ?? new \DateTime(); }
+   public function getDateFin(): ?\DateTimeInterface { 
+    return $this->date_fin; 
+}
     public function setDateFin(?\DateTimeInterface $date_fin): self { $this->date_fin = $date_fin ?? new \DateTime(); return $this; }
 
     public function getStatus(): string { return $this->status; }

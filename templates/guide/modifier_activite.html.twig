@@ -21,7 +21,7 @@
     <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
     <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
     <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
-    <li class="nav-item active"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
@@ -32,7 +32,7 @@
            href="#" id="userDropdown" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {% if app.session.get('user_photo') %}
-                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
                      class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
             {% else %}
                 <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
@@ -102,6 +102,7 @@
 </div>
 		</div>
 	</nav>
+
 	
 <section class="hero-wrap" style="background-image: url('{{ asset('assets/images/bg_1.jpg') }}'); min-height:100vh;">
     <div class="overlay"></div>

@@ -18,6 +18,10 @@ use App\Service\ImageUploader;
 use App\Service\FlaskClient\ToxicityChecker;
 use App\Entity\Notification;
 use App\Service\FlaskClient\GeoLocalisationService;
+use App\Entity\Favoris;
+use App\Entity\Favoris_post;
+use App\Controller\FavorisController;
+
 final class BlogController extends AbstractController
 
 {
@@ -389,5 +393,5 @@ public function like(Post $post, EntityManagerInterface $em, Request $request): 
         }
     }
 
-
+    
 }

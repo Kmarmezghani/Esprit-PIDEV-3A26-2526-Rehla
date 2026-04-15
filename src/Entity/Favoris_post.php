@@ -20,7 +20,7 @@ class Favoris_post
     #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Post $post_id;
 
-    #[ORM\Column(type: "datetime")]
+    #[ORM\Column(name: "dateAjout",type: "datetime")]
     private \DateTimeInterface $dateAjout;
 
     public function getFavoris_id()

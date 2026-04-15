@@ -408,9 +408,17 @@
           <i class="fa fa-comment"></i>  {{ post.commentaires|length }}
         </div>
 
-        <div class="post-action">
-          <i class="fa fa-bookmark"></i>
-        </div>
+          
+              {% set favori = post.favorisPosts|filter(f => f.favoris_id.personne_id.id == app.session.get('user_id'))|length > 0 %}
+
+            <div class="post-action favori-btn"
+                data-id="{{ post.id }}"
+                data-favori="{{ favori ? 1 : 0 }}">
+
+                <i class="fa fa-bookmark {{ favori ? 'text-warning' : '' }}"></i>
+
+            </div>
+   
 
       </div>
 
@@ -1662,6 +1670,33 @@ document.getElementById("btnLocaliser").addEventListener("click", async function
         });
     }
 });
+//*************************Add favoris*************************************************************************
+
+document.querySelectorAll('.favori-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+
+        const postId = this.dataset.id;
+        const icon = this.querySelector('i');
+
+        fetch(`/favoris/toggle/${postId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.success) {
+
+                    if (data.favori) {
+                        icon.classList.add('text-warning'); 
+                    } else {
+                        icon.classList.remove('text-warning');
+                    }
+
+                }
+
+            });
+
+    });
+});
+
 
 
 </script>

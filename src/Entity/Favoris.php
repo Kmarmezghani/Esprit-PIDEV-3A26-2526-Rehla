@@ -13,10 +13,11 @@ class Favoris
 {
 
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
-    #[ORM\Column(type: "datetime")]
+    #[ORM\Column(name: "dateCreation",type: "datetime")]
     private \DateTimeInterface $dateCreation;
 
         #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "favoriss")]

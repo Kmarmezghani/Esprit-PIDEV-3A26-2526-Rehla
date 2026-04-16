@@ -16,22 +16,34 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Reservation;
 use App\Entity\Ticket;
+use App\Entity\Waitlist;
 use App\Service\BookingEmailService;
 use App\Service\GeminiRecommendationService;
 use App\Service\ActivityMaintenanceService;
+use App\Entity\Notification;
+use App\Repository\NotificationRepository;
+use App\Repository\WaitlistRepository;
+use App\Service\WaitlistService;
 
 final class ActiviteController extends AbstractController
 {
 #[Route('/activite', name: 'activite')]
+
 public function index(
     Request $request,
     ActiviteRepository $activiteRepository,
     PersonneRepository $personneRepository,
     GeminiRecommendationService $geminiRecommendationService,
-    ActivityMaintenanceService $activityMaintenanceService
+    ActivityMaintenanceService $activityMaintenanceService,
+    EntityManagerInterface $em,
+    NotificationRepository $notificationRepository,
+    WaitlistRepository $waitlistRepository,
+    WaitlistService $waitlistService
 ): Response
 {
+    $waitlistService->expireExpiredHolds();
     $activityMaintenanceService->refreshStatusesAndFlashSales();
+
     $destination = trim((string) $request->query->get('destination', ''));
     $dateDebut = $request->query->get('date_debut');
     $dateFin = $request->query->get('date_fin');
@@ -46,8 +58,14 @@ public function index(
 
     $recommendedActivities = [];
     $recommendedIds = [];
+    $waitlistActivities = [];
+    $holdActivities = [];
+    $activityCanBook = [];
+    $activityNotifications = [];
+    $hasUnreadActivityNotifications = false;
 
     $userId = $request->getSession()->get('user_id');
+    $personne = null;
 
     if ($userId) {
         $personne = $personneRepository->find($userId);
@@ -59,11 +77,11 @@ public function index(
 
             $userProfileText = $this->buildUserProfileText($personne->getPreferences());
 
-           $rankedIds = $geminiRecommendationService->rankActivityIdsMax3Cached(
-    $personne->getId(),
-    $allActivities,
-    $userProfileText
-);
+            $rankedIds = $geminiRecommendationService->rankActivityIdsMax3Cached(
+                $personne->getId(),
+                $allActivities,
+                $userProfileText
+            );
 
             if (!empty($rankedIds)) {
                 $map = [];
@@ -78,7 +96,32 @@ public function index(
                     }
                 }
             }
+
+            $waitlists = $em->getRepository(Waitlist::class)->findBy([
+                'personne' => $personne,
+                'status' => ['WAITING', 'HOLD']
+            ]);
+
+            foreach ($waitlists as $w) {
+                $waitlistActivities[] = $w->getActivite()->getId();
+            }
+
+            $userHolds = $waitlistRepository->findActiveHoldsByPersonne($personne);
+
+            foreach ($userHolds as $hold) {
+                $holdActivities[] = $hold->getActivite()->getId();
+            }
+
+            $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+            $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
         }
+    }
+
+    foreach ($activites as $activite) {
+        $activeHoldCount = $waitlistRepository->countActiveHoldsForActivity($activite);
+
+        $activityCanBook[$activite->getId()] =
+            ((int) $activite->getMaxPlaces() > 0) && ($activeHoldCount === 0);
     }
 
     $recommendedIds = array_map(
@@ -90,6 +133,11 @@ public function index(
         'activites' => $activites,
         'recommendedActivities' => $recommendedActivities,
         'recommendedIds' => $recommendedIds,
+        'waitlistActivities' => $waitlistActivities,
+        'holdActivities' => $holdActivities,
+        'activityCanBook' => $activityCanBook,
+        'activityNotifications' => $activityNotifications,
+        'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
         'filters' => [
             'destination' => $destination,
             'date_debut' => $dateDebut,
@@ -97,8 +145,7 @@ public function index(
             'prix_max' => $prixMax,
         ]
     ]);
-}
-    #[Route('/activite/{id}', name: 'activite_show')]
+}    #[Route('/activite/{id}', name: 'activite_show')]
     public function show(
         Activite $activite,
         Request $request,
@@ -333,12 +380,14 @@ $reservation->setCoutTotal($unitPrice * $nbTickets);
     if ($personne->getEmail()) {
         $bookingEmailService->sendBookingConfirmation(
     $personne->getEmail(),
-    $personne->getNom() . ' ' . $personne->getPrenom(),
+    trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? '')),
     $activite->getNom(),
-    $reservation->getCoutTotal(),
+    (float) $reservation->getCoutTotal(),
     $reservation->getId(),
     $personne->getId(),
-    $activite->getId()
+    $activite->getId(),
+    $activite->getDateDebut(),
+    $activite->getDateFin()
 );
     }
 } catch (\Throwable $e) {

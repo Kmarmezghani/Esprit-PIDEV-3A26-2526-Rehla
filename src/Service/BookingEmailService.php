@@ -2,11 +2,11 @@
 
 namespace App\Service;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Endroid\QrCode\Builder\BuilderInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 
 class BookingEmailService
 {
@@ -16,53 +16,57 @@ class BookingEmailService
     ) {
     }
 
-    public function sendBookingConfirmation(
-        string $toEmail,
+    private function generateBookingPassPdf(
         string $userName,
         string $activityName,
         float $price,
         int $reservationId,
-        int $userId,
-        int $activityId
+        \DateTimeInterface $activityStart,
+        \DateTimeInterface $activityEnd,
+        string $statusLabel
     ): void {
-        $safeName = !empty(trim($userName)) ? htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') : 'there';
-        $safeActivity = !empty(trim($activityName)) ? htmlspecialchars($activityName, ENT_QUOTES, 'UTF-8') : 'your activity';
-        $safePrice = number_format($price, 2, '.', '');
+        $pdfQrContent = sprintf(
+            "PASS REHLA\nClient: %s\nActivité: %s\nPrix: %s TND\nStatut: %s",
+            $userName,
+            $activityName,
+            number_format($price, 2, '.', ''),
+            $statusLabel
+        );
 
-        $qrContent = sprintf(
-    'http://192.168.100.49/rehla/public/booking-pass/booking_pass_%d.pdf',
-    $reservationId
-);
-
-        $result = $this->defaultQrCodeBuilder->build(
-            data: $qrContent,
-            size: 250,
+        $pdfQrResult = $this->defaultQrCodeBuilder->build(
+            data: $pdfQrContent,
+            size: 220,
             margin: 10
         );
-        $pdfQrContent = sprintf(
-    "PASS REHLA\nClient: %s\nActivité: %s\nPrix: %s TND\nStatut: Réservée",
-    $userName,
-    $activityName,
-    number_format($price, 2, '.', '')
-);
 
-$pdfQrResult = $this->defaultQrCodeBuilder->build(
-    data: $pdfQrContent,
-    size: 220,
-    margin: 10
-);
+        $pdfQrPath = sys_get_temp_dir() . '/qr_pdf_reservation_' . $reservationId . '.png';
+        $pdfQrResult->saveToFile($pdfQrPath);
 
-$pdfQrPath = sys_get_temp_dir() . '/qr_pdf_reservation_' . $reservationId . '.png';
-$pdfQrResult->saveToFile($pdfQrPath);
-$pdfQrBase64 = base64_encode(file_get_contents($pdfQrPath));
-$pdfQrSrc = 'data:image/png;base64,' . $pdfQrBase64;
-        
-$options = new Options();
-$options->set('defaultFont', 'Arial');
+        $pdfQrBase64 = base64_encode(file_get_contents($pdfQrPath));
+        $pdfQrSrc = 'data:image/png;base64,' . $pdfQrBase64;
 
-$dompdf = new Dompdf($options);
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
 
-$html = '
+        $dompdf = new Dompdf($options);
+
+        $passCode = 'RH' . str_pad((string) $reservationId, 5, '0', STR_PAD_LEFT);
+
+        $activityStartDate = $activityStart->format('d/m/Y');
+        $activityEndDate = $activityEnd->format('d/m/Y');
+        $activityStartTime = $activityStart->format('H:i');
+        $activityEndTime = $activityEnd->format('H:i');
+
+        $logoPath = 'C:/xampp/htdocs/rehla/public/assets/images/logoblue.png';
+        $logoBase64 = base64_encode(file_get_contents($logoPath));
+        $logoSrc = 'data:image/png;base64,' . $logoBase64;
+
+        $isCancelled = $statusLabel === 'Annulée';
+        $statusBg = $isCancelled ? '#fee2e2' : '#dcfce7';
+        $statusColor = $isCancelled ? '#b91c1c' : '#166534';
+        $statusBorder = $isCancelled ? '#fca5a5' : '#86efac';
+
+        $html = '
 <!DOCTYPE html>
 <html>
 <head>
@@ -70,133 +74,323 @@ $html = '
     <style>
         body {
             font-family: DejaVu Sans, Arial, sans-serif;
-            background: #f4f7fb;
+            background: #edf3fb;
             margin: 0;
-            padding: 30px;
-            color: #1f2937;
+            padding: 24px;
+            color: #111827;
         }
 
-        .card {
-            background: #ffffff;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 1px solid #dbe4f0;
-        }
-
-        .header {
-            background: #223f91;
-            color: white;
-            padding: 24px 28px;
-        }
-
-        .brand {
-            font-size: 30px;
+        .page-title {
+            text-align: center;
+            font-size: 24px;
             font-weight: bold;
+            color: #223f91;
             margin-bottom: 6px;
         }
 
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 28px;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 22px;
-            color: #223f91;
-        }
-
-        .info-box {
-            background: #f8faff;
-            border: 1px solid #e4ecf7;
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 14px;
-        }
-
-        .label {
+        .page-subtitle {
+            text-align: center;
             font-size: 12px;
             color: #6b7280;
-            margin-bottom: 4px;
+            margin-bottom: 20px;
         }
 
-        .value {
+        .ticket-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .ticket {
+            background: #ffffff;
+            border-radius: 22px;
+            border: 1px solid #d7e3f4;
+            overflow: hidden;
+        }
+
+        .ticket-header {
+            padding: 18px 22px 10px 22px;
+        }
+
+        .brand-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .brand-table td {
+            vertical-align: top;
+        }
+
+        .logo {
+            width: 46px;
+            height: 46px;
+        }
+
+        .brand-name {
             font-size: 18px;
             font-weight: bold;
             color: #111827;
+            line-height: 1.1;
+            margin-top: 4px;
+        }
+
+        .top-code {
+            text-align: right;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .top-code strong {
+            display: block;
+            font-size: 18px;
+            color: #223f91;
+            margin-top: 2px;
+        }
+
+        .qr-block {
+            text-align: center;
+            padding: 4px 20px 6px 20px;
+        }
+
+        .qr-block img {
+            width: 210px;
+            height: 210px;
+        }
+
+        .main-activity {
+            padding: 0 28px 6px 28px;
+        }
+
+        .small-label {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .big-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #111827;
+            line-height: 1.1;
+            margin-top: 2px;
+        }
+
+        .activity-date {
+            font-size: 14px;
+            color: #223f91;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .activity-time {
+            font-size: 13px;
+            color: #374151;
+            margin-top: 2px;
+        }
+
+        .separator {
+            border-top: 2px dashed #cfd8e6;
+            margin: 12px 0;
+        }
+
+        .bottom {
+            padding: 6px 28px 20px 28px;
+        }
+
+        .bottom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bottom-table td {
+            vertical-align: top;
+        }
+
+        .client-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #111827;
+            margin-top: 2px;
+        }
+
+        .price {
+            font-size: 22px;
+            font-weight: bold;
+            color: #223f91;
+            margin-top: 2px;
         }
 
         .status {
             display: inline-block;
-            margin-top: 12px;
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #86efac;
-            padding: 8px 14px;
+            margin-top: 8px;
+            background: ' . $statusBg . ';
+            color: ' . $statusColor . ';
+            border: 1px solid ' . $statusBorder . ';
+            padding: 6px 12px;
             border-radius: 999px;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
         }
 
-        .footer {
-            margin-top: 24px;
-            font-size: 12px;
-            color: #6b7280;
-            text-align: center;
+        .status-box {
+            text-align: right;
+            padding-top: 18px;
         }
+
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #223f91;
+            padding: 0 20px 18px 20px;
+        }
+
+        .cut-left, .cut-right {
+            position: absolute;
+            top: 68%;
+            width: 22px;
+            height: 22px;
+            background: #edf3fb;
+            border-radius: 50%;
+        }
+
+        .cut-left { left: -11px; }
+        .cut-right { right: -11px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">
-            <div class="brand">Rehla</div>
-            <div class="subtitle">Pass de réservation</div>
-        </div>
 
-        <div class="content">
-            <div class="title">Réservation confirmée</div>
+    <div class="page-title">VOTRE PASS</div>
+    <div class="page-subtitle">Veuillez le présenter sur votre téléphone lors de votre arrivée</div>
 
-            <div class="info-box">
-                <div class="label">Client</div>
-                <div class="value">' . htmlspecialchars($userName) . '</div>
+    <div class="ticket-wrap">
+        <div class="cut-left"></div>
+        <div class="cut-right"></div>
+
+        <div class="ticket">
+            <div class="ticket-header">
+                <table class="brand-table">
+                    <tr>
+                        <td style="width:58px;">
+                           <img src="' . $logoSrc . '" class="logo">
+                        </td>
+                        <td>
+                            <div class="brand-name">Rehla</div>
+                        </td>
+                        <td style="width:120px;">
+                            <div class="top-code">
+                                CODE PASS
+                                <strong>' . $passCode . '</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
-            <div class="info-box">
-                <div class="label">Activité</div>
-                <div class="value">' . htmlspecialchars($activityName) . '</div>
+            <div class="qr-block">
+                <img src="' . $pdfQrSrc . '">
             </div>
 
-            <div class="info-box">
-                <div class="label">Prix</div>
-                <div class="value">' . number_format($price, 2) . ' TND</div>
+            <div class="main-activity">
+                <div class="small-label">Activité</div>
+                <div class="big-value">' . htmlspecialchars($activityName) . '</div>
+                <div class="activity-date">Début : ' . $activityStartDate . ' à ' . $activityStartTime . '</div>
+                <div class="activity-time">Fin : ' . $activityEndDate . ' à ' . $activityEndTime . '</div>
             </div>
 
-           <span class="status">Réservée</span>
+            <div class="separator"></div>
 
-<div style="text-align:center; margin-top: 22px;">
-    <img src="' . $pdfQrSrc . '" width="120">
-</div>
+            <div class="bottom">
+                <table class="bottom-table">
+                    <tr>
+                        <td style="width:70%;">
+                            <div class="small-label">Nom du client</div>
+                            <div class="client-name">' . htmlspecialchars($userName) . '</div>
 
-<div class="footer">
-    Veuillez présenter ce pass lors de votre activité.
-</div>
+                            <div style="margin-top:12px;" class="small-label">Prix</div>
+                            <div class="price">' . number_format($price, 2, '.', '') . ' TND</div>
+                        </td>
+
+                        <td class="status-box">
+                            <span class="status">' . $statusLabel . '</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="footer">REHLA</div>
         </div>
     </div>
+
 </body>
 </html>
 ';
-$dompdf->loadHtml($html);
-$dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
 
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
 
-$pdfPath = 'C:/xampp/htdocs/rehla/public/booking-pass/booking_pass_' . $reservationId . '.pdf';
-file_put_contents($pdfPath, $dompdf->output());
+        $pdfPath = 'C:/xampp/htdocs/rehla/public/booking-pass/booking_pass_' . $reservationId . '.pdf';
+        file_put_contents($pdfPath, $dompdf->output());
+
+        if (file_exists($pdfQrPath)) {
+            unlink($pdfQrPath);
+        }
+    }
+
+    public function regenerateCancelledBookingPass(
+        string $userName,
+        string $activityName,
+        float $price,
+        int $reservationId,
+        \DateTimeInterface $activityStart,
+        \DateTimeInterface $activityEnd
+    ): void {
+        $this->generateBookingPassPdf(
+            $userName,
+            $activityName,
+            $price,
+            $reservationId,
+            $activityStart,
+            $activityEnd,
+            'Annulée'
+        );
+    }
+
+    public function sendBookingConfirmation(
+        string $toEmail,
+        string $userName,
+        string $activityName,
+        float $price,
+        int $reservationId,
+        int $userId,
+        int $activityId,
+        \DateTimeInterface $activityStart,
+        \DateTimeInterface $activityEnd
+    ): void {
+        $safeName = !empty(trim($userName)) ? htmlspecialchars($userName, ENT_QUOTES, 'UTF-8') : 'there';
+        $safeActivity = !empty(trim($activityName)) ? htmlspecialchars($activityName, ENT_QUOTES, 'UTF-8') : 'your activity';
+        $safePrice = number_format($price, 2, '.', '');
+
+        $qrContent = sprintf(
+            'http://172.20.10.2/rehla/public/booking-pass/booking_pass_%d.pdf',
+            $reservationId
+        );
+
+        $result = $this->defaultQrCodeBuilder->build(
+            data: $qrContent,
+            size: 250,
+            margin: 10
+        );
+
+        $this->generateBookingPassPdf(
+            $userName,
+            $activityName,
+            $price,
+            $reservationId,
+            $activityStart,
+            $activityEnd,
+            'Réservée'
+        );
 
         $tempQrPath = sys_get_temp_dir() . '/qr_reservation_' . $reservationId . '.png';
         $result->saveToFile($tempQrPath);
@@ -235,9 +429,6 @@ file_put_contents($pdfPath, $dompdf->output());
           <div style="font-size:14px;margin:0 0 6px;color:#111827;">
             <strong>Price:</strong> {$safePrice} TND
           </div>
-          <div style="font-size:14px;margin:0;color:#111827;">
-            <strong>Reservation ID:</strong> {$reservationId}
-          </div>
         </div>
 
         <p style="margin-top:16px;font-size:14px;color:#374151;">
@@ -271,14 +462,10 @@ HTML;
         try {
             $this->mailer->send($email);
         } finally {
-    if (file_exists($tempQrPath)) {
-        unlink($tempQrPath);
-    }
-
-    if (isset($pdfQrPath) && file_exists($pdfQrPath)) {
-        unlink($pdfQrPath);
-    }
-}
+            if (file_exists($tempQrPath)) {
+                unlink($tempQrPath);
+            }
+        }
     }
 
     public function sendBookingCancellation(

@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\PdfGenerator;
-
+use App\Service\WaitlistService;
 
 class ReservationController extends AbstractController
 {
@@ -247,7 +247,8 @@ public function editUser(
     Reservation $reservation,
     Request $request,
     EntityManagerInterface $em,
-    BookingEmailService $bookingEmailService
+    BookingEmailService $bookingEmailService,
+    WaitlistService $waitlistService
 ): Response
 {
     $oldStatut = $reservation->getStatut();
@@ -260,7 +261,14 @@ public function editUser(
         if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
             $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
             $this->restoreActivityPlacesFromReservation($reservation, $em);
+
+            foreach ($reservation->getTickets() as $ticket) {
+                if ($ticket->getActivite()) {
+                    $waitlistService->promoteNext($ticket->getActivite());
+                }
+            }
         }
+
         $total = 0;
         foreach ($reservation->getTickets() as $ticket) {
             $total += $ticket->getPrix();
@@ -270,6 +278,7 @@ public function editUser(
         $reservation->setNb_tickets(count($reservation->getTickets()));
 
         $em->flush();
+
         return $this->redirectToRoute('mes_reservations');
     }
 
@@ -388,12 +397,25 @@ private function sendCancellationEmailIfActivityReservation(
         return;
     }
 
-    $bookingEmailService->sendBookingCancellation(
-        $personne->getEmail(),
-        trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? '')),
-        $activite->getNom(),
-        (float) $reservation->getCoutTotal()
-    );
+   $userFullName = trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? ''));
+
+
+$bookingEmailService->regenerateCancelledBookingPass(
+    $userFullName,
+    $activite->getNom(),
+    (float) $reservation->getCoutTotal(),
+    $reservation->getId(),
+    $activite->getDateDebut(),
+    $activite->getDateFin()
+);
+
+
+$bookingEmailService->sendBookingCancellation(
+    $personne->getEmail(),
+    $userFullName,
+    $activite->getNom(),
+    (float) $reservation->getCoutTotal()
+);
 }
 #[Route('/booking-pass/{id}', name: 'booking_pass_show', methods: ['GET'])]
 public function showBookingPass(Reservation $reservation): Response

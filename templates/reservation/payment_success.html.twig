@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<section class="ftco-section d-flex align-items-center justify-content-center" style="min-height:80vh;">
+  <div class="text-center" style="background:#fff; border:1px solid #eee; border-radius:16px; padding:2.5rem 2rem; max-width:440px; width:100%; margin: auto;">
+
+    <div style="width:72px; height:72px; border-radius:50%; background:#e8f5e9; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
+      <i class="fa fa-check" style="font-size:28px; color:#2e7d32;"></i>
+    </div>
+
+    <h2 style="font-weight:600; margin-bottom:8px; color:#1a1a1a;">Paiement réussi</h2>
+    <p style="color:#777; margin-bottom:1.8rem; font-size:15px; line-height:1.6;">
+      Votre réservation est confirmée.<br>Vous recevrez bientôt un récapitulatif.
+    </p>
+
+    <div style="background:#f8f9fa; border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.8rem; text-align:left;">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span style="font-size:14px; color:#888;">Statut</span>
+        <span class="badge bg-success px-3 py-1" style="font-size:13px; font-weight:600;  color:#fff; padding:4px 14px; border-radius:20px;">Confirmée</span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center">
+        <span style="font-size:14px; color:#888;">Montant payé</span>
+        <span style="font-size:14px; font-weight:600; color:#1a1a1a;">{{ reservation.coutTotal }} TND</span>
+      </div>
+    </div>
+
+    <a href="/{{ pdfFile }}" style="display:block; width:100%; padding:12px; background:#223f91; color:#fff; border-radius:12px; font-size:15px; font-weight:600; text-decoration:none; margin-bottom:10px;">
+    Télécharger votre reçu PDF
+</a>
+    <a href="{{ path('mes_reservations') }}" style="display:block; width:100%; padding:12px; background:#223f91; color:#fff; border-radius:12px; font-size:15px; font-weight:600; text-decoration:none; margin-bottom:10px;">
+      Mes réservations
+    </a>
+    <a href="{{ path('home') }}" style="display:block; width:100%; padding:12px; background:#fff; color:#555; border:1px solid #ddd; border-radius:12px; font-size:15px; text-decoration:none;">
+      Retour à l'accueil
+    </a>
+
+  </div>
+</section>
+{% endblock %}

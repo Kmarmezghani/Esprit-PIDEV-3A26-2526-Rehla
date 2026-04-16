@@ -14,6 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\PdfGenerator;
+
 
 class ReservationController extends AbstractController
 {
@@ -259,6 +261,13 @@ public function editUser(
             $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
             $this->restoreActivityPlacesFromReservation($reservation, $em);
         }
+        $total = 0;
+        foreach ($reservation->getTickets() as $ticket) {
+            $total += $ticket->getPrix();
+        }
+
+        $reservation->setCoutTotal($total);
+        $reservation->setNb_tickets(count($reservation->getTickets()));
 
         $em->flush();
         return $this->redirectToRoute('mes_reservations');
@@ -391,4 +400,64 @@ public function showBookingPass(Reservation $reservation): Response
 {
     return new Response('OK');
 }
+
+#[Route('/api/tickets-by-destination', name: 'api_tickets_by_destination')]
+public function ticketsByDestination(Request $request, EntityManagerInterface $em): Response
+{
+    $villeId     = $request->query->get('ville');
+    $reservaId   = $request->query->get('reservation'); // pour le mode edit
+    $currentUser = $request->getSession()->get('user_id');
+
+    $qb = $em->getRepository(Ticket::class)->createQueryBuilder('t')
+        ->where('t.reservation_id IS NULL');
+
+    // En mode édition : inclure les tickets déjà liés à cette réservation
+    if ($reservaId) {
+        $qb->orWhere('t.reservation_id = :resa')
+           ->setParameter('resa', $reservaId);
+    }
+
+    if ($villeId) {
+        $qb->andWhere('t.destination = :dest')
+           ->setParameter('dest', $villeId);
+    }
+
+    $tickets = $qb->getQuery()->getResult();
+
+    // Tickets déjà sélectionnés dans la réservation courante
+    $selectedIds = [];
+    if ($reservaId) {
+        $resa = $em->getRepository(Reservation::class)->find($reservaId);
+        if ($resa) {
+            $selectedIds = $resa->getTickets()->map(fn(Ticket $t) => $t->getId())->toArray();
+        }
+    }
+
+    $data = array_map(fn(Ticket $t) => [
+        'id'       => $t->getId(),
+        'type'     => $t->getType(),
+        'prix'     => $t->getPrix(),
+        'selected' => in_array($t->getId(), $selectedIds),
+    ], $tickets);
+
+    return $this->json($data);
+}
+
+#[Route('/reservation/{id}/receipt', name:'reservation_receipt')]
+public function receipt(Reservation $reservation, PdfGenerator $pdf): Response
+{
+    $pdfContent = $pdf->generateReservationPdf($reservation);
+
+    return new Response(
+        $pdfContent,
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="recu-reservation-'.$reservation->getId().'.pdf"'
+        ]
+    );
+}
+
+
+
 }

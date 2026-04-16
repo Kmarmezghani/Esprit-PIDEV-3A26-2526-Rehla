@@ -37,5 +37,11 @@ services:
         arguments:
             $geminiApiKey: '%gemini_api_key%'
 
+    App\Controller\PaymentController:
+        arguments:
+            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+# config/services.yaml
+
+    

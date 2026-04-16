@@ -53,7 +53,7 @@
         <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
                 type="button" data-toggle="dropdown">
           <svg width="20" height="20" viewBox="0 0 512 512">
-            <path fill="black" d="M3.9 54.7C10.5 39.5 25.5 32 41.6 32H470.4c16.1 
+            <path  d="M3.9 54.7C10.5 39.5 25.5 32 41.6 32H470.4c16.1 
             0 31.1 7.5 37.7 22.7s3.5 33.1-7.9 
             45.3L320 288.3V432c0 12.1-6.8 23.2-17.7 
             28.6s-23.8 4.6-33.9-2.1l-64-48C195.8 
@@ -111,7 +111,7 @@
         <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
                 type="button" data-toggle="dropdown">
           <svg width="20" height="20" viewBox="0 0 512 512">
-            <path fill="black" d="M160 64c0-17.7-14.3-32-32-32S96 46.3 
+            <path  d="M160 64c0-17.7-14.3-32-32-32S96 46.3 
             96 64V346.7L73.4 324.1c-12.5-12.5-32.8-12.5-45.3 
             0s-12.5 32.8 0 45.3l80 80c12.5 12.5 
             32.8 12.5 45.3 0l80-80c12.5-12.5 
@@ -154,6 +154,7 @@
 
         </div>
       </div>
+      
 
     <li class="nav-item "><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
     <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
@@ -161,6 +162,15 @@
     <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item active"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+<li class="nav-item d-flex align-items-center">
+    <a href="" class="nav-link position-relative d-flex align-items-center justify-content-center">
+        <i class="fa fa-comments fa-lg"></i>
+         <span class="badge-notif">3</span>
+
+    </a>
+</li>
+
 
     {% if app.session.get('user_id') %}
     {# ── Utilisateur connecté ── #}
@@ -2601,6 +2611,28 @@ input.form-control:focus {
   box-shadow: 0 0 10px rgba(255,255,255,0.2);
 }
 
+/*---------------------------messagerie--------------------------------------*/
+
+.badge-notif {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+
+    background: red;
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+
+    padding: 2px 5px;
+    border-radius: 50%;
+
+    min-width: 16px;
+    height: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 
 

@@ -422,9 +422,9 @@
 
       </div>
 
-      <div class="post-action">
-        <i class="fa fa-share-alt"></i>
-      </div>
+      <div class="post-action share-btn" data-id="{{ post.id }}">
+  <i class="fa fa-share-alt"></i>
+</div>
 
     </div>
 
@@ -671,6 +671,79 @@ document.querySelectorAll('.fa-bookmark').forEach(icon => {
     this.classList.toggle('text-warning');
   });
 });
+
+
+
+/*-------------------------------------------share post-----------------------------------------------------*/
+
+document.querySelectorAll('.share-btn').forEach(btn => {
+
+  btn.addEventListener('click', async () => {
+
+    const postId = btn.dataset.id;
+
+    try {
+      const response = await fetch(`/post/${postId}/share`, {
+        method: "POST"
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (data.status === "success") {
+
+        Swal.fire({
+          icon: 'success',
+          text: 'Post publié sur Facebook avec succès',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2500,
+          background: '#ecfdf5',
+          color: '#065f46',
+          iconColor: '#10b981',
+          customClass: { popup: 'green-toast' }
+        });
+
+      } else {
+
+        Swal.fire({
+          icon: 'error',
+          text: data.message || 'Erreur lors du partage',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2500,
+          background: '#fff1f2',
+          color: '#991b1b',
+          iconColor: '#ef4444',
+          customClass: { popup: 'red-toast' }
+        });
+      }
+
+    } catch (error) {
+
+      Swal.fire({
+        icon: 'error',
+        text: 'Erreur serveur',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#fff1f2',
+        color: '#991b1b',
+        iconColor: '#ef4444',
+        customClass: { popup: 'red-toast' }
+      });
+
+    }
+
+  });
+
+});
+
+
+
 
 /*-----------popup add comments----------------------------*/
 const openBtns = document.querySelectorAll(".open-comment");

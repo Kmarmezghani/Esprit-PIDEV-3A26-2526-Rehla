@@ -48,6 +48,12 @@ class Personne
     #[ORM\Column(name: "profile_photo", type: "string", length: 500, nullable: true)]
     private ?string $profile_photo = null;
 
+    #[ORM\Column(name: "reset_token", type: "string", length: 100, nullable: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(name: "reset_token_expiry", type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $resetTokenExpiry = null;
+
     // ------------------- Relations -------------------
 
     #[ORM\OneToMany(mappedBy: "personne_id", targetEntity: Favoris::class)]
@@ -147,6 +153,12 @@ class Personne
 
     public function getProfile_photo() { return $this->profile_photo; }
     public function setProfile_photo($value) { $this->profile_photo = $value; }
+
+    public function getResetToken(): ?string { return $this->resetToken; }
+    public function setResetToken(?string $value): void { $this->resetToken = $value; }
+
+    public function getResetTokenExpiry(): ?\DateTimeInterface { return $this->resetTokenExpiry; }
+    public function setResetTokenExpiry(?\DateTimeInterface $value): void { $this->resetTokenExpiry = $value; }
 
     // ------------------- Relations Favoris -------------------
     public function getFavoriss(): Collection { return $this->favoriss; }

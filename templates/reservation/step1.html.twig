@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter Activité{% endblock %}
+{% block title %}Ajouter Réservation{% endblock %}
 
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
@@ -196,39 +196,34 @@
                         </div>
                     </div>
 
+                   
                     <!-- STEP 3 -->
-                    <div class="form-step d-none">
-                        <div class="step-content-box">
+<div class="form-step d-none">
+    <div class="step-content-box">
+        <h5 class="mb-3 text-primary">Choisir vos tickets</h5>
 
-                            <h5 class="mb-3 text-primary">Choisir vos tickets</h5>
-
-                            <div class="row">
-                                {% for ticket in form.tickets %}
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card p-3 shadow-sm">
-
-                                            <div class="form-check">
-                                                {{ form_widget(ticket) }}
-                                                {{ form_label(ticket) }}
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="d-flex justify-content-between mt-3">
-                                <button type="button" class="btn btn-outline-secondary prev-step">
-                                    Précédent
-                                </button>
-
-                                <button type="submit" class="btn btn-success px-4">
-                                    Confirmer
-                                </button>
-                            </div>
-
+        <div class="row" id="tickets-container">
+            {# Rendu initial (Symfony) — remplacé par AJAX si destination change #}
+            {% for ticket in form.tickets %}
+                <div class="col-md-6 mb-3">
+                    <div class="card p-3 shadow-sm">
+                        <div class="form-check">
+                            {{ form_widget(ticket) }}
+                            {{ form_label(ticket) }}
                         </div>
                     </div>
+                </div>
+            {% else %}
+                <p class="text-muted">Veuillez d'abord sélectionner une destination.</p>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-outline-secondary prev-step">Précédent</button>
+            <button type="submit" class="btn btn-success px-4">Confirmer</button>
+        </div>
+    </div>
+</div>
 
                     {{ form_end(form) }}
 
@@ -568,38 +563,103 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── Stepper ──────────────────────────────────────────────
     let currentStep = 0;
-    const steps = document.querySelectorAll('.form-step');
+    const steps          = document.querySelectorAll('.form-step');
     const stepIndicators = document.querySelectorAll('.stepper-item');
 
     function showStep(index) {
-        steps.forEach((step, i) => {
-            step.classList.toggle('d-none', i !== index);
-        });
-
-        stepIndicators.forEach((indicator, i) => {
-            indicator.classList.toggle('active', i <= index);
-        });
+        steps.forEach((step, i) => step.classList.toggle('d-none', i !== index));
+        stepIndicators.forEach((ind, i) => ind.classList.toggle('active', i <= index));
     }
 
-    document.querySelectorAll('.next-step').forEach(btn => {
+    document.querySelectorAll('.next-step').forEach(btn =>
         btn.addEventListener('click', () => {
             if (currentStep < steps.length - 1) {
                 currentStep++;
                 showStep(currentStep);
+                if (currentStep === 2) {
+                    loadTickets();
+                }
             }
-        });
-    });
+        })
+    );
 
-    document.querySelectorAll('.prev-step').forEach(btn => {
+    document.querySelectorAll('.prev-step').forEach(btn =>
         btn.addEventListener('click', () => {
-            if (currentStep > 0) {
-                currentStep--;
-                showStep(currentStep);
+            if (currentStep > 0) { currentStep--; showStep(currentStep); }
+        })
+    );
+
+    // ── Select destination — chercher par name ET par id ─────
+    // Symfony génère l'id "reservation_user_destination", pas "destination_select"
+    const destinationSelect = document.querySelector('[name="reservation_user[destination]"]')
+                           || document.getElementById('destination_select');
+    const ticketsContainer  = document.getElementById('tickets-container');
+
+    const reservaId = '{{ isEdit is defined and isEdit and app.request.attributes.get("id") is not null ? app.request.attributes.get("id") : "" }}';
+    const isEdit    = {{ isEdit is defined and isEdit ? 'true' : 'false' }};
+
+    function loadTickets() {
+        if (!destinationSelect || !ticketsContainer) return;
+
+        const villeId = destinationSelect.value;
+
+        if (!villeId) {
+            ticketsContainer.innerHTML = '<p class="text-muted">Veuillez d\'abord sélectionner une destination.</p>';
+            return;
+        }
+
+        ticketsContainer.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Chargement des tickets…</p></div>';
+
+        fetch(`/api/tickets-by-destination?ville=${villeId}&reservation=${reservaId}`)
+            .then(r => r.json())
+            .then(tickets => {
+                if (tickets.length === 0) {
+                    ticketsContainer.innerHTML = '<p class="text-warning">Aucun ticket disponible pour cette destination.</p>';
+                    return;
+                }
+
+                ticketsContainer.innerHTML = tickets.map(t => `
+                    <div class="col-md-6 mb-3">
+                        <div class="card p-3 shadow-sm">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       name="reservation_user[tickets][]"
+                                       id="ticket_${t.id}"
+                                       value="${t.id}"
+                                       ${t.selected ? 'checked' : ''}>
+                                <label class="form-check-label" for="ticket_${t.id}">
+                                    ${t.type} — ${t.prix} TND
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(err => {
+                console.error('Erreur tickets:', err);
+                ticketsContainer.innerHTML = '<p class="text-danger">Erreur lors du chargement des tickets.</p>';
+            });
+    }
+
+    // Si l'utilisateur change la destination, réinitialiser les tickets
+    if (destinationSelect) {
+        destinationSelect.addEventListener('change', function () {
+            if (currentStep === 2) {
+                // Si déjà au step tickets, recharger directement
+                loadTickets();
+            } else {
+                // Sinon, vider pour forcer rechargement propre à l'arrivée au step 3
+                ticketsContainer.innerHTML = '<p class="text-muted">Veuillez cliquer sur Suivant pour voir les tickets.</p>';
             }
         });
-    });
+    }
 
+    // En mode edit : charger immédiatement (destination déjà sélectionnée)
+    if (isEdit && destinationSelect && destinationSelect.value) {
+        loadTickets();
+    }
 });
 </script>
 

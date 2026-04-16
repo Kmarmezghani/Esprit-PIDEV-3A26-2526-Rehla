@@ -185,6 +185,15 @@
                                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
                                                         </form>
                                                     </li>
+                                                    {% if reservation.statut|lower == 'réservée' %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center gap-2 text-success"
+                                                        href="{{ path('reservation_pay', {id: reservation.id}) }}">
+                                                            <i class="fa fa-credit-card" style="width:18px;"></i> Payer
+                                                        </a>
+                                                    </li>
+                                                    {% endif %}
                                                 </ul>
                                             </div>
                                         </td>

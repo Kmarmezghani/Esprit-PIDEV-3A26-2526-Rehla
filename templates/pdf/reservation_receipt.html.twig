@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+    font-family: DejaVu Sans;
+    color:#333;
+}
+
+.header {
+    background:#223f91;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+.section {
+    padding:20px;
+}
+
+.box {
+    border:1px solid #eee;
+    border-radius:8px;
+    padding:15px;
+    margin-bottom:15px;
+}
+
+.table {
+    width:100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    background:#f5f5f5;
+    padding:8px;
+    border:1px solid #ddd;
+}
+
+.table td {
+    padding:8px;
+    border:1px solid #ddd;
+}
+
+.total {
+    text-align:right;
+    font-size:18px;
+    font-weight:bold;
+    color:#223f91;
+}
+</style>
+</head>
+
+<body>
+
+<div style="border-bottom:3px solid #223f91; padding:15px; margin-bottom:20px;">
+    
+    <table style="width:100%;">
+        <tr>
+            <td>
+                <img src="file://{{ logoPath }}" style="height:70px;">
+            </td>
+            <td style="text-align:right;">
+                <h2 style="margin:0;color:#223f91;">Rehla Travel</h2>
+                <strong>Reçu de réservation</strong><br>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<div class="section">
+
+<div class="box">
+    <h3>Client</h3>
+    {% set client = reservation.getPersonne_id() %}
+
+Nom : {{ client.nom }} {{ client.prenom }} <br>
+Email : {{ client.email }}
+</div>
+
+<div class="box">
+    <h3>Détails du voyage</h3>
+    Destination : {{ reservation.destination.nom }} <br>
+    Date début : {{ reservation.dateDebut|date('d/m/Y') }} <br>
+    Date fin : {{ reservation.dateFin|date('d/m/Y') }} <br>
+    Statut : {{ reservation.statut }}
+</div>
+
+<div class="box">
+    <h3>Tickets</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Prix</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in reservation.tickets %}
+                <tr>
+                    <td>{{ ticket.type }}</td>
+                    <td>{{ ticket.prix }} TND</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="total">
+        TOTAL : {{ reservation.coutTotal }} TND
+    </p>
+</div>
+
+</div>
+<hr style="margin-top:40px">
+
+<p style="text-align:center; font-size:12px; color:#888;">
+    Merci pour votre confiance ✈️ <br>
+    Rehla Travel Agency • contact@rehla.com
+</p>
+
+</body>
+</html>

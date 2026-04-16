@@ -45,7 +45,7 @@ class Reservation
 
     #[ORM\ManyToOne(targetEntity: Ville::class)]
     #[Assert\NotNull(message: "La destination est obligatoire")]
-    private Ville $destination;
+    private ?Ville $destination = null;
     #[ORM\ManyToOne(targetEntity: Personne::class, inversedBy: "reservations")] 
     #[ORM\JoinColumn(name: 'personne_id', referencedColumnName: 'id', onDelete: 'CASCADE')] 
     private ?Personne $personne_id = null;
@@ -204,5 +204,6 @@ class Reservation
         $this->statut = 'réservée';
         $this->coutTotal = 0;
         $this->nb_tickets = 0;
+        $this->destination = null;
     }
 }

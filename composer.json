@@ -12,10 +12,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
         "dompdf/dompdf": "^3.1",
-<<<<<<< HEAD
-=======
         "endroid/qr-code-bundle": "^6.0",
->>>>>>> 6d05b6f7e46f88ece46cf6676a2eb6b6728ae2f3
         "phpdocumentor/reflection-docblock": "^5.2",
         "phpstan/phpdoc-parser": "^2.3",
         "stripe/stripe-php": "^20.0",

@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "60cdb6693dd1854c671b759b9d64022b",
-=======
-    "content-hash": "47450f2a56d55b2bc6e508a33b40625b",
->>>>>>> 6d05b6f7e46f88ece46cf6676a2eb6b6728ae2f3
+    "content-hash": "12c58e7bd8a44f259b1c0b66f67ec066",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1652,8 +1648,6 @@
             "time": "2025-03-06T22:45:56+00:00"
         },
         {
-<<<<<<< HEAD
-=======
             "name": "endroid/installer",
             "version": "1.5.0",
             "source": {
@@ -2183,7 +2177,6 @@
             "time": "2026-03-10T16:41:02+00:00"
         },
         {
->>>>>>> 6d05b6f7e46f88ece46cf6676a2eb6b6728ae2f3
             "name": "masterminds/html5",
             "version": "2.10.0",
             "source": {
@@ -3042,8 +3035,6 @@
             "time": "2024-09-11T13:17:53+00:00"
         },
         {
-<<<<<<< HEAD
-=======
             "name": "ralouphie/getallheaders",
             "version": "3.0.3",
             "source": {
@@ -3088,7 +3079,6 @@
             "time": "2019-03-08T08:55:37+00:00"
         },
         {
->>>>>>> 6d05b6f7e46f88ece46cf6676a2eb6b6728ae2f3
             "name": "sabberworm/php-css-parser",
             "version": "v9.3.0",
             "source": {
@@ -3169,7 +3159,6 @@
             "time": "2026-03-03T17:31:43+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "stripe/stripe-php",
             "version": "v20.0.0",
             "source": {
@@ -3232,8 +3221,6 @@
             "time": "2026-03-26T01:57:48+00:00"
         },
         {
-=======
->>>>>>> 6d05b6f7e46f88ece46cf6676a2eb6b6728ae2f3
             "name": "symfony/asset",
             "version": "v6.4.34",
             "source": {

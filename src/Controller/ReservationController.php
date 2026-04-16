@@ -8,6 +8,7 @@ use App\Entity\Ville;
 use App\Entity\Personne;
 use App\Form\ReservationType;
 use App\Form\ReservationUserType;
+use App\Service\BookingEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -71,8 +72,12 @@ public function index(Request $request, EntityManagerInterface $em): Response
     }
 
     #[Route('/reservation/edit/{id}', name: 'admin_reservation_edit')]
-    
-public function edit(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
+public function edit(
+    Reservation $reservation,
+    Request $request,
+    EntityManagerInterface $em,
+    BookingEmailService $bookingEmailService
+): Response
 {
     $oldStatut = $reservation->getStatut();
 
@@ -82,6 +87,7 @@ public function edit(Reservation $reservation, Request $request, EntityManagerIn
     if ($form->isSubmitted() && $form->isValid()) {
 
         if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
+            $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
             $this->restoreActivityPlacesFromReservation($reservation, $em);
         }
 
@@ -94,9 +100,15 @@ public function edit(Reservation $reservation, Request $request, EntityManagerIn
     ]);
 }
     #[Route('/reservation/delete/{id}', name: 'admin_reservation_delete')]
-public function delete(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
+public function delete(
+    Reservation $reservation,
+    Request $request,
+    EntityManagerInterface $em,
+    BookingEmailService $bookingEmailService
+): Response
 {
     if ($this->isCsrfTokenValid('delete' . $reservation->getId(), $request->request->get('_token'))) {
+        $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
         $this->restoreActivityPlacesFromReservation($reservation, $em);
         $em->remove($reservation);
         $em->flush();
@@ -231,8 +243,12 @@ public function newUser(Request $request, EntityManagerInterface $em): Response
 }
 
 #[Route('/mes-reservations/edit/{id}', name: 'user_reservation_edit')]
-
-public function editUser(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
+public function editUser(
+    Reservation $reservation,
+    Request $request,
+    EntityManagerInterface $em,
+    BookingEmailService $bookingEmailService
+): Response
 {
     $oldStatut = $reservation->getStatut();
 
@@ -242,6 +258,7 @@ public function editUser(Reservation $reservation, Request $request, EntityManag
     if ($form->isSubmitted() && $form->isValid()) {
 
         if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
+            $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
             $this->restoreActivityPlacesFromReservation($reservation, $em);
         }
         $total = 0;
@@ -262,9 +279,15 @@ public function editUser(Reservation $reservation, Request $request, EntityManag
     ]);
 }
 #[Route('/mes-reservations/delete/{id}', name: 'user_reservation_delete', methods:['POST'])]
-public function deleteUserReservation(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
+public function deleteUserReservation(
+    Reservation $reservation,
+    Request $request,
+    EntityManagerInterface $em,
+    BookingEmailService $bookingEmailService
+): Response
 {
     if ($this->isCsrfTokenValid('delete'.$reservation->getId(), $request->request->get('_token'))) {
+        $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
         $this->restoreActivityPlacesFromReservation($reservation, $em);
         $em->remove($reservation);
         $em->flush();
@@ -272,7 +295,6 @@ public function deleteUserReservation(Reservation $reservation, Request $request
 
     return $this->redirectToRoute('mes_reservations');
 }
-
 #[Route('/reservation/ticket/delete-ajax/{id}', name:'ticket_delete_ajax')]
 public function deleteTicketAjax(Ticket $ticket, EntityManagerInterface $em): Response
 {
@@ -327,6 +349,56 @@ public function getRates(): Response
     $key = $_ENV['EXCHANGE_RATE_API_KEY'];
     $data = file_get_contents("https://v6.exchangerate-api.com/v6/{$key}/latest/TND");
     return new Response($data, 200, ['Content-Type' => 'application/json']);
+}
+private function sendCancellationEmailIfActivityReservation(
+    Reservation $reservation,
+    BookingEmailService $bookingEmailService,
+    EntityManagerInterface $em
+): void {
+    $personne = $reservation->getPersonne_id();
+
+    if (!$personne || !$personne->getEmail()) {
+        return;
+    }
+
+    $tickets = $em->getRepository(Ticket::class)->findBy([
+        'reservation_id' => $reservation
+    ]);
+
+    if (!$tickets || count($tickets) === 0) {
+        return;
+    }
+
+    $firstActivityTicket = null;
+
+    foreach ($tickets as $ticket) {
+        if ($ticket->getActivite()) {
+            $firstActivityTicket = $ticket;
+            break;
+        }
+    }
+
+    if (!$firstActivityTicket) {
+        return;
+    }
+
+    $activite = $firstActivityTicket->getActivite();
+
+    if (!$activite) {
+        return;
+    }
+
+    $bookingEmailService->sendBookingCancellation(
+        $personne->getEmail(),
+        trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? '')),
+        $activite->getNom(),
+        (float) $reservation->getCoutTotal()
+    );
+}
+#[Route('/booking-pass/{id}', name: 'booking_pass_show', methods: ['GET'])]
+public function showBookingPass(Reservation $reservation): Response
+{
+    return new Response('OK');
 }
 
 #[Route('/api/tickets-by-destination', name: 'api_tickets_by_destination')]

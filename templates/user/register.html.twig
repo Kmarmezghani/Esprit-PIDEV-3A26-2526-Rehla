@@ -256,6 +256,26 @@
         function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
         function isPhone(v) { return v === '' || /^[\+\d\s\-\(\)]{6,20}$/.test(v); }
 
+        /* ── API 3 : vérification email disponible en temps réel ── */
+        let emailCheckTimeout = null;
+        document.getElementById('rEmail').addEventListener('blur', function() {
+            const val = this.value.trim();
+            if (!val || !isEmail(val)) return;
+            clearTimeout(emailCheckTimeout);
+            emailCheckTimeout = setTimeout(() => {
+                fetch('/api/check-email?email=' + encodeURIComponent(val))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.available) {
+                            showErr('rEmail', 'err-remail', 'Cette adresse e-mail est déjà utilisée.');
+                        } else {
+                            clearErr('rEmail', 'err-remail');
+                        }
+                    })
+                    .catch(() => {}); // silencieux si API indisponible
+            }, 300);
+        });
+
         /* ── Validation en temps réel (blur) ── */
         const rules = [
             { id: 'rNom',    errId: 'err-nom',    check: v => v.trim() ? null : 'Le nom est requis.' },

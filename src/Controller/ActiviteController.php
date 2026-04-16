@@ -18,6 +18,7 @@ use App\Entity\Reservation;
 use App\Entity\Ticket;
 use App\Service\BookingEmailService;
 use App\Service\GeminiRecommendationService;
+use App\Service\ActivityMaintenanceService;
 
 final class ActiviteController extends AbstractController
 {
@@ -26,9 +27,11 @@ public function index(
     Request $request,
     ActiviteRepository $activiteRepository,
     PersonneRepository $personneRepository,
-    GeminiRecommendationService $geminiRecommendationService
+    GeminiRecommendationService $geminiRecommendationService,
+    ActivityMaintenanceService $activityMaintenanceService
 ): Response
 {
+    $activityMaintenanceService->refreshStatusesAndFlashSales();
     $destination = trim((string) $request->query->get('destination', ''));
     $dateDebut = $request->query->get('date_debut');
     $dateFin = $request->query->get('date_fin');
@@ -293,7 +296,16 @@ public function reserver(
     $reservation->setDateDebut($activite->getDateDebut());
     $reservation->setDateFin($activite->getDateFin());
     $reservation->setStatut('réservée');
-    $reservation->setCoutTotal($activite->getPrix() * $nbTickets);
+    $unitPrice = (
+    $activite->getIsFlashSale() &&
+    $activite->getFlashPrice() !== null &&
+    $activite->getFlashExpiresAt() !== null &&
+    $activite->getFlashExpiresAt() > new \DateTime()
+)
+    ? $activite->getFlashPrice()
+    : $activite->getPrix();
+
+$reservation->setCoutTotal($unitPrice * $nbTickets);
     $reservation->setNb_tickets($nbTickets);
     $reservation->setPersonne_id($personne);
     $reservation->setDestination($activite->getDestination());
@@ -304,7 +316,7 @@ public function reserver(
         $ticket = new Ticket();
         $ticket->setType('Activité');
         $ticket->setStatut('Reservé');
-        $ticket->setPrix($activite->getPrix());
+        $ticket->setPrix($unitPrice);
         $ticket->setReservation_id($reservation);
         $ticket->setActivite($activite);
         $ticket->setDestination($activite->getDestination());
@@ -320,13 +332,16 @@ public function reserver(
     try {
     if ($personne->getEmail()) {
         $bookingEmailService->sendBookingConfirmation(
-            $personne->getEmail(),
-            $personne->getNom() . ' ' . $personne->getPrenom(),
-            $activite->getNom(),
-            $reservation->getCoutTotal()
-        );
+    $personne->getEmail(),
+    $personne->getNom() . ' ' . $personne->getPrenom(),
+    $activite->getNom(),
+    $reservation->getCoutTotal(),
+    $reservation->getId(),
+    $personne->getId(),
+    $activite->getId()
+);
     }
-} catch (\Exception $e) {
+} catch (\Throwable $e) {
     dd($e->getMessage());
 }
 

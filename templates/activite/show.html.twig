@@ -32,7 +32,7 @@
            href="#" id="userDropdown" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {% if app.session.get('user_photo') %}
-                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
                      class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
             {% else %}
                 <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
@@ -123,9 +123,33 @@
                 </p>
               </div>
 
-              <div class="price-badge">
-                {{ activite.prix }} TND/person
-              </div>
+              {% if activite.isFlashSale and activite.flashPrice and activite.flashExpiresAt %}
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+        <div class="price-badge" style="background:#fff3eb; color:#f06d06; border:1px solid rgba(240,109,6,0.20);">
+            🔥 Flash Sale
+        </div>
+
+        <div class="price-badge">
+            <span style="
+                display:block;
+                font-size:12px;
+                opacity:.75;
+                text-decoration:line-through;
+                font-weight:600;
+                line-height:1.1;
+                margin-bottom:2px;
+            ">
+                {{ activite.prix|number_format(2, '.', '') }} TND
+            </span>
+
+            {{ activite.flashPrice|number_format(2, '.', '') }} TND/person
+        </div>
+    </div>
+{% else %}
+    <div class="price-badge">
+        {{ activite.prix|number_format(2, '.', '') }} TND/person
+    </div>
+{% endif %}
             </div>
 
             <div class="activity-meta-grid">

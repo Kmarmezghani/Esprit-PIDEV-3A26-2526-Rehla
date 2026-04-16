@@ -69,7 +69,7 @@
         <h5 class="card-header mb-0 ps-0">
             <i class="bx bx-group me-2" style="color:#223f91;"></i>Liste des comptes utilisateurs
         </h5>
-        <div class="ms-auto d-flex gap-2">
+        <div class="ms-auto d-flex gap-2 align-items-center">
             {# Filtre par rôle #}
             <select id="roleFilter" class="form-select form-select-sm" style="width:auto;" onchange="filterTable()">
                 <option value="">Tous les rôles</option>
@@ -80,6 +80,13 @@
             {# Recherche #}
             <input type="text" id="searchInput" class="form-control form-control-sm"
                    placeholder="Rechercher…" oninput="filterTable()" style="width:200px;">
+            {# Boutons export / stats #}
+            <a href="{{ path('admin_users_pdf') }}" class="btn btn-sm" style="background:#223f91;color:#fff;border-radius:8px;white-space:nowrap;">
+                <i class="bx bx-download me-1"></i> Export PDF
+            </a>
+            <a href="{{ path('admin_stats') }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;white-space:nowrap;">
+                <i class="bx bx-bar-chart-alt-2 me-1"></i> Statistiques
+            </a>
         </div>
       </div>
 

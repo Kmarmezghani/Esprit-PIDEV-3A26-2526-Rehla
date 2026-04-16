@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Post;
 use App\Entity\Personne;
-use App\Form\PostType; // <-- N'oublie pas d'importer ton PostType
+use App\Form\PostType; 
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 final class ProfilePostsController extends AbstractController
 {
@@ -70,4 +71,8 @@ final class ProfilePostsController extends AbstractController
             'form' => $form->createView(), 
         ]);
     }
+
+ 
+
+
 }

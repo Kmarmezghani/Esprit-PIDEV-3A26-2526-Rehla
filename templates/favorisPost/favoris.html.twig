@@ -32,16 +32,16 @@
                        href="#" id="userDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
                         {% if app.session.get('user_photo') %}
-                        <img src="{{ asset(app.session.get('user_photo')) }}"
-                            alt="Profil"
-                            class="rounded-circle"
-                            style="width:35px;height:35px;object-fit:cover;">
-                    {% else %}
-                        <img src="{{ asset('assets/images/default-user.png') }}"
-                            alt="Profil"
-                            class="rounded-circle"
-                            style="width:35px;height:35px;object-fit:cover;">
-                    {% endif %}
+                            <img src="{{ asset(app.session.get('user_photo')) }}"
+                                alt="Profil"
+                                class="rounded-circle"
+                                style="width:35px;height:35px;object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}"
+                                alt="Profil"
+                                class="rounded-circle"
+                                style="width:35px;height:35px;object-fit:cover;">
+                        {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
                         style="min-width:200px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
@@ -98,7 +98,7 @@
                     <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span>
                     <span>Mon Profil <i class="fa fa-chevron-right"></i></span>
                 </p>
-                <h1 class="mb-0 bread">Mes publications</h1>
+                <h1 class="mb-0 bread">Mes Favoris</h1>
             </div>
         </div>
     </div>
@@ -128,15 +128,15 @@
             <div class="col-md-3 mb-4">
                 <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
                     <div class="mb-3">
-                     {% if personne.profile_photo %}
-                        <img src="{{ asset(personne.profile_photo) }}" alt="Photo de profil"
-                            class="rounded-circle"
-                            style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
-                    {% else %}
-                        <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                            class="rounded-circle"
-                            style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
-                    {% endif %}
+                    {% if personne.profile_photo %}
+                            <img src="{{ asset(personne.profile_photo) }}" alt="Photo de profil"
+                                class="rounded-circle"
+                                style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                                class="rounded-circle"
+                                style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                        {% endif %}
                     </div>
                     <h5 class="mb-0 font-weight-bold" style="color:#1a1a2e;">
                         {{ personne.prenom }} {{ personne.nom }}
@@ -155,59 +155,22 @@
                        style="border-radius:20px;">
                         <i class="fa fa-sliders me-1"></i> Préférences
                     </a>
-                      <a href="{{ path('favoris_posts') }}" class="btn btn-sm btn-block mb-2"
+                      <a href="{{ path('profile_posts') }}" class="btn btn-sm btn-block mb-2"
                        style="background:#223f91; color:#fff; border-radius:20px;">
-                        <i class="fa fa-star me-1"></i> Mes favoris
+                        <i class="fa fa-star me-1"></i> Mes publications
                     </a>
                 </div>
             </div>
 
             {# ── Colonne droite : posts ── #}
-            <div class="col-md-9">
+            <div class="col-md-7">
 
-                <div class="col-lg-9">
-
-<div class="card border-0 shadow-sm mb-4 p-3 rounded-4">
-
-{{ form_start(form, {
-    attr: {
-        id: 'postForm',
-        enctype: 'multipart/form-data',
-        novalidate: 'novalidate'
-    }
-}) }}
-
-  <div class="d-flex">
-    {{ form_widget(form.contenu, {
-    attr: {
-        class: 'form-control rounded-pill px-4 ',
-        id: 'post_contenu'
-    }
-}) }}
-
-    <button type="submit" class="btn btn-primary rounded-pill px-4 ml-2">
-  Publier
-</button>
-  </div>
+                <div class="col-lg-7">
 
 
-  <!-- boutons -->
-  <div class="d-flex mt-3">
 
-    <button type="button"
-            class="btn btn-outline-primary rounded-pill mr-2"
-            onclick="document.getElementById('post_image').click()">
-      📷 Image
-    </button>
-        <button class="btn btn-outline-primary rounded-pill mr-2">🎥 Vidéo</button>
-    <button class="btn btn-outline-primary rounded-pill mr-2">📍 Lieu</button>
-    <button class="btn btn-outline-primary rounded-pill">📊 Sondage</button>
+ 
 
-    {{ form_widget(form.image) }}
-
-  </div>
-
-  {{ form_end(form) }}
 
 </div>
 
@@ -312,7 +275,7 @@
           <i class="fa fa-comment"></i>  {{ post.commentaires|length }}
         </div>
 
-            {% set favori = post.favorisPosts|filter(f => f.favoris_id.personne_id.id == app.session.get('user_id'))|length > 0 %}
+       {% set favori = post.favorisPosts|filter(f => f.favoris_id.personne_id.id == app.session.get('user_id'))|length > 0 %}
 
             <div class="post-action favori-btn"
                 data-id="{{ post.id }}"
@@ -1320,7 +1283,6 @@ document.querySelectorAll('.favori-btn').forEach(btn => {
 
     });
 });
-
 
 
 

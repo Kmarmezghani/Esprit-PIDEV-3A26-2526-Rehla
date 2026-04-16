@@ -7,9 +7,13 @@ use App\Entity\Personne;
 use App\Entity\Preference;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class UserController extends AbstractController
 {
@@ -357,5 +361,208 @@ class UserController extends AbstractController
             'selectedTypes'   => $selectedTypes,
             'selectedInterets'=> $selectedInterets,
         ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  MÉTIER 1 — MOT DE PASSE OUBLIÉ (demande de reset)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/mot-de-passe-oublie', name: 'app_forgot_password')]
+    public function forgotPassword(Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
+    {
+        if ($request->getSession()->get('user_id')) {
+            return $this->redirectToRoute('home');
+        }
+
+        $success = false;
+        $error   = null;
+
+        if ($request->isMethod('POST')) {
+            $email    = trim($request->request->get('email', ''));
+            $personne = $em->getRepository(Personne::class)->findOneBy(['email' => $email]);
+
+            // Toujours afficher un message de succès (sécurité : on ne révèle pas si l'email existe)
+            if ($personne) {
+                $token   = bin2hex(random_bytes(32));
+                $expiry  = new \DateTime('+1 hour');
+
+                $personne->setResetToken($token);
+                $personne->setResetTokenExpiry($expiry);
+                $em->flush();
+
+                $resetUrl = $this->generateUrl('app_reset_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+
+                $emailMsg = (new Email())
+                    ->from('rehla.noreply@gmail.com')
+                    ->to($email)
+                    ->subject('Réinitialisation de votre mot de passe – Rehla')
+                    ->html(
+                        '<div style="font-family:Poppins,sans-serif;max-width:500px;margin:auto;padding:30px;background:#f8f9fa;border-radius:12px;">'
+                        . '<img src="https://i.ibb.co/placeholder/logo.png" alt="Rehla" style="height:50px;margin-bottom:20px;">'
+                        . '<h2 style="color:#223f91;">Réinitialisation de mot de passe</h2>'
+                        . '<p>Bonjour <strong>' . htmlspecialchars($personne->getPrenom() . ' ' . $personne->getNom()) . '</strong>,</p>'
+                        . '<p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>'
+                        . '<a href="' . $resetUrl . '" style="display:inline-block;background:#223f91;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin:16px 0;">Réinitialiser mon mot de passe</a>'
+                        . '<p style="color:#888;font-size:12px;">Ce lien expire dans 1 heure. Si vous n\'avez pas fait cette demande, ignorez cet email.</p>'
+                        . '</div>'
+                    );
+
+                try {
+                    $mailer->send($emailMsg);
+                } catch (\Exception $e) {
+                    // En cas d'échec d'envoi, on continue quand même (ne pas bloquer l'UX)
+                }
+            }
+
+            $success = true;
+        }
+
+        return $this->render('user/forgot_password.html.twig', [
+            'success' => $success,
+            'error'   => $error,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  MÉTIER 1 — RÉINITIALISATION DU MOT DE PASSE (via token)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/reinitialiser-mot-de-passe/{token}', name: 'app_reset_password')]
+    public function resetPassword(string $token, Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var Personne|null $personne */
+        $personne = $em->getRepository(Personne::class)->findOneBy(['resetToken' => $token]);
+
+        if (!$personne || !$personne->getResetTokenExpiry() || $personne->getResetTokenExpiry() < new \DateTime()) {
+            return $this->render('user/reset_password.html.twig', [
+                'invalid' => true,
+                'token'   => $token,
+            ]);
+        }
+
+        $errors = [];
+
+        if ($request->isMethod('POST')) {
+            $nouveau  = $request->request->get('nouveau_mdp', '');
+            $confirm  = $request->request->get('confirmer_mdp', '');
+
+            if (strlen($nouveau) < 4) {
+                $errors[] = 'Le mot de passe doit contenir au moins 4 caractères.';
+            } elseif ($nouveau !== $confirm) {
+                $errors[] = 'Les mots de passe ne correspondent pas.';
+            } else {
+                $personne->setMotDePasse($nouveau);
+                $personne->setResetToken(null);
+                $personne->setResetTokenExpiry(null);
+                $em->flush();
+
+                $this->addFlash('login_info', 'Mot de passe réinitialisé avec succès ! Vous pouvez vous connecter.');
+                return $this->redirectToRoute('app_login');
+            }
+        }
+
+        return $this->render('user/reset_password.html.twig', [
+            'invalid' => false,
+            'token'   => $token,
+            'errors'  => $errors,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  API 1 — POST /api/login  (retourne JSON)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    public function apiLogin(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $data     = json_decode($request->getContent(), true) ?? [];
+        $email    = trim($data['email'] ?? $request->request->get('email', ''));
+        $password = $data['motDePasse'] ?? $request->request->get('motDePasse', '');
+
+        if (!$email || !$password) {
+            return $this->json(['success' => false, 'message' => 'Email et mot de passe requis.'], 400);
+        }
+
+        /** @var Personne|null $personne */
+        $personne = $em->getRepository(Personne::class)->findOneBy(['email' => $email]);
+
+        if (!$personne || $personne->getMotDePasse() !== $password) {
+            return $this->json(['success' => false, 'message' => 'Identifiants incorrects.'], 401);
+        }
+
+        if ($personne->getStatutCompte() === 'SUSPENDU') {
+            return $this->json(['success' => false, 'message' => 'Compte suspendu.'], 403);
+        }
+
+        return $this->json([
+            'success' => true,
+            'user'    => [
+                'id'           => $personne->getId(),
+                'nom'          => $personne->getNom(),
+                'prenom'       => $personne->getPrenom(),
+                'email'        => $personne->getEmail(),
+                'role'         => $personne->getRole(),
+                'statutCompte' => $personne->getStatutCompte(),
+                'photo'        => $personne->getProfile_photo(),
+            ],
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  API 2 — GET /api/users  (liste des utilisateurs, admin uniquement)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/api/users', name: 'api_users', methods: ['GET'])]
+    public function apiUsers(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        // Authentification par clé API dans le header X-API-KEY
+        $apiKey = $request->headers->get('X-API-KEY');
+        if ($apiKey !== 'rehla-admin-2026') {
+            return $this->json(['success' => false, 'message' => 'Clé API invalide ou manquante.'], 401);
+        }
+
+        $role   = $request->query->get('role');
+        $statut = $request->query->get('statut');
+
+        $criteria = [];
+        if ($role)   $criteria['role']         = strtoupper($role);
+        if ($statut) $criteria['statutCompte']  = strtoupper($statut);
+
+        $users = $em->getRepository(Personne::class)->findBy($criteria);
+
+        $data = array_map(fn(Personne $p) => [
+            'id'              => $p->getId(),
+            'nom'             => $p->getNom(),
+            'prenom'          => $p->getPrenom(),
+            'email'           => $p->getEmail(),
+            'role'            => $p->getRole(),
+            'statutCompte'    => $p->getStatutCompte(),
+            'dateInscription' => $p->getDateInscription()?->format('Y-m-d'),
+            'telephone'       => $p->getTelephone(),
+        ], $users);
+
+        return $this->json([
+            'success' => true,
+            'total'   => count($data),
+            'users'   => $data,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  API 3 — GET /api/check-email  (vérification email disponible)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/api/check-email', name: 'api_check_email', methods: ['GET'])]
+    public function apiCheckEmail(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $email     = trim($request->query->get('email', ''));
+        $excludeId = (int) $request->query->get('exclude', 0);
+
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->json(['available' => false, 'message' => 'Email invalide.'], 400);
+        }
+
+        $existing = $em->getRepository(Personne::class)->findOneBy(['email' => $email]);
+
+        if (!$existing || ($excludeId > 0 && $existing->getId() === $excludeId)) {
+            return $this->json(['available' => true, 'message' => 'Email disponible.']);
+        }
+
+        return $this->json(['available' => false, 'message' => 'Email déjà utilisé.']);
     }
 }

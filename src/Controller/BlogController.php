@@ -18,6 +18,12 @@ use App\Service\ImageUploader;
 use App\Service\FlaskClient\ToxicityChecker;
 use App\Entity\Notification;
 use App\Service\FlaskClient\GeoLocalisationService;
+use App\Entity\Favoris;
+use App\Entity\Favoris_post;
+use App\Controller\FavorisController;
+use App\Service\CloudinaryService;
+use App\Service\AyrshareService;
+
 final class BlogController extends AbstractController
 
 {
@@ -389,5 +395,55 @@ public function like(Post $post, EntityManagerInterface $em, Request $request): 
         }
     }
 
+    #[Route('/post/{id}/share', name: 'post_share', methods: ['POST'])]
+public function share(
+    $id,
+    EntityManagerInterface $em,
+    CloudinaryService $cloudinary,
+    AyrshareService $ayrshare
+): JsonResponse {
 
+    try {
+
+        $post = $em->getRepository(Post::class)->find($id);
+
+        if (!$post) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Post not found'], 404);
+        }
+
+        $mediaUrls = [];
+
+        if ($post->getImage()) {
+
+            $imagePath = $this->getParameter('kernel.project_dir') . '/public/' . $post->getImage();
+
+            if (!file_exists($imagePath)) {
+                throw new \Exception("Image introuvable: " . $imagePath);
+            }
+
+            $url = $cloudinary->uploadImage($imagePath);
+            $mediaUrls[] = $url;
+        }
+
+        $paramsMedia = $mediaUrls;
+
+        $result = $ayrshare->sharePost(
+            $post->getContenu(),
+            ['facebook'],
+            $paramsMedia
+        );
+
+        return new JsonResponse([
+            'status' => 'success',
+            'data' => $result
+        ]);
+
+    } catch (\Exception $e) {
+
+        return new JsonResponse([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 }

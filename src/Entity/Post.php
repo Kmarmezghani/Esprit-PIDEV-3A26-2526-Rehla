@@ -170,4 +170,8 @@ public function removeLikes(Likes $like): self
 
     return $this;
 }
+public function getFavorisPosts(): Collection
+{
+    return $this->favoris_posts;
+}
 }

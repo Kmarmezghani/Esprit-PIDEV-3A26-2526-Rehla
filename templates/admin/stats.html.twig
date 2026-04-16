@@ -1,0 +1,204 @@
+{% extends 'adminbase.html.twig' %}
+
+{% block title %}Statistiques Utilisateurs – Rehla Admin{% endblock %}
+
+{% block sidebar %}
+  {% include 'admin/Partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/Partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+
+<div class="row g-4 mb-4">
+  <div class="col-12">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div>
+        <h4 class="fw-bold mb-1" style="color:#223f91;">
+          <i class="bx bx-bar-chart-alt-2 me-2"></i> Statistiques des Utilisateurs
+        </h4>
+        <p class="text-muted mb-0" style="font-size:13px;">Vue d'ensemble de la base utilisateurs Rehla</p>
+      </div>
+      <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bx bx-arrow-back me-1"></i> Retour à la liste
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ── Cartes de résumé ── #}
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3" style="border-radius:14px;">
+      <div style="font-size:32px; font-weight:800; color:#223f91;">{{ total }}</div>
+      <div class="text-muted" style="font-size:13px;">Total utilisateurs</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3" style="border-radius:14px;">
+      <div style="font-size:32px; font-weight:800; color:#28a745;">{{ byStatut.ACTIF }}</div>
+      <div class="text-muted" style="font-size:13px;">Comptes actifs</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3" style="border-radius:14px;">
+      <div style="font-size:32px; font-weight:800; color:#dc3545;">{{ byStatut.SUSPENDU }}</div>
+      <div class="text-muted" style="font-size:13px;">Comptes suspendus</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3" style="border-radius:14px;">
+      <div style="font-size:32px; font-weight:800; color:#fd7e14;">{{ byRole.GUIDE }}</div>
+      <div class="text-muted" style="font-size:13px;">Guides</div>
+    </div>
+  </div>
+</div>
+
+{# ── Graphiques ── #}
+<div class="row g-4 mb-4">
+
+  {# Pie chart rôles #}
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+      <h6 class="fw-bold mb-3" style="color:#223f91;">
+        <i class="bx bx-user-pin me-1"></i> Répartition par rôle
+      </h6>
+      <canvas id="roleChart" height="220"></canvas>
+    </div>
+  </div>
+
+  {# Pie chart statuts #}
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+      <h6 class="fw-bold mb-3" style="color:#223f91;">
+        <i class="bx bx-shield-alt-2 me-1"></i> Répartition par statut
+      </h6>
+      <canvas id="statutChart" height="220"></canvas>
+    </div>
+  </div>
+
+  {# Légendes textuelles #}
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm p-4" style="border-radius:14px; height:100%;">
+      <h6 class="fw-bold mb-3" style="color:#223f91;">
+        <i class="bx bx-list-ul me-1"></i> Détail
+      </h6>
+      <div class="mb-3">
+        <p class="mb-1 fw-bold" style="font-size:12px; color:#888;">RÔLES</p>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span><span class="badge" style="background:#17a2b8;">CLIENT</span></span>
+          <span class="fw-bold">{{ byRole.CLIENT }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span><span class="badge" style="background:#fd7e14;">GUIDE</span></span>
+          <span class="fw-bold">{{ byRole.GUIDE }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span><span class="badge" style="background:#223f91;">ADMIN</span></span>
+          <span class="fw-bold">{{ byRole.ADMIN }}</span>
+        </div>
+        <p class="mb-1 fw-bold" style="font-size:12px; color:#888;">STATUTS</p>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span><span class="badge bg-success">ACTIF</span></span>
+          <span class="fw-bold">{{ byStatut.ACTIF }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span><span class="badge bg-secondary">INACTIF</span></span>
+          <span class="fw-bold">{{ byStatut.INACTIF }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span><span class="badge bg-danger">SUSPENDU</span></span>
+          <span class="fw-bold">{{ byStatut.SUSPENDU }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Bar chart inscriptions par mois #}
+<div class="row g-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0" style="color:#223f91;">
+          <i class="bx bx-calendar me-1"></i> Inscriptions — 12 derniers mois
+        </h6>
+        <a href="{{ path('admin_users_pdf') }}" class="btn btn-sm" style="background:#223f91; color:#fff; border-radius:8px;">
+          <i class="bx bx-download me-1"></i> Exporter PDF
+        </a>
+      </div>
+      <canvas id="monthChart" height="80"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Données Twig → JS ──
+const roleData   = {{ byRole|json_encode|raw }};
+const statutData = {{ byStatut|json_encode|raw }};
+const monthData  = {{ inscriptionsByMonth|json_encode|raw }};
+
+// ── Pie : rôles ──
+new Chart(document.getElementById('roleChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Clients', 'Guides', 'Admins'],
+    datasets: [{
+      data: [roleData.CLIENT, roleData.GUIDE, roleData.ADMIN],
+      backgroundColor: ['#17a2b8', '#fd7e14', '#223f91'],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 12 } } } },
+    cutout: '60%',
+  }
+});
+
+// ── Pie : statuts ──
+new Chart(document.getElementById('statutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Actifs', 'Inactifs', 'Suspendus'],
+    datasets: [{
+      data: [statutData.ACTIF, statutData.INACTIF, statutData.SUSPENDU],
+      backgroundColor: ['#28a745', '#6c757d', '#dc3545'],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 12 } } } },
+    cutout: '60%',
+  }
+});
+
+// ── Bar : inscriptions par mois ──
+new Chart(document.getElementById('monthChart'), {
+  type: 'bar',
+  data: {
+    labels: monthData.map(m => m.label),
+    datasets: [{
+      label: 'Nouvelles inscriptions',
+      data: monthData.map(m => m.count),
+      backgroundColor: 'rgba(34,63,145,0.75)',
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' inscriptions' } }
+    },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+
+{% endblock %}

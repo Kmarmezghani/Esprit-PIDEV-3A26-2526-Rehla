@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+
+{% if type == 'sent' %}
+<div class="msg-row sent-row">
+    <div>
+        <div class="msg sent">{{ message }}</div>
+        <div class="msg-time text-right">{{ time }}</div>
+    </div>
+</div>
+{% else %}
+<div class="msg-row received-row">
+    <img class="avatar2" src="{{ asset('assets/images/default-user.png') }}">
+    <div>
+        <div class="msg received">{{ message }}</div>
+        <div class="msg-time">{{ time }}</div>
+        
+
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

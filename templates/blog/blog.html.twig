@@ -163,13 +163,81 @@
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item active"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
-<li class="nav-item d-flex align-items-center">
-    <a href="" class="nav-link position-relative d-flex align-items-center justify-content-center">
+<li class="nav-item dropdown d-flex align-items-center">
+
+    <a class="nav-link position-relative d-flex align-items-center justify-content-center"
+       href="#" id="chatDropdown" data-toggle="dropdown">
+
         <i class="fa fa-comments fa-lg"></i>
-         <span class="badge-notif">3</span>
+      {% if unreadTotal > 0 %}
+          <span class="badge-notif">{{ unreadTotal }}</span>
+      {% endif %}
 
     </a>
+
+    <!-- DROPDOWN MESSENGER -->
+    <div class="dropdown-menu dropdown-menu-right messenger-dropdown shadow-lg p-0">
+
+        <!-- HEADER -->
+        <div class="messenger-header p-3 d-flex justify-content-between align-items-center">
+            <strong>Chats</strong>
+            <i class="fa fa-ellipsis-h"></i>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="px-3 pb-2">
+            <input type="text" class="form-control messenger-search" placeholder="Search Messenger">
+        </div>
+
+        <!-- LIST -->
+          <div class="messenger-list">
+          
+          {% for item in chatList %}
+
+          <div class="messenger-item"
+          data-id="{{ item.user.id }}"
+          data-name="{{ item.user.nom }} {{ item.user.prenom }}"
+          data-photo="{{ item.user.profile_photo ? asset(item.user.profile_photo) : asset('assets/images/default-user.png') }}">
+
+              <img src="{{ asset(item.user.profile_photo ? item.user.profile_photo : 'assets/images/default-user.png') }}" class="avatar">
+
+              <div class="msg-content">
+
+              <div class="msg-top">
+                
+                <span class="name {{ item.unread ? 'fw-bold' : '' }}">
+                    {{ item.user.nom }} {{ item.user.prenom }}
+                </span>
+
+                <div class="msg-right">
+                    <span class="time">
+                        {{ item.lastMessageTime ? item.lastMessageTime|timeAgo : '' }}
+                    </span>
+
+                    {% if item.unread %}
+                        <span class="unread-dot"></span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+
+                  <div class="msg-text {{ item.unread ? 'fw-bold' : '' }}">
+                      {{ item.lastMessage ?? 'Commencer une conversation' }}
+                  </div>
+
+
+              </div>
+          </div>
+
+          {% endfor %}
+
+
+          </div>
+
+    </div>
 </li>
+
 
 
     {% if app.session.get('user_id') %}
@@ -661,7 +729,55 @@
 
 </div>
 
+{# ---------------------------------------------------discussion messenger ----------------------------------------------------- #}
+<!-- CHAT BOX -->
+<div id="chatBox" class="chat-box d-none">
 
+    <!-- HEADER -->
+    <div class="chat-header">
+        <div class="chat-user">
+          <img id="chatUserPhoto" src="{{ asset('assets/images/default-user.png') }}">
+          <div>
+              <div class="name" id="chatUserName">---</div>
+              <div class="status">Active</div>
+          </div>
+      </div>
+
+        <div class="chat-actions">
+            <i class="fa fa-phone"></i>
+            <i class="fa fa-video"></i>
+            <i class="fa fa-minus" id="minimizeChat"></i>
+            <i class="fa fa-times" id="closeChat"></i>
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="chat-body" id="chatMessages"></div>
+
+    <!-- INPUT -->
+    <div class="chat-footer">
+
+    <!-- bouton + -->
+    <div class="left-icons">
+        <i class="fa fa-plus"></i>
+    </div>
+
+    <!-- input avec icônes dedans -->
+    <div class="input-box">
+        <input type="text" placeholder="Aa">
+
+        <div class="inside-icons">
+            <i class="fa fa-smile"></i>
+        </div>
+    </div>
+
+    <!-- bouton send -->
+    <div class="right-icons">
+        <i class="fa fa-paper-plane"></i>
+    </div>
+
+</div>
+</div>
 
 
 <script>
@@ -1779,6 +1895,172 @@ document.querySelectorAll('.favori-btn').forEach(btn => {
 
     });
 });
+/*----------------------------------discussion messenger----------------------------------------------------------------------------------------------*/
+
+    const currentUserId = {{ currentUserId ? currentUserId : 'null' }};
+    if (currentUserId) {
+    console.log("User OK:", currentUserId);
+
+
+}
+    let currentConversationId = null;
+
+// ouvrir chat quand tu cliques sur une conversation
+document.querySelectorAll(".messenger-item").forEach(item => {
+    item.addEventListener("click", () => {
+       
+
+        const userId = item.dataset.id;
+        const userName = item.dataset.name;
+        const userPhoto = item.dataset.photo;
+
+        document.getElementById("chatUserName").innerText = userName;
+        document.getElementById("chatUserPhoto").src = userPhoto;
+         console.log("CLICK USER ID:", userId);
+
+        fetch("/chat/start/" + userId)
+            .then(res => res.json())
+            .then(data => {
+
+                currentConversationId = data.conversationId;
+                if (!currentConversationId) {
+                    console.error(" NO CONVERSATION ID");
+                    return;
+                }
+
+                document.getElementById("chatBox").classList.remove("d-none");
+                loadMessages(currentConversationId);
+            });
+    });
+});
+
+// fermer
+document.getElementById("closeChat").onclick = () => {
+    document.getElementById("chatBox").classList.add("d-none");
+};
+
+// minimiser
+document.getElementById("minimizeChat").onclick = () => {
+    document.getElementById("chatBox").style.height = "50px";
+};
+
+
+function loadMessages(conversationId) {
+
+    console.log("LOAD MESSAGES FOR:", conversationId);
+
+    fetch("/chat/messages/" + conversationId)
+        .then(res => res.json())
+        .then(messages => {
+
+            console.log("MESSAGES FROM SERVER:", messages);
+
+            const container = document.getElementById("chatMessages");
+            container.innerHTML = "";
+
+            messages.forEach(msg => {
+
+                const type = (parseInt(msg.sender_id) === parseInt(currentUserId)) ? "sent" : "received";
+
+                addMessageToUI(msg.contenu, type, msg.sent_at);
+            });
+        })
+        .catch(err => {
+            console.error("FETCH ERROR:", err);
+        });
+}
+
+
+/*-----------------------------websocket server----------------------------------------------*/
+function getCurrentTime() {
+    const now = new Date();
+    return now.getHours().toString().padStart(2, '0') + ":" +
+           now.getMinutes().toString().padStart(2, '0');
+}
+
+
+function addMessageToUI(message, type, time) {
+
+    fetch("/chat/render-message", {
+        method: "POST",
+        body: JSON.stringify({
+            message: message,
+            type: type,
+            time: time
+        })
+    })
+    .then(res => res.text())
+    .then(html => {
+
+        const container = document.getElementById("chatMessages");
+
+        container.insertAdjacentHTML("beforeend", html);
+
+        container.scrollTop = container.scrollHeight;
+    });
+}
+    const socket = new WebSocket("ws://localhost:9001");
+
+    socket.onopen = () => {
+      console.log("WebSocket connecté");
+        socket.send(JSON.stringify({
+            type: "init",
+            userId: currentUserId
+        }));
+    };
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+          if (data.type === "message" && data.senderId != currentUserId) {
+        const time = getCurrentTime(); 
+        addMessageToUI(data.message, "received", time);
+    }
+        };
+
+
+/*------------------------------------------send mssg-----------------------------------------*/
+
+
+document.querySelector(".fa-paper-plane").onclick = () => {
+
+    const input = document.querySelector(".chat-footer input");
+    const message = input.value;
+
+    if (!message.trim()) return;
+
+    const time = getCurrentTime();
+    addMessageToUI(message, "sent", time);
+
+      fetch("/chat/send", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: message,
+            conversationId: currentConversationId
+        })
+    })
+    .then(res => res.text())
+    .then(data => {
+        console.log("SERVER RESPONSE:", data);
+    })
+    .catch(err => {
+        console.error("FETCH ERROR:", err);
+    });
+
+
+    socket.send(JSON.stringify({
+        type: "message",
+        message: message,
+        conversationId: currentConversationId,
+        senderId: currentUserId
+    }));
+
+    input.value = "";
+};
+
 
 
 
@@ -2633,6 +2915,309 @@ input.form-control:focus {
     align-items: center;
     justify-content: center;
 }
+
+/*---------------------------------------------messagerie drop down---------------------------------------------*/
+/* Dropdown box */
+.messenger-dropdown {
+    width: 350px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Header */
+.messenger-header {
+    background: white;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Search */
+.messenger-search {
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+/* List scroll */
+.messenger-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Item */
+.messenger-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    transition: 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.messenger-item:hover {
+    background: #f0f2f5;
+}
+
+/* Avatar */
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* Content */
+.msg-content {
+    flex: 1;
+}
+
+.msg-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.msg-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.name {
+    font-weight: 600;
+}
+
+.time {
+    font-size: 12px;
+    color: gray;
+}
+
+.msg-text {
+    font-size: 13px;
+    color: gray;
+}
+
+/* Unread */
+.unread .name,
+.unread .msg-text {
+    font-weight: bold;
+    color: black;
+}
+
+
+.unread-dot {
+    width: 10px;
+    height: 10px;
+    background: red;
+    border-radius: 50%;
+}
+.fw-bold {
+    font-weight: 700;
+    color:black;
+}
+
+
+/*-------------------------discussion messenger-------------------------------------------*/
+
+.chat-box {
+    position: fixed;
+    bottom: 0;
+    right: 100px;
+    width: 320px;
+    height: 420px;
+    background: white;
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* HEADER */
+.chat-header {
+    background: linear-gradient(45deg, #1877f2, #a033ff);
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-user {
+    display: flex;
+    align-items: center;
+}
+
+.chat-user img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.chat-user .name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.chat-user .status {
+    font-size: 11px;
+}
+
+/* ACTIONS */
+.chat-actions i {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+/* BODY */
+.chat-body {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: #f0f2f5;
+}
+
+/* MESSAGES */
+.msg {
+  display: inline-block;
+  max-width: 65%;
+  min-width: fit-content; 
+
+  padding: 8px 12px;
+  border-radius: 18px;
+  font-size: 13px;
+
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.chat-body,
+.msg-row,
+.msg {
+  word-break: normal ;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+.sent {
+    background: #1877f2;
+    color: white;
+    margin-left: auto;
+    display: block;
+    width: fit-content;
+}
+
+
+.received {
+    background: #e4e6eb;
+    color: black;
+    display: block;
+    width: fit-content; /* 🔥 clé */
+}
+
+
+/* FOOTER */
+.chat-footer {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: #fff;
+}
+
+/* bouton + */
+.left-icons i {
+  font-size: 18px;
+  color: #1877f2;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* zone input */
+.input-box {
+  flex: 1;
+  position: relative;
+}
+
+/* input style messenger */
+.input-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: #f0f2f5;
+  padding: 10px 40px 10px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* icone dans input (smile) */
+.inside-icons {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.inside-icons i {
+  color: #1877f2;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* bouton send */
+.right-icons i {
+  font-size: 20px;
+  color: #1877f2;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+
+
+
+.msg-row > div {
+  flex: 1;
+  max-width: 100%;
+}
+/* alignement ligne message */
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+
+/* received à gauche */
+.received-row {
+  justify-content: flex-start;
+}
+
+/* sent à droite */
+.sent-row {
+  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* avatar receiver */
+.avatar2 {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+/* heure message */
+.msg-time {
+  font-size: 11px;
+  color: gray;
+  margin-top: 2px;
+  margin-left: 5px;
+  
+}
+
+/* heure côté sender alignée droite */
+.sent-row .msg-time {
+  margin-right: 5px;
+}
+
 
 
 

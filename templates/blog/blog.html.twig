@@ -223,7 +223,19 @@
 
 
                   <div class="msg-text {{ item.unread ? 'fw-bold' : '' }}">
-                      {{ item.lastMessage ?? 'Commencer une conversation' }}
+
+                      {% if item.lastMessage %}
+
+                          {% if item.lastSenderId == currentUserId %}
+                              Vous : {{ item.lastMessage }}
+                          {% else %}
+                              {{ item.user.prenom }} : {{ item.lastMessage }}
+                          {% endif %}
+
+                      {% else %}
+                          Commencer une conversation
+                      {% endif %}
+
                   </div>
 
 

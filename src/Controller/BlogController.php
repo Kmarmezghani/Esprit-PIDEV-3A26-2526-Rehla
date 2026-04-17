@@ -119,6 +119,7 @@ if ($status === 'ok') {
             'conversationId' => $conv->getId(),
             'lastMessage' => $lastMessage?->getContenu(),
             'lastMessageTime' => $lastMessage?->getSent_at(),
+            'lastSenderId' => $lastMessage?->getSender_id()?->getId(),
             'unread' => $unreadCount > 0
         ];
     }

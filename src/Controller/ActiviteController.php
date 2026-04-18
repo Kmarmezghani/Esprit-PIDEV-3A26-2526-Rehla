@@ -25,6 +25,7 @@ use App\Repository\NotificationRepository;
 use App\Repository\WaitlistRepository;
 use App\Service\WaitlistService;
 use App\Service\WeatherActivityTipsService;
+use Knp\Component\Pager\PaginatorInterface;
 
 final class ActiviteController extends AbstractController
 {
@@ -39,7 +40,8 @@ public function index(
     EntityManagerInterface $em,
     NotificationRepository $notificationRepository,
     WaitlistRepository $waitlistRepository,
-    WaitlistService $waitlistService
+    WaitlistService $waitlistService,
+    PaginatorInterface $paginator
 ): Response
 {
     $waitlistService->expireExpiredHolds();
@@ -50,12 +52,18 @@ public function index(
     $dateFin = $request->query->get('date_fin');
     $prixMax = $request->query->get('prix_max');
 
-    $activites = $activiteRepository->searchFront(
-        $destination,
-        $dateDebut,
-        $dateFin,
-        $prixMax
-    );
+    $queryBuilder = $activiteRepository->searchFrontQueryBuilder(
+    $destination,
+    $dateDebut,
+    $dateFin,
+    $prixMax
+);
+
+$activites = $paginator->paginate(
+    $queryBuilder,
+    $request->query->getInt('page', 1),
+    6
+);
 
     $recommendedActivities = [];
     $recommendedIds = [];

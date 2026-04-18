@@ -226,15 +226,23 @@
 
                       {% if item.lastMessage %}
 
-                          {% if item.lastSenderId == currentUserId %}
-                              Vous : {{ item.lastMessage }}
-                          {% else %}
-                              {{ item.user.prenom }} : {{ item.lastMessage }}
-                          {% endif %}
+                      {% set isImage = item.lastMessage starts with 'uploads/chat' %}
 
+                      {% if item.lastSenderId == currentUserId %}
+                          Vous :
                       {% else %}
-                          Commencer une conversation
+                          {{ item.user.prenom }} :
                       {% endif %}
+
+                      {% if isImage %}
+                          📷 Photo
+                      {% else %}
+                          {{ item.lastMessage }}
+                      {% endif %}
+
+                  {% else %}
+                      Commencer une conversation
+                  {% endif %}
 
                   </div>
 
@@ -771,19 +779,20 @@
 
     <!-- bouton + -->
     <div class="left-icons">
-        <i class="fa fa-plus"></i>
+        <i class="fa fa-plus" id="openGallery"></i>
+        <input type="file" id="imageInput1" hidden>
     </div>
 
-    <!-- input avec icônes dedans -->
+    <!-- input unique -->
     <div class="input-box">
-        <input type="text" placeholder="Aa">
+        <input type="text" id="chatInput" placeholder="Aa">
 
         <div class="inside-icons">
             <i class="fa fa-smile"></i>
         </div>
     </div>
 
-    <!-- bouton send -->
+    <!-- send -->
     <div class="right-icons">
         <i class="fa fa-paper-plane"></i>
     </div>
@@ -1972,10 +1981,10 @@ function loadMessages(conversationId) {
 
             messages.forEach(msg => {
 
-                const type = (parseInt(msg.sender_id) === parseInt(currentUserId)) ? "sent" : "received";
+    const type = (parseInt(msg.sender_id) === parseInt(currentUserId)) ? "sent" : "received";
 
-                addMessageToUI(msg.contenu, type, msg.sent_at);
-            });
+    addMessageToUI(msg.contenu, type, msg.sent_at, msg.image);
+});
         })
         .catch(err => {
             console.error("FETCH ERROR:", err);
@@ -1991,23 +2000,25 @@ function getCurrentTime() {
 }
 
 
-function addMessageToUI(message, type, time) {
+function addMessageToUI(message, type, time, image = null) {
 
     fetch("/chat/render-message", {
         method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({
             message: message,
             type: type,
-            time: time
+            time: time,
+            image: image
         })
     })
     .then(res => res.text())
     .then(html => {
 
         const container = document.getElementById("chatMessages");
-
         container.insertAdjacentHTML("beforeend", html);
-
         container.scrollTop = container.scrollHeight;
     });
 }
@@ -2034,48 +2045,58 @@ function addMessageToUI(message, type, time) {
 /*------------------------------------------send mssg-----------------------------------------*/
 
 
-document.querySelector(".fa-paper-plane").onclick = () => {
+document.addEventListener("DOMContentLoaded", function () {
 
-    const input = document.querySelector(".chat-footer input");
-    const message = input.value;
+    const openGallery = document.getElementById("openGallery");
+    const fileInput = document.getElementById("imageInput1");
+    const sendBtn = document.querySelector(".fa-paper-plane");
+    const input = document.getElementById("chatInput");
 
-    if (!message.trim()) return;
+    if (!input || !sendBtn) {
+        console.error("Chat UI missing elements");
+        return;
+    }
 
-    const time = getCurrentTime();
-    addMessageToUI(message, "sent", time);
+    // 📁 open gallery
+    if (openGallery && fileInput) {
+        openGallery.addEventListener("click", function () {
+            fileInput.click();
+        });
+    }
 
-      fetch("/chat/send", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: message,
-            conversationId: currentConversationId
-        })
-    })
-    .then(res => res.text())
-    .then(data => {
-        console.log("SERVER RESPONSE:", data);
-    })
-    .catch(err => {
-        console.error("FETCH ERROR:", err);
+    // 📤 send message
+    sendBtn.addEventListener("click", function () {
+
+        const message = input.value?.trim();
+        const file = fileInput?.files[0];
+
+        if (!message && !file) return;
+
+        const time = getCurrentTime();
+        addMessageToUI(message, "sent", time, file ? URL.createObjectURL(file) : null);
+
+        const formData = new FormData();
+        formData.append("message", message || "");
+        formData.append("conversationId", currentConversationId);
+
+        if (file) {
+            formData.append("image", file);
+        }
+
+        fetch("/chat/send", {
+          method: "POST",
+          body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+          loadMessages(currentConversationId);
+      });
+
+        input.value = "";
+        if (fileInput) fileInput.value = "";
     });
 
-
-    socket.send(JSON.stringify({
-        type: "message",
-        message: message,
-        conversationId: currentConversationId,
-        senderId: currentUserId
-    }));
-
-    input.value = "";
-};
-
-
-
-
+});
 </script>
 
 
@@ -3230,8 +3251,20 @@ input.form-control:focus {
   margin-right: 5px;
 }
 
-
-
+/*-------------------image discussion-----------------*/
+#imageInput1 {
+    display: none;
+}
+.chat-img {
+    max-width: 220px;   /* limite largeur */
+    max-height: 220px;  /* limite hauteur */
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    margin-top: 5px;
+    object-fit: cover;
+    display: block;
+}
 
 </style>
 

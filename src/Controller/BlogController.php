@@ -93,18 +93,23 @@ if ($status === 'ok') {
             ->getOneOrNullResult();
 
 
-        $unreadCount = $em->createQueryBuilder()
-        ->select('COUNT(m.id)')
-        ->from(Message::class, 'm')
-        ->where('m.conversation = :conv')
-        ->andWhere('m.is_read = false')
-        ->andWhere('m.sender_id != :me')
-        ->setParameter('conv', $conv)
-        ->setParameter('me', $personne)
-        ->getQuery()
-        ->getSingleScalarResult();
-        
-        $totalUnread += $unreadCount;
+            $unreadExists = $em->createQueryBuilder()
+            ->select('m.id')
+            ->from(Message::class, 'm')
+            ->where('m.conversation = :conv')
+            ->andWhere('m.is_read = false')
+            ->andWhere('m.sender_id != :me')
+            ->setParameter('conv', $conv)
+            ->setParameter('me', $personne)
+            ->setMaxResults(1) 
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $hasUnread = $unreadExists ? 1 : 0;
+
+
+        $totalUnread += $hasUnread;
+
 
 
         $otherUser = ($conv->getUser1_id()->getId() === $personne->getId())
@@ -117,10 +122,10 @@ if ($status === 'ok') {
             'type' => 'conversation',
             'user' => $otherUser,
             'conversationId' => $conv->getId(),
-            'lastMessage' => $lastMessage?->getContenu(),
+            'lastMessage' => $lastMessage?->getImage() ? '📷 Photo' : $lastMessage?->getContenu(),
             'lastMessageTime' => $lastMessage?->getSent_at(),
             'lastSenderId' => $lastMessage?->getSender_id()?->getId(),
-            'unread' => $unreadCount > 0
+            'unread' => $hasUnread === 1
         ];
     }
 
@@ -171,6 +176,164 @@ private function getConnectedUser(Request $request, EntityManagerInterface $em):
     $userId = $request->getSession()->get('user_id');
     return $em->getRepository(Personne::class)->find($userId);
 }
+
+
+
+/*--------------------------------------------messagerie-----------------------------------------------------------*/ 
+
+#[Route('/chat/start/{id}', name: 'chat_start')]
+public function startChat(Personne $receiver, ConversationService $service, EntityManagerInterface $em, Request $request)
+{
+    $personne = $this->getConnectedUser($request, $em);
+
+    if (!$personne) {
+        return $this->json(['error' => 'User not connected'], 401);
+    }
+
+    $conv = $service->getOrCreateConversation($personne, $receiver, $em);
+
+    $messages = $em->createQueryBuilder()
+    ->select('m')
+    ->from(Message::class, 'm')
+    ->where('m.conversation = :conv')
+    ->andWhere('m.sender_id != :me')
+    ->andWhere('m.is_read = 0')
+    ->setParameter('conv', $conv)
+    ->setParameter('me', $personne)
+    ->getQuery()
+    ->getResult();
+
+        foreach ($messages as $msg) {
+            $msg->setIs_read(true);
+            $em->persist($msg);
+        }
+
+        $em->flush();
+
+
+    return $this->json([
+        'conversationId' => $conv->getId()
+    ]);
+}
+
+
+#[Route('/chat/send', name: 'chat_send', methods:['POST'])]
+public function send(Request $request, EntityManagerInterface $em)
+{
+    $sender = $this->getConnectedUser($request, $em);
+
+    if (!$sender) {
+        return $this->json(['error' => 'User not connected']);
+    }
+
+    $conversationId = $request->request->get('conversationId');
+    $messageText = $request->request->get('message');
+    $imageFile = $request->files->get('image');
+
+    $conv = $em->getRepository(Conversation::class)->find($conversationId);
+
+    if (!$conv) {
+        return $this->json(['error' => 'Conversation not found']);
+    }
+
+    $msg = new Message();
+    $msg->setContenu($messageText);
+    $msg->setSent_at(new \DateTime());
+    $msg->setIs_read(false);
+    $msg->setSender_id($sender);
+    $msg->setConversation($conv);
+
+    // 📸 UPLOAD IMAGE
+    if ($imageFile) {
+        $newFilename = uniqid().'.'.$imageFile->guessExtension();
+
+        try {
+            $imageFile->move(
+                $this->getParameter('kernel.project_dir') . '/public/uploads/chat',
+                $newFilename
+            );
+
+            $msg->setImage('uploads/chat/' . $newFilename);
+        } catch (FileException $e) {
+            return $this->json(['error' => 'Upload failed']);
+        }
+    }
+
+    $em->persist($msg);
+    $em->flush();
+
+    return $this->json(['status' => 'ok']);
+}
+
+
+
+#[Route('/chat/render-message', name: 'chat_render_message', methods: ['POST'])]
+public function renderMessage(Request $request): Response
+{
+    $content = $request->getContent();
+
+    $data = json_decode($content, true);
+
+    if (!is_array($data)) {
+        return $this->json([
+            'error' => 'Invalid JSON',
+            'raw' => $content
+        ], 400);
+    }
+
+            return $this->render('chat/_message.html.twig', [
+            'message' => $data['message'] ?? '',
+            'image' => $data['image'] ?? null,
+            'type' => $data['type'] ?? 'received',
+            'time' => $data['time'] ?? ''
+]);
+
+
+}
+
+#[Route('/chat/messages/{id}', name: 'chat_messages', methods: ['GET'])]
+public function getMessages($id, EntityManagerInterface $em): JsonResponse
+{
+    $conv = $em->getRepository(Conversation::class)->find($id);
+
+    if (!$conv) {
+        return $this->json([]);
+    }
+
+    $messages = $em->getRepository(Message::class)
+        ->createQueryBuilder('m')
+        ->where('m.conversation = :conv')
+        ->setParameter('conv', $conv) 
+        ->orderBy('m.sent_at', 'ASC')
+        ->getQuery()
+        ->getResult();
+
+    $data = [];
+
+    foreach ($messages as $msg) {
+        $data[] = [
+        'contenu' => $msg->getContenu(),
+        'image' => $msg->getImage(),
+        'sender_id' => $msg->getSender_id()?->getId(),
+        'sent_at' => $msg->getSent_at()->format('H:i')
+    ];
+    }
+
+    return $this->json($data);
+}
+
+
+
+
+
+
+
+
+
+
+
+/*------------------------------------------------------posting--------------------------------------------------------*/
+
 private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
     if (!$form->isSubmitted() || !$form->isValid()) {
@@ -543,139 +706,7 @@ public function share(
     }
 }
 
-/*--------------------------------------------messagerie-----------------------------------------------------------*/ 
 
-#[Route('/chat/start/{id}', name: 'chat_start')]
-public function startChat(Personne $receiver, ConversationService $service, EntityManagerInterface $em, Request $request)
-{
-    $personne = $this->getConnectedUser($request, $em);
-
-    if (!$personne) {
-        return $this->json(['error' => 'User not connected'], 401);
-    }
-
-    $conv = $service->getOrCreateConversation($personne, $receiver, $em);
-
-    $messages = $em->createQueryBuilder()
-    ->select('m')
-    ->from(Message::class, 'm')
-    ->where('m.conversation = :conv')
-    ->andWhere('m.sender_id != :me')
-    ->andWhere('m.is_read = 0')
-    ->setParameter('conv', $conv)
-    ->setParameter('me', $personne)
-    ->getQuery()
-    ->getResult();
-
-        foreach ($messages as $msg) {
-            $msg->setIs_read(true);
-            $em->persist($msg);
-        }
-
-        $em->flush();
-
-
-    return $this->json([
-        'conversationId' => $conv->getId()
-    ]);
-}
-
-
-#[Route('/chat/send', name: 'chat_send', methods:['POST'])]
-public function send(Request $request, EntityManagerInterface $em)
-{
-    try {
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data) {
-            return $this->json(['error' => 'No data received']);
-        }
-
-        $sender = $this->getConnectedUser($request, $em);
-
-        if (!$sender) {
-            return $this->json(['error' => 'User not connected']);
-        }
-
-        $conv = $em->getRepository(Conversation::class)->find($data['conversationId']);
-
-        if (!$conv) {
-            return $this->json(['error' => 'Conversation not found']);
-        }
-
-        $msg = new Message();
-        $msg->setContenu($data['message']);
-        $msg->setSent_at(new \DateTime());
-        $msg->setIs_read(false);
-        $msg->setSender_id($sender);
-        $msg->setConversation($conv);
-
-        $em->persist($msg);
-        $em->flush();
-
-        return $this->json(['status' => 'ok']);
-
-    } catch (\Exception $e) {
-        return $this->json([
-            'error' => $e->getMessage()
-        ]);
-    }
-}
-
-
-
-#[Route('/chat/render-message', name: 'chat_render_message', methods: ['POST'])]
-public function renderMessage(Request $request): Response
-{
-    $content = $request->getContent();
-
-    $data = json_decode($content, true);
-
-    if (!is_array($data)) {
-        return $this->json([
-            'error' => 'Invalid JSON',
-            'raw' => $content
-        ], 400);
-    }
-
-            return $this->render('chat/_message.html.twig', [
-            'message' => $data['message'] ?? '',
-            'type' => $data['type'] ?? 'received',
-            'time' => $data['time'] ?? ''
-        ]);
-
-
-}
-
-#[Route('/chat/messages/{id}', name: 'chat_messages', methods: ['GET'])]
-public function getMessages($id, EntityManagerInterface $em): JsonResponse
-{
-    $conv = $em->getRepository(Conversation::class)->find($id);
-
-    if (!$conv) {
-        return $this->json([]);
-    }
-
-    $messages = $em->getRepository(Message::class)
-        ->createQueryBuilder('m')
-        ->where('m.conversation = :conv')
-        ->setParameter('conv', $conv) 
-        ->orderBy('m.sent_at', 'ASC')
-        ->getQuery()
-        ->getResult();
-
-    $data = [];
-
-    foreach ($messages as $msg) {
-        $data[] = [
-            'contenu' => $msg->getContenu(),
-            'sender_id' => $msg->getSender_id()?->getId(), 
-            'sent_at' => $msg->getSent_at()->format('H:i')
-        ];
-    }
-
-    return $this->json($data);
-}
 
 
 

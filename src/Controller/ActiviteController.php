@@ -163,101 +163,109 @@ public function show(
     AvisRepository $avisRepository,
     PersonneRepository $personneRepository,
     AvisService $avisService,
-    WeatherActivityTipsService $weatherActivityTipsService
+    WeatherActivityTipsService $weatherActivityTipsService,
+    NotificationRepository $notificationRepository
 ): Response
-    {
-        $userId = $request->getSession()->get('user_id');
+{
+    $userId = $request->getSession()->get('user_id');
 
-        if (!$userId) {
-            $this->addFlash('danger', 'Vous devez être connecté.');
-            return $this->redirectToRoute('app_login');
-        }
+    if (!$userId) {
+        $this->addFlash('danger', 'Vous devez être connecté.');
+        return $this->redirectToRoute('app_login');
+    }
 
-        $personne = $personneRepository->find($userId);
+    $personne = $personneRepository->find($userId);
 
-        if (!$personne) {
-            $this->addFlash('danger', 'Utilisateur introuvable.');
-            return $this->redirectToRoute('activite');
-        }
+    if (!$personne) {
+        $this->addFlash('danger', 'Utilisateur introuvable.');
+        return $this->redirectToRoute('activite');
+    }
 
-        $existingAvis = $avisRepository->findOneBy([
-            'personne' => $personne,
-            'activite' => $activite,
-        ]);
+    $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+    $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
 
-        $isEditMode = $request->query->getBoolean('editAvis', false);
+    $existingAvis = $avisRepository->findOneBy([
+        'personne' => $personne,
+        'activite' => $activite,
+    ]);
 
+    $isEditMode = $request->query->getBoolean('editAvis', false);
+
+    if ($existingAvis && $isEditMode) {
+        $avis = $existingAvis;
+    } else {
+        $avis = new Avis();
+        $avis->setActivite($activite);
+        $avis->setPersonne($personne);
+    }
+
+    $form = $this->createForm(AvisType::class, $avis);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
         if ($existingAvis && $isEditMode) {
-            $avis = $existingAvis;
+            $existingAvis->setNote($avis->getNote());
+            $existingAvis->setCommentaire($avis->getCommentaire());
+            $existingAvis->setDateAvis(new \DateTime());
+        } elseif (!$existingAvis) {
+            $avis->setDateAvis(new \DateTime());
+            $em->persist($avis);
         } else {
-            $avis = new Avis();
-            $avis->setActivite($activite);
-            $avis->setPersonne($personne);
-        }
-
-        $form = $this->createForm(AvisType::class, $avis);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            if ($existingAvis && $isEditMode) {
-                $existingAvis->setNote($avis->getNote());
-                $existingAvis->setCommentaire($avis->getCommentaire());
-                $existingAvis->setDateAvis(new \DateTime());
-            } elseif (!$existingAvis) {
-                $avis->setDateAvis(new \DateTime());
-                $em->persist($avis);
-            } else {
-                $this->addFlash('danger', 'Vous avez déjà publié un avis pour cette activité. Cliquez sur modifier pour le mettre à jour.');
-
-                return $this->redirectToRoute('activite_show', [
-                    'id' => $activite->getId()
-                ]);
-            }
-
-            $em->flush();
-
-            $avisService->recalculerNoteMoyenne($activite);
-            $em->flush();
-
-            $this->addFlash(
-                'success',
-                ($existingAvis && $isEditMode) ? 'Votre avis a été modifié.' : 'Votre avis a été ajouté.'
-            );
+            $this->addFlash('danger', 'Vous avez déjà publié un avis pour cette activité. Cliquez sur modifier pour le mettre à jour.');
 
             return $this->redirectToRoute('activite_show', [
                 'id' => $activite->getId()
             ]);
         }
 
-        $aviss = $avisRepository->findBy(
-            ['activite' => $activite],
-            ['dateAvis' => 'DESC']
+        $em->flush();
+
+        $avisService->recalculerNoteMoyenne($activite);
+        $em->flush();
+
+        $this->addFlash(
+            'success',
+            ($existingAvis && $isEditMode) ? 'Votre avis a été modifié.' : 'Votre avis a été ajouté.'
         );
 
-        $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
-        $totalAvis = count($aviss);
-
-        foreach ($aviss as $item) {
-            $note = $item->getNote();
-            if (isset($distribution[$note])) {
-                $distribution[$note]++;
-            }
-        }
-
-        $weatherTipsData = $weatherActivityTipsService->getTipsForActivity($activite);
-
-        return $this->render('activite/show.html.twig', [
-            'activite' => $activite,
-            'aviss' => $aviss,
-            'distribution' => $distribution,
-            'totalAvis' => $totalAvis,
-            'avisForm' => $form->createView(),
-            'userAvis' => $existingAvis,
-            'isEditMode' => $isEditMode,
-            'weatherTips' => $weatherTipsData['tips'],
-            'weatherData' => $weatherTipsData['weather'],
+        return $this->redirectToRoute('activite_show', [
+            'id' => $activite->getId()
         ]);
     }
+
+    $aviss = $avisRepository->findBy(
+        ['activite' => $activite],
+        ['dateAvis' => 'DESC']
+    );
+
+    $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+    $totalAvis = count($aviss);
+
+    foreach ($aviss as $item) {
+        $note = $item->getNote();
+        if (isset($distribution[$note])) {
+            $distribution[$note]++;
+        }
+    }
+
+    $weatherTipsData = $weatherActivityTipsService->getTipsForActivity($activite);
+
+    return $this->render('activite/show.html.twig', [
+        'activite' => $activite,
+        'aviss' => $aviss,
+        'distribution' => $distribution,
+        'totalAvis' => $totalAvis,
+        'avisForm' => $form->createView(),
+        'userAvis' => $existingAvis,
+        'isEditMode' => $isEditMode,
+        'weatherTips' => $weatherTipsData['tips'],
+        'weatherData' => $weatherTipsData['weather'],
+
+        
+        'activityNotifications' => $activityNotifications,
+        'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
+    ]);
+}
 
     #[Route('/avis/{id}/delete', name: 'avis_delete_front', methods: ['POST'])]
     public function deleteAvisFront(

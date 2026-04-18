@@ -8,6 +8,8 @@ use App\Entity\Ville;
 use App\Entity\Personne;
 use App\Form\ReservationType;
 use App\Form\ReservationUserType;
+use App\Repository\NotificationRepository;
+use App\Repository\PersonneRepository;
 use App\Service\BookingEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -199,7 +201,9 @@ public function getTickets(Reservation $reservation): Response
 }
 
 #[Route('/mes-reservations', name: 'mes_reservations')]
-public function mesReservations(Request $request, EntityManagerInterface $em): Response
+public function mesReservations(Request $request,
+PersonneRepository $personneRepository,
+NotificationRepository $notificationRepository, EntityManagerInterface $em): Response
 {
     $userId = $request->getSession()->get('user_id');
 
@@ -214,8 +218,23 @@ public function mesReservations(Request $request, EntityManagerInterface $em): R
         ->getQuery()
         ->getResult();
 
+    $hasUnreadActivityNotifications = false;
+$activityNotifications = [];
+
+$userId = $request->getSession()->get('user_id');
+
+if ($userId) {
+    $personne = $personneRepository->find($userId);
+
+    if ($personne) {
+        $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+        $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
+    }
+}
     return $this->render('reservation/mes_reservations.html.twig', [
-        'reservations' => $reservations
+        'reservations' => $reservations,
+        'activityNotifications' => $activityNotifications,
+'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
     ]);
 }
 #[Route('/reservation/new', name: 'ajouter_reservation')]

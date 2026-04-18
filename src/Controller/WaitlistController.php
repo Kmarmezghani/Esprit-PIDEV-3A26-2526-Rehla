@@ -77,7 +77,7 @@ public function confirm(
         $this->addFlash('error', 'Le délai est expiré ou cette place n’est plus disponible.');
     }
 
-    return $this->redirectToRoute('activite');
+    return $this->redirectToRoute('mes_reservations');
 }
     #[Route('/waitlist/refuse/{id}', name: 'waitlist_refuse')]
     public function refuse(

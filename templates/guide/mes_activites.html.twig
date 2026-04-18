@@ -21,23 +21,134 @@
     <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
     <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
     <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
-    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item "><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
     {% if app.session.get('user_id') %}
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center position-relative"
+   href="#"
+   id="notifDropdown"
+   role="button"
+   data-bs-toggle="dropdown"
+   aria-expanded="false"
+   style="margin-right:14px;">
+
+    <i class="fa fa-bell notif-bell-icon" style="font-size:20px;"></i>
+
+    {% if hasUnreadActivityNotifications %}
+        <span style="
+            position:absolute;
+            top:-1px;
+            right:-1px;
+            width:10px;
+            height:10px;
+            background:#dc3545;
+            border-radius:50%;
+            border:2px solid white;
+        "></span>
+    {% endif %}
+</a>
+
+    <ul class="dropdown-menu"
+        aria-labelledby="notifDropdown"
+        style="min-width:320px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0; transform: translateX(-260px);">
+
+        <li>
+            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                Mes notifications
+            </span>
+        </li>
+
+        <li><hr class="dropdown-divider my-1"></li>
+
+        {% if activityNotifications is not empty %}
+            {% for notif in activityNotifications %}
+                <li>
+                    <a
+    class="dropdown-item {% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}waitlist-notif-link{% endif %}"
+    href="{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}#{% else %}javascript:void(0);{% endif %}"
+    data-notif-id="{{ notif.id }}"
+    data-activite-id="{{ notif.activite_id.id }}"
+    data-message="{{ notif.message|e('html_attr') }}"
+    data-max-tickets="{{ notif.activite_id.maxPlaces ?? 1 }}"
+    style="padding:10px 16px; white-space:normal; cursor:{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}pointer{% else %}default{% endif %};">
+                       
+
+                        <div style="display:flex; align-items:flex-start; gap:10px;">
+                            <div style="margin-top:2px;">
+                                <i class="fa fa-bell" style="color:#223f91;"></i>
+                            </div>
+
+                            <div style="flex:1;">
+                               <div style="font-size:12px; font-weight:700; margin-bottom:4px;
+    color:
+{% if notif.type == 'WAITLIST_HOLD' %}#223f91
+{% elseif notif.type == 'BOOKING_CONFIRMED' %}#16a34a
+{% elseif notif.type == 'BOOKING_CANCELLED' %}#dc3545
+{% elseif notif.type == 'WAITLIST_EXPIRED' %}#6b7280
+{% else %}#223f91
+{% endif %};
+">
+    {% if notif.type == 'WAITLIST_HOLD' %}
+    WAITLIST HOLD
+{% elseif notif.type == 'BOOKING_CONFIRMED' %}
+    BOOKING CONFIRMED
+{% elseif notif.type == 'BOOKING_CANCELLED' %}
+    BOOKING CANCELLED
+{% elseif notif.type == 'WAITLIST_EXPIRED' %}
+    WAITLIST EXPIRED
+{% else %}
+    {{ notif.type }}
+{% endif %}
+</div>
+
+<div style="font-size:13px; color:#333; line-height:1.4;">
+    {{ notif.message }}
+</div>
+
+                                <div style="font-size:11px; color:#888; margin-top:4px;">
+                                    {{ notif.created_at|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+
+                            {% if not notif.is_read %}
+                                <span style="
+                                    width:8px;
+                                    height:8px;
+                                    background:#dc3545;
+                                    border-radius:50%;
+                                    display:inline-block;
+                                    margin-top:6px;
+                                "></span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>
+                <span class="dropdown-item-text text-muted" style="padding:10px 16px; font-size:13px;">
+                    Aucune notification
+                </span>
+            </li>
+        {% endif %}
+    </ul>
+</li>
     {# ── Utilisateur connecté ── #}
+
     <li class="nav-item dropdown ms-2 d-flex align-items-center">
         <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
            href="#" id="userDropdown" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {% if app.session.get('user_photo') %}
-                <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
-                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-            {% else %}
-                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-            {% endif %}
+    <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
+         class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+{% else %}
+    <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+         class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+{% endif %}
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
             style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
@@ -102,6 +213,8 @@
 </div>
 		</div>
 	</nav>
+
+
 	
 
 <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
@@ -261,6 +374,27 @@
 </footer>
 <form id="logoutFormHome" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .dropdown-toggle::after {
+    display: none !important;
+}
+.notif-bell-icon {
+    color: white;
+    transition: color 0.3s ease;
+}
+
+.notif-arrow-icon {
+    color: white;
+    transition: color 0.3s ease;
+    font-size: 12px;
+    margin-left: 6px;
+}
+
+#ftco-navbar.scrolled .notif-bell-icon,
+#ftco-navbar.scrolled .notif-arrow-icon {
+    color: #223f91 !important;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -328,5 +462,63 @@ function confirmLogout(e) {
 		}
 		</script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.waitlist-notif-link').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const activiteId = this.dataset.activiteId;
+            const message = this.dataset.message;
+            const maxTickets = parseInt(this.dataset.maxTickets || '1', 10);
+
+            Swal.fire({
+                title: 'Place disponible',
+                html: `
+                    <div style="font-size:14px; color:#444; line-height:1.5; margin-bottom:14px;">
+                        ${message}<br><br>
+                        Vous pouvez réserver de <strong>1</strong> à <strong>${maxTickets}</strong> ticket(s).
+                    </div>
+
+                    <div style="text-align:left;">
+                        <label style="font-size:14px; font-weight:600; color:#223f91; display:block; margin-bottom:8px;">
+                            Nombre de tickets
+                        </label>
+                        <input id="hold-ticket-qty" type="number" min="1" max="${maxTickets}" value="1"
+                               style="width:100%; height:42px; border:1px solid #d9e2f2; border-radius:10px; padding:0 12px;">
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: 'Confirmer',
+                denyButtonText: 'Refuser',
+                cancelButtonText: 'Fermer',
+                confirmButtonColor: '#223f91',
+                denyButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const qty = parseInt(document.getElementById('hold-ticket-qty').value, 10);
+
+                    if (!qty || qty < 1 || qty > maxTickets) {
+                        Swal.showValidationMessage('Choisissez une quantité valide.');
+                        return false;
+                    }
+
+                    return qty;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const qty = result.value;
+                    window.location.href = '/waitlist/confirm/' + activiteId + '?qty=' + qty;
+                } else if (result.isDenied) {
+                    window.location.href = '/waitlist/refuse/' + activiteId;
+                }
+            });
+        });
+    });
+});
+</script>
+
 
 {% endblock %}

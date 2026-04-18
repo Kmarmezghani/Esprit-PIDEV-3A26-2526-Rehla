@@ -567,112 +567,49 @@
 				<div class="row ftco-animate">
 					<div class="col-md-12">
 						<div class="carousel-testimony owl-carousel">
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_1.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_2.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_3.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_1.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_2.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+    {% for avis in avisList %}
+        <div class="item">
+            <div class="testimony-wrap py-4">
+                <div class="text">
+                    <p class="star">
+                        {% for i in 1..5 %}
+                            {% if i <= avis.note %}
+                                <span class="fa fa-star"></span>
+                            {% else %}
+                                <span class="fa fa-star-o"></span>
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+
+                    <p class="mb-4">
+                        {{ avis.commentaire }}
+                    </p>
+
+                    <div class="d-flex align-items-center">
+                        <div class="user-img" style="background-image: url('{{ avis.personne and avis.personne.profile_photo ? asset(avis.personne.profile_photo) : asset('assets/images/default-user.png') }}');"></div>
+
+                        <div class="pl-3">
+                            <p class="name">
+                                {{ avis.personne.prenom }} {{ avis.personne.nom }}
+                            </p>
+                            <span class="position">
+                                {{ avis.activite.nom }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="item">
+            <div class="testimony-wrap py-4">
+                <div class="text">
+                    <p class="mb-4">Aucun avis disponible pour le moment.</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 					</div>
 				</div>
 			</div>
@@ -937,5 +874,45 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<style>
+.carousel-testimony .owl-stage {
+    display: flex;
+    align-items: stretch;
+}
 
+.carousel-testimony .owl-item {
+    display: flex;
+    height: auto;
+}
+
+.carousel-testimony .item {
+    width: 100%;
+    display: flex;
+}
+
+.carousel-testimony .testimony-wrap {
+    display: flex;
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+}
+
+.carousel-testimony .text {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-testimony .text .mb-4 {
+    margin-bottom: 15px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.carousel-testimony .d-flex.align-items-center {
+    margin-top: auto;
+}
+</style>
 {% endblock %}

@@ -723,6 +723,41 @@
            <!-- TEXTE -->
           <p class="comment-text">{{ comment.contenu }}</p>
 
+        <!-- 🌍 BOUTON TRADUIRE COMMENT -->
+        <button class="btn btn-sm btn-light mt-1 translate-comment-btn"
+                data-id="{{ comment.id }}">
+            <i class="fa fa-globe text-primary"></i>
+        </button>
+
+        <!-- SELECT LANGUE (caché) -->
+        <div class="translate-box mt-2"
+            id="translate-comment-box-{{ comment.id }}"
+            style="display:none;">
+
+            <select class="language-select modern-select"
+                    id="select-comment-{{ comment.id }}">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="ja">🇯🇵 日本語</option>
+            </select>
+
+        </div>
+
+        <!-- RESULTAT -->
+        <div class="translated-comment mt-1 text-muted"
+            id="translation-comment-{{ comment.id }}"
+            style="display:none;">
+        </div>
+
+
             <!-- INPUT EDIT (caché) -->
           <div class="edit-zone" style="display:none;">
             <input type="text" class="edit-input" value="{{ comment.contenu }}">
@@ -2421,6 +2456,63 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
+  document.addEventListener("click", function(e) {
+
+    let button = e.target.closest(".translate-comment-btn");
+    if (!button) return;
+
+    console.log("CLICK COMMENT");
+
+    let commentId = button.dataset.id;
+
+    let box = document.getElementById("translate-comment-box-" + commentId);
+    let select = document.getElementById("select-comment-" + commentId);
+    let targetDiv = document.getElementById("translation-comment-" + commentId);
+
+    let commentElement = button.closest(".comment-bubble");
+    let content = commentElement.querySelector(".comment-text").innerText;
+
+    // 👉 afficher select
+    box.style.display = "block";
+
+    // 👉 ATTACHER UNE SEULE FOIS
+    if (!select.dataset.listener) {
+
+        select.onchange = async function () {
+
+            let targetLang = this.value;
+
+            targetDiv.innerText = "Traduction...";
+            targetDiv.style.display = "block";
+
+            try {
+                let response = await fetch("/translate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: content,
+                        target: targetLang
+                    })
+                });
+
+                let data = await response.json();
+
+                targetDiv.innerText = data.translation || "Erreur API";
+
+            } catch (error) {
+                console.error(error);
+                targetDiv.innerText = "Erreur traduction";
+            }
+        };
+
+        // ✅ marquer comme attaché
+        select.dataset.listener = "true";
+    }
+
+});
 </script>
 
 

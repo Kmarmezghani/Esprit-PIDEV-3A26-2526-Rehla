@@ -163,13 +163,131 @@
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item active"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
-<li class="nav-item d-flex align-items-center">
-    <a href="" class="nav-link position-relative d-flex align-items-center justify-content-center">
+<li class="nav-item dropdown d-flex align-items-center">
+
+    <a class="nav-link position-relative d-flex align-items-center justify-content-center"
+       href="#" id="chatDropdown" data-toggle="dropdown">
+
         <i class="fa fa-comments fa-lg"></i>
-         <span class="badge-notif">3</span>
+      {% if unreadTotal > 0 %}
+          <span class="badge-notif">{{ unreadTotal }}</span>
+      {% endif %}
 
     </a>
+
+    <!-- DROPDOWN MESSENGER -->
+    <div class="dropdown-menu dropdown-menu-right messenger-dropdown shadow-lg p-0">
+
+            <!-- HEADER -->
+        <div class="messenger-header p-3 d-flex justify-content-between align-items-center">
+            <strong>Chats</strong>
+            <i class="fa fa-ellipsis-h"></i>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="px-3 pb-2">
+            <input type="text" class="form-control messenger-search" placeholder="Search Messenger">
+        </div>
+        <!-- GROUP STORIES -->
+        <div class="messenger-groups px-3 pt-2 pb-2">
+
+            <!-- CREATE GROUP -->
+            <div class="group-item create-group" title="Créer groupe">
+                <i class="fa fa-plus"></i>
+            </div>
+
+            <!-- GROUP LIST -->
+            {% if groups is defined and groups|length > 0 %}
+            {% for group in groups %}
+              <div class="group-item"
+                  data-id="{{ group.id }}"
+                  data-name="{{ group.nom }}"
+                  data-photo="{{ group.image ? asset(group.image) : asset('assets/images/default-user.png') }}">
+
+                  <div class="group-avatar">
+                      <img src="{{ group.image ? asset(group.image) : asset('assets/images/default-user.png') }}">
+                  </div>
+
+                  <div class="group-name">
+                      {{ group.nom }}
+                  </div>
+
+              </div>
+          {% endfor %}
+            {% endif %}
+
+        </div>
+
+
+        <!-- LIST -->
+          <div class="messenger-list">
+          
+          {% for item in chatList %}
+
+          <div class="messenger-item"
+          data-id="{{ item.user.id }}"
+          data-name="{{ item.user.nom }} {{ item.user.prenom }}"
+          data-photo="{{ item.user.profile_photo ? asset(item.user.profile_photo) : asset('assets/images/default-user.png') }}">
+
+              <img src="{{ asset(item.user.profile_photo ? item.user.profile_photo : 'assets/images/default-user.png') }}" class="avatar">
+
+              <div class="msg-content">
+
+              <div class="msg-top">
+                
+                <span class="name {{ item.unread ? 'fw-bold' : '' }}">
+                    {{ item.user.nom }} {{ item.user.prenom }}
+                </span>
+
+                <div class="msg-right">
+                    <span class="time">
+                        {{ item.lastMessageTime ? item.lastMessageTime|timeAgo : '' }}
+                    </span>
+
+                    {% if item.unread %}
+                        <span class="unread-dot"></span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+
+                  <div class="msg-text {{ item.unread ? 'fw-bold' : '' }}">
+
+                      {% if item.lastMessage %}
+
+                      {% set isImage = item.lastMessage starts with 'uploads/chat' %}
+
+                      {% if item.lastSenderId == currentUserId %}
+                          Vous :
+                      {% else %}
+                          {{ item.user.prenom }} :
+                      {% endif %}
+
+                      {% if isImage %}
+                          📷 Photo
+                      {% else %}
+                          {{ item.lastMessage }}
+                      {% endif %}
+
+                  {% else %}
+                      Commencer une conversation
+                  {% endif %}
+
+                  </div>
+
+
+              </div>
+          </div>
+
+          {% endfor %}
+
+
+          </div>
+
+    </div>
 </li>
+
 
 
     {% if app.session.get('user_id') %}
@@ -661,8 +779,130 @@
 
 </div>
 
+{# ---------------------------------------------------discussion messenger ----------------------------------------------------- #}
+<!-- CHAT BOX -->
+<div id="chatBox" class="chat-box d-none">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+        <div class="chat-user">
+          <img id="chatUserPhoto" src="{{ asset('assets/images/default-user.png') }}">
+          <div>
+              <div class="name" id="chatUserName">---</div>
+              <div class="status">Active</div>
+          </div>
+      </div>
+
+        <div class="chat-actions">
+            <i class="fa fa-phone"></i>
+            <i class="fa fa-video"></i>
+            <i class="fa fa-minus" id="minimizeChat"></i>
+            <i class="fa fa-times" id="closeChat"></i>
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="chat-body" id="chatMessages"></div>
+
+    <!-- INPUT -->
+    <div class="chat-footer">
+
+    <!-- bouton + -->
+    <div class="left-icons">
+        <i class="fa fa-plus" id="openGallery"></i>
+        <input type="file" id="imageInput1" hidden>
+    </div>
+
+    <!-- input unique -->
+    <div class="input-box">
+        <input type="text" id="chatInput" placeholder="Aa">
+
+        <div class="inside-icons">
+            <i class="fa fa-smile"></i>
+        </div>
+    </div>
+
+    <!-- send -->
+    <div class="right-icons">
+        <i class="fa fa-paper-plane"></i>
+    </div>
+
+</div>
+</div>
+/*------------------------------------------------------pop up créer groupe ------------------------------------------*/
+
+<!-- MODAL CREATE GROUP -->
+<div id="createGroupModal" class="custom-modal d-none">
+
+  <div class="modal-content-box">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h5>Créer un groupe</h5>
+      <span class="close-modal">&times;</span>
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- NOM GROUPE -->
+      <input type="text" id="groupName" class="form-control mb-3" placeholder="Nom du groupe">
+
+      <!-- USERS SELECT -->
+
+    <!-- IMAGE GROUPE -->
+<div class="group-image-section text-center mb-3">
+
+    <div class="group-image-preview" id="groupImagePreview">
+        <i class="fa fa-camera"></i>
+    </div>
+
+    <input type="file" id="groupImageInput" accept="image/*" hidden>
+
+    <button type="button" class="btn btn-light btn-sm mt-2" id="chooseImageBtn">
+        Choisir une image
+    </button>
+
+</div>
 
 
+<!-- PARTICIPANTS -->
+<div class="participants-section">
+
+  <label class="participants-title">Participants</label>
+
+  <div class="participants-list">
+
+    {% for user in users %}
+      <div class="participant-item" data-id="{{ user.id }}">
+
+        <img src="{{ asset(user.profile_photo ?? 'assets/images/default-user.png') }}" class="avatar">
+
+        <span class="name">
+          {{ user.nom }} {{ user.prenom }}
+        </span>
+
+        <i class="fa fa-check check-icon"></i>
+
+      </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="btn btn-secondary close-modal">Annuler</button>
+      <button type="button" class="btn btn-primary" id="createGroupBtn">Créer</button>
+    </div>
+
+  </div>
+
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1779,7 +2019,300 @@ document.querySelectorAll('.favori-btn').forEach(btn => {
 
     });
 });
+/*----------------------------------discussion messenger----------------------------------------------------------------------------------------------*/
 
+    const currentUserId = {{ currentUserId ? currentUserId : 'null' }};
+    if (currentUserId) {
+    console.log("User OK:", currentUserId);
+
+
+}
+    let currentConversationId = null;
+
+// ouvrir chat quand tu cliques sur une conversation
+document.querySelectorAll(".messenger-item").forEach(item => {
+    item.addEventListener("click", () => {
+       
+
+        const userId = item.dataset.id;
+        const userName = item.dataset.name;
+        const userPhoto = item.dataset.photo;
+
+        document.getElementById("chatUserName").innerText = userName;
+        document.getElementById("chatUserPhoto").src = userPhoto;
+         console.log("CLICK USER ID:", userId);
+
+        fetch("/chat/start/" + userId)
+            .then(res => res.json())
+            .then(data => {
+
+                currentConversationId = data.conversationId;
+                if (!currentConversationId) {
+                    console.error(" NO CONVERSATION ID");
+                    return;
+                }
+
+                document.getElementById("chatBox").classList.remove("d-none");
+                loadMessages(currentConversationId);
+            });
+    });
+});
+
+// fermer
+document.getElementById("closeChat").onclick = () => {
+    document.getElementById("chatBox").classList.add("d-none");
+};
+
+// minimiser
+document.getElementById("minimizeChat").onclick = () => {
+    document.getElementById("chatBox").style.height = "50px";
+};
+
+
+function loadMessages(conversationId) {
+
+    console.log("LOAD MESSAGES FOR:", conversationId);
+
+    fetch("/chat/messages/" + conversationId)
+        .then(res => res.json())
+        .then(messages => {
+
+            console.log("MESSAGES FROM SERVER:", messages);
+
+            const container = document.getElementById("chatMessages");
+            container.innerHTML = "";
+
+           messages.forEach(msg => {
+            console.log("MSG FULL:", msg);
+
+          const type = (parseInt(msg.sender_id) === parseInt(currentUserId)) ? "sent" : "received";
+
+          const senderName = msg.sender_name || "";
+
+          addMessageToUI(msg.contenu, type, msg.sent_at, msg.image, senderName,msg.sender_photo);
+
+      });
+        })
+        .catch(err => {
+            console.error("FETCH ERROR:", err);
+        });
+}
+
+
+/*-----------------------------websocket server----------------------------------------------*/
+function getCurrentTime() {
+    const now = new Date();
+    return now.getHours().toString().padStart(2, '0') + ":" +
+           now.getMinutes().toString().padStart(2, '0');
+}
+
+
+function addMessageToUI(message, type, time, image = null,senderName = null, senderPhoto = null) {
+
+    fetch("/chat/render-message", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: message,
+            type: type,
+            time: time,
+            image: image,
+            sender_name: senderName,
+            sender_photo: senderPhoto
+        })
+    })
+    .then(res => res.text())
+    .then(html => {
+
+        const container = document.getElementById("chatMessages");
+        container.insertAdjacentHTML("beforeend", html);
+        container.scrollTop = container.scrollHeight;
+    });
+}
+    const socket = new WebSocket("ws://localhost:9001");
+
+    socket.onopen = () => {
+      console.log("WebSocket connecté");
+        socket.send(JSON.stringify({
+            type: "init",
+            userId: currentUserId
+        }));
+    };
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+          if (data.type === "message" && data.senderId != currentUserId) {
+        const time = getCurrentTime(); 
+        addMessageToUI(data.message, "received", time);
+    }
+        };
+
+
+/*------------------------------------------send mssg-----------------------------------------*/
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const openGallery = document.getElementById("openGallery");
+    const fileInput = document.getElementById("imageInput1");
+    const sendBtn = document.querySelector(".fa-paper-plane");
+    const input = document.getElementById("chatInput");
+
+    if (!input || !sendBtn) {
+        console.error("Chat UI missing elements");
+        return;
+    }
+
+    // 📁 open gallery
+    if (openGallery && fileInput) {
+        openGallery.addEventListener("click", function () {
+            fileInput.click();
+        });
+    }
+
+    // 📤 send message
+    sendBtn.addEventListener("click", function () {
+
+        const message = input.value?.trim();
+        const file = fileInput?.files[0];
+
+        if (!message && !file) return;
+
+        const time = getCurrentTime();
+        addMessageToUI(message, "sent", time, file ? URL.createObjectURL(file) : null);
+
+        const formData = new FormData();
+        formData.append("message", message || "");
+        formData.append("conversationId", currentConversationId);
+
+        if (file) {
+            formData.append("image", file);
+        }
+
+        fetch("/chat/send", {
+          method: "POST",
+          body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+          loadMessages(currentConversationId);
+      });
+
+        input.value = "";
+        if (fileInput) fileInput.value = "";
+    });
+
+});
+
+/*----------------------------------------------groups--------------------------------------------------------*/
+document.addEventListener('DOMContentLoaded', function () {
+
+    // OPEN MODAL
+    document.querySelector('.create-group')?.addEventListener('click', () => {
+        document.getElementById('createGroupModal').classList.remove('d-none');
+    });
+
+    // CLOSE MODAL
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('createGroupModal').classList.add('d-none');
+        });
+    });
+
+    let selectedUsers = [];
+
+    // SELECT PARTICIPANTS
+    document.querySelectorAll('.participant-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = item.dataset.id;
+
+            item.classList.toggle('selected');
+
+            if (selectedUsers.includes(id)) {
+                selectedUsers = selectedUsers.filter(u => u !== id);
+            } else {
+                selectedUsers.push(id);
+            }
+        });
+    });
+
+    // 🔥 IMAGE BUTTON
+    document.getElementById('chooseImageBtn')?.addEventListener('click', () => {
+        document.getElementById('groupImageInput').click();
+    });
+
+    // 🔥 IMAGE PREVIEW
+    document.getElementById('groupImageInput')?.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('groupImagePreview').innerHTML =
+                `<img src="${e.target.result}" style="width:100%;height:100%;border-radius:50%">`;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // CREATE GROUP
+    document.getElementById('createGroupBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('groupName').value;
+    const image = document.getElementById('groupImageInput').files[0];
+
+    const formData = new FormData();
+
+    formData.append('name', name);
+    formData.append('members', JSON.stringify(selectedUsers));
+
+    if (image) {
+        formData.append('image', image);
+    }
+
+    fetch('/groupe/create', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+        location.reload();
+    });
+});
+
+document.querySelectorAll(".group-item").forEach(group => {
+    group.addEventListener("click", () => {
+
+        const groupId = group.dataset.id;
+        const groupName = group.dataset.name;
+        const groupPhoto = group.dataset.photo;
+
+        document.getElementById("chatUserName").innerText = groupName;
+        document.getElementById("chatUserPhoto").src = groupPhoto;
+
+        fetch("/chat/group/start/" + groupId)
+            .then(res => res.json())
+            .then(data => {
+
+                currentConversationId = data.conversationId;
+
+                if (!currentConversationId) {
+                    console.error("NO GROUP CONVERSATION");
+                    return;
+                }
+
+                document.getElementById("chatBox").classList.remove("d-none");
+
+                loadMessages(currentConversationId);
+            });
+    });
+});
+
+});
 
 
 </script>
@@ -2634,6 +3167,550 @@ input.form-control:focus {
     justify-content: center;
 }
 
+/*---------------------------------------------messagerie drop down---------------------------------------------*/
+/* Dropdown box */
+.messenger-dropdown {
+    width: 350px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Header */
+.messenger-header {
+    background: white;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Search */
+.messenger-search {
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+/* List scroll */
+.messenger-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Item */
+.messenger-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    transition: 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.messenger-item:hover {
+    background: #f0f2f5;
+}
+
+/* Avatar */
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* Content */
+.msg-content {
+    flex: 1;
+}
+
+.msg-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.msg-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.name {
+    font-weight: 600;
+}
+
+.time {
+    font-size: 12px;
+    color: gray;
+}
+
+.msg-text {
+    font-size: 13px;
+    color: gray;
+}
+
+/* Unread */
+.unread .name,
+.unread .msg-text {
+    font-weight: bold;
+    color: black;
+}
+
+
+.unread-dot {
+    width: 10px;
+    height: 10px;
+    background: red;
+    border-radius: 50%;
+}
+.fw-bold {
+    font-weight: 700;
+    color:black;
+}
+
+
+/*-------------------------discussion messenger-------------------------------------------*/
+
+.chat-box {
+    position: fixed;
+    bottom: 0;
+    right: 100px;
+    width: 320px;
+    height: 420px;
+    background: white;
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* HEADER */
+.chat-header {
+    background: linear-gradient(45deg, #1877f2, #a033ff);
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-user {
+    display: flex;
+    align-items: center;
+}
+
+.chat-user img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.chat-user .name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.chat-user .status {
+    font-size: 11px;
+}
+
+/* ACTIONS */
+.chat-actions i {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+/* BODY */
+.chat-body {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: #f0f2f5;
+}
+
+/* MESSAGES */
+.msg {
+  display: inline-block;
+  max-width: 65%;
+  min-width: fit-content; 
+
+  padding: 8px 12px;
+  border-radius: 18px;
+  font-size: 13px;
+
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.chat-body,
+.msg-row,
+.msg {
+  word-break: normal ;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+.sent {
+    background: #1877f2;
+    color: white;
+    margin-left: auto;
+    display: block;
+    width: fit-content;
+}
+
+
+.received {
+    background: #e4e6eb;
+    color: black;
+    display: block;
+    width: fit-content; /* 🔥 clé */
+}
+
+
+/* FOOTER */
+.chat-footer {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: #fff;
+}
+
+/* bouton + */
+.left-icons i {
+  font-size: 18px;
+  color: #1877f2;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* zone input */
+.input-box {
+  flex: 1;
+  position: relative;
+}
+
+/* input style messenger */
+.input-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: #f0f2f5;
+  padding: 10px 40px 10px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* icone dans input (smile) */
+.inside-icons {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.inside-icons i {
+  color: #1877f2;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* bouton send */
+.right-icons i {
+  font-size: 20px;
+  color: #1877f2;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+
+
+
+.msg-row > div {
+  flex: 1;
+  max-width: 100%;
+}
+/* alignement ligne message */
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+
+/* received à gauche */
+.received-row {
+  justify-content: flex-start;
+}
+
+/* sent à droite */
+.sent-row {
+  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* avatar receiver */
+.avatar2 {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+/* heure message */
+.msg-time {
+  font-size: 11px;
+  color: gray;
+  margin-top: 2px;
+  margin-left: 5px;
+  
+}
+
+/* heure côté sender alignée droite */
+.sent-row .msg-time {
+  margin-right: 5px;
+}
+
+/*-------------------image discussion-----------------*/
+#imageInput1 {
+    display: none;
+}
+.chat-img {
+    max-width: 220px;   /* limite largeur */
+    max-height: 220px;  /* limite hauteur */
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    margin-top: 5px;
+    object-fit: cover;
+    display: block;
+}
+
+/*------------------------------------------------- GROUPS-------------------------------------------------------- */
+.messenger-groups {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    padding-left: 12px;
+    padding-right: 8px;
+}
+
+.messenger-groups::-webkit-scrollbar {
+    display: none;
+}
+
+/* ITEM */
+/* container groupe */
+.group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 12px;
+    cursor: pointer;
+    width: 60px;
+     flex: 0 0 auto;
+}
+
+/* image ronde avec border */
+.group-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #0084ff; /* bleu messenger */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.group-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* nom en bas */
+.group-name {
+    font-size: 10px;
+    margin-top: 4px;
+    text-align: center;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 60px;
+}
+/* HOVER */
+.group-item:hover {
+    transform: scale(1.08);
+    border-color: #007bff;
+}
+
+/* CREATE BUTTON */
+.create-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e4e6eb;
+    color: #333;
+    font-size: 18px;
+}
+
+.create-group:hover {
+    background: #007bff;
+    color: white;
+}
+
+
+/* BACKDROP */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* BOX */
+.modal-content-box {
+    width: 350px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+}
+
+/* HEADER */
+.modal-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+}
+
+.close-modal {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+/* BODY */
+.modal-body {
+    padding: 15px;
+}
+
+/* FOOTER */
+.modal-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+/* SECTION */
+.participants-section {
+    margin-top: 10px;
+}
+
+.participants-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* LIST */
+.participants-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid #eee;
+}
+
+/* ITEM */
+.participant-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+}
+
+.participant-item:hover {
+    background: #f5f7fa;
+}
+
+/* AVATAR */
+.participant-item .avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* NAME */
+.participant-item .name {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* CHECK ICON */
+.check-icon {
+    color: #007bff;
+    display: none;
+}
+
+/* SELECTED */
+.participant-item.selected {
+    background: #e7f1ff;
+}
+
+.participant-item.selected .check-icon {
+    display: block;
+}
+
+/* IMAGE PREVIEW */
+.group-image-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    cursor: pointer;
+    overflow: hidden;
+    font-size: 20px;
+    color: #777;
+    transition: 0.2s;
+}
+
+.group-image-preview:hover {
+    background: #e4e6eb;
+}
+
+/* IMAGE */
+.group-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
 
 </style>

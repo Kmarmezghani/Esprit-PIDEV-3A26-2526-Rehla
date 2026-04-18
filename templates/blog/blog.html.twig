@@ -178,7 +178,7 @@
     <!-- DROPDOWN MESSENGER -->
     <div class="dropdown-menu dropdown-menu-right messenger-dropdown shadow-lg p-0">
 
-        <!-- HEADER -->
+            <!-- HEADER -->
         <div class="messenger-header p-3 d-flex justify-content-between align-items-center">
             <strong>Chats</strong>
             <i class="fa fa-ellipsis-h"></i>
@@ -188,6 +188,36 @@
         <div class="px-3 pb-2">
             <input type="text" class="form-control messenger-search" placeholder="Search Messenger">
         </div>
+        <!-- GROUP STORIES -->
+        <div class="messenger-groups px-3 pt-2 pb-2">
+
+            <!-- CREATE GROUP -->
+            <div class="group-item create-group" title="Créer groupe">
+                <i class="fa fa-plus"></i>
+            </div>
+
+            <!-- GROUP LIST -->
+            {% if groups is defined and groups|length > 0 %}
+            {% for group in groups %}
+              <div class="group-item"
+                  data-id="{{ group.id }}"
+                  data-name="{{ group.nom }}"
+                  data-photo="{{ group.image ? asset(group.image) : asset('assets/images/default-user.png') }}">
+
+                  <div class="group-avatar">
+                      <img src="{{ group.image ? asset(group.image) : asset('assets/images/default-user.png') }}">
+                  </div>
+
+                  <div class="group-name">
+                      {{ group.nom }}
+                  </div>
+
+              </div>
+          {% endfor %}
+            {% endif %}
+
+        </div>
+
 
         <!-- LIST -->
           <div class="messenger-list">
@@ -799,7 +829,80 @@
 
 </div>
 </div>
+/*------------------------------------------------------pop up créer groupe ------------------------------------------*/
 
+<!-- MODAL CREATE GROUP -->
+<div id="createGroupModal" class="custom-modal d-none">
+
+  <div class="modal-content-box">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h5>Créer un groupe</h5>
+      <span class="close-modal">&times;</span>
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- NOM GROUPE -->
+      <input type="text" id="groupName" class="form-control mb-3" placeholder="Nom du groupe">
+
+      <!-- USERS SELECT -->
+
+    <!-- IMAGE GROUPE -->
+<div class="group-image-section text-center mb-3">
+
+    <div class="group-image-preview" id="groupImagePreview">
+        <i class="fa fa-camera"></i>
+    </div>
+
+    <input type="file" id="groupImageInput" accept="image/*" hidden>
+
+    <button type="button" class="btn btn-light btn-sm mt-2" id="chooseImageBtn">
+        Choisir une image
+    </button>
+
+</div>
+
+
+<!-- PARTICIPANTS -->
+<div class="participants-section">
+
+  <label class="participants-title">Participants</label>
+
+  <div class="participants-list">
+
+    {% for user in users %}
+      <div class="participant-item" data-id="{{ user.id }}">
+
+        <img src="{{ asset(user.profile_photo ?? 'assets/images/default-user.png') }}" class="avatar">
+
+        <span class="name">
+          {{ user.nom }} {{ user.prenom }}
+        </span>
+
+        <i class="fa fa-check check-icon"></i>
+
+      </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="btn btn-secondary close-modal">Annuler</button>
+      <button type="button" class="btn btn-primary" id="createGroupBtn">Créer</button>
+    </div>
+
+  </div>
+
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1979,12 +2082,16 @@ function loadMessages(conversationId) {
             const container = document.getElementById("chatMessages");
             container.innerHTML = "";
 
-            messages.forEach(msg => {
+           messages.forEach(msg => {
+            console.log("MSG FULL:", msg);
 
-    const type = (parseInt(msg.sender_id) === parseInt(currentUserId)) ? "sent" : "received";
+          const type = (parseInt(msg.sender_id) === parseInt(currentUserId)) ? "sent" : "received";
 
-    addMessageToUI(msg.contenu, type, msg.sent_at, msg.image);
-});
+          const senderName = msg.sender_name || "";
+
+          addMessageToUI(msg.contenu, type, msg.sent_at, msg.image, senderName,msg.sender_photo);
+
+      });
         })
         .catch(err => {
             console.error("FETCH ERROR:", err);
@@ -2000,7 +2107,7 @@ function getCurrentTime() {
 }
 
 
-function addMessageToUI(message, type, time, image = null) {
+function addMessageToUI(message, type, time, image = null,senderName = null, senderPhoto = null) {
 
     fetch("/chat/render-message", {
         method: "POST",
@@ -2011,7 +2118,9 @@ function addMessageToUI(message, type, time, image = null) {
             message: message,
             type: type,
             time: time,
-            image: image
+            image: image,
+            sender_name: senderName,
+            sender_photo: senderPhoto
         })
     })
     .then(res => res.text())
@@ -2097,6 +2206,115 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+/*----------------------------------------------groups--------------------------------------------------------*/
+document.addEventListener('DOMContentLoaded', function () {
+
+    // OPEN MODAL
+    document.querySelector('.create-group')?.addEventListener('click', () => {
+        document.getElementById('createGroupModal').classList.remove('d-none');
+    });
+
+    // CLOSE MODAL
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('createGroupModal').classList.add('d-none');
+        });
+    });
+
+    let selectedUsers = [];
+
+    // SELECT PARTICIPANTS
+    document.querySelectorAll('.participant-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = item.dataset.id;
+
+            item.classList.toggle('selected');
+
+            if (selectedUsers.includes(id)) {
+                selectedUsers = selectedUsers.filter(u => u !== id);
+            } else {
+                selectedUsers.push(id);
+            }
+        });
+    });
+
+    // 🔥 IMAGE BUTTON
+    document.getElementById('chooseImageBtn')?.addEventListener('click', () => {
+        document.getElementById('groupImageInput').click();
+    });
+
+    // 🔥 IMAGE PREVIEW
+    document.getElementById('groupImageInput')?.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('groupImagePreview').innerHTML =
+                `<img src="${e.target.result}" style="width:100%;height:100%;border-radius:50%">`;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // CREATE GROUP
+    document.getElementById('createGroupBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('groupName').value;
+    const image = document.getElementById('groupImageInput').files[0];
+
+    const formData = new FormData();
+
+    formData.append('name', name);
+    formData.append('members', JSON.stringify(selectedUsers));
+
+    if (image) {
+        formData.append('image', image);
+    }
+
+    fetch('/groupe/create', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+        location.reload();
+    });
+});
+
+document.querySelectorAll(".group-item").forEach(group => {
+    group.addEventListener("click", () => {
+
+        const groupId = group.dataset.id;
+        const groupName = group.dataset.name;
+        const groupPhoto = group.dataset.photo;
+
+        document.getElementById("chatUserName").innerText = groupName;
+        document.getElementById("chatUserPhoto").src = groupPhoto;
+
+        fetch("/chat/group/start/" + groupId)
+            .then(res => res.json())
+            .then(data => {
+
+                currentConversationId = data.conversationId;
+
+                if (!currentConversationId) {
+                    console.error("NO GROUP CONVERSATION");
+                    return;
+                }
+
+                document.getElementById("chatBox").classList.remove("d-none");
+
+                loadMessages(currentConversationId);
+            });
+    });
+});
+
+});
+
+
 </script>
 
 
@@ -3265,6 +3483,235 @@ input.form-control:focus {
     object-fit: cover;
     display: block;
 }
+
+/*------------------------------------------------- GROUPS-------------------------------------------------------- */
+.messenger-groups {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    padding-left: 12px;
+    padding-right: 8px;
+}
+
+.messenger-groups::-webkit-scrollbar {
+    display: none;
+}
+
+/* ITEM */
+/* container groupe */
+.group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 12px;
+    cursor: pointer;
+    width: 60px;
+     flex: 0 0 auto;
+}
+
+/* image ronde avec border */
+.group-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #0084ff; /* bleu messenger */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.group-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* nom en bas */
+.group-name {
+    font-size: 10px;
+    margin-top: 4px;
+    text-align: center;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 60px;
+}
+/* HOVER */
+.group-item:hover {
+    transform: scale(1.08);
+    border-color: #007bff;
+}
+
+/* CREATE BUTTON */
+.create-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e4e6eb;
+    color: #333;
+    font-size: 18px;
+}
+
+.create-group:hover {
+    background: #007bff;
+    color: white;
+}
+
+
+/* BACKDROP */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* BOX */
+.modal-content-box {
+    width: 350px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+}
+
+/* HEADER */
+.modal-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+}
+
+.close-modal {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+/* BODY */
+.modal-body {
+    padding: 15px;
+}
+
+/* FOOTER */
+.modal-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+/* SECTION */
+.participants-section {
+    margin-top: 10px;
+}
+
+.participants-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* LIST */
+.participants-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid #eee;
+}
+
+/* ITEM */
+.participant-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+}
+
+.participant-item:hover {
+    background: #f5f7fa;
+}
+
+/* AVATAR */
+.participant-item .avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* NAME */
+.participant-item .name {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* CHECK ICON */
+.check-icon {
+    color: #007bff;
+    display: none;
+}
+
+/* SELECTED */
+.participant-item.selected {
+    background: #e7f1ff;
+}
+
+.participant-item.selected .check-icon {
+    display: block;
+}
+
+/* IMAGE PREVIEW */
+.group-image-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    cursor: pointer;
+    overflow: hidden;
+    font-size: 20px;
+    color: #777;
+    transition: 0.2s;
+}
+
+.group-image-preview:hover {
+    background: #e4e6eb;
+}
+
+/* IMAGE */
+.group-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 
 </style>
 

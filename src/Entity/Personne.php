@@ -98,6 +98,10 @@ class Personne
     #[ORM\OneToMany(mappedBy: "receiver_id", targetEntity: Notification::class)]
     private Collection $receivedNotifications;
 
+    #[ORM\ManyToMany(targetEntity: Groupe::class, mappedBy: "membres")]
+    private Collection $groupes;
+
+
     // ------------------- Constructor -------------------
     public function __construct()
     {
@@ -115,7 +119,10 @@ class Personne
         $this->likess = new ArrayCollection();
         $this->sentNotifications = new ArrayCollection();
         $this->receivedNotifications = new ArrayCollection();
+        $this->groupes = new ArrayCollection();
+
     }
+    
 
     // ------------------- Getters & Setters simples -------------------
     public function getId() { return $this->id; }
@@ -159,6 +166,11 @@ class Personne
 
     public function getResetTokenExpiry(): ?\DateTimeInterface { return $this->resetTokenExpiry; }
     public function setResetTokenExpiry(?\DateTimeInterface $value): void { $this->resetTokenExpiry = $value; }
+    public function getGroupes(): Collection
+{
+    return $this->groupes;
+}
+
 
     // ------------------- Relations Favoris -------------------
     public function getFavoriss(): Collection { return $this->favoriss; }

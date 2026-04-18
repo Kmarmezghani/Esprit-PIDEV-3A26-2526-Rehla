@@ -16,10 +16,18 @@
         <div class="msg-time text-right">{{ time }}</div>
     </div>
 </div>
+
 {% else %}
 <div class="msg-row received-row">
-    <img class="avatar2" src="{{ asset('assets/images/default-user.png') }}">
+
+    <img class="avatar2"
+         src="{{ sender_photo ? asset(sender_photo) : asset('assets/images/default-user.png') }}">
+
     <div>
+
+        {% if sender_name %}
+            <div class="msg-sender">{{ sender_name }}</div>
+        {% endif %}
 
         {% if image %}
             <img src="/{{ image }}" class="chat-img">
@@ -29,7 +37,17 @@
 
         <div class="msg-time">{{ time }}</div>
     </div>
+
 </div>
 {% endif %}
+<style>
+.msg-sender {
+    font-size: 11px; 
+    font-weight: 600;
+    color: #777;
+    margin-bottom: 2px;
+}
+</style>
+
 
 {% endblock %}

@@ -66,6 +66,16 @@ if ($status === 'ok') {
 
     $posts = $this->getFilteredPosts($request, $em);
     $users = $em->getRepository(Personne::class)->findAll();
+    $groups = $personne->getGroupes();
+
+        $groups = $em->createQueryBuilder()
+        ->select('g')
+        ->from(\App\Entity\Groupe::class, 'g')
+        ->join('g.membres', 'm')
+        ->where('m = :user')
+        ->setParameter('user', $personne)
+        ->getQuery()
+        ->getResult();
 
         $conversations = $em->createQueryBuilder()
             ->select('c')
@@ -165,7 +175,9 @@ if ($status === 'ok') {
             'form' => $form->createView(),
             'chatList' => $chatList,
             'currentUserId' => $personne?->getId(),
-            'unreadTotal' => $totalUnread
+            'unreadTotal' => $totalUnread,
+            'users' => $users,
+            'groups' => $groups
         ]);
 
 }
@@ -175,6 +187,102 @@ private function getConnectedUser(Request $request, EntityManagerInterface $em):
 {
     $userId = $request->getSession()->get('user_id');
     return $em->getRepository(Personne::class)->find($userId);
+}
+
+
+/*--------------------------------------------------groups-------------------------------------------------------------*/
+#[Route('/chat/group/start/{id}', name: 'chat_group_start')]
+public function startGroupChat($id, EntityManagerInterface $em, Request $request)
+{
+    $personne = $this->getConnectedUser($request, $em);
+
+    if (!$personne) {
+        return $this->json(['error' => 'User not connected'], 401);
+    }
+
+    $groupe = $em->getRepository(\App\Entity\Groupe::class)->find($id);
+
+    if (!$groupe) {
+        return $this->json(['error' => 'Group not found'], 404);
+    }
+
+    // 🔥 chercher conversation existante
+    $conv = $em->getRepository(Conversation::class)->findOneBy([
+        'groupe' => $groupe
+    ]);
+
+    // 🔥 sinon créer
+    if (!$conv) {
+        $conv = new Conversation();
+        $conv->setGroupe($groupe);
+        $conv->setCreated_at(new \DateTime());
+
+        $conv->setUser1_id(null);
+        $conv->setUser2_id(null);
+
+        $em->persist($conv);
+        $em->flush();
+    }
+
+    return $this->json([
+        'conversationId' => $conv->getId()
+    ]);
+}
+#[Route('/groupe/create', name: 'groupe_create', methods: ['POST'])]
+public function createGroup(Request $request, EntityManagerInterface $em): JsonResponse
+{
+    try {
+
+        $personne = $this->getConnectedUser($request, $em);
+
+        if (!$personne) {
+            return $this->json(['error' => 'Not connected'], 401);
+        }
+
+        $name = $request->request->get('name');
+
+        $members = json_decode($request->request->get('members'), true) ?? [];
+
+        $imageFile = $request->files->get('image');
+
+        $groupe = new \App\Entity\Groupe();
+        $groupe->setNom($name);
+        $groupe->setCreated_at(new \DateTime());
+
+        $groupe->addMembre($personne);
+
+        foreach ($members as $id) {
+            $user = $em->getRepository(\App\Entity\Personne::class)->find($id);
+            if ($user) {
+                $groupe->addMembre($user);
+            }
+        }
+        if ($imageFile) {
+            $newFilename = uniqid().'.'.$imageFile->guessExtension();
+
+            $imageFile->move(
+                $this->getParameter('kernel.project_dir') . '/public/uploads/groups',
+                $newFilename
+            );
+
+            $groupe->setImage('uploads/groups/' . $newFilename);
+        }
+
+        $em->persist($groupe);
+        $em->flush();
+
+        return $this->json([
+            'status' => 'ok',
+            'image' => $groupe->getImage()
+        ]);
+
+    } catch (\Throwable $e) {
+
+        return $this->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine()
+        ], 500);
+    }
 }
 
 
@@ -285,7 +393,10 @@ public function renderMessage(Request $request): Response
             'message' => $data['message'] ?? '',
             'image' => $data['image'] ?? null,
             'type' => $data['type'] ?? 'received',
-            'time' => $data['time'] ?? ''
+            'time' => $data['time'] ?? '',
+            'sender_name' => $data['sender_name'] ?? null,
+            'sender_photo' => $data['sender_photo'] ?? null
+            
 ]);
 
 
@@ -312,11 +423,13 @@ public function getMessages($id, EntityManagerInterface $em): JsonResponse
 
     foreach ($messages as $msg) {
         $data[] = [
-        'contenu' => $msg->getContenu(),
-        'image' => $msg->getImage(),
-        'sender_id' => $msg->getSender_id()?->getId(),
-        'sent_at' => $msg->getSent_at()->format('H:i')
-    ];
+    'contenu' => $msg->getContenu(),
+    'image' => $msg->getImage(),
+    'sender_id' => $msg->getSender_id()?->getId(),
+    'sender_name' => $msg->getSender_id()?->getNom(),
+    'sent_at' => $msg->getSent_at()->format('H:i'),
+    'sender_photo' => $msg->getSender_id()?->getProfile_photo(),
+];
     }
 
     return $this->json($data);

@@ -26,6 +26,7 @@ use App\Service\AyrshareService;
 use App\Service\Messagerie\ConversationService;
 use App\Entity\Message;
 use App\Entity\Conversation;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class BlogController extends AbstractController
 
@@ -878,7 +879,42 @@ public function share(
 }
 
 
+#[Route('/translate', name: 'translate', methods: ['POST'])]
+public function translate(Request $request, HttpClientInterface $client): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
 
+    // 🔒 Sécurité basique
+    if (!isset($data['text']) || empty($data['text'])) {
+        return $this->json(['error' => 'Texte manquant'], 400);
+    }
+
+    $target = $data['target'] ?? 'fr';
+
+    try {
+        $response = $client->request('POST', 'https://api.langbly.com/language/translate/v2', [
+            'headers' => [
+                'Authorization' => 'Bearer UrxVrp3dAkGM1hqRe5aYsL'
+            ],
+            'json' => [
+                'q' => $data['text'],
+                'source' => 'auto',
+                'target' => $target
+            ]
+        ]);
+
+        $result = $response->toArray();
+
+        return $this->json([
+            'translation' => $result['data']['translations'][0]['translatedText'] ?? ''
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->json([
+            'error' => 'Erreur traduction'
+        ], 500);
+    }
+}
 
 
 }

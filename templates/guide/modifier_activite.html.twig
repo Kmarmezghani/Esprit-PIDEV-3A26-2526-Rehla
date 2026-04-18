@@ -586,6 +586,16 @@
             font-size: 14px;
         }
     }
+    .is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.15) !important;
+}
+
+.js-step-error {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 6px;
+}
 </style>
 <script>
 		function confirmLogoutHome(e) {
@@ -610,6 +620,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("multiStepForm");
     const steps = document.querySelectorAll(".form-step");
     const nextBtns = document.querySelectorAll(".next-step");
     const prevBtns = document.querySelectorAll(".prev-step");
@@ -634,8 +645,168 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function clearStepErrors(stepIndex) {
+        const step = steps[stepIndex];
+        step.querySelectorAll(".js-step-error").forEach(el => el.remove());
+        step.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+    }
+
+    function addError(field, message) {
+        field.classList.add("is-invalid");
+
+        const wrapper = field.closest('.upload-wrapper, .col-md-6, .col-md-12, .mb-3') || field.parentElement;
+
+        const oldError = wrapper.querySelector(".js-step-error");
+        if (oldError) {
+            oldError.remove();
+        }
+
+        const error = document.createElement("div");
+        error.className = "form-error js-step-error";
+        error.innerHTML = "&#8226; " + message;
+
+        wrapper.appendChild(error);
+    }
+
+    function validateStep(stepIndex) {
+        clearStepErrors(stepIndex);
+
+        const step = steps[stepIndex];
+        let isValid = true;
+
+        const imageField = step.querySelector('[name$="[image]"]');
+        const nom = step.querySelector('[name$="[nom]"]');
+        const description = step.querySelector('[name$="[description]"]');
+        const dateDebut = step.querySelector('[name$="[date_debut]"]');
+        const dateFin = step.querySelector('[name$="[date_fin]"]');
+        const destination = step.querySelector('[name$="[destination]"]');
+        const prix = step.querySelector('[name$="[prix]"]');
+        const maxPlaces = step.querySelector('[name$="[max_places]"]');
+        const typeActivite = step.querySelector('[name$="[typeActivite]"]');
+
+        // IMAGE (edit: existing image is allowed)
+        if (imageField) {
+            const hasExistingImage = document.querySelector('.activity-preview-img') !== null;
+            const hasNewImage = imageField.files && imageField.files.length > 0;
+
+            if (!hasExistingImage && !hasNewImage) {
+                addError(imageField, "L'image de l'activité est obligatoire.");
+                isValid = false;
+            } else if (hasNewImage) {
+                const file = imageField.files[0];
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+                const maxSize = 2 * 1024 * 1024;
+
+                if (!allowedTypes.includes(file.type)) {
+                    addError(imageField, "L'image doit être au format JPG, JPEG, PNG ou WEBP.");
+                    isValid = false;
+                } else if (file.size > maxSize) {
+                    addError(imageField, "L'image ne doit pas dépasser 2 Mo.");
+                    isValid = false;
+                }
+            }
+        }
+
+        if (nom && nom.value.trim() === "") {
+            addError(nom, "Le nom est obligatoire.");
+            isValid = false;
+        }
+
+        if (description && description.value.trim() === "") {
+            addError(description, "La description est obligatoire.");
+            isValid = false;
+        }
+
+        if (destination) {
+            const value = destination.value ? destination.value.trim() : "";
+            if (value === "") {
+                addError(destination, "La destination est obligatoire.");
+                isValid = false;
+            }
+        }
+
+        if (typeActivite) {
+            const value = typeActivite.value ? typeActivite.value.trim() : "";
+            if (value === "") {
+                addError(typeActivite, "Le type d'activité est obligatoire.");
+                isValid = false;
+            }
+        }
+
+        if (prix) {
+            const prixValue = parseFloat(prix.value);
+            if (prix.value.trim() === "") {
+                addError(prix, "Le prix est obligatoire.");
+                isValid = false;
+            } else if (isNaN(prixValue) || prixValue <= 0) {
+                addError(prix, "Le prix doit être supérieur à 0.");
+                isValid = false;
+            }
+        }
+
+        if (maxPlaces) {
+            const maxPlacesValue = parseInt(maxPlaces.value, 10);
+            if (maxPlaces.value.trim() === "") {
+                addError(maxPlaces, "Le nombre de places est obligatoire.");
+                isValid = false;
+            } else if (isNaN(maxPlacesValue) || maxPlacesValue <= 0) {
+                addError(maxPlaces, "Le nombre de places doit être supérieur à 0.");
+                isValid = false;
+            }
+        }
+
+        if (dateDebut) {
+            if (dateDebut.value.trim() === "") {
+                addError(dateDebut, "La date de début est obligatoire.");
+                isValid = false;
+            } else {
+                const debut = new Date(dateDebut.value);
+                const now = new Date();
+
+                if (debut < now) {
+                    addError(dateDebut, "La date de début ne peut pas être antérieure à aujourd'hui.");
+                    isValid = false;
+                }
+            }
+        }
+
+        if (dateFin) {
+            if (dateFin.value.trim() === "") {
+                addError(dateFin, "La date de fin est obligatoire.");
+                isValid = false;
+            }
+        }
+
+        if (dateDebut && dateFin && dateDebut.value && dateFin.value) {
+            const debut = new Date(dateDebut.value);
+            const fin = new Date(dateFin.value);
+
+            if (fin <= debut) {
+                addError(dateFin, "La date de fin doit être postérieure à la date de début.");
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    function validateAllStepsUntil(stepIndex) {
+        for (let i = 0; i <= stepIndex; i++) {
+            if (!validateStep(i)) {
+                currentStep = i;
+                showStep(currentStep);
+                return false;
+            }
+        }
+        return true;
+    }
+
     nextBtns.forEach(btn => {
         btn.addEventListener("click", function () {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+
             if (currentStep < steps.length - 1) {
                 currentStep++;
                 showStep(currentStep);
@@ -648,6 +819,34 @@ document.addEventListener("DOMContentLoaded", function () {
             if (currentStep > 0) {
                 currentStep--;
                 showStep(currentStep);
+            }
+        });
+    });
+
+    form.addEventListener("submit", function (e) {
+        const lastStepIndex = steps.length - 1;
+
+        if (!validateAllStepsUntil(lastStepIndex)) {
+            e.preventDefault();
+        }
+    });
+
+    document.querySelectorAll("input, textarea, select").forEach(field => {
+        field.addEventListener("input", function () {
+            field.classList.remove("is-invalid");
+            const wrapper = field.closest('.upload-wrapper, .col-md-6, .col-md-12, .mb-3') || field.parentElement;
+            const oldError = wrapper.querySelector(".js-step-error");
+            if (oldError) {
+                oldError.remove();
+            }
+        });
+
+        field.addEventListener("change", function () {
+            field.classList.remove("is-invalid");
+            const wrapper = field.closest('.upload-wrapper, .col-md-6, .col-md-12, .mb-3') || field.parentElement;
+            const oldError = wrapper.querySelector(".js-step-error");
+            if (oldError) {
+                oldError.remove();
             }
         });
     });

@@ -169,17 +169,17 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         {{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(form.nom, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        {{ form_widget(form.nom, {'attr': {'class': 'form-control custom-input', 'required': 'required'}}) }}
                                         <div class="form-error">
                                             {{ form_errors(form.nom) }}
                                         </div>
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        {{ form_label(form.prix, 'Prix', {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(form.prix, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        {{ form_label(form.typeActivite, "Type d'activité", {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.typeActivite, {'attr': {'class': 'form-control custom-input', 'required': 'required'}}) }}
                                         <div class="form-error">
-                                            {{ form_errors(form.prix) }}
+                                            {{ form_errors(form.typeActivite) }}
                                         </div>
                                     </div>
                                 </div>
@@ -194,12 +194,30 @@
                         <div class="form-step d-none">
                             <div class="step-content-box">
                                 <div class="mb-3">
-                                    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.description, {'attr': {'class': 'form-control custom-input custom-textarea', 'rows': 5}}) }}
-                                    <div class="form-error">
-                                        {{ form_errors(form.description) }}
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label mb-0'}}) }}
+                                            <button type="button" id="generate-description-btn" class="btn btn-outline-primary btn-sm">
+                                                Générer avec IA
+                                            </button>
+                                        </div>
+
+                                        {{ form_widget(form.description, {
+                                            'attr': {
+                                                'class': 'form-control custom-input custom-textarea',
+                                                'rows': 5
+                                            }
+                                        }) }}
+
+                                        <div id="ai-description-loader" class="mt-2 text-primary" style="display:none;">
+                                            Génération en cours...
+                                        </div>
+
+                                        <div id="ai-description-error" class="form-error" style="display:none;"></div>
+
+                                        <div class="form-error">
+                                            {{ form_errors(form.description) }}
+                                        </div>
                                     </div>
-                                </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -239,17 +257,17 @@
                             <div class="step-content-box">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        {{ form_label(form.typeActivite, "Type d'activité", {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(form.typeActivite, {'attr': {'class': 'form-control custom-input'}}) }}
+                                        {{ form_label(form.prix, 'Prix', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(form.prix, {'attr': {'class': 'form-control custom-input', 'required': 'required', 'min': '0.01'}}) }}
                                         <div class="form-error">
-                                            {{ form_errors(form.typeActivite) }}
+                                            {{ form_errors(form.prix) }}
                                         </div>
                                     </div>
 
                                     {% if form.max_places is defined %}
                                         <div class="col-md-6 mb-3">
                                             {{ form_label(form.max_places, 'Places maximum', {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(form.max_places, {'attr': {'class': 'form-control custom-input'}}) }}
+                                            {{ form_widget(form.max_places, {'attr': {'class': 'form-control custom-input', 'required': 'required', 'min': '1'}}) }}
                                             <div class="form-error">
                                                 {{ form_errors(form.max_places) }}
                                             </div>
@@ -344,6 +362,83 @@
         </div>
     </div>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const generateBtn = document.getElementById('generate-description-btn');
+    const loader = document.getElementById('ai-description-loader');
+    const errorBox = document.getElementById('ai-description-error');
+
+    if (!generateBtn) return;
+
+    generateBtn.addEventListener('click', async function () {
+        const nomField = document.querySelector('[name$="[nom]"]');
+        const typeField = document.querySelector('[name$="[typeActivite]"]');
+        const destinationField = document.querySelector('[name$="[destination]"]');
+        const dateDebutField = document.querySelector('[name$="[date_debut]"]');
+        const dateFinField = document.querySelector('[name$="[date_fin]"]');
+        const descriptionField = document.querySelector('[name$="[description]"]');
+
+        errorBox.style.display = 'none';
+        errorBox.textContent = '';
+        loader.style.display = 'block';
+        generateBtn.disabled = true;
+
+        if (!nomField?.value.trim() || !typeField?.value.trim() || !destinationField?.value.trim()) {
+            loader.style.display = 'none';
+            generateBtn.disabled = false;
+            errorBox.textContent = "Remplis le nom, le type et la destination avant de générer.";
+            errorBox.style.display = 'block';
+            return;
+        }
+
+        let duration = '';
+        if (dateDebutField && dateFinField && dateDebutField.value && dateFinField.value) {
+            duration = dateDebutField.value + ' -> ' + dateFinField.value;
+        }
+
+        try {
+            const response = await fetch('{{ path('guide_generate_description') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    nom: nomField.value,
+                    typeActivite: typeField.value,
+                    destination: destinationField.value,
+                    duration: duration
+                })
+            });
+
+            const rawText = await response.text();
+            console.log('RAW RESPONSE:', rawText);
+
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                throw new Error('Le serveur renvoie du HTML au lieu de JSON. Ouvre F12 > Console > RAW RESPONSE.');
+            }
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Erreur lors de la génération.');
+            }
+
+            if (descriptionField) {
+                descriptionField.value = data.description;
+            }
+        } catch (error) {
+            console.error(error);
+            errorBox.textContent = error.message;
+            errorBox.style.display = 'block';
+        } finally {
+            loader.style.display = 'none';
+            generateBtn.disabled = false;
+        }
+    });
+});
+</script>
 <script>
 		function confirmLogoutHome(e) {
 			e.preventDefault();
@@ -606,10 +701,20 @@
             font-size: 14px;
         }
     }
+    .is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.js-step-error {
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 6px;
+}
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("multiStepForm");
     const steps = document.querySelectorAll(".form-step");
     const nextBtns = document.querySelectorAll(".next-step");
     const prevBtns = document.querySelectorAll(".prev-step");
@@ -634,8 +739,167 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function clearStepErrors(stepIndex) {
+        const step = steps[stepIndex];
+        step.querySelectorAll(".js-step-error").forEach(el => el.remove());
+        step.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+    }
+
+    function addError(field, message) {
+        field.classList.add("is-invalid");
+
+        const wrapper = field.closest('.upload-wrapper, .col-md-6, .col-md-12, .mb-3') || field.parentElement;
+
+        const oldError = wrapper.querySelector(".js-step-error");
+        if (oldError) {
+            oldError.remove();
+        }
+
+        const error = document.createElement("div");
+        error.className = "form-error js-step-error";
+        error.innerHTML = "&#8226; " + message;
+
+        wrapper.appendChild(error);
+    }
+
+    function validateStep(stepIndex) {
+        clearStepErrors(stepIndex);
+
+        const step = steps[stepIndex];
+        let isValid = true;
+
+        const imageField = step.querySelector('[name$="[image]"]');
+        const nom = step.querySelector('[name$="[nom]"]');
+        const description = step.querySelector('[name$="[description]"]');
+        const dateDebut = step.querySelector('[name$="[date_debut]"]');
+        const dateFin = step.querySelector('[name$="[date_fin]"]');
+        const destination = step.querySelector('[name$="[destination]"]');
+        const prix = step.querySelector('[name$="[prix]"]');
+        const maxPlaces = step.querySelector('[name$="[max_places]"]');
+        const typeActivite = step.querySelector('[name$="[typeActivite]"]');
+
+        if (imageField) {
+            const hasExistingImage = document.querySelector('.activity-preview-img') !== null;
+            const hasNewImage = imageField.files && imageField.files.length > 0;
+
+            if (!hasExistingImage && !hasNewImage) {
+                addError(imageField, "L'image de l'activité est obligatoire.");
+                isValid = false;
+            } else if (hasNewImage) {
+                const file = imageField.files[0];
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+                const maxSize = 2 * 1024 * 1024;
+
+                if (!allowedTypes.includes(file.type)) {
+                    addError(imageField, "L'image doit être au format JPG, JPEG, PNG ou WEBP.");
+                    isValid = false;
+                } else if (file.size > maxSize) {
+                    addError(imageField, "L'image ne doit pas dépasser 2 Mo.");
+                    isValid = false;
+                }
+            }
+        }
+
+        if (nom && nom.value.trim() === "") {
+            addError(nom, "Le nom est obligatoire.");
+            isValid = false;
+        }
+
+        if (typeActivite) {
+            const value = typeActivite.value ? typeActivite.value.trim() : "";
+            if (value === "") {
+                addError(typeActivite, "Le type d'activité est obligatoire.");
+                isValid = false;
+            }
+        }
+
+        if (description && description.value.trim() === "") {
+            addError(description, "La description est obligatoire.");
+            isValid = false;
+        }
+
+        if (destination) {
+            const value = destination.value ? destination.value.trim() : "";
+            if (value === "") {
+                addError(destination, "La destination est obligatoire.");
+                isValid = false;
+            }
+        }
+
+        if (prix) {
+            const prixValue = parseFloat(prix.value);
+            if (prix.value.trim() === "") {
+                addError(prix, "Le prix est obligatoire.");
+                isValid = false;
+            } else if (isNaN(prixValue) || prixValue <= 0) {
+                addError(prix, "Le prix doit être supérieur à 0.");
+                isValid = false;
+            }
+        }
+
+        if (maxPlaces) {
+            const maxPlacesValue = parseInt(maxPlaces.value, 10);
+            if (maxPlaces.value.trim() === "") {
+                addError(maxPlaces, "Le nombre de places est obligatoire.");
+                isValid = false;
+            } else if (isNaN(maxPlacesValue) || maxPlacesValue <= 0) {
+                addError(maxPlaces, "Le nombre de places doit être supérieur à 0.");
+                isValid = false;
+            }
+        }
+
+        if (dateDebut) {
+            if (dateDebut.value.trim() === "") {
+                addError(dateDebut, "La date de début est obligatoire.");
+                isValid = false;
+            } else {
+                const debut = new Date(dateDebut.value);
+                const now = new Date();
+
+                if (debut < now) {
+                    addError(dateDebut, "La date de début ne peut pas être antérieure à aujourd'hui.");
+                    isValid = false;
+                }
+            }
+        }
+
+        if (dateFin) {
+            if (dateFin.value.trim() === "") {
+                addError(dateFin, "La date de fin est obligatoire.");
+                isValid = false;
+            }
+        }
+
+        if (dateDebut && dateFin && dateDebut.value && dateFin.value) {
+            const debut = new Date(dateDebut.value);
+            const fin = new Date(dateFin.value);
+
+            if (fin <= debut) {
+                addError(dateFin, "La date de fin doit être postérieure à la date de début.");
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    function validateAllStepsUntil(stepIndex) {
+        for (let i = 0; i <= stepIndex; i++) {
+            if (!validateStep(i)) {
+                currentStep = i;
+                showStep(currentStep);
+                return false;
+            }
+        }
+        return true;
+    }
+
     nextBtns.forEach(btn => {
         btn.addEventListener("click", function () {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+
             if (currentStep < steps.length - 1) {
                 currentStep++;
                 showStep(currentStep);
@@ -652,10 +916,37 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    form.addEventListener("submit", function (e) {
+        const lastStepIndex = steps.length - 1;
+
+        if (!validateAllStepsUntil(lastStepIndex)) {
+            e.preventDefault();
+        }
+    });
+
+    document.querySelectorAll("input, textarea, select").forEach(field => {
+        field.addEventListener("input", function () {
+            field.classList.remove("is-invalid");
+            const wrapper = field.closest('.upload-wrapper, .col-md-6, .col-md-12, .mb-3') || field.parentElement;
+            const oldError = wrapper.querySelector(".js-step-error");
+            if (oldError) {
+                oldError.remove();
+            }
+        });
+
+        field.addEventListener("change", function () {
+            field.classList.remove("is-invalid");
+            const wrapper = field.closest('.upload-wrapper, .col-md-6, .col-md-12, .mb-3') || field.parentElement;
+            const oldError = wrapper.querySelector(".js-step-error");
+            if (oldError) {
+                oldError.remove();
+            }
+        });
+    });
+
     showStep(currentStep);
 });
 </script>
-
 <form id="logoutForm" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>

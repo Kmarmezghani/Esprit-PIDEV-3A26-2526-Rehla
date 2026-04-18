@@ -178,6 +178,68 @@
               <h4>Description</h4>
               <p>{{ activite.description }}</p>
             </div>
+            {% if weatherData %}
+  <div class="activity-weather-summary-box mt-4">
+    <div class="activity-weather-summary-header">
+      <h4>Météo prévue</h4>
+      <div class="activity-weather-badge">
+        <img
+          src="https://openweathermap.org/img/wn/{{ weatherData.icon }}@2x.png"
+          alt="{{ weatherData.description }}"
+          class="activity-weather-badge-icon"
+        >
+        <span>{{ weatherData.temp }}°C</span>
+      </div>
+    </div>
+
+    <div class="activity-weather-summary-grid">
+      <div class="weather-summary-item">
+        <span class="weather-summary-label">Ciel</span>
+        <span class="weather-summary-value">{{ weatherData.description|capitalize }}</span>
+      </div>
+
+      <div class="weather-summary-item">
+        <span class="weather-summary-label">Humidité</span>
+        <span class="weather-summary-value">{{ weatherData.humidity }}%</span>
+      </div>
+
+      <div class="weather-summary-item">
+        <span class="weather-summary-label">Vent</span>
+        <span class="weather-summary-value">{{ weatherData.wind }} km/h</span>
+      </div>
+
+      <div class="weather-summary-item">
+        <span class="weather-summary-label">Ressenti global</span>
+        <span class="weather-summary-value">
+          {% if weatherData.temp >= 30 %}
+            Chaud
+          {% elseif weatherData.temp >= 18 %}
+            Agréable
+          {% elseif weatherData.temp >= 12 %}
+            Modéré
+          {% else %}
+            Frais
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    <p class="activity-weather-note mb-0">
+      {% if weatherData.temp >= 30 %}
+        Une météo chaude est attendue pour cette activité.
+      {% elseif weatherData.temp >= 18 and weatherData.temp <= 24 %}
+        Les conditions semblent globalement agréables pour cette activité.
+      {% elseif weatherData.temp < 12 %}
+        Une météo assez fraîche est prévue.
+      {% else %}
+        Des conditions modérées sont prévues pour cette activité.
+      {% endif %}
+      {% if weatherData.wind >= 30 %}
+        Le vent pourrait aussi être un facteur à prendre en compte.
+      {% endif %}
+    </p>
+  </div>
+{% endif %}
           </div>
         </div>
       </div>
@@ -219,6 +281,25 @@
               </div>
             {% endfor %}
           </div>
+          {% if weatherData %}
+  <div class="weather-tips-box mt-4">
+    <div class="weather-tips-header">
+      <h4>Conseils personnalisés</h4>
+
+      
+    </div>
+
+    {% if weatherTips is not empty %}
+      <ul class="weather-tips-list">
+        {% for tip in weatherTips %}
+          <li>{{ tip }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="weather-empty mb-0">Aucun conseil météo disponible pour cette activité.</p>
+    {% endif %}
+  </div>
+{% endif %}
         </div>
       </div>
     </div>
@@ -944,7 +1025,154 @@
       pointer-events: auto;
     }
   }
+  .weather-tips-box {
+  margin-top: 24px;
+  background: #f8f9fb;
+  border: 1px solid #eef1f5;
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.weather-tips-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.weather-tips-header h4 {
+  font-weight: 700;
+  margin-bottom: 0;
+  color: #223047;
+  font-size: 22px;
+}
+
+.weather-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 14px;
+  border: 1px solid #e8edf5;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.weather-icon {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.weather-main {
+  font-size: 15px;
+  font-weight: 700;
+  color: #223047;
+  line-height: 1.3;
+}
+
+.weather-sub {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.weather-tips-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.weather-tips-list li {
+  margin-bottom: 12px;
+  color: #4b5563;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.weather-tips-list li:last-child {
+  margin-bottom: 0;
+}
+
+.weather-empty {
+  color: #6b7280;
+  font-size: 14px;
+}
+.activity-weather-summary-box {
+  margin-top: 24px;
+  background: #f8f9fb;
+  border: 1px solid #eef1f5;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.activity-weather-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.activity-weather-summary-header h4 {
+  font-weight: 700;
+  margin: 0;
+  color: #223047;
+}
+
+.activity-weather-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 700;
+  color: #223047;
+}
+
+.activity-weather-badge-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.activity-weather-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.weather-summary-item {
+  background: #fff;
+  border: 1px solid #e8edf5;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.weather-summary-label {
+  display: block;
+  color: #223f91;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.weather-summary-value {
+  color: #223047;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.activity-weather-note {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
 </style>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

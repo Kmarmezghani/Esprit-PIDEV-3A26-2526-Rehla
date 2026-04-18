@@ -7,6 +7,7 @@ use App\Form\ActiviteType;
 use App\Repository\ActiviteRepository;
 use App\Repository\GuideRepository;
 use App\Repository\PersonneRepository;
+use App\Service\AiDescriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 final class GuideController extends AbstractController
 {
@@ -161,5 +163,43 @@ public function ajouter(
         'form' => $form->createView(),
         'activite' => $activite,
     ]);
+}
+#[Route('/guide/activite/generate-description', name: 'guide_generate_description', methods: ['POST'])]
+public function generateDescription(
+    Request $request,
+    AiDescriptionService $aiDescriptionService
+): JsonResponse {
+    $data = json_decode($request->getContent(), true);
+
+    $nom = $data['nom'] ?? '';
+    $type = $data['typeActivite'] ?? '';
+    $destination = $data['destination'] ?? '';
+    $duration = $data['duration'] ?? '';
+
+    if (trim($nom) === '' || trim($type) === '' || trim($destination) === '') {
+        return $this->json([
+            'success' => false,
+            'message' => 'Veuillez remplir au moins le nom, le type et la destination avant de générer la description.'
+        ], 400);
+    }
+
+    try {
+        $description = $aiDescriptionService->generate(
+            $nom,
+            $type,
+            $destination,
+            $duration
+        );
+
+        return $this->json([
+            'success' => true,
+            'description' => $description
+        ]);
+    } catch (\Throwable $e) {
+        return $this->json([
+            'success' => false,
+            'message' => 'La génération de la description a échoué.'
+        ], 500);
+    }
 }
 }

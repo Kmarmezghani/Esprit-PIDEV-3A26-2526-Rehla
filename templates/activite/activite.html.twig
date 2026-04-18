@@ -449,7 +449,8 @@
                         {{ activite.typeActivite ?: 'Non défini' }}
                     </li>
 
-                    <li style="margin-top: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    {% if activite.guide is not null %}
+<li style="margin-top: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
     {% if activite.id in holdActivities %}
     {# USER HAS A RESERVED PLACE (HOLD) #}
     <button
@@ -548,6 +549,7 @@
 
 {% endif %}
                 </li>
+                {% endif %}
                 </ul>
             </div>
         </div>

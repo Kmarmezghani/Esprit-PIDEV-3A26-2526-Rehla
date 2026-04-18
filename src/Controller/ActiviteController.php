@@ -24,6 +24,7 @@ use App\Entity\Notification;
 use App\Repository\NotificationRepository;
 use App\Repository\WaitlistRepository;
 use App\Service\WaitlistService;
+use App\Service\WeatherActivityTipsService;
 
 final class ActiviteController extends AbstractController
 {
@@ -145,15 +146,17 @@ public function index(
             'prix_max' => $prixMax,
         ]
     ]);
-}    #[Route('/activite/{id}', name: 'activite_show')]
-    public function show(
-        Activite $activite,
-        Request $request,
-        EntityManagerInterface $em,
-        AvisRepository $avisRepository,
-        PersonneRepository $personneRepository,
-        AvisService $avisService
-    ): Response
+} 
+   #[Route('/activite/{id}', name: 'activite_show')]
+public function show(
+    Activite $activite,
+    Request $request,
+    EntityManagerInterface $em,
+    AvisRepository $avisRepository,
+    PersonneRepository $personneRepository,
+    AvisService $avisService,
+    WeatherActivityTipsService $weatherActivityTipsService
+): Response
     {
         $userId = $request->getSession()->get('user_id');
 
@@ -233,6 +236,8 @@ public function index(
             }
         }
 
+        $weatherTipsData = $weatherActivityTipsService->getTipsForActivity($activite);
+
         return $this->render('activite/show.html.twig', [
             'activite' => $activite,
             'aviss' => $aviss,
@@ -241,6 +246,8 @@ public function index(
             'avisForm' => $form->createView(),
             'userAvis' => $existingAvis,
             'isEditMode' => $isEditMode,
+            'weatherTips' => $weatherTipsData['tips'],
+            'weatherData' => $weatherTipsData['weather'],
         ]);
     }
 

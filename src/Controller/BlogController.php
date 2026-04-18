@@ -662,12 +662,41 @@ public function addComment(
         $em->flush();
     }
 
+
     // 🔥 Flash message UX
     if ($status === 'warning') {
         $this->addFlash('warning', '⚠️ Commentaire sensible publié');
     } else {
         $this->addFlash('success', '✅ Commentaire ajouté');
     }
+
+    $postOwner = $post->getPersonne_id();
+
+// ne pas notifier soi-même
+if ($postOwner && $postOwner->getId() !== $personne->getId()) {
+
+    // ne pas notifier admin
+    if ($postOwner->getRole() !== 'ADMIN') {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a commenté votre post';
+
+        $notification->setMessage($message);
+        $notification->setType('COMMENT');
+        $notification->setPost_id($post);
+        $notification->setComment_id($comment);
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($postOwner);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+        $em->flush();
+    }
+}
 
     return $this->redirectToRoute('blog');
 }
@@ -733,6 +762,35 @@ public function like(Post $post, EntityManagerInterface $em, Request $request): 
 
     $em->persist($like);
     $em->flush();
+
+    // après $em->flush();
+
+$postOwner = $post->getPersonne_id();
+
+// ne pas notifier soi-même
+if ($postOwner && $postOwner->getId() !== $personne->getId()) {
+
+    // ne pas notifier admin
+    if ($postOwner->getRole() !== 'ADMIN') {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a aimé votre post';
+
+        $notification->setMessage($message);
+        $notification->setType('LIKE');
+        $notification->setPost_id($post);
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($postOwner);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+        $em->flush();
+    }
+}
 
     return new JsonResponse([
         'liked' => true,

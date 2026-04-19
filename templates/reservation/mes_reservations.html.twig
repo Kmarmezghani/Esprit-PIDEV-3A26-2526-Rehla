@@ -3,7 +3,7 @@
 {% block title %}Mes Réservations{% endblock %}
 {% block stylesheets %}
     {{ parent() }}
-
+    
 {% endblock %}
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
@@ -383,41 +383,41 @@ document.addEventListener('DOMContentLoaded', function () {
 },
 
         eventContent: function (arg) {
-    let container = document.createElement('div');
-    container.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; padding:1px 4px;';
+            let container = document.createElement('div');
+            container.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; padding:1px 4px;';
 
-    let title = document.createElement('span');
-    title.textContent = arg.event.title;
-    title.style.cssText = 'font-size:12px; overflow:hidden; text-overflow:ellipsis;';
+            let title = document.createElement('span');
+            title.textContent = arg.event.title;
+            title.style.cssText = 'font-size:12px; overflow:hidden; text-overflow:ellipsis;';
 
-    let trash = document.createElement('i');
-    trash.className = 'fa fa-trash';
-    trash.style.cssText = 'cursor:pointer; color:#e55; margin-left:6px; font-size:11px; flex-shrink:0;';
-    trash.title = 'Supprimer ce ticket';
+            let trash = document.createElement('i');
+            trash.className = 'fa fa-trash';
+            trash.style.cssText = 'cursor:pointer; color:#e55; margin-left:6px; font-size:11px; flex-shrink:0;';
+            trash.title = 'Supprimer ce ticket';
 
-    let ticketId = arg.event.extendedProps.ticketId;
+            let ticketId = arg.event.extendedProps.ticketId;
             trash.onclick = function (e) {
-        e.stopPropagation();
-        Swal.fire({
-            title: 'Supprimer ce ticket ?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonText: 'Annuler',
-            confirmButtonText: 'Supprimer'
+                e.stopPropagation();
+                Swal.fire({
+                    title: 'Supprimer ce ticket ?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonText: 'Annuler',
+                    confirmButtonText: 'Supprimer'
                 }).then(function (result) {
-            if (result.isConfirmed) {
-                fetch('/reservation/ticket/delete-ajax/' + ticketId)
+                    if (result.isConfirmed) {
+                        fetch('/reservation/ticket/delete-ajax/' + ticketId)
                             .then(res => res.json())
                             .then(() => location.reload());
-            }
-        });
-    };
+                    }
+                });
+            };
 
-    container.appendChild(title);
-    container.appendChild(trash);
-    return { domNodes: [container] };
-},
+            container.appendChild(title);
+            container.appendChild(trash);
+            return { domNodes: [container] };
+        },
 
         eventDidMount: function (arg) {
             let ville = arg.event.extendedProps.ville;
@@ -448,15 +448,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Reservation row click ──
     document.querySelectorAll('.reservation-row').forEach(function (row) {
     row.addEventListener('click', function () {
-            let id = this.dataset.id;
+        let id = this.dataset.id;
         window.selectedReservationId = id;
 
         document.querySelectorAll('.weather-btn').forEach(b => b.remove());
         document.getElementById('calendar')
             .scrollIntoView({ behavior: 'smooth', block: 'start' });
         fc.refetchEvents();
-        });
     });
+});
 
 }); // ← END of DOMContentLoaded
 

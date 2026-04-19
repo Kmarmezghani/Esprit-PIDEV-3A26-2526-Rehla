@@ -1,7 +1,10 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Mes Réservations{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
 
+{% endblock %}
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
     <div class="container">
@@ -292,10 +295,7 @@
     </div>
 </footer>
 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <style>
 /* ── Calendar weather button ── */
@@ -358,18 +358,31 @@
 }
 .price-loading { opacity: 0.4; }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     let calendarEl = document.getElementById('calendar');
 
-    let calendar = new FullCalendar.Calendar(calendarEl, {
+    let fc = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        events: [],
+        events: function(info, successCallback, failureCallback) {
+    // No reservation selected yet — show empty calendar
+    if (!window.selectedReservationId) {
+        successCallback([]);
+        return;
+    }
+    fetch('/reservation/' + window.selectedReservationId + '/tickets')
+        .then(res => res.json())
+        .then(data => successCallback(data))
+        .catch(() => failureCallback());
+},
 
-        /* ── Ticket row: title + trash icon ── */
-        eventContent: function(arg) {
+        eventContent: function (arg) {
     let container = document.createElement('div');
     container.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; padding:1px 4px;';
 
@@ -382,10 +395,8 @@ document.addEventListener('DOMContentLoaded', function () {
     trash.style.cssText = 'cursor:pointer; color:#e55; margin-left:6px; font-size:11px; flex-shrink:0;';
     trash.title = 'Supprimer ce ticket';
 
-    // ← use ticketId, not the composite event id
     let ticketId = arg.event.extendedProps.ticketId;
-
-    trash.onclick = function(e) {
+            trash.onclick = function (e) {
         e.stopPropagation();
         Swal.fire({
             title: 'Supprimer ce ticket ?',
@@ -394,11 +405,11 @@ document.addEventListener('DOMContentLoaded', function () {
             confirmButtonColor: '#d33',
             cancelButtonText: 'Annuler',
             confirmButtonText: 'Supprimer'
-        }).then(function(result) {
+                }).then(function (result) {
             if (result.isConfirmed) {
                 fetch('/reservation/ticket/delete-ajax/' + ticketId)
-                    .then(function(res) { return res.json(); })
-                    .then(function() { location.reload(); });
+                            .then(res => res.json())
+                            .then(() => location.reload());
             }
         });
     };
@@ -408,15 +419,12 @@ document.addEventListener('DOMContentLoaded', function () {
     return { domNodes: [container] };
 },
 
-        /* ── After event mount: inject weather button above tickets in that day cell ── */
-        eventDidMount: function(arg) {
+        eventDidMount: function (arg) {
             let ville = arg.event.extendedProps.ville;
             let date  = arg.event.startStr;
 
             let dayCell = arg.el.closest('.fc-daygrid-day');
             if (!dayCell) return;
-
-            /* Only add one button per day cell */
             if (dayCell.querySelector('.weather-btn')) return;
 
             let btn = document.createElement('button');
@@ -425,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.dataset.ville = ville;
             btn.dataset.date  = date;
 
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 openWeatherModal(this.dataset.ville, this.dataset.date);
             });
@@ -435,51 +443,44 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    calendar.render();
+    fc.render();
 
-    /* ── Load tickets when a reservation row is clicked ── */
-    document.querySelectorAll('.reservation-row').forEach(function(row) {
-        row.addEventListener('click', function() {
+    // ── Reservation row click ──
+    document.querySelectorAll('.reservation-row').forEach(function (row) {
+    row.addEventListener('click', function () {
             let id = this.dataset.id;
+        window.selectedReservationId = id;
 
-            /* Remove old weather buttons before loading new events */
-            document.querySelectorAll('.weather-btn').forEach(function(b) { b.remove(); });
-
-            fetch('/reservation/' + id + '/tickets')
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    calendar.removeAllEvents();
-                    calendar.addEventSource(data);
-
-                    /* Scroll to calendar */
-                    document.getElementById('calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
+        document.querySelectorAll('.weather-btn').forEach(b => b.remove());
+        document.getElementById('calendar')
+            .scrollIntoView({ behavior: 'smooth', block: 'start' });
+        fc.refetchEvents();
         });
     });
 
-});
+}); // ← END of DOMContentLoaded
 
-/* ── Weather modal functions ── */
+// ═══════════════════════════════════════════════════════
+// WEATHER MODAL — outside DOMContentLoaded
+// ═══════════════════════════════════════════════════════
 function openWeatherModal(ville, date) {
     let modal = document.getElementById('weather-modal');
     let title = document.getElementById('weather-modal-title');
     let body  = document.getElementById('weather-modal-body');
 
-    /* Format date nicely */
     let parts = date.split('-');
     let dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
 
     title.textContent = '\u2601 Météo à ' + ville + ' — ' + dateFormatted;
     body.innerHTML = '<span style="color:#aaa;">Chargement...</span>';
-
     modal.style.display = 'flex';
 
     fetch('/meteo/' + encodeURIComponent(ville) + '/' + date)
-        .then(function(res) {
+        .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
         })
-        .then(function(w) {
+        .then(function (w) {
             body.innerHTML =
                 '<div style="text-align:center; width:100%;">' +
                     '<img src="https://openweathermap.org/img/wn/' + w.icon + '@2x.png" style="width:72px; height:72px;">' +
@@ -497,8 +498,8 @@ function openWeatherModal(ville, date) {
                     '</div>' +
                 '</div>';
         })
-        .catch(function(err) {
-            console.error('Météo erreur:', err, '| Ville:', ville, '| Date:', date);
+        .catch(function (err) {
+            console.error('Météo erreur:', err);
             body.innerHTML =
                 '<div style="text-align:center; color:#c00;">' +
                     '<div style="font-size:28px; margin-bottom:8px;">&#9888;</div>' +
@@ -512,12 +513,13 @@ function closeWeatherModal() {
     document.getElementById('weather-modal').style.display = 'none';
 }
 
-/* Click outside modal to close */
-document.getElementById('weather-modal').addEventListener('click', function(e) {
+document.getElementById('weather-modal').addEventListener('click', function (e) {
     if (e.target === this) closeWeatherModal();
 });
 
-/* ── Reservation delete confirm ── */
+// ═══════════════════════════════════════════════════════
+// DELETE RESERVATION — outside DOMContentLoaded
+// ═══════════════════════════════════════════════════════
 function deleteReservation(e, id) {
     e.preventDefault();
     Swal.fire({
@@ -528,21 +530,21 @@ function deleteReservation(e, id) {
         confirmButtonColor: '#d33',
         cancelButtonText: 'Annuler',
         confirmButtonText: 'Oui, supprimer'
-    }).then(function(result) {
+    }).then(function (result) {
         if (result.isConfirmed) {
             document.getElementById('delete-form-' + id).submit();
         }
     });
 }
-/* ── Currency Converter ── */
-(function () {
-    const API_KEY = 'YOUR_EXCHANGERATE_API_KEY'; // ← paste your key here
-    const BASE    = 'TND';
-    let rates     = { TND: 1, EUR: null, USD: null };
-    let currentCurrency = 'TND';
-    const symbols = { TND: 'TND', EUR: '€', USD: '$' };
 
-    /* Fetch rates once, cache in memory */
+// ═══════════════════════════════════════════════════════
+// CURRENCY CONVERTER — outside DOMContentLoaded
+// ═══════════════════════════════════════════════════════
+(function () {
+    let rates           = { TND: 1, EUR: null, USD: null };
+    let currentCurrency = 'TND';
+    const symbols       = { TND: 'TND', EUR: '€', USD: '$' };
+
     async function fetchRates() {
         try {
             const res  = await fetch('/api/exchange-rates');
@@ -557,50 +559,43 @@ function deleteReservation(e, id) {
     }
 
     function updatePrices(currency) {
-        const rate   = rates[currency];
-        const badge  = document.getElementById('rate-badge');
-        const cells  = document.querySelectorAll('.price-cell');
+        const rate  = rates[currency];
+        const badge = document.getElementById('rate-badge');
+        const cells = document.querySelectorAll('.price-cell');
 
         if (!rate) {
-            /* Show loading shimmer while fetching */
             cells.forEach(c => c.classList.add('price-loading'));
             return;
         }
 
         cells.forEach(c => {
             c.classList.remove('price-loading');
-            const tnd      = parseFloat(c.dataset.tnd);
+            const tnd       = parseFloat(c.dataset.tnd);
             const converted = (tnd * rate).toFixed(2);
-            const sym      = symbols[currency];
-            c.textContent  = currency === 'TND'
-                ? `${converted} TND`
-                : `${sym} ${converted}`;
+            c.textContent   = currency === 'TND'
+                ? converted + ' TND'
+                : symbols[currency] + ' ' + converted;
         });
 
-        /* Show exchange rate info badge */
         if (currency !== 'TND') {
             badge.style.display = 'inline-block';
-            badge.textContent   = `1 TND = ${rate.toFixed(4)} ${currency}`;
+            badge.textContent   = '1 TND = ' + rate.toFixed(4) + ' ' + currency;
         } else {
             badge.style.display = 'none';
         }
     }
 
-    /* Init: fetch rates in background */
     fetchRates();
 
-    /* Button clicks */
     document.querySelectorAll('.btn-currency').forEach(btn => {
         btn.addEventListener('click', async function () {
             const currency = this.dataset.currency;
             if (currency === currentCurrency) return;
 
-            /* Toggle active state */
             document.querySelectorAll('.btn-currency').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentCurrency = currency;
 
-            /* Fetch rates if not yet loaded */
             if (currency !== 'TND' && rates[currency] === null) {
                 document.querySelectorAll('.price-cell').forEach(c => c.classList.add('price-loading'));
                 await fetchRates();
@@ -611,5 +606,275 @@ function deleteReservation(e, id) {
     });
 })();
 </script>
+{# ══ AI RECOMMENDATION PANEL ══════════════════════════════════════════ #}
+<style>
+.ai-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:none;align-items:flex-end}
+.ai-panel-overlay.open{display:flex}
+.ai-panel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:24px 28px 32px;display:flex;flex-direction:column;gap:18px}
+.ai-section-label{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#888;font-weight:500;margin-bottom:8px}
+.ai-ctx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.ai-ctx-card{background:#f7f9ff;border-radius:10px;padding:12px 14px}
+.ai-ctx-label{font-size:11px;color:#888;margin-bottom:4px}
+.ai-ctx-value{font-size:13px;font-weight:500;color:#223f91}
+.ai-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ai-input{padding:7px 11px;border:1px solid #d0d9f0;border-radius:8px;font-size:13px;color:#333;background:#fff}
+.ai-input:focus{outline:none;border-color:#223f91;box-shadow:0 0 0 3px rgba(34,63,145,.1)}
+.ai-gen-btn{width:100%;padding:13px;background:#223f91;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.ai-gen-btn:hover{background:#1a2f6e}
+.ai-gen-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-result{border:1px solid #c5d4f5;border-radius:14px;padding:20px;display:none;background:#fff}
+.ai-result.visible{display:block}
+.ai-rec-dest{font-size:17px;font-weight:500;color:#223f91;margin-bottom:10px}
+.ai-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ai-tag{font-size:12px;background:#f0f4ff;color:#223f91;border:1px solid #c5d4f5;border-radius:8px;padding:4px 10px}
+.ai-raison{font-size:13px;color:#444;line-height:1.65;padding:12px;background:#f7f9ff;border-radius:10px;margin-bottom:14px}
+.ai-ticket{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f4ff;font-size:13px}
+.ai-ticket:last-child{border-bottom:none}
+.ai-total{display:flex;justify-content:space-between;font-size:15px;font-weight:500;padding-top:10px;border-top:2px solid #223f91;color:#223f91;margin-top:8px}
+.ai-typing{display:inline-flex;gap:5px;align-items:center}
+.ai-typing span{width:7px;height:7px;background:#223f91;border-radius:50%;animation:aiBounce .8s infinite}
+.ai-typing span:nth-child(2){animation-delay:.15s}
+.ai-typing span:nth-child(3){animation-delay:.3s}
+@keyframes aiBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+</style>
 
+{# Bouton déclencheur #}
+<div class="d-flex justify-content-end mb-3">
+    <button onclick="openAIPanel()" class="btn" style="background:#223f91;color:#fff;border-radius:20px;padding:10px 22px;font-size:14px;display:inline-flex;align-items:center;gap:8px;">
+        <i class="fa fa-magic"></i> Recommandation IA
+    </button>
+</div>
+
+{# Panneau IA #}
+<div class="ai-panel-overlay" id="aiPanelOverlay" onclick="handleAIOverlay(event)">
+  <div class="ai-panel" id="aiPanel">
+    <div class="d-flex justify-content-between align-items-center">
+        <div style="font-size:17px;font-weight:500;color:#223f91;display:flex;align-items:center;gap:8px;">
+            <i class="fa fa-magic"></i> Recommandation personnalisée
+            <span style="font-size:11px;background:#e8f0fe;color:#223f91;padding:3px 9px;border-radius:20px;font-weight:400">IA</span>
+        </div>
+        <button onclick="closeAIPanel()" style="border:none;background:none;font-size:24px;cursor:pointer;color:#aaa;line-height:1;">&times;</button>
+    </div>
+
+    {# Contexte client #}
+    <div>
+        <div class="ai-section-label">Contexte analysé</div>
+        <div class="ai-ctx-grid">
+            <div class="ai-ctx-card">
+                <div class="ai-ctx-label">Réservations</div>
+                <div class="ai-ctx-value">{{ reservations|length }} voyages</div>
+            </div>
+            <div class="ai-ctx-card">
+                <div class="ai-ctx-label">Destinations visitées</div>
+                <div class="ai-ctx-value">
+                    {% set dests = [] %}
+                    {% for r in reservations %}{% if r.destination %}{% set dests = dests|merge([r.destination.nom]) %}{% endif %}{% endfor %}
+                    {% set dests = [] %}
+{% for r in reservations %}
+    {% if r.destination and r.destination.nom not in dests %}
+        {% set dests = dests|merge([r.destination.nom]) %}
+    {% endif %}
+{% endfor %}
+{{ dests|join(', ')|default('Aucune') }}
+                </div>
+            </div>
+            <div class="ai-ctx-card">
+                <div class="ai-ctx-label">Budget préférence</div>
+                <div class="ai-ctx-value">
+                    {% set pref = app.session.get('user_preference') %}
+                    {% if pref %}{{ pref.budgetMin }} – {{ pref.budgetMax }} TND{% else %}Non défini{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Budget #}
+    <div>
+        <div class="ai-section-label">Budget pour ce voyage (TND)</div>
+        <div class="ai-row">
+            <input type="number" class="ai-input" id="aiBudgetMin" placeholder="Min" value="500" style="width:110px">
+            <span style="color:#aaa">–</span>
+            <input type="number" class="ai-input" id="aiBudgetMax" placeholder="Max" value="2000" style="width:110px">
+            <span style="font-size:13px;color:#888">TND</span>
+        </div>
+    </div>
+
+    {# Dates #}
+    <div>
+        <div class="ai-section-label">Période souhaitée</div>
+        <div class="ai-row">
+            <input type="date" class="ai-input" id="aiDateDebut">
+            <span style="color:#aaa">→</span>
+            <input type="date" class="ai-input" id="aiDateFin">
+        </div>
+    </div>
+
+    <button class="ai-gen-btn" id="aiGenBtn" onclick="launchAIRecommendation()">
+        <i class="fa fa-magic"></i> Générer ma recommandation
+    </button>
+
+    <div class="ai-result" id="aiResult">
+        <div id="aiResultInner"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openAIPanel() {
+    document.getElementById('aiPanelOverlay').classList.add('open');
+    const today = new Date();
+    const next  = new Date(); next.setDate(today.getDate() + 30);
+    document.getElementById('aiDateDebut').value = today.toISOString().split('T')[0];
+    document.getElementById('aiDateFin').value   = next.toISOString().split('T')[0];
+}
+function closeAIPanel() {
+    document.getElementById('aiPanelOverlay').classList.remove('open');
+    document.getElementById('aiResult').classList.remove('visible');
+}
+function handleAIOverlay(e) {
+    if (e.target === document.getElementById('aiPanelOverlay')) closeAIPanel();
+}
+
+let aiLastCall = 0;
+
+async function launchAIRecommendation() {
+    const now = Date.now();
+    if (now - aiLastCall < 15000) {
+        const remaining = Math.ceil((15000 - (now - aiLastCall)) / 1000);
+        document.getElementById('aiResult').classList.add('visible');
+        document.getElementById('aiResultInner').innerHTML = `
+            <div style="color:#e67e22;text-align:center;padding:20px">
+                <i class="fa fa-clock-o" style="font-size:28px;margin-bottom:8px;display:block"></i>
+                Attendez encore <strong>${remaining}s</strong> avant de relancer.
+            </div>`;
+        return;
+    }
+    aiLastCall = now;
+
+    const btn    = document.getElementById('aiGenBtn');
+    const result = document.getElementById('aiResult');
+    const inner  = document.getElementById('aiResultInner');
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>&nbsp;Analyse en cours...';
+    result.classList.add('visible');
+    inner.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>';
+
+    const dateDebutVal = document.getElementById('aiDateDebut').value;
+    const dateFinVal   = document.getElementById('aiDateFin').value;
+
+    try {
+        const resp = await fetch('/api/recommandation-ia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                budgetMin: document.getElementById('aiBudgetMin').value,
+                budgetMax: document.getElementById('aiBudgetMax').value,
+                dateDebut: dateDebutVal,
+                dateFin:   dateFinVal,
+            })
+        });
+
+        const d = await resp.json();
+        console.log('RAW RESPONSE:', JSON.stringify(d));
+
+        if (resp.status === 429) {
+            inner.innerHTML = `
+                <div style="color:#e67e22;text-align:center;padding:20px">
+                    <i class="fa fa-clock-o" style="font-size:28px;margin-bottom:8px;display:block"></i>
+                    <strong>IA temporairement indisponible</strong><br>
+                    <span style="font-size:13px;color:#888">Réessayez dans quelques secondes.</span>
+                </div>`;
+            return;
+        }
+
+        if (d.error) {
+            inner.innerHTML = `<div style="color:#c00;text-align:center;padding:20px"><i class="fa fa-warning"></i> ${d.error}</div>`;
+            return;
+        }
+
+        const ticketIdsChoisis = (d.tickets || []).map(t => t.id).filter(Boolean);
+
+        const ticketsHTML = (d.tickets || []).map(t => `
+            <div class="ai-ticket">
+                <span style="color:#223f91;font-weight:500">
+                    <i class="fa fa-ticket" style="margin-right:6px"></i>${t.nom}
+                </span>
+                <span>${t.prix} TND</span>
+            </div>`).join('');
+
+        inner.innerHTML = `
+            <div class="ai-rec-dest">
+                <i class="fa fa-map-marker" style="margin-right:6px"></i>${d.destination}
+            </div>
+            <div class="ai-tags">
+                <span class="ai-tag">📅 ${d.dateDebut} → ${d.dateFin}</span>
+                <span class="ai-tag">☀️ ${d.meteo || 'Météo favorable'}</span>
+                <span class="ai-tag">✅ Dans votre budget</span>
+            </div>
+            <div class="ai-raison">${d.raison}</div>
+            <div class="ai-section-label">Composition de la réservation</div>
+            ${ticketsHTML}
+            <div class="ai-total"><span>Total estimé</span><span>${d.total} TND</span></div>
+            <button onclick="creerReservationIA(${d.destination_id}, ${JSON.stringify(ticketIdsChoisis)}, '${dateDebutVal}', '${dateFinVal}')"
+                style="margin-top:16px;width:100%;padding:13px;background:#27ae60;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fa fa-check-circle"></i> Créer cette réservation
+            </button>`;
+
+    } catch (err) {
+        inner.innerHTML = `<div style="color:#c00;text-align:center;padding:20px"><i class="fa fa-warning"></i> Erreur réseau. Réessayez.</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-magic"></i> Régénérer';
+    }
+}
+
+// ── SEPARATE FUNCTION — outside launchAIRecommendation ──
+async function creerReservationIA(destinationId, ticketIds, dateDebut, dateFin) {
+    if (!destinationId || !ticketIds.length) {
+        Swal.fire('Erreur', "Données de réservation incomplètes.", 'error');
+        return;
+    }
+
+    const confirmation = await Swal.fire({
+        title: 'Confirmer la réservation ?',
+        text: "Une réservation sera créée avec les tickets sélectionnés par l'IA.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#27ae60',
+        cancelButtonText: 'Annuler',
+        confirmButtonText: 'Oui, créer !'
+    });
+
+    if (!confirmation.isConfirmed) return;
+
+    try {
+        const resp = await fetch('/api/recommandation-ia/creer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                destination_id: destinationId,
+                ticket_ids: ticketIds,
+                dateDebut,
+                dateFin
+            })
+        });
+
+        const d = await resp.json();
+
+        if (d.success) {
+            Swal.fire({
+                title: 'Réservation créée !',
+                text: d.message,
+                icon: 'success',
+                confirmButtonText: 'Voir mes réservations'
+            }).then(() => window.location.reload());
+        } else {
+            Swal.fire('Erreur', d.error || 'Une erreur est survenue.', 'error');
+        }
+    } catch (e) {
+        Swal.fire('Erreur', 'Erreur réseau.', 'error');
+    }
+}
+</script>
 {% endblock %}

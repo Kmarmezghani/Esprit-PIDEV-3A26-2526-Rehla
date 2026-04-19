@@ -16,4 +16,6 @@ return [
     Endroid\QrCodeBundle\EndroidQrCodeBundle::class => ['all' => true],
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
     App\SmsBundle\SmsBundle::class => ['all' => true],
+    CalendarBundle\CalendarBundle::class => ['all' => true],
+
 ];

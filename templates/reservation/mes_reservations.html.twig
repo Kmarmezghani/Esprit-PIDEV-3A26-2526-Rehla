@@ -7,87 +7,216 @@
 {% endblock %}
 {% block body %}
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-    <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
-            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
-            <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+		<div class="container">
+			<a class="navbar-brand" href="index.html">
+    
+    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+    
+    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="oi oi-menu"></span> Menu
+			</button>
+
+			<div class="collapse navbar-collapse" id="ftco-nav">
+    <ul class="navbar-nav ml-auto">
+    <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+    <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
+    <li class="nav-item "><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
+
+    {% if app.session.get('user_id') %}
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center position-relative"
+   href="#"
+   id="notifDropdown"
+   role="button"
+   data-bs-toggle="dropdown"
+   aria-expanded="false"
+   style="margin-right:14px;">
+
+    <i class="fa fa-bell notif-bell-icon" style="font-size:20px;"></i>
+
+    {% if hasUnreadActivityNotifications %}
+        <span style="
+            position:absolute;
+            top:-1px;
+            right:-1px;
+            width:10px;
+            height:10px;
+            background:#dc3545;
+            border-radius:50%;
+            border:2px solid white;
+        "></span>
+    {% endif %}
+</a>
+
+    <ul class="dropdown-menu"
+        aria-labelledby="notifDropdown"
+        style="min-width:320px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0; transform: translateX(-260px);">
+
+        <li>
+            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                Mes notifications
+            </span>
+        </li>
+
+        <li><hr class="dropdown-divider my-1"></li>
+
+        {% if activityNotifications is not empty %}
+            {% for notif in activityNotifications %}
+                <li>
+                    <a
+    class="dropdown-item {% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}waitlist-notif-link{% endif %}"
+    href="{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}#{% else %}javascript:void(0);{% endif %}"
+    data-notif-id="{{ notif.id }}"
+    data-activite-id="{{ notif.activite_id.id }}"
+    data-message="{{ notif.message|e('html_attr') }}"
+    data-max-tickets="{{ notif.activite_id.maxPlaces ?? 1 }}"
+    style="padding:10px 16px; white-space:normal; cursor:{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}pointer{% else %}default{% endif %};">
+                       
+
+                        <div style="display:flex; align-items:flex-start; gap:10px;">
+                            <div style="margin-top:2px;">
+                                <i class="fa fa-bell" style="color:#223f91;"></i>
+                            </div>
+
+                            <div style="flex:1;">
+                               <div style="font-size:12px; font-weight:700; margin-bottom:4px;
+    color:
+{% if notif.type == 'WAITLIST_HOLD' %}#223f91
+{% elseif notif.type == 'BOOKING_CONFIRMED' %}#16a34a
+{% elseif notif.type == 'BOOKING_CANCELLED' %}#dc3545
+{% elseif notif.type == 'WAITLIST_EXPIRED' %}#6b7280
+{% else %}#223f91
+{% endif %};
+">
+    {% if notif.type == 'WAITLIST_HOLD' %}
+    WAITLIST HOLD
+{% elseif notif.type == 'BOOKING_CONFIRMED' %}
+    BOOKING CONFIRMED
+{% elseif notif.type == 'BOOKING_CANCELLED' %}
+    BOOKING CANCELLED
+{% elseif notif.type == 'WAITLIST_EXPIRED' %}
+    WAITLIST EXPIRED
+{% else %}
+    {{ notif.type }}
+{% endif %}
+</div>
+
+<div style="font-size:13px; color:#333; line-height:1.4;">
+    {{ notif.message }}
+</div>
+
+                                <div style="font-size:11px; color:#888; margin-top:4px;">
+                                    {{ notif.created_at|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+
+                            {% if not notif.is_read %}
+                                <span style="
+                                    width:8px;
+                                    height:8px;
+                                    background:#dc3545;
+                                    border-radius:50%;
+                                    display:inline-block;
+                                    margin-top:6px;
+                                "></span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>
+                <span class="dropdown-item-text text-muted" style="padding:10px 16px; font-size:13px;">
+                    Aucune notification
+                </span>
+            </li>
+        {% endif %}
+    </ul>
+</li>
+    {# ── Utilisateur connecté ── #}
+
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+           href="#" id="userDropdown" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {% if app.session.get('user_photo') %}
+    <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
+         class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+{% else %}
+    <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+         class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+{% endif %}
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="oi oi-menu"></span> Menu
-        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+            <li>
+                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                    Connecté en tant que<br>
+                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
+                <span>Mon profil</span>
+            </a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
+                <span>Mes préférences</span>
+            </a></li>
+            
+			{% if app.session.get('user_role') == 'GUIDE' %}
+<li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
+       style="padding:8px 16px; font-size:14px;">
+    <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
+    <span>Mes activités</span>
+</a></li>
+{% endif %}
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
+                <span>Mes réservations</span>
+            </a></li>
+            {% if app.session.get('user_role') == 'ADMIN' %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
+                   style="padding:8px 16px; font-size:14px;">
+                <i class="fa fa-cogs" style="width:18px;"></i>
+                <span>Administration</span>
+            </a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                   onclick="confirmLogoutHome(event)"
+                   style="padding:8px 16px; font-size:14px;">
+                    <i class="fa fa-sign-out" style="width:18px;"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+    {% else %}
+    {# ── Non connecté ── #}
+    <li class="nav-item ms-2">
+        <a href="{{ path('app_register') }}" class="nav-link">
+            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
+        </a>
+    </li>
+    {% endif %}
+</ul>
+</div>
+		</div>
+	</nav>
 
-        <div class="collapse navbar-collapse" id="ftco-nav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
-                <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
-                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
-                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
-
-                {% if app.session.get('user_id') %}
-                <li class="nav-item dropdown ms-2 d-flex align-items-center">
-                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
-                       href="#" id="userDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        {% if app.session.get('user_photo') %}
-                            <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
-                                 class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-                        {% else %}
-                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                                 class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-                        {% endif %}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
-                        style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
-                        <li>
-                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
-                                Connecté en tant que<br>
-                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
-                            </span>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}" style="padding:8px 16px; font-size:14px;">
-                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i><span>Mon profil</span>
-                        </a></li>
-                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}" style="padding:8px 16px; font-size:14px;">
-                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i><span>Mes préférences</span>
-                        </a></li>
-                        {% if app.session.get('user_role') == 'GUIDE' %}
-                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}" style="padding:8px 16px; font-size:14px;">
-                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i><span>Mes activités</span>
-                        </a></li>
-                        {% endif %}
-                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}" style="padding:8px 16px; font-size:14px;">
-                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i><span>Mes réservations</span>
-                        </a></li>
-                        {% if app.session.get('user_role') == 'ADMIN' %}
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}" style="padding:8px 16px; font-size:14px;">
-                            <i class="fa fa-cogs" style="width:18px;"></i><span>Administration</span>
-                        </a></li>
-                        {% endif %}
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
-                               onclick="confirmLogoutHome(event)" style="padding:8px 16px; font-size:14px;">
-                                <i class="fa fa-sign-out" style="width:18px;"></i><span>Déconnexion</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item ms-2">
-                    <a href="{{ path('app_register') }}" class="nav-link">
-                        <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-</nav>
 
 <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
     <div class="overlay"></div>

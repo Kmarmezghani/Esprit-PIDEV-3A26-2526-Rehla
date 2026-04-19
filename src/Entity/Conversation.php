@@ -24,7 +24,26 @@ class Conversation
     #[ORM\Column(type: "datetime")]
     private \DateTimeInterface $created_at;
 
+    #[ORM\OneToOne(inversedBy: "conversation", targetEntity: Groupe::class)]
+    #[ORM\JoinColumn(name: "groupe_id", referencedColumnName: "id", onDelete: "CASCADE", nullable: true)]
+    private ?Groupe $groupe = null;    
+
+
     // ------------------- Getters & Setters -------------------
+
+        public function getGroupe(): ?Groupe
+        {
+            return $this->groupe;
+        }
+
+        public function setGroupe(?Groupe $groupe): self
+        {
+            $this->groupe = $groupe;
+            return $this;
+        }
+
+
+
 
     public function getId(): ?int
     {

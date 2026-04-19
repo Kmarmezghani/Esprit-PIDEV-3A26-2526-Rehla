@@ -6,7 +6,9 @@ use App\Entity\Activite;
 use App\Form\ActiviteType;
 use App\Repository\ActiviteRepository;
 use App\Repository\GuideRepository;
+use App\Repository\NotificationRepository;
 use App\Repository\PersonneRepository;
+use App\Service\AiDescriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,12 +16,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 final class GuideController extends AbstractController
 {
     #[Route('/guide/mes-activites', name: 'mes_activites')]
 public function mesActivites(
     Request $request,
+PersonneRepository $personneRepository,
+NotificationRepository $notificationRepository,
     ActiviteRepository $activiteRepository,
     GuideRepository $guideRepository
 ): Response
@@ -41,14 +46,31 @@ public function mesActivites(
     ['guide' => $guide],
     ['date_debut' => 'DESC']
 );
+$hasUnreadActivityNotifications = false;
+$activityNotifications = [];
+
+$userId = $request->getSession()->get('user_id');
+
+if ($userId) {
+    $personne = $personneRepository->find($userId);
+
+    if ($personne) {
+        $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+        $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
+    }
+}
 
     return $this->render('guide/mes_activites.html.twig', [
-        'activites' => $activites
+        'activites' => $activites,
+        'activityNotifications' => $activityNotifications,
+'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
     ]);
 }
     #[Route('/guide/activite/modifier/{id}', name: 'modifier_activite')]
 public function modifier(
     Request $request,
+PersonneRepository $personneRepository,
+NotificationRepository $notificationRepository,
     Activite $activite,
     EntityManagerInterface $em,
     SluggerInterface $slugger
@@ -87,10 +109,25 @@ public function modifier(
 
         return $this->redirectToRoute('mes_activites');
     }
+    $hasUnreadActivityNotifications = false;
+$activityNotifications = [];
+
+$userId = $request->getSession()->get('user_id');
+
+if ($userId) {
+    $personne = $personneRepository->find($userId);
+
+    if ($personne) {
+        $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+        $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
+    }
+}
 
     return $this->render('guide/modifier_activite.html.twig', [
         'form' => $form->createView(),
         'activite' => $activite,
+        'activityNotifications' => $activityNotifications,
+'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
     ]);
 }
 #[Route('/guide/activite/supprimer/{id}', name: 'supprimer_activite')]
@@ -106,6 +143,8 @@ public function supprimer(Activite $activite, EntityManagerInterface $em): Respo
 #[Route('/guide/activite/ajouter', name: 'ajouter_activite')]
 public function ajouter(
     Request $request,
+PersonneRepository $personneRepository,
+NotificationRepository $notificationRepository,
     EntityManagerInterface $em,
     SluggerInterface $slugger,
     GuideRepository $guideRepository
@@ -156,10 +195,64 @@ public function ajouter(
 
         return $this->redirectToRoute('mes_activites');
     }
+    $hasUnreadActivityNotifications = false;
+$activityNotifications = [];
+
+$userId = $request->getSession()->get('user_id');
+
+if ($userId) {
+    $personne = $personneRepository->find($userId);
+
+    if ($personne) {
+        $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+        $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
+    }
+}
+
 
     return $this->render('guide/ajouter_activite.html.twig', [
         'form' => $form->createView(),
         'activite' => $activite,
+        'activityNotifications' => $activityNotifications,
+'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
     ]);
+}
+#[Route('/guide/activite/generate-description', name: 'guide_generate_description', methods: ['POST'])]
+public function generateDescription(
+    Request $request,
+    AiDescriptionService $aiDescriptionService
+): JsonResponse {
+    $data = json_decode($request->getContent(), true);
+
+    $nom = $data['nom'] ?? '';
+    $type = $data['typeActivite'] ?? '';
+    $destination = $data['destination'] ?? '';
+    $duration = $data['duration'] ?? '';
+
+    if (trim($nom) === '' || trim($type) === '' || trim($destination) === '') {
+        return $this->json([
+            'success' => false,
+            'message' => 'Veuillez remplir au moins le nom, le type et la destination avant de générer la description.'
+        ], 400);
+    }
+
+    try {
+        $description = $aiDescriptionService->generate(
+            $nom,
+            $type,
+            $destination,
+            $duration
+        );
+
+        return $this->json([
+            'success' => true,
+            'description' => $description
+        ]);
+    } catch (\Throwable $e) {
+        return $this->json([
+            'success' => false,
+            'message' => 'La génération de la description a échoué.'
+        ], 500);
+    }
 }
 }

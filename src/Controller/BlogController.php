@@ -23,6 +23,10 @@ use App\Entity\Favoris_post;
 use App\Controller\FavorisController;
 use App\Service\CloudinaryService;
 use App\Service\AyrshareService;
+use App\Service\Messagerie\ConversationService;
+use App\Entity\Message;
+use App\Entity\Conversation;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class BlogController extends AbstractController
 
@@ -62,11 +66,121 @@ if ($status === 'ok') {
 }
 
     $posts = $this->getFilteredPosts($request, $em);
+    $users = $em->getRepository(Personne::class)->findAll();
+    $groups = $personne->getGroupes();
 
-    return $this->render('blog/blog.html.twig', [
-        'posts' => $posts,
-        'form' => $form->createView()
-    ]);
+        $groups = $em->createQueryBuilder()
+        ->select('g')
+        ->from(\App\Entity\Groupe::class, 'g')
+        ->join('g.membres', 'm')
+        ->where('m = :user')
+        ->setParameter('user', $personne)
+        ->getQuery()
+        ->getResult();
+
+        $conversations = $em->createQueryBuilder()
+            ->select('c')
+            ->from(Conversation::class, 'c')
+            ->where('c.user1_id = :me OR c.user2_id = :me')
+            ->setParameter('me', $personne)
+            ->getQuery()
+            ->getResult();
+
+        $chatList = [];
+        $usedUserIds = [];
+        $totalUnread = 0;
+
+
+    foreach ($conversations as $conv) {
+
+        $lastMessage = $em->createQueryBuilder()
+            ->select('m')
+            ->from(Message::class, 'm')
+            ->where('m.conversation = :conv')
+            ->setParameter('conv', $conv)
+            ->orderBy('m.sent_at', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+
+            $unreadExists = $em->createQueryBuilder()
+            ->select('m.id')
+            ->from(Message::class, 'm')
+            ->where('m.conversation = :conv')
+            ->andWhere('m.is_read = false')
+            ->andWhere('m.sender_id != :me')
+            ->setParameter('conv', $conv)
+            ->setParameter('me', $personne)
+            ->setMaxResults(1) 
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $hasUnread = $unreadExists ? 1 : 0;
+
+
+        $totalUnread += $hasUnread;
+
+
+
+        $otherUser = ($conv->getUser1_id()->getId() === $personne->getId())
+            ? $conv->getUser2_id()
+            : $conv->getUser1_id();
+
+        $usedUserIds[] = $otherUser->getId();
+
+        $chatList[] = [
+            'type' => 'conversation',
+            'user' => $otherUser,
+            'conversationId' => $conv->getId(),
+            'lastMessage' => $lastMessage?->getImage() ? '📷 Photo' : $lastMessage?->getContenu(),
+            'lastMessageTime' => $lastMessage?->getSent_at(),
+            'lastSenderId' => $lastMessage?->getSender_id()?->getId(),
+            'unread' => $hasUnread === 1
+        ];
+    }
+
+       foreach ($users as $user) {
+
+    if ($user->getId() === $personne->getId()) continue;
+
+    if (in_array($user->getId(), $usedUserIds)) continue;
+
+    $chatList[] = [
+        'type' => 'user',
+        'user' => $user,
+        'conversationId' => null,
+        'lastMessage' => null,
+        'lastMessageTime' => null,
+        'unread' => false 
+    ];
+}
+
+
+
+ usort($chatList, function ($a, $b) {
+
+    if ($a['type'] !== $b['type']) {
+        return $a['type'] === 'conversation' ? -1 : 1;
+    }
+
+    // si null safe
+    $timeA = $a['lastMessageTime'] ? $a['lastMessageTime']->getTimestamp() : 0;
+    $timeB = $b['lastMessageTime'] ? $b['lastMessageTime']->getTimestamp() : 0;
+
+    return $timeB <=> $timeA;
+});
+
+        return $this->render('blog/blog.html.twig', [
+            'posts' => $posts,
+            'form' => $form->createView(),
+            'chatList' => $chatList,
+            'currentUserId' => $personne?->getId(),
+            'unreadTotal' => $totalUnread,
+            'users' => $users,
+            'groups' => $groups
+        ]);
+
 }
 
 
@@ -75,6 +189,265 @@ private function getConnectedUser(Request $request, EntityManagerInterface $em):
     $userId = $request->getSession()->get('user_id');
     return $em->getRepository(Personne::class)->find($userId);
 }
+
+
+/*--------------------------------------------------groups-------------------------------------------------------------*/
+#[Route('/chat/group/start/{id}', name: 'chat_group_start')]
+public function startGroupChat($id, EntityManagerInterface $em, Request $request)
+{
+    $personne = $this->getConnectedUser($request, $em);
+
+    if (!$personne) {
+        return $this->json(['error' => 'User not connected'], 401);
+    }
+
+    $groupe = $em->getRepository(\App\Entity\Groupe::class)->find($id);
+
+    if (!$groupe) {
+        return $this->json(['error' => 'Group not found'], 404);
+    }
+
+    // 🔥 chercher conversation existante
+    $conv = $em->getRepository(Conversation::class)->findOneBy([
+        'groupe' => $groupe
+    ]);
+
+    // 🔥 sinon créer
+    if (!$conv) {
+        $conv = new Conversation();
+        $conv->setGroupe($groupe);
+        $conv->setCreated_at(new \DateTime());
+
+        $conv->setUser1_id(null);
+        $conv->setUser2_id(null);
+
+        $em->persist($conv);
+        $em->flush();
+    }
+
+    return $this->json([
+        'conversationId' => $conv->getId()
+    ]);
+}
+#[Route('/groupe/create', name: 'groupe_create', methods: ['POST'])]
+public function createGroup(Request $request, EntityManagerInterface $em): JsonResponse
+{
+    try {
+
+        $personne = $this->getConnectedUser($request, $em);
+
+        if (!$personne) {
+            return $this->json(['error' => 'Not connected'], 401);
+        }
+
+        $name = $request->request->get('name');
+
+        $members = json_decode($request->request->get('members'), true) ?? [];
+
+        $imageFile = $request->files->get('image');
+
+        $groupe = new \App\Entity\Groupe();
+        $groupe->setNom($name);
+        $groupe->setCreated_at(new \DateTime());
+
+        $groupe->addMembre($personne);
+
+        foreach ($members as $id) {
+            $user = $em->getRepository(\App\Entity\Personne::class)->find($id);
+            if ($user) {
+                $groupe->addMembre($user);
+            }
+        }
+        if ($imageFile) {
+            $newFilename = uniqid().'.'.$imageFile->guessExtension();
+
+            $imageFile->move(
+                $this->getParameter('kernel.project_dir') . '/public/uploads/groups',
+                $newFilename
+            );
+
+            $groupe->setImage('uploads/groups/' . $newFilename);
+        }
+
+        $em->persist($groupe);
+        $em->flush();
+
+        return $this->json([
+            'status' => 'ok',
+            'image' => $groupe->getImage()
+        ]);
+
+    } catch (\Throwable $e) {
+
+        return $this->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+}
+
+
+
+/*--------------------------------------------messagerie-----------------------------------------------------------*/ 
+
+#[Route('/chat/start/{id}', name: 'chat_start')]
+public function startChat(Personne $receiver, ConversationService $service, EntityManagerInterface $em, Request $request)
+{
+    $personne = $this->getConnectedUser($request, $em);
+
+    if (!$personne) {
+        return $this->json(['error' => 'User not connected'], 401);
+    }
+
+    $conv = $service->getOrCreateConversation($personne, $receiver, $em);
+
+    $messages = $em->createQueryBuilder()
+    ->select('m')
+    ->from(Message::class, 'm')
+    ->where('m.conversation = :conv')
+    ->andWhere('m.sender_id != :me')
+    ->andWhere('m.is_read = 0')
+    ->setParameter('conv', $conv)
+    ->setParameter('me', $personne)
+    ->getQuery()
+    ->getResult();
+
+        foreach ($messages as $msg) {
+            $msg->setIs_read(true);
+            $em->persist($msg);
+        }
+
+        $em->flush();
+
+
+    return $this->json([
+        'conversationId' => $conv->getId()
+    ]);
+}
+
+
+#[Route('/chat/send', name: 'chat_send', methods:['POST'])]
+public function send(Request $request, EntityManagerInterface $em)
+{
+    $sender = $this->getConnectedUser($request, $em);
+
+    if (!$sender) {
+        return $this->json(['error' => 'User not connected']);
+    }
+
+    $conversationId = $request->request->get('conversationId');
+    $messageText = $request->request->get('message');
+    $imageFile = $request->files->get('image');
+
+    $conv = $em->getRepository(Conversation::class)->find($conversationId);
+
+    if (!$conv) {
+        return $this->json(['error' => 'Conversation not found']);
+    }
+
+    $msg = new Message();
+    $msg->setContenu($messageText);
+    $msg->setSent_at(new \DateTime());
+    $msg->setIs_read(false);
+    $msg->setSender_id($sender);
+    $msg->setConversation($conv);
+
+    // 📸 UPLOAD IMAGE
+    if ($imageFile) {
+        $newFilename = uniqid().'.'.$imageFile->guessExtension();
+
+        try {
+            $imageFile->move(
+                $this->getParameter('kernel.project_dir') . '/public/uploads/chat',
+                $newFilename
+            );
+
+            $msg->setImage('uploads/chat/' . $newFilename);
+        } catch (FileException $e) {
+            return $this->json(['error' => 'Upload failed']);
+        }
+    }
+
+    $em->persist($msg);
+    $em->flush();
+
+    return $this->json(['status' => 'ok']);
+}
+
+
+
+#[Route('/chat/render-message', name: 'chat_render_message', methods: ['POST'])]
+public function renderMessage(Request $request): Response
+{
+    $content = $request->getContent();
+
+    $data = json_decode($content, true);
+
+    if (!is_array($data)) {
+        return $this->json([
+            'error' => 'Invalid JSON',
+            'raw' => $content
+        ], 400);
+    }
+
+            return $this->render('chat/_message.html.twig', [
+            'message' => $data['message'] ?? '',
+            'image' => $data['image'] ?? null,
+            'type' => $data['type'] ?? 'received',
+            'time' => $data['time'] ?? '',
+            'sender_name' => $data['sender_name'] ?? null,
+            'sender_photo' => $data['sender_photo'] ?? null
+            
+]);
+
+
+}
+
+#[Route('/chat/messages/{id}', name: 'chat_messages', methods: ['GET'])]
+public function getMessages($id, EntityManagerInterface $em): JsonResponse
+{
+    $conv = $em->getRepository(Conversation::class)->find($id);
+
+    if (!$conv) {
+        return $this->json([]);
+    }
+
+    $messages = $em->getRepository(Message::class)
+        ->createQueryBuilder('m')
+        ->where('m.conversation = :conv')
+        ->setParameter('conv', $conv) 
+        ->orderBy('m.sent_at', 'ASC')
+        ->getQuery()
+        ->getResult();
+
+    $data = [];
+
+    foreach ($messages as $msg) {
+        $data[] = [
+    'contenu' => $msg->getContenu(),
+    'image' => $msg->getImage(),
+    'sender_id' => $msg->getSender_id()?->getId(),
+    'sender_name' => $msg->getSender_id()?->getNom(),
+    'sent_at' => $msg->getSent_at()->format('H:i'),
+    'sender_photo' => $msg->getSender_id()?->getProfile_photo(),
+];
+    }
+
+    return $this->json($data);
+}
+
+
+
+
+
+
+
+
+
+
+
+/*------------------------------------------------------posting--------------------------------------------------------*/
+
 private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
     if (!$form->isSubmitted() || !$form->isValid()) {
@@ -290,12 +663,41 @@ public function addComment(
         $em->flush();
     }
 
+
     // 🔥 Flash message UX
     if ($status === 'warning') {
         $this->addFlash('warning', '⚠️ Commentaire sensible publié');
     } else {
         $this->addFlash('success', '✅ Commentaire ajouté');
     }
+
+    $postOwner = $post->getPersonne_id();
+
+// ne pas notifier soi-même
+if ($postOwner && $postOwner->getId() !== $personne->getId()) {
+
+    // ne pas notifier admin
+    if ($postOwner->getRole() !== 'ADMIN') {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a commenté votre post';
+
+        $notification->setMessage($message);
+        $notification->setType('COMMENT');
+        $notification->setPost_id($post);
+        $notification->setComment_id($comment);
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($postOwner);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+        $em->flush();
+    }
+}
 
     return $this->redirectToRoute('blog');
 }
@@ -361,6 +763,35 @@ public function like(Post $post, EntityManagerInterface $em, Request $request): 
 
     $em->persist($like);
     $em->flush();
+
+    // après $em->flush();
+
+$postOwner = $post->getPersonne_id();
+
+// ne pas notifier soi-même
+if ($postOwner && $postOwner->getId() !== $personne->getId()) {
+
+    // ne pas notifier admin
+    if ($postOwner->getRole() !== 'ADMIN') {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a aimé votre post';
+
+        $notification->setMessage($message);
+        $notification->setType('LIKE');
+        $notification->setPost_id($post);
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($postOwner);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+        $em->flush();
+    }
+}
 
     return new JsonResponse([
         'liked' => true,
@@ -446,4 +877,44 @@ public function share(
         ], 500);
     }
 }
+
+
+#[Route('/translate', name: 'translate', methods: ['POST'])]
+public function translate(Request $request, HttpClientInterface $client): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
+
+    // 🔒 Sécurité basique
+    if (!isset($data['text']) || empty($data['text'])) {
+        return $this->json(['error' => 'Texte manquant'], 400);
+    }
+
+    $target = $data['target'] ?? 'fr';
+
+    try {
+        $response = $client->request('POST', 'https://api.langbly.com/language/translate/v2', [
+            'headers' => [
+                'Authorization' => 'Bearer UrxVrp3dAkGM1hqRe5aYsL'
+            ],
+            'json' => [
+                'q' => $data['text'],
+                'source' => 'auto',
+                'target' => $target
+            ]
+        ]);
+
+        $result = $response->toArray();
+
+        return $this->json([
+            'translation' => $result['data']['translations'][0]['translatedText'] ?? ''
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->json([
+            'error' => 'Erreur traduction'
+        ], 500);
+    }
+}
+
+
 }

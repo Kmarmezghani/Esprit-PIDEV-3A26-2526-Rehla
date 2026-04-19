@@ -21,12 +21,123 @@
     <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
     <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
     <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
-    <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+    <li class="nav-item "><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
     <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
     <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
     {% if app.session.get('user_id') %}
+    <li class="nav-item dropdown ms-2 d-flex align-items-center">
+    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center position-relative"
+   href="#"
+   id="notifDropdown"
+   role="button"
+   data-bs-toggle="dropdown"
+   aria-expanded="false"
+   style="margin-right:14px;">
+
+    <i class="fa fa-bell notif-bell-icon" style="font-size:20px;"></i>
+
+    {% if hasUnreadActivityNotifications %}
+        <span style="
+            position:absolute;
+            top:-1px;
+            right:-1px;
+            width:10px;
+            height:10px;
+            background:#dc3545;
+            border-radius:50%;
+            border:2px solid white;
+        "></span>
+    {% endif %}
+</a>
+
+    <ul class="dropdown-menu"
+        aria-labelledby="notifDropdown"
+        style="min-width:320px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0; transform: translateX(-260px);">
+
+        <li>
+            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                Mes notifications
+            </span>
+        </li>
+
+        <li><hr class="dropdown-divider my-1"></li>
+
+        {% if activityNotifications is not empty %}
+            {% for notif in activityNotifications %}
+                <li>
+                    <a
+    class="dropdown-item {% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}waitlist-notif-link{% endif %}"
+    href="{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}#{% else %}javascript:void(0);{% endif %}"
+    data-notif-id="{{ notif.id }}"
+    data-activite-id="{{ notif.activite_id.id }}"
+    data-message="{{ notif.message|e('html_attr') }}"
+    data-max-tickets="{{ notif.activite_id.maxPlaces ?? 1 }}"
+    style="padding:10px 16px; white-space:normal; cursor:{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}pointer{% else %}default{% endif %};">
+                       
+
+                        <div style="display:flex; align-items:flex-start; gap:10px;">
+                            <div style="margin-top:2px;">
+                                <i class="fa fa-bell" style="color:#223f91;"></i>
+                            </div>
+
+                            <div style="flex:1;">
+                               <div style="font-size:12px; font-weight:700; margin-bottom:4px;
+    color:
+{% if notif.type == 'WAITLIST_HOLD' %}#223f91
+{% elseif notif.type == 'BOOKING_CONFIRMED' %}#16a34a
+{% elseif notif.type == 'BOOKING_CANCELLED' %}#dc3545
+{% elseif notif.type == 'WAITLIST_EXPIRED' %}#6b7280
+{% else %}#223f91
+{% endif %};
+">
+    {% if notif.type == 'WAITLIST_HOLD' %}
+    WAITLIST HOLD
+{% elseif notif.type == 'BOOKING_CONFIRMED' %}
+    BOOKING CONFIRMED
+{% elseif notif.type == 'BOOKING_CANCELLED' %}
+    BOOKING CANCELLED
+{% elseif notif.type == 'WAITLIST_EXPIRED' %}
+    WAITLIST EXPIRED
+{% else %}
+    {{ notif.type }}
+{% endif %}
+</div>
+
+<div style="font-size:13px; color:#333; line-height:1.4;">
+    {{ notif.message }}
+</div>
+
+                                <div style="font-size:11px; color:#888; margin-top:4px;">
+                                    {{ notif.created_at|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+
+                            {% if not notif.is_read %}
+                                <span style="
+                                    width:8px;
+                                    height:8px;
+                                    background:#dc3545;
+                                    border-radius:50%;
+                                    display:inline-block;
+                                    margin-top:6px;
+                                "></span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>
+                <span class="dropdown-item-text text-muted" style="padding:10px 16px; font-size:13px;">
+                    Aucune notification
+                </span>
+            </li>
+        {% endif %}
+    </ul>
+</li>
     {# ── Utilisateur connecté ── #}
+
     <li class="nav-item dropdown ms-2 d-flex align-items-center">
         <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
            href="#" id="userDropdown" role="button"
@@ -102,16 +213,16 @@
 </div>
 		</div>
 	</nav>
-	<!-- END nav -->
-	
+
+
 	<div class="hero-wrap js-fullheight" style="background-image: url('{{ asset('assets/images/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg')}}');">
 		<div class="overlay"></div>
 		<div class="container">
 			<div class="row no-gutters slider-text js-fullheight align-items-center" data-scrollax-parent="true">
 				<div class="col-md-7 ftco-animate">
-					<span class="subheading">Welcome to Rehla</span>
-					<h1 class="mb-4">Discover Your Favorite Place with Us</h1>
-					<p class="caps">Travel to the any corner of the world, without going around in circles</p>
+					<span class="subheading">Bienvenue sur Rehla</span>
+<h1 class="mb-4">Découvrez vos destinations préférées avec nous</h1>
+<p class="caps">Voyagez aux quatre coins du monde, simplement et en toute confiance</p>
 				</div>
 				<a href="https://vimeo.com/45830194" class="icon-video popup-vimeo d-flex align-items-center justify-content-center mb-4">
 					<span class="fa fa-play"></span>
@@ -128,10 +239,8 @@
 						<div class="row">
 							<div class="col-md-12 nav-link-wrap">
 								<div class="nav nav-pills text-center" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-									<a class="nav-link active mr-md-1" id="v-pills-1-tab" data-toggle="pill" href="#v-pills-1" role="tab" aria-controls="v-pills-1" aria-selected="true">Search Tour</a>
-
-									<a class="nav-link" id="v-pills-2-tab" data-toggle="pill" href="#v-pills-2" role="tab" aria-controls="v-pills-2" aria-selected="false">Hotel</a>
-
+									<a class="nav-link active mr-md-1" id="v-pills-1-tab" data-toggle="pill" href="#v-pills-1" role="tab" aria-controls="v-pills-1" aria-selected="true">Rechercher un voyage</a>
+<a class="nav-link" id="v-pills-2-tab" data-toggle="pill" href="#v-pills-2" role="tab" aria-controls="v-pills-2" aria-selected="false">Hôtel</a>
 								</div>
 							</div>
 							<div class="col-md-12 tab-wrap">
@@ -146,31 +255,31 @@
 														<label for="#">Destination</label>
 														<div class="form-field">
 															<div class="icon"><span class="fa fa-search"></span></div>
-															<input type="text" class="form-control" placeholder="Search place">
+															<input type="text" class="form-control" placeholder="Rechercher une destination">
 														</div>
 													</div>
 												</div>
 												<div class="col-md d-flex">
 													<div class="form-group p-4">
-														<label for="#">Check-in date</label>
+														<label for="#">Date d'arrivée</label>
 														<div class="form-field">
 															<div class="icon"><span class="fa fa-calendar"></span></div>
-															<input type="text" class="form-control checkin_date" placeholder="Check In Date">
+															<input type="text" class="form-control checkin_date" placeholder="Date d'arrivée">
 														</div>
 													</div>
 												</div>
 												<div class="col-md d-flex">
 													<div class="form-group p-4">
-														<label for="#">Check-out date</label>
+														<label for="#">Date de départ</label>
 														<div class="form-field">
 															<div class="icon"><span class="fa fa-calendar"></span></div>
-															<input type="text" class="form-control checkout_date" placeholder="Check Out Date">
+															<input type="text" class="form-control checkout_date" placeholder="Date de départ">
 														</div>
 													</div>
 												</div>
 												<div class="col-md d-flex">
 													<div class="form-group p-4">
-														<label for="#">Price Limit</label>
+														<label for="#">Budget maximum</label>
 														<div class="form-field">
 															<div class="select-wrap">
 																<div class="icon"><span class="fa fa-chevron-down"></span></div>
@@ -197,7 +306,7 @@
 												<div class="col-md d-flex">
 													<div class="form-group d-flex w-100 border-0">
 														<div class="form-field w-100 align-items-center d-flex">
-															<input type="submit" value="Search" class="align-self-stretch form-control btn btn-primary">
+															<input type="submit" value="Rechercher" class="align-self-stretch form-control btn btn-primary">
 														</div>
 													</div>
 												</div>
@@ -280,68 +389,83 @@
 		</section>
 
 		<section class="ftco-section services-section">
-			<div class="container">
-				<div class="row d-flex">
-					<div class="col-md-6 order-md-last heading-section pl-md-5 ftco-animate d-flex align-items-center">
-						<div class="w-100">
-							<span class="subheading">Welcome to Pacific</span>
-							<h2 class="mb-4">It's time to start your adventure</h2>
-							<p>A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth.</p>
-							<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.
-							A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
-							<p><a href="#" class="btn btn-primary py-3 px-4">Search Destination</a></p>
-						</div>
+	<div class="container">
+		<div class="row d-flex">
+			<div class="col-md-6 order-md-last heading-section pl-md-5 ftco-animate d-flex align-items-center">
+				<div class="w-100">
+					<span class="subheading">Bienvenue sur Rehla</span>
+					<h2 class="mb-4">Explorez le monde à votre façon</h2>
+					
+					<p>
+						Rehla est votre plateforme de voyage tout-en-un pour découvrir des destinations, des activités et des expériences à travers le monde.
+						Des villes emblématiques aux trésors cachés, nous vous aidons à organiser des voyages inoubliables selon vos envies.
+					</p>
+
+					<p>
+						Parcourez des destinations soigneusement sélectionnées, explorez des activités uniques, consultez de vrais avis de voyageurs et réservez en toute confiance.
+						Que vous recherchiez l’aventure, la détente ou la découverte culturelle, Rehla rapproche le monde de vous.
+					</p>
+
+					<p>
+						<a href="{{ path('app_destination') }}" class="btn btn-primary py-3 px-4">
+							Commencer l’exploration
+						</a>
+					</p>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="row">
+					<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
+						<div class="services services-1 color-1 d-block img" style="background-image: url('{{ asset('assets/images/services-1.jpg') }}');">
+							<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-paragliding"></span></div>
+							<div class="media-body">
+								<h3 class="heading mb-3">Activités uniques</h3>
+								<p>Découvrez des expériences inoubliables partout dans le monde, de l’aventure aux escapades culturelles.</p>
+							</div>
+						</div>      
 					</div>
-					<div class="col-md-6">
-						<div class="row">
-							<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
-								<div class="services services-1 color-1 d-block img" style="background-image: url('{{ asset('assets/images/services-1.jpg') }}');">
-									<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-paragliding"></span></div>
-									<div class="media-body">
-										<h3 class="heading mb-3">Activities</h3>
-										<p>A small river named Duden flows by their place and supplies it with the necessary</p>
-									</div>
-								</div>      
+
+					<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
+						<div class="services services-1 color-2 d-block img" style="background-image: url('{{ asset('assets/images/services-2.jpg')}}');">
+							<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-route"></span></div>
+							<div class="media-body">
+								<h3 class="heading mb-3">Planification intelligente</h3>
+								<p>Organisez facilement vos voyages grâce à des outils simples et des recommandations personnalisées.</p>
 							</div>
-							<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
-								<div class="services services-1 color-2 d-block img" style="background-image: url('{{ asset('assets/images/services-2.jpg')}}');">
-									<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-route"></span></div>
-									<div class="media-body">
-										<h3 class="heading mb-3">Travel Arrangements</h3>
-										<p>A small river named Duden flows by their place and supplies it with the necessary</p>
-									</div>
-								</div>    
+						</div>    
+					</div>
+
+					<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
+						<div class="services services-1 color-3 d-block img" style="background-image: url('{{ asset('assets/images/services-3.jpg')}}');">
+							<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-tour-guide"></span></div>
+							<div class="media-body">
+								<h3 class="heading mb-3">Avis authentiques</h3>
+								<p>Faites de meilleurs choix grâce aux retours réels de voyageurs du monde entier.</p>
 							</div>
-							<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
-								<div class="services services-1 color-3 d-block img" style="background-image: url('{{ asset('assets/images/services-3.jpg')}}');">
-									<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-tour-guide"></span></div>
-									<div class="media-body">
-										<h3 class="heading mb-3">Private Guide</h3>
-										<p>A small river named Duden flows by their place and supplies it with the necessary</p>
-									</div>
-								</div>      
+						</div>      
+					</div>
+
+					<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
+						<div class="services services-1 color-4 d-block img" style="background-image: url('{{ asset('assets/images/services-4.jpg')}}');">
+							<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-map"></span></div>
+							<div class="media-body">
+								<h3 class="heading mb-3">Destinations mondiales</h3>
+								<p>Explorez villes, paysages et cultures du monde entier sur une seule plateforme.</p>
 							</div>
-							<div class="col-md-12 col-lg-6 d-flex align-self-stretch ftco-animate">
-								<div class="services services-1 color-4 d-block img" style="background-image: url('{{ asset('assets/images/services-4.jpg')}}');">
-									<div class="icon d-flex align-items-center justify-content-center"><span class="flaticon-map"></span></div>
-									<div class="media-body">
-										<h3 class="heading mb-3">Location Manager</h3>
-										<p>A small river named Duden flows by their place and supplies it with the necessary</p>
-									</div>
-								</div>      
-							</div>
-						</div>
+						</div>      
 					</div>
 				</div>
 			</div>
-		</section>
-
+		</div>
+	</div>
+</section>
 		<section class="ftco-section img ftco-select-destination" style="background-image: url('{{ asset('assets/images/bg_3.jpg')}}');">
 			<div class="container">
 				<div class="row justify-content-center pb-4">
 					<div class="col-md-12 heading-section text-center ftco-animate">
-						<span class="subheading">Pacific Provide Places</span>
-						<h2 class="mb-4">Select Your Destination</h2>
+						<span class="subheading">Rehla vous propose des lieux uniques</span>
+						<h2 class="mb-4">Choisissez votre destination</h2>
 					</div>
 				</div>
 			</div>
@@ -431,11 +555,14 @@
 							<div class="col-md-6 pl-md-5 py-5">
 								<div class="row justify-content-start pb-3">
 									<div class="col-md-12 heading-section ftco-animate">
-										<span class="subheading">About Us</span>
-										<h2 class="mb-4">Make Your Tour Memorable and Safe With Us</h2>
-										<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
-										<p><a href="#" class="btn btn-primary">Book Your Destination</a></p>
-									</div>
+										<span class="subheading">À propos de nous</span>
+<h2 class="mb-4">Rendez vos voyages mémorables et sereins avec Rehla</h2>
+<p>
+	Rehla vous accompagne dans la découverte de destinations, d’activités et d’expériences uniques à travers le monde.
+	Notre objectif est de rendre la planification de vos voyages plus simple, plus inspirante et plus fiable.
+</p>
+<p><a href="{{ path('app_destination') }}" class="btn btn-primary">Découvrir les destinations</a></p>
+</div>
 								</div>
 							</div>
 						</div>
@@ -449,119 +576,56 @@
 			<div class="container">
 				<div class="row justify-content-center pb-4">
 					<div class="col-md-7 text-center heading-section heading-section-white ftco-animate">
-						<span class="subheading">Testimonial</span>
-						<h2 class="mb-4">Tourist Feedback</h2>
+						<span class="subheading">Témoignages</span>
+<h2 class="mb-4">Avis des voyageurs</h2>
 					</div>
 				</div>
 				<div class="row ftco-animate">
 					<div class="col-md-12">
 						<div class="carousel-testimony owl-carousel">
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_1.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_2.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_3.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_1.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="item">
-								<div class="testimony-wrap py-4">
-									<div class="text">
-										<p class="star">
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-											<span class="fa fa-star"></span>
-										</p>
-										<p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-										<div class="d-flex align-items-center">
-											<div class="user-img" style="background-image: url('{{ asset('assets/images/person_2.jpg')}}')"></div>
-											<div class="pl-3">
-												<p class="name">Roger Scott</p>
-												<span class="position">Marketing Manager</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+    {% for avis in avisList %}
+        <div class="item">
+            <div class="testimony-wrap py-4">
+                <div class="text">
+                    <p class="star">
+                        {% for i in 1..5 %}
+                            {% if i <= avis.note %}
+                                <span class="fa fa-star"></span>
+                            {% else %}
+                                <span class="fa fa-star-o"></span>
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+
+                    <p class="mb-4">
+                        {{ avis.commentaire }}
+                    </p>
+
+                    <div class="d-flex align-items-center">
+                        <div class="user-img" style="background-image: url('{{ avis.personne and avis.personne.profile_photo ? asset(avis.personne.profile_photo) : asset('assets/images/default-user.png') }}');"></div>
+
+                        <div class="pl-3">
+                            <p class="name">
+                                {{ avis.personne.prenom }} {{ avis.personne.nom }}
+                            </p>
+                            <span class="position">
+                                {{ avis.activite.nom }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="item">
+            <div class="testimony-wrap py-4">
+                <div class="text">
+                    <p class="mb-4">Aucun avis disponible pour le moment.</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 					</div>
 				</div>
 			</div>
@@ -572,8 +636,8 @@
 			<div class="container">
 				<div class="row justify-content-center pb-4">
 					<div class="col-md-12 heading-section text-center ftco-animate">
-						<span class="subheading">Our Blog</span>
-						<h2 class="mb-4">Recent Post</h2>
+						<span class="subheading">Notre blog</span>
+<h2 class="mb-4">Articles récents</h2>
 					</div>
 				</div>
 				<div class="row d-flex">
@@ -611,9 +675,8 @@
 										<span class="mos">September</span>
 									</div>
 								</div>
-								<h3 class="heading"><a href="#">Most Popular Place In This World</a></h3>
-								<!-- <p>A small river named Duden flows by their place and supplies it with the necessary regelialia.</p> -->
-								<p><a href="#" class="btn btn-primary">Read more</a></p>
+								<h3 class="heading"><a href="#">Les destinations les plus populaires à découvrir</a></h3>
+<p><a href="#" class="btn btn-primary">Lire la suite</a></p>
 							</div>
 						</div>
 					</div>
@@ -647,8 +710,8 @@
 					<div class="col-md-12 text-center">
 						<div class="img"  style="background-image: url('{{ asset('assets/images/bg_2.jpg')}}');">
 							<div class="overlay"></div>
-							<h2>We Are Pacific A Travel Agency</h2>
-							<p>We can manage your dream building A small river named Duden flows by their place</p>
+							<h2>Rehla, votre partenaire pour voyager autrement</h2>
+<p>Découvrez, planifiez et vivez des expériences uniques à travers le monde avec une plateforme pensée pour les voyageurs.</p>
 							<p class="mb-0"><a href="#" class="btn btn-primary px-4 py-3">Ask For A Quote</a></p>
 						</div>
 					</div>
@@ -657,70 +720,87 @@
 		</section>
 
 		<footer class="ftco-footer bg-bottom ftco-no-pt" style="background-image: url('{{ asset('assets/images/bg_3.jpg')}}');">
-			<div class="container">
-				<div class="row mb-5">
-					<div class="col-md pt-5">
-						<div class="ftco-footer-widget pt-md-5 mb-4">
-							<h2 class="ftco-heading-2">About</h2>
-							<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
-							<ul class="ftco-footer-social list-unstyled float-md-left float-lft">
-								<li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
-								<li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
-								<li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
-							</ul>
-						</div>
-					</div>
-					<div class="col-md pt-5 border-left">
-						<div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
-							<h2 class="ftco-heading-2">Infromation</h2>
-							<ul class="list-unstyled">
-								<li><a href="#" class="py-2 d-block">Online Enquiry</a></li>
-								<li><a href="#" class="py-2 d-block">General Enquiries</a></li>
-								<li><a href="#" class="py-2 d-block">Booking Conditions</a></li>
-								<li><a href="#" class="py-2 d-block">Privacy and Policy</a></li>
-								<li><a href="#" class="py-2 d-block">Refund Policy</a></li>
-								<li><a href="#" class="py-2 d-block">Call Us</a></li>
-							</ul>
-						</div>
-					</div>
-					<div class="col-md pt-5 border-left">
-						<div class="ftco-footer-widget pt-md-5 mb-4">
-							<h2 class="ftco-heading-2">Experience</h2>
-							<ul class="list-unstyled">
-								<li><a href="#" class="py-2 d-block">Adventure</a></li>
-								<li><a href="#" class="py-2 d-block">Hotel and Restaurant</a></li>
-								<li><a href="#" class="py-2 d-block">Beach</a></li>
-								<li><a href="#" class="py-2 d-block">Nature</a></li>
-								<li><a href="#" class="py-2 d-block">Camping</a></li>
-								<li><a href="#" class="py-2 d-block">Party</a></li>
-							</ul>
-						</div>
-					</div>
-					<div class="col-md pt-5 border-left">
-						<div class="ftco-footer-widget pt-md-5 mb-4">
-							<h2 class="ftco-heading-2">Have a Questions?</h2>
-							<div class="block-23 mb-3">
-								<ul>
-									<li><span class="icon fa fa-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
-									<li><a href="#"><span class="icon fa fa-phone"></span><span class="text">+2 392 3929 210</span></a></li>
-									<li><a href="#"><span class="icon fa fa-paper-plane"></span><span class="text">info@yourdomain.com</span></a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
+	<div class="container">
+		<div class="row mb-5">
+			<div class="col-md pt-5">
+				<div class="ftco-footer-widget pt-md-5 mb-4">
+					<h2 class="ftco-heading-2">Rehla</h2>
+					<p>
+						Rehla est une plateforme de voyage conçue pour vous aider à découvrir des destinations, explorer des activités uniques et organiser des voyages mémorables en toute simplicité.
+					</p>
+					<ul class="ftco-footer-social list-unstyled float-md-left float-lft">
+						<li class="ftco-animate"><a href="#"><span class="fa fa-twitter"></span></a></li>
+						<li class="ftco-animate"><a href="#"><span class="fa fa-facebook"></span></a></li>
+						<li class="ftco-animate"><a href="#"><span class="fa fa-instagram"></span></a></li>
+					</ul>
 				</div>
-				<div class="row">
-					<div class="col-md-12 text-center">
+			</div>
 
-						<p><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-							Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
-						</div>
+			<div class="col-md pt-5 border-left">
+				<div class="ftco-footer-widget pt-md-5 mb-4 ml-md-5">
+					<h2 class="ftco-heading-2">Liens rapides</h2>
+					<ul class="list-unstyled">
+						<li><a href="{{ path('home') }}" class="py-2 d-block">Accueil</a></li>
+						<li><a href="{{ path('app_destination') }}" class="py-2 d-block">Destinations</a></li>
+						<li><a href="{{ path('activite') }}" class="py-2 d-block">Activités</a></li>
+						<li><a href="{{ path('blog') }}" class="py-2 d-block">Blog</a></li>
+						<li><a href="#" class="py-2 d-block">À propos</a></li>
+						<li><a href="#" class="py-2 d-block">Contact</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="col-md pt-5 border-left">
+				<div class="ftco-footer-widget pt-md-5 mb-4">
+					<h2 class="ftco-heading-2">Expériences de voyage</h2>
+					<ul class="list-unstyled">
+						<li><a href="#" class="py-2 d-block">Voyages d’aventure</a></li>
+						<li><a href="#" class="py-2 d-block">Circuits culturels</a></li>
+						<li><a href="#" class="py-2 d-block">Escapades balnéaires</a></li>
+						<li><a href="#" class="py-2 d-block">Nature & plein air</a></li>
+						<li><a href="#" class="py-2 d-block">Séjours urbains</a></li>
+						<li><a href="#" class="py-2 d-block">Voyages en famille</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="col-md pt-5 border-left">
+				<div class="ftco-footer-widget pt-md-5 mb-4">
+					<h2 class="ftco-heading-2">Contact</h2>
+					<div class="block-23 mb-3">
+						<ul>
+							<li>
+								<span class="icon fa fa-map-marker"></span>
+								<span class="text">Rehla Travel Platform, Centre Urbain Nord, Tunis, Tunisie</span>
+							</li>
+							<li>
+								<a href="#">
+									<span class="icon fa fa-phone"></span>
+									<span class="text">+216 29 285 270</span>
+								</a>
+							</li>
+							<li>
+								<a href="#">
+									<span class="icon fa fa-paper-plane"></span>
+									<span class="text">contact@rehla.com</span>
+								</a>
+							</li>
+						</ul>
 					</div>
 				</div>
-			</footer>
-			
-			
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<p>
+					Copyright &copy;<script>document.write(new Date().getFullYear());</script>
+					Tous droits réservés | Rehla
+				</p>
+			</div>
+		</div>
+	</div>
+</footer>	
 
 			<!-- loader -->
 			<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
@@ -747,5 +827,124 @@
 			});
 		}
 		</script>
+		<style>
+    .dropdown-toggle::after {
+    display: none !important;
+}
+.notif-bell-icon {
+    color: white;
+    transition: color 0.3s ease;
+}
 
+.notif-arrow-icon {
+    color: white;
+    transition: color 0.3s ease;
+    font-size: 12px;
+    margin-left: 6px;
+}
+
+#ftco-navbar.scrolled .notif-bell-icon,
+#ftco-navbar.scrolled .notif-arrow-icon {
+    color: #223f91 !important;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.waitlist-notif-link').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const activiteId = this.dataset.activiteId;
+            const message = this.dataset.message;
+            const maxTickets = parseInt(this.dataset.maxTickets || '1', 10);
+
+            Swal.fire({
+                title: 'Place disponible',
+                html: `
+                    <div style="font-size:14px; color:#444; line-height:1.5; margin-bottom:14px;">
+                        ${message}<br><br>
+                        Vous pouvez réserver de <strong>1</strong> à <strong>${maxTickets}</strong> ticket(s).
+                    </div>
+
+                    <div style="text-align:left;">
+                        <label style="font-size:14px; font-weight:600; color:#223f91; display:block; margin-bottom:8px;">
+                            Nombre de tickets
+                        </label>
+                        <input id="hold-ticket-qty" type="number" min="1" max="${maxTickets}" value="1"
+                               style="width:100%; height:42px; border:1px solid #d9e2f2; border-radius:10px; padding:0 12px;">
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: 'Confirmer',
+                denyButtonText: 'Refuser',
+                cancelButtonText: 'Fermer',
+                confirmButtonColor: '#223f91',
+                denyButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const qty = parseInt(document.getElementById('hold-ticket-qty').value, 10);
+
+                    if (!qty || qty < 1 || qty > maxTickets) {
+                        Swal.showValidationMessage('Choisissez une quantité valide.');
+                        return false;
+                    }
+
+                    return qty;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const qty = result.value;
+                    window.location.href = '/waitlist/confirm/' + activiteId + '?qty=' + qty;
+                } else if (result.isDenied) {
+                    window.location.href = '/waitlist/refuse/' + activiteId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<style>
+.carousel-testimony .owl-stage {
+    display: flex;
+    align-items: stretch;
+}
+
+.carousel-testimony .owl-item {
+    display: flex;
+    height: auto;
+}
+
+.carousel-testimony .item {
+    width: 100%;
+    display: flex;
+}
+
+.carousel-testimony .testimony-wrap {
+    display: flex;
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+}
+
+.carousel-testimony .text {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-testimony .text .mb-4 {
+    margin-bottom: 15px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.carousel-testimony .d-flex.align-items-center {
+    margin-top: auto;
+}
+</style>
 {% endblock %}

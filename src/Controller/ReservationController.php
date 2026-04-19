@@ -8,6 +8,8 @@ use App\Entity\Ville;
 use App\Entity\Personne;
 use App\Form\ReservationType;
 use App\Form\ReservationUserType;
+use App\Repository\NotificationRepository;
+use App\Repository\PersonneRepository;
 use App\Service\BookingEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\PdfGenerator;
-
+use App\Service\WaitlistService;
 
 class ReservationController extends AbstractController
 {
@@ -71,12 +73,13 @@ public function index(Request $request, EntityManagerInterface $em): Response
         ]);
     }
 
-    #[Route('/reservation/edit/{id}', name: 'admin_reservation_edit')]
+   #[Route('/reservation/edit/{id}', name: 'admin_reservation_edit')]
 public function edit(
     Reservation $reservation,
     Request $request,
     EntityManagerInterface $em,
-    BookingEmailService $bookingEmailService
+    BookingEmailService $bookingEmailService,
+    WaitlistService $waitlistService
 ): Response
 {
     $oldStatut = $reservation->getStatut();
@@ -89,9 +92,21 @@ public function edit(
         if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
             $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
             $this->restoreActivityPlacesFromReservation($reservation, $em);
+
+            $processedActivities = [];
+
+            foreach ($reservation->getTickets() as $ticket) {
+                $activite = $ticket->getActivite();
+
+                if ($activite && !in_array($activite->getId(), $processedActivities, true)) {
+                    $waitlistService->promoteNext($activite);
+                    $processedActivities[] = $activite->getId();
+                }
+            }
         }
 
         $em->flush();
+
         return $this->redirectToRoute('admin_reservations_tickets');
     }
 
@@ -104,12 +119,25 @@ public function delete(
     Reservation $reservation,
     Request $request,
     EntityManagerInterface $em,
-    BookingEmailService $bookingEmailService
+    BookingEmailService $bookingEmailService,
+    WaitlistService $waitlistService
 ): Response
 {
     if ($this->isCsrfTokenValid('delete' . $reservation->getId(), $request->request->get('_token'))) {
         $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
         $this->restoreActivityPlacesFromReservation($reservation, $em);
+
+        $processedActivities = [];
+
+        foreach ($reservation->getTickets() as $ticket) {
+            $activite = $ticket->getActivite();
+
+            if ($activite && !in_array($activite->getId(), $processedActivities, true)) {
+                $waitlistService->promoteNext($activite);
+                $processedActivities[] = $activite->getId();
+            }
+        }
+
         $em->remove($reservation);
         $em->flush();
     }
@@ -173,7 +201,9 @@ public function getTickets(Reservation $reservation): Response
 }
 
 #[Route('/mes-reservations', name: 'mes_reservations')]
-public function mesReservations(Request $request, EntityManagerInterface $em): Response
+public function mesReservations(Request $request,
+PersonneRepository $personneRepository,
+NotificationRepository $notificationRepository, EntityManagerInterface $em): Response
 {
     $userId = $request->getSession()->get('user_id');
 
@@ -188,8 +218,23 @@ public function mesReservations(Request $request, EntityManagerInterface $em): R
         ->getQuery()
         ->getResult();
 
+    $hasUnreadActivityNotifications = false;
+$activityNotifications = [];
+
+$userId = $request->getSession()->get('user_id');
+
+if ($userId) {
+    $personne = $personneRepository->find($userId);
+
+    if ($personne) {
+        $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+        $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
+    }
+}
     return $this->render('reservation/mes_reservations.html.twig', [
-        'reservations' => $reservations
+        'reservations' => $reservations,
+        'activityNotifications' => $activityNotifications,
+'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
     ]);
 }
 #[Route('/reservation/new', name: 'ajouter_reservation')]
@@ -247,7 +292,8 @@ public function editUser(
     Reservation $reservation,
     Request $request,
     EntityManagerInterface $em,
-    BookingEmailService $bookingEmailService
+    BookingEmailService $bookingEmailService,
+    WaitlistService $waitlistService
 ): Response
 {
     $oldStatut = $reservation->getStatut();
@@ -260,7 +306,14 @@ public function editUser(
         if ($oldStatut !== 'annulée' && $reservation->getStatut() === 'annulée') {
             $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
             $this->restoreActivityPlacesFromReservation($reservation, $em);
+
+            foreach ($reservation->getTickets() as $ticket) {
+                if ($ticket->getActivite()) {
+                    $waitlistService->promoteNext($ticket->getActivite());
+                }
+            }
         }
+
         $total = 0;
         foreach ($reservation->getTickets() as $ticket) {
             $total += $ticket->getPrix();
@@ -270,6 +323,7 @@ public function editUser(
         $reservation->setNb_tickets(count($reservation->getTickets()));
 
         $em->flush();
+
         return $this->redirectToRoute('mes_reservations');
     }
 
@@ -278,17 +332,30 @@ public function editUser(
         'isEdit' => true
     ]);
 }
-#[Route('/mes-reservations/delete/{id}', name: 'user_reservation_delete', methods:['POST'])]
+#[Route('/mes-reservations/delete/{id}', name: 'user_reservation_delete', methods: ['POST'])]
 public function deleteUserReservation(
     Reservation $reservation,
     Request $request,
     EntityManagerInterface $em,
-    BookingEmailService $bookingEmailService
+    BookingEmailService $bookingEmailService,
+    WaitlistService $waitlistService
 ): Response
 {
-    if ($this->isCsrfTokenValid('delete'.$reservation->getId(), $request->request->get('_token'))) {
+    if ($this->isCsrfTokenValid('delete' . $reservation->getId(), $request->request->get('_token'))) {
         $this->sendCancellationEmailIfActivityReservation($reservation, $bookingEmailService, $em);
         $this->restoreActivityPlacesFromReservation($reservation, $em);
+
+        $processedActivities = [];
+
+        foreach ($reservation->getTickets() as $ticket) {
+            $activite = $ticket->getActivite();
+
+            if ($activite && !in_array($activite->getId(), $processedActivities, true)) {
+                $waitlistService->promoteNext($activite);
+                $processedActivities[] = $activite->getId();
+            }
+        }
+
         $em->remove($reservation);
         $em->flush();
     }
@@ -388,12 +455,25 @@ private function sendCancellationEmailIfActivityReservation(
         return;
     }
 
-    $bookingEmailService->sendBookingCancellation(
-        $personne->getEmail(),
-        trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? '')),
-        $activite->getNom(),
-        (float) $reservation->getCoutTotal()
-    );
+   $userFullName = trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? ''));
+
+
+$bookingEmailService->regenerateCancelledBookingPass(
+    $userFullName,
+    $activite->getNom(),
+    (float) $reservation->getCoutTotal(),
+    $reservation->getId(),
+    $activite->getDateDebut(),
+    $activite->getDateFin()
+);
+
+
+$bookingEmailService->sendBookingCancellation(
+    $personne->getEmail(),
+    $userFullName,
+    $activite->getNom(),
+    (float) $reservation->getCoutTotal()
+);
 }
 #[Route('/booking-pass/{id}', name: 'booking_pass_show', methods: ['GET'])]
 public function showBookingPass(Reservation $reservation): Response

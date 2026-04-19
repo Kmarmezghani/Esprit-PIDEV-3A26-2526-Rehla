@@ -16,38 +16,65 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Reservation;
 use App\Entity\Ticket;
+use App\Entity\Waitlist;
 use App\Service\BookingEmailService;
 use App\Service\GeminiRecommendationService;
 use App\Service\ActivityMaintenanceService;
+use App\Entity\Notification;
+use App\Repository\NotificationRepository;
+use App\Repository\WaitlistRepository;
+use App\Service\WaitlistService;
+use App\Service\WeatherActivityTipsService;
+use Knp\Component\Pager\PaginatorInterface;
 
 final class ActiviteController extends AbstractController
 {
 #[Route('/activite', name: 'activite')]
+
 public function index(
     Request $request,
     ActiviteRepository $activiteRepository,
     PersonneRepository $personneRepository,
     GeminiRecommendationService $geminiRecommendationService,
-    ActivityMaintenanceService $activityMaintenanceService
+    ActivityMaintenanceService $activityMaintenanceService,
+    EntityManagerInterface $em,
+    NotificationRepository $notificationRepository,
+    WaitlistRepository $waitlistRepository,
+    WaitlistService $waitlistService,
+    PaginatorInterface $paginator
 ): Response
 {
+    $waitlistService->expireExpiredHolds();
     $activityMaintenanceService->refreshStatusesAndFlashSales();
+
     $destination = trim((string) $request->query->get('destination', ''));
     $dateDebut = $request->query->get('date_debut');
     $dateFin = $request->query->get('date_fin');
     $prixMax = $request->query->get('prix_max');
 
-    $activites = $activiteRepository->searchFront(
-        $destination,
-        $dateDebut,
-        $dateFin,
-        $prixMax
-    );
+    $queryBuilder = $activiteRepository->searchFrontQueryBuilder(
+    $destination,
+    $dateDebut,
+    $dateFin,
+    $prixMax
+);
+
+$activites = $paginator->paginate(
+    $queryBuilder,
+    $request->query->getInt('page', 1),
+    6
+);
 
     $recommendedActivities = [];
     $recommendedIds = [];
+    $waitlistActivities = [];
+    $holdActivities = [];
+    $activityCanBook = [];
+    $activityNotifications = [];
+    $hasUnreadActivityNotifications = false;
 
     $userId = $request->getSession()->get('user_id');
+    $personne = null;
 
     if ($userId) {
         $personne = $personneRepository->find($userId);
@@ -59,11 +86,11 @@ public function index(
 
             $userProfileText = $this->buildUserProfileText($personne->getPreferences());
 
-           $rankedIds = $geminiRecommendationService->rankActivityIdsMax3Cached(
-    $personne->getId(),
-    $allActivities,
-    $userProfileText
-);
+            $rankedIds = $geminiRecommendationService->rankActivityIdsMax3Cached(
+                $personne->getId(),
+                $allActivities,
+                $userProfileText
+            );
 
             if (!empty($rankedIds)) {
                 $map = [];
@@ -78,7 +105,32 @@ public function index(
                     }
                 }
             }
+
+            $waitlists = $em->getRepository(Waitlist::class)->findBy([
+                'personne' => $personne,
+                'status' => ['WAITING', 'HOLD']
+            ]);
+
+            foreach ($waitlists as $w) {
+                $waitlistActivities[] = $w->getActivite()->getId();
+            }
+
+            $userHolds = $waitlistRepository->findActiveHoldsByPersonne($personne);
+
+            foreach ($userHolds as $hold) {
+                $holdActivities[] = $hold->getActivite()->getId();
+            }
+
+            $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+            $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
         }
+    }
+
+    foreach ($activites as $activite) {
+        $activeHoldCount = $waitlistRepository->countActiveHoldsForActivity($activite);
+
+        $activityCanBook[$activite->getId()] =
+            ((int) $activite->getMaxPlaces() > 0) && ($activeHoldCount === 0);
     }
 
     $recommendedIds = array_map(
@@ -90,6 +142,11 @@ public function index(
         'activites' => $activites,
         'recommendedActivities' => $recommendedActivities,
         'recommendedIds' => $recommendedIds,
+        'waitlistActivities' => $waitlistActivities,
+        'holdActivities' => $holdActivities,
+        'activityCanBook' => $activityCanBook,
+        'activityNotifications' => $activityNotifications,
+        'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
         'filters' => [
             'destination' => $destination,
             'date_debut' => $dateDebut,
@@ -97,105 +154,118 @@ public function index(
             'prix_max' => $prixMax,
         ]
     ]);
-}
-    #[Route('/activite/{id}', name: 'activite_show')]
-    public function show(
-        Activite $activite,
-        Request $request,
-        EntityManagerInterface $em,
-        AvisRepository $avisRepository,
-        PersonneRepository $personneRepository,
-        AvisService $avisService
-    ): Response
-    {
-        $userId = $request->getSession()->get('user_id');
+} 
+   #[Route('/activite/{id}', name: 'activite_show')]
+public function show(
+    Activite $activite,
+    Request $request,
+    EntityManagerInterface $em,
+    AvisRepository $avisRepository,
+    PersonneRepository $personneRepository,
+    AvisService $avisService,
+    WeatherActivityTipsService $weatherActivityTipsService,
+    NotificationRepository $notificationRepository
+): Response
+{
+    $userId = $request->getSession()->get('user_id');
 
-        if (!$userId) {
-            $this->addFlash('danger', 'Vous devez être connecté.');
-            return $this->redirectToRoute('app_login');
-        }
+    if (!$userId) {
+        $this->addFlash('danger', 'Vous devez être connecté.');
+        return $this->redirectToRoute('app_login');
+    }
 
-        $personne = $personneRepository->find($userId);
+    $personne = $personneRepository->find($userId);
 
-        if (!$personne) {
-            $this->addFlash('danger', 'Utilisateur introuvable.');
-            return $this->redirectToRoute('activite');
-        }
+    if (!$personne) {
+        $this->addFlash('danger', 'Utilisateur introuvable.');
+        return $this->redirectToRoute('activite');
+    }
 
-        $existingAvis = $avisRepository->findOneBy([
-            'personne' => $personne,
-            'activite' => $activite,
-        ]);
+    $activityNotifications = $notificationRepository->findActivityNotificationsByUser($personne);
+    $hasUnreadActivityNotifications = $notificationRepository->hasUnreadActivityNotifications($personne);
 
-        $isEditMode = $request->query->getBoolean('editAvis', false);
+    $existingAvis = $avisRepository->findOneBy([
+        'personne' => $personne,
+        'activite' => $activite,
+    ]);
 
+    $isEditMode = $request->query->getBoolean('editAvis', false);
+
+    if ($existingAvis && $isEditMode) {
+        $avis = $existingAvis;
+    } else {
+        $avis = new Avis();
+        $avis->setActivite($activite);
+        $avis->setPersonne($personne);
+    }
+
+    $form = $this->createForm(AvisType::class, $avis);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
         if ($existingAvis && $isEditMode) {
-            $avis = $existingAvis;
+            $existingAvis->setNote($avis->getNote());
+            $existingAvis->setCommentaire($avis->getCommentaire());
+            $existingAvis->setDateAvis(new \DateTime());
+        } elseif (!$existingAvis) {
+            $avis->setDateAvis(new \DateTime());
+            $em->persist($avis);
         } else {
-            $avis = new Avis();
-            $avis->setActivite($activite);
-            $avis->setPersonne($personne);
-        }
-
-        $form = $this->createForm(AvisType::class, $avis);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            if ($existingAvis && $isEditMode) {
-                $existingAvis->setNote($avis->getNote());
-                $existingAvis->setCommentaire($avis->getCommentaire());
-                $existingAvis->setDateAvis(new \DateTime());
-            } elseif (!$existingAvis) {
-                $avis->setDateAvis(new \DateTime());
-                $em->persist($avis);
-            } else {
-                $this->addFlash('danger', 'Vous avez déjà publié un avis pour cette activité. Cliquez sur modifier pour le mettre à jour.');
-
-                return $this->redirectToRoute('activite_show', [
-                    'id' => $activite->getId()
-                ]);
-            }
-
-            $em->flush();
-
-            $avisService->recalculerNoteMoyenne($activite);
-            $em->flush();
-
-            $this->addFlash(
-                'success',
-                ($existingAvis && $isEditMode) ? 'Votre avis a été modifié.' : 'Votre avis a été ajouté.'
-            );
+            $this->addFlash('danger', 'Vous avez déjà publié un avis pour cette activité. Cliquez sur modifier pour le mettre à jour.');
 
             return $this->redirectToRoute('activite_show', [
                 'id' => $activite->getId()
             ]);
         }
 
-        $aviss = $avisRepository->findBy(
-            ['activite' => $activite],
-            ['dateAvis' => 'DESC']
+        $em->flush();
+
+        $avisService->recalculerNoteMoyenne($activite);
+        $em->flush();
+
+        $this->addFlash(
+            'success',
+            ($existingAvis && $isEditMode) ? 'Votre avis a été modifié.' : 'Votre avis a été ajouté.'
         );
 
-        $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
-        $totalAvis = count($aviss);
-
-        foreach ($aviss as $item) {
-            $note = $item->getNote();
-            if (isset($distribution[$note])) {
-                $distribution[$note]++;
-            }
-        }
-
-        return $this->render('activite/show.html.twig', [
-            'activite' => $activite,
-            'aviss' => $aviss,
-            'distribution' => $distribution,
-            'totalAvis' => $totalAvis,
-            'avisForm' => $form->createView(),
-            'userAvis' => $existingAvis,
-            'isEditMode' => $isEditMode,
+        return $this->redirectToRoute('activite_show', [
+            'id' => $activite->getId()
         ]);
     }
+
+    $aviss = $avisRepository->findBy(
+        ['activite' => $activite],
+        ['dateAvis' => 'DESC']
+    );
+
+    $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+    $totalAvis = count($aviss);
+
+    foreach ($aviss as $item) {
+        $note = $item->getNote();
+        if (isset($distribution[$note])) {
+            $distribution[$note]++;
+        }
+    }
+
+    $weatherTipsData = $weatherActivityTipsService->getTipsForActivity($activite);
+
+    return $this->render('activite/show.html.twig', [
+        'activite' => $activite,
+        'aviss' => $aviss,
+        'distribution' => $distribution,
+        'totalAvis' => $totalAvis,
+        'avisForm' => $form->createView(),
+        'userAvis' => $existingAvis,
+        'isEditMode' => $isEditMode,
+        'weatherTips' => $weatherTipsData['tips'],
+        'weatherData' => $weatherTipsData['weather'],
+
+        
+        'activityNotifications' => $activityNotifications,
+        'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
+    ]);
+}
 
     #[Route('/avis/{id}/delete', name: 'avis_delete_front', methods: ['POST'])]
     public function deleteAvisFront(
@@ -333,12 +403,14 @@ $reservation->setCoutTotal($unitPrice * $nbTickets);
     if ($personne->getEmail()) {
         $bookingEmailService->sendBookingConfirmation(
     $personne->getEmail(),
-    $personne->getNom() . ' ' . $personne->getPrenom(),
+    trim(($personne->getNom() ?? '') . ' ' . ($personne->getPrenom() ?? '')),
     $activite->getNom(),
-    $reservation->getCoutTotal(),
+    (float) $reservation->getCoutTotal(),
     $reservation->getId(),
     $personne->getId(),
-    $activite->getId()
+    $activite->getId(),
+    $activite->getDateDebut(),
+    $activite->getDateFin()
 );
     }
 } catch (\Throwable $e) {

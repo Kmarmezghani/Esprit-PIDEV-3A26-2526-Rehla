@@ -31,7 +31,24 @@ class Message
     #[ORM\Column(type: "boolean")]
     private bool $is_read;
 
+   #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $image = null;     
+
+
+
+
     // ------------------- Getters & Setters -------------------
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): void
+    {
+        $this->image = $image;
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;

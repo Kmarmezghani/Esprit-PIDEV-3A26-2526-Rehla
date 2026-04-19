@@ -13,56 +13,74 @@ class FlashSaleService
     }
 
     public function refreshFlashSales(): void
-    {
-        $now = new \DateTime();
-        $threeDaysLater = (clone $now)->modify('+3 days');
-        $twelveHoursLater = (clone $now)->modify('+12 hours');
+{
+    $now = new \DateTime();
+    $threeDaysLater = (clone $now)->modify('+3 days');
+    $twelveHoursLater = (clone $now)->modify('+12 hours');
 
-        $activites = $this->em->getRepository(Activite::class)->findAll();
+    $activites = $this->em->getRepository(Activite::class)->findAll();
 
-        foreach ($activites as $activite) {
-            
-            if (
-                $activite->getIsFlashSale() &&
-                $activite->getFlashExpiresAt() !== null &&
-                $activite->getFlashExpiresAt() <= $now
-            ) {
-                $activite->setIsFlashSale(false);
-                $activite->setFlashPrice(null);
-                $activite->setFlashExpiresAt(null);
-            }
+    foreach ($activites as $activite) {
 
-            // 2) activate new flash sale if eligible
-            if (
-                !$activite->getIsFlashSale() &&
-                $activite->getStatus() === 'DISPONIBLE' &&
-                $activite->getDateDebut() !== null &&
-                $activite->getDateDebut() >= $now &&
-                $activite->getDateDebut() <= $threeDaysLater &&
-                $activite->getMaxPlaces() !== null &&
-                $activite->getMaxPlaces() > 0 &&
-                $activite->getPrix() > 0
-            ) {
-                $booked = $this->countBookedTicketsForActivity($activite->getId());
-                $note = (float) ($activite->getNoteMoyenne() ?? 0);
-
-                if (
-                    $booked < ($activite->getMaxPlaces() * 0.5) &&
-                    $note < 3.5
-                ) {
-                    $flashPrice = round($activite->getPrix() * 0.70, 2);
-                } else {
-                    $flashPrice = round($activite->getPrix() * 0.80, 2);
-                }
-
-                $activite->setIsFlashSale(true);
-                $activite->setFlashPrice($flashPrice);
-                $activite->setFlashExpiresAt($twelveHoursLater);
-            }
+        // 1) supprimer les flash sales invalides ou expirés
+        if (
+            $activite->getIsFlashSale() &&
+            (
+                $activite->getGuide() === null ||
+                $activite->getFlashPrice() === null ||
+                $activite->getFlashPrice() <= 0 ||
+                $activite->getFlashExpiresAt() === null ||
+                $activite->getFlashExpiresAt() <= $now ||
+                $activite->getStatus() !== 'DISPONIBLE' ||
+                $activite->getDateDebut() === null ||
+                $activite->getDateDebut() < $now ||
+                $activite->getDateDebut() > $threeDaysLater ||
+                $activite->getMaxPlaces() === null ||
+                $activite->getMaxPlaces() <= 0 ||
+                $activite->getPrix() <= 0
+            )
+        ) {
+            $activite->setIsFlashSale(false);
+            $activite->setFlashPrice(null);
+            $activite->setFlashExpiresAt(null);
         }
 
-        $this->em->flush();
+        // 2) si pas de guide, jamais de flash sale
+        if ($activite->getGuide() === null) {
+            continue;
+        }
+
+        // 3) activer un nouveau flash sale si éligible
+        if (
+            !$activite->getIsFlashSale() &&
+            $activite->getStatus() === 'DISPONIBLE' &&
+            $activite->getDateDebut() !== null &&
+            $activite->getDateDebut() >= $now &&
+            $activite->getDateDebut() <= $threeDaysLater &&
+            $activite->getMaxPlaces() !== null &&
+            $activite->getMaxPlaces() > 0 &&
+            $activite->getPrix() > 0
+        ) {
+            $booked = $this->countBookedTicketsForActivity($activite->getId());
+            $note = (float) ($activite->getNoteMoyenne() ?? 0);
+
+            if (
+                $booked < ($activite->getMaxPlaces() * 0.5) &&
+                $note < 3.5
+            ) {
+                $flashPrice = round($activite->getPrix() * 0.70, 2);
+            } else {
+                $flashPrice = round($activite->getPrix() * 0.80, 2);
+            }
+
+            $activite->setIsFlashSale(true);
+            $activite->setFlashPrice($flashPrice);
+            $activite->setFlashExpiresAt($twelveHoursLater);
+        }
     }
+
+    $this->em->flush();
+}
 
     public function revalidateFlashForActivity(Activite $activite): void
     {
@@ -86,12 +104,14 @@ class FlashSaleService
         if (
             $activite->getIsFlashSale() &&
             (
+                $activite->getGuide() === null ||
                 $activite->getStatus() !== 'DISPONIBLE' ||
                 $activite->getDateDebut() === null ||
                 $activite->getDateDebut() < $now ||
                 $activite->getDateDebut() > $threeDaysLater ||
                 $activite->getMaxPlaces() === null ||
-                $activite->getNoteMoyenne() >= 3.5
+                $activite->getMaxPlaces() <= 0 ||
+                $activite->getPrix() <= 0
             )
         ) {
             $activite->setIsFlashSale(false);
@@ -103,16 +123,16 @@ class FlashSaleService
     }
 
     private function countBookedTicketsForActivity(int $activiteId): int
-{
-    return (int) $this->em->createQuery(
-        'SELECT COUNT(t.id)
-         FROM App\Entity\Ticket t
-         JOIN t.reservation_id r
-         WHERE t.activite = :activiteId
-         AND r.statut = :statut'
-    )
-    ->setParameter('activiteId', $activiteId)
-    ->setParameter('statut', 'réservée')
-    ->getSingleScalarResult();
-}
+    {
+        return (int) $this->em->createQuery(
+            'SELECT COUNT(t.id)
+             FROM App\Entity\Ticket t
+             JOIN t.reservation_id r
+             WHERE t.activite = :activiteId
+             AND r.statut = :statut'
+        )
+        ->setParameter('activiteId', $activiteId)
+        ->setParameter('statut', 'réservée')
+        ->getSingleScalarResult();
+    }
 }

@@ -111,4 +111,42 @@ public function searchFront(
               ->getQuery()
               ->getResult();
 }
+public function searchFrontQueryBuilder(
+    ?string $destination,
+    ?string $dateDebut,
+    ?string $dateFin,
+    ?string $prixMax
+) {
+    $qb = $this->createQueryBuilder('a')
+        ->leftJoin('a.destination', 'd')
+        ->addSelect('d');
+
+    // ✅ IMPORTANT : seulement disponible
+    $qb->andWhere('a.status = :status')
+       ->setParameter('status', 'DISPONIBLE');
+
+    if (!empty($destination)) {
+        $qb->andWhere('d.nom LIKE :destination')
+           ->setParameter('destination', '%' . $destination . '%');
+    }
+
+    if (!empty($dateDebut)) {
+        $qb->andWhere('a.date_debut >= :dateDebut')
+           ->setParameter('dateDebut', new \DateTime($dateDebut));
+    }
+
+    if (!empty($dateFin)) {
+        $qb->andWhere('a.date_fin <= :dateFin')
+           ->setParameter('dateFin', new \DateTime($dateFin));
+    }
+
+    if (!empty($prixMax)) {
+        $qb->andWhere('a.prix <= :prixMax')
+           ->setParameter('prixMax', (float) $prixMax);
+    }
+
+    $qb->orderBy('a.date_debut', 'ASC');
+
+    return $qb;
+}
 }

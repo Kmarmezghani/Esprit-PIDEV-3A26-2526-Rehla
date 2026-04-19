@@ -18,7 +18,8 @@ services:
         public: true 
         
     App\Service\AyrshareService:
-        public: true       
+        public: true 
+   
 
     # default configuration for services in *this* file
     _defaults:
@@ -45,6 +46,13 @@ services:
     App\Service\AiDescriptionService:
         arguments:
             $openRouterApiKey: '%openrouter_api_key%'
+
+
+    App\SmsBundle\Service\SmsSender:
+        arguments:
+            $sid: '%env(TWILIO_SID)%'
+            $token: '%env(TWILIO_TOKEN)%'
+            $from: '%env(TWILIO_FROM)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 # config/services.yaml

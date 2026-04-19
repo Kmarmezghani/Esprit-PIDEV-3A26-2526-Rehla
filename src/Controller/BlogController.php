@@ -35,7 +35,9 @@ final class BlogController extends AbstractController
 #[Route('/blog', name: 'blog')]
 public function index(Request $request, EntityManagerInterface $em, ImageUploader $uploader, ToxicityChecker $toxicityChecker): Response
 {
-    $personne = $this->getConnectedUser($request, $em);
+   
+
+$personne = $this->getConnectedUser($request, $em);
 
     $post = new Post();
     $form = $this->createForm(PostType::class, $post);
@@ -62,6 +64,11 @@ if ($status === 'warning') {
 
 if ($status === 'ok') {
     $this->addFlash('success', '✅ Publication ajoutée');
+    return $this->redirectToRoute('blog');
+}
+
+if ($status === 'banned') {
+    $this->addFlash('error', '🚫 Votre compte est suspendu');
     return $this->redirectToRoute('blog');
 }
 
@@ -450,6 +457,11 @@ public function getMessages($id, EntityManagerInterface $em): JsonResponse
 
 private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
+   
+    if ($personne->getStatutCompte() === 'SUSPENDU') {
+    return 'banned';
+}
+
     if (!$form->isSubmitted() || !$form->isValid()) {
         return null;
     }
@@ -481,6 +493,16 @@ private function handlePostCreation( $form, Post $post, $personne, ImageUploader
     $em->flush();
     if ($status === 'warning') {
 
+        // ✅ incrémenter le compteur
+    $personne->incrementPostsSuspects();
+
+    // 🚨 SI >= 5 → SUSPENSION
+    if ($personne->getNbPostsSuspects() >= 5) {
+        $personne->setStatutCompte('SUSPENDU');
+    }
+
+    $em->persist($personne);
+
     // récupérer tous les admins
     $admins = $em->getRepository(Personne::class)
                  ->findBy(['role' => 'ADMIN']); 
@@ -491,6 +513,11 @@ private function handlePostCreation( $form, Post $post, $personne, ImageUploader
 
         $message = $personne->getNom() . ' ' . $personne->getPrenom()
             . ' a publié un post jugée suspect (score: ' . round($score, 2) . ') | Post ID: ' . $post->getId();
+
+          // 🚨 message spécial si suspendu
+        if ($personne->getStatutCompte() === 'SUSPENDU') {
+            $message .= ' 🚫 COMPTE SUSPENDU';
+        }
 
         $notification->setMessage($message);
         $notification->setType('POST');

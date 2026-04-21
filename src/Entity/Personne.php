@@ -54,6 +54,26 @@ class Personne
     #[ORM\Column(name: "reset_token_expiry", type: "datetime", nullable: true)]
     private ?\DateTimeInterface $resetTokenExpiry = null;
 
+    #[ORM\Column(type: "integer")]
+    private int $nbPostsSuspects = 0;
+
+    public function getNbPostsSuspects(): int
+    {
+        return $this->nbPostsSuspects;
+    }
+
+    public function setNbPostsSuspects(int $nb): self
+    {
+        $this->nbPostsSuspects = $nb;
+        return $this;
+    }
+
+    public function incrementPostsSuspects(): self
+    {
+        $this->nbPostsSuspects++;
+        return $this;
+    }
+
     // ------------------- Relations -------------------
 
     #[ORM\OneToMany(mappedBy: "personne_id", targetEntity: Favoris::class)]

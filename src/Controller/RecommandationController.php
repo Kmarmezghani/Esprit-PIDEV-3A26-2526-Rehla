@@ -7,6 +7,7 @@ use App\Entity\Preference;
 use App\Entity\Personne;
 use App\Entity\Ticket;
 use App\Entity\Ville;
+use App\Entity\Activite;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

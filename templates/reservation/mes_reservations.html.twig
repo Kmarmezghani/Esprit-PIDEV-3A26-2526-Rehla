@@ -3,220 +3,90 @@
 {% block title %}Mes Réservations{% endblock %}
 {% block stylesheets %}
     {{ parent() }}
-    
 {% endblock %}
 {% block body %}
+
 <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-		<div class="container">
-			<a class="navbar-brand" href="index.html">
-    
-    <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
-    
-    <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
-    <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
-</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="oi oi-menu"></span> Menu
-			</button>
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
+                <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
+                <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
 
-			<div class="collapse navbar-collapse" id="ftco-nav">
-    <ul class="navbar-nav ml-auto">
-    <li class="nav-item {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
-    <li class="nav-item {% if app.request.attributes.get('_route') == 'app_destination' %}active{% endif %}"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
-    <li class="nav-item "><a href="{{ path('activite') }}" class="nav-link">Activités</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">Hôtels</a></li>
-    <li class="nav-item"><a href="{{ path('blog') }}" class="nav-link">Blog</a></li>
-
-    {% if app.session.get('user_id') %}
-    <li class="nav-item dropdown ms-2 d-flex align-items-center">
-    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center position-relative"
-   href="#"
-   id="notifDropdown"
-   role="button"
-   data-bs-toggle="dropdown"
-   aria-expanded="false"
-   style="margin-right:14px;">
-
-    <i class="fa fa-bell notif-bell-icon" style="font-size:20px;"></i>
-
-    {% if hasUnreadActivityNotifications %}
-        <span style="
-            position:absolute;
-            top:-1px;
-            right:-1px;
-            width:10px;
-            height:10px;
-            background:#dc3545;
-            border-radius:50%;
-            border:2px solid white;
-        "></span>
-    {% endif %}
-</a>
-
-    <ul class="dropdown-menu"
-        aria-labelledby="notifDropdown"
-        style="min-width:320px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0; transform: translateX(-260px);">
-
-        <li>
-            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
-                Mes notifications
-            </span>
-        </li>
-
-        <li><hr class="dropdown-divider my-1"></li>
-
-        {% if activityNotifications is not empty %}
-            {% for notif in activityNotifications %}
-                <li>
-                    <a
-    class="dropdown-item {% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}waitlist-notif-link{% endif %}"
-    href="{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}#{% else %}javascript:void(0);{% endif %}"
-    data-notif-id="{{ notif.id }}"
-    data-activite-id="{{ notif.activite_id.id }}"
-    data-message="{{ notif.message|e('html_attr') }}"
-    data-max-tickets="{{ notif.activite_id.maxPlaces ?? 1 }}"
-    style="padding:10px 16px; white-space:normal; cursor:{% if notif.type == 'WAITLIST_HOLD' and not notif.is_read %}pointer{% else %}default{% endif %};">
-                       
-
-                        <div style="display:flex; align-items:flex-start; gap:10px;">
-                            <div style="margin-top:2px;">
-                                <i class="fa fa-bell" style="color:#223f91;"></i>
-                            </div>
-
-                            <div style="flex:1;">
-                               <div style="font-size:12px; font-weight:700; margin-bottom:4px;
-    color:
-{% if notif.type == 'WAITLIST_HOLD' %}#223f91
-{% elseif notif.type == 'BOOKING_CONFIRMED' %}#16a34a
-{% elseif notif.type == 'BOOKING_CANCELLED' %}#dc3545
-{% elseif notif.type == 'WAITLIST_EXPIRED' %}#6b7280
-{% else %}#223f91
-{% endif %};
-">
-    {% if notif.type == 'WAITLIST_HOLD' %}
-    WAITLIST HOLD
-{% elseif notif.type == 'BOOKING_CONFIRMED' %}
-    BOOKING CONFIRMED
-{% elseif notif.type == 'BOOKING_CANCELLED' %}
-    BOOKING CANCELLED
-{% elseif notif.type == 'WAITLIST_EXPIRED' %}
-    WAITLIST EXPIRED
-{% else %}
-    {{ notif.type }}
-{% endif %}
-</div>
-
-<div style="font-size:13px; color:#333; line-height:1.4;">
-    {{ notif.message }}
-</div>
-
-                                <div style="font-size:11px; color:#888; margin-top:4px;">
-                                    {{ notif.created_at|date('d/m/Y H:i') }}
-                                </div>
-                            </div>
-
-                            {% if not notif.is_read %}
-                                <span style="
-                                    width:8px;
-                                    height:8px;
-                                    background:#dc3545;
-                                    border-radius:50%;
-                                    display:inline-block;
-                                    margin-top:6px;
-                                "></span>
-                            {% endif %}
-                        </div>
+                {% if app.session.get('user_id') %}
+                <li class="nav-item dropdown ms-2 d-flex align-items-center">
+                    <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+                       href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.session.get('user_photo') %}
+                            <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                                 class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                        style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
+                                Connecté en tant que<br>
+                                <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-user" style="width:18px; color:#223f91;"></i><span>Mon profil</span>
+                        </a></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i><span>Mes préférences</span>
+                        </a></li>
+                        {% if app.session.get('user_role') == 'GUIDE' %}
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-compass" style="width:18px; color:#223f91;"></i><span>Mes activités</span>
+                        </a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i><span>Mes réservations</span>
+                        </a></li>
+                        {% if app.session.get('user_role') == 'ADMIN' %}
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}" style="padding:8px 16px; font-size:14px;">
+                            <i class="fa fa-cogs" style="width:18px;"></i><span>Administration</span>
+                        </a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
+                               onclick="confirmLogoutHome(event)" style="padding:8px 16px; font-size:14px;">
+                                <i class="fa fa-sign-out" style="width:18px;"></i><span>Déconnexion</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item ms-2">
+                    <a href="{{ path('app_register') }}" class="nav-link">
+                        <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
                     </a>
                 </li>
-            {% endfor %}
-        {% else %}
-            <li>
-                <span class="dropdown-item-text text-muted" style="padding:10px 16px; font-size:13px;">
-                    Aucune notification
-                </span>
-            </li>
-        {% endif %}
-    </ul>
-</li>
-    {# ── Utilisateur connecté ── #}
-
-    <li class="nav-item dropdown ms-2 d-flex align-items-center">
-        <a class="nav-link dropdown-toggle p-0 d-flex align-items-center"
-           href="#" id="userDropdown" role="button"
-           data-bs-toggle="dropdown" aria-expanded="false">
-            {% if app.session.get('user_photo') %}
-    <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
-         class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-{% else %}
-    <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-         class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
-{% endif %}
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
-            style="min-width:210px; border-radius:12px; border:none; box-shadow:0 8px 30px rgba(0,0,0,0.12); padding:8px 0;">
-            <li>
-                <span class="dropdown-item-text text-muted" style="font-size:11px; padding:6px 16px;">
-                    Connecté en tant que<br>
-                    <strong style="color:#223f91;">{{ app.session.get('user_prenom') }} {{ app.session.get('user_nom') }}</strong>
-                </span>
-            </li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_profile') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-user" style="width:18px; color:#223f91;"></i>
-                <span>Mon profil</span>
-            </a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('app_preferences') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-sliders" style="width:18px; color:#223f91;"></i>
-                <span>Mes préférences</span>
-            </a></li>
-            
-			{% if app.session.get('user_role') == 'GUIDE' %}
-<li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_activites') }}"
-       style="padding:8px 16px; font-size:14px;">
-    <i class="fa fa-compass" style="width:18px; color:#223f91;"></i>
-    <span>Mes activités</span>
-</a></li>
-{% endif %}
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('mes_reservations') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-calendar" style="width:18px; color:#223f91;"></i>
-                <span>Mes réservations</span>
-            </a></li>
-            {% if app.session.get('user_role') == 'ADMIN' %}
-            <li><hr class="dropdown-divider my-1"></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 text-primary" href="{{ path('admin_users') }}"
-                   style="padding:8px 16px; font-size:14px;">
-                <i class="fa fa-cogs" style="width:18px;"></i>
-                <span>Administration</span>
-            </a></li>
-            {% endif %}
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#"
-                   onclick="confirmLogoutHome(event)"
-                   style="padding:8px 16px; font-size:14px;">
-                    <i class="fa fa-sign-out" style="width:18px;"></i>
-                    <span>Déconnexion</span>
-                </a>
-            </li>
-        </ul>
-    </li>
-    {% else %}
-    {# ── Non connecté ── #}
-    <li class="nav-item ms-2">
-        <a href="{{ path('app_register') }}" class="nav-link">
-            <i class="fa fa-user-plus"></i> &nbsp;S'inscrire
-        </a>
-    </li>
-    {% endif %}
-</ul>
-</div>
-		</div>
-	</nav>
-
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
     <div class="overlay"></div>
@@ -236,26 +106,26 @@
 <section class="ftco-section">
     <div class="container">
         <div class="d-flex justify-content-end mb-4">
-    <a href="{{ path('ajouter_reservation') }}" class="btn btn-primary px-4 py-2">
-        <i class="fa fa-plus"></i> Ajouter une réservation
-    </a>
-</div>        <div class="row">
+            <a href="{{ path('ajouter_reservation') }}" class="btn btn-primary px-4 py-2">
+                <i class="fa fa-plus"></i> Ajouter une réservation
+            </a>
+        </div>
+        <div class="row">
 
             <!-- TABLE -->
             <div class="col-12 mb-4">
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <h4 class="mb-0">Mes Réservations</h4>
-    <div class="d-flex align-items-center gap-2">
-        
-        <div class="btn-group" role="group" id="currency-toggle">
-            <button type="button" class="btn btn-currency active" data-currency="TND">🇹🇳 TND</button>
-            <button type="button" class="btn btn-currency" data-currency="EUR">🇪🇺 EUR</button>
-            <button type="button" class="btn btn-currency" data-currency="USD">🇺🇸 USD</button>
-        </div>
-        <span id="rate-badge" style="display:none; font-size:11px; background:#f0f4ff; color:#223f91; border-radius:8px; padding:3px 10px;"></span>
-    </div>
-</div>
+                        <h4 class="mb-0">Mes Réservations</h4>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="btn-group" role="group" id="currency-toggle">
+                                <button type="button" class="btn btn-currency active" data-currency="TND">🇹🇳 TND</button>
+                                <button type="button" class="btn btn-currency" data-currency="EUR">🇪🇺 EUR</button>
+                                <button type="button" class="btn btn-currency" data-currency="USD">🇺🇸 USD</button>
+                            </div>
+                            <span id="rate-badge" style="display:none; font-size:11px; background:#f0f4ff; color:#223f91; border-radius:8px; padding:3px 10px;"></span>
+                        </div>
+                    </div>
                     <div class="table-responsive p-3">
                         <table class="table align-middle table-hover">
                             <thead class="table-light">
@@ -289,7 +159,7 @@
                                             {% if statut == 'confirmée' %}
                                                 <span class="badge rounded-pill px-3 py-2 bg-success"><i class="fa fa-check"></i> Confirmée</span>
                                             {% elseif statut == 'réservée' %}
-                                                <span class="badge rounded-pill px-3 py-2 bg-warning text-dark"><i class="fa fa-clock"></i> réservée</span>
+                                                <span class="badge rounded-pill px-3 py-2 bg-warning text-dark"><i class="fa fa-clock"></i> Réservée</span>
                                             {% elseif statut == 'annulée' %}
                                                 <span class="badge rounded-pill px-3 py-2 bg-danger"><i class="fa fa-times"></i> Annulée</span>
                                             {% else %}
@@ -321,7 +191,7 @@
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>
                                                         <a class="dropdown-item d-flex align-items-center gap-2 text-success"
-                                                        href="{{ path('reservation_pay', {id: reservation.id}) }}">
+                                                           href="{{ path('reservation_pay', {id: reservation.id}) }}">
                                                             <i class="fa fa-credit-card" style="width:18px;"></i> Payer
                                                         </a>
                                                     </li>
@@ -341,7 +211,6 @@
             <div class="col-12">
                 <div class="card p-4">
                     <h4 class="mb-3">Calendrier des Tickets</h4>
-                    
                     <div id="calendar"></div>
                 </div>
             </div>
@@ -424,69 +293,205 @@
     </div>
 </footer>
 
-
-
 <style>
-/* ── Calendar weather button ── */
-.fc-daygrid-day-top {
-    flex-direction: row !important;
-    align-items: center;
-}
+/* ── Calendar ── */
+.fc-daygrid-day-top { flex-direction: row !important; align-items: center; }
 .weather-btn {
-    font-size: 10px;
-    background: #e8f0fe;
-    color: #185FA5;
-    border: none;
-    border-radius: 10px;
-    padding: 2px 7px;
-    cursor: pointer;
-    margin-left: auto;
-    margin-right: 4px;
-    margin-top: 3px;
-    white-space: nowrap;
-    transition: background 0.15s;
+    font-size: 10px; background: #e8f0fe; color: #185FA5;
+    border: none; border-radius: 10px; padding: 2px 7px;
+    cursor: pointer; margin-left: auto; margin-right: 4px;
+    margin-top: 3px; white-space: nowrap; transition: background 0.15s;
 }
-.weather-btn:hover {
-    background: #c5d8fb;
-}
-.fc-daygrid-event {
-    white-space: normal !important;
-}
-/* ── Weather modal overlay click-outside ── */
-#weather-modal {
-    cursor: pointer;
-}
-#weather-modal > div {
-    cursor: default;
-}
-/* Currency switcher */
+.weather-btn:hover { background: #c5d8fb; }
+.fc-daygrid-event { white-space: normal !important; }
+#weather-modal { cursor: pointer; }
+#weather-modal > div { cursor: default; }
+
+/* ── Currency switcher ── */
 .btn-currency {
-    font-size: 12px;
-    padding: 5px 14px;
-    border: 1.5px solid #d0d9f0;
-    background: #fff;
-    color: #555;
-    border-radius: 0;
-    transition: all 0.18s;
-    font-weight: 500;
+    font-size: 12px; padding: 5px 14px;
+    border: 1.5px solid #d0d9f0; background: #fff;
+    color: #555; border-radius: 0;
+    transition: all 0.18s; font-weight: 500;
 }
 .btn-currency:first-child { border-radius: 20px 0 0 20px; }
 .btn-currency:last-child  { border-radius: 0 20px 20px 0; }
-.btn-currency.active {
-    background: #223f91;
-    color: #fff;
-    border-color: #223f91;
-}
-.btn-currency:hover:not(.active) {
-    background: #f0f4ff;
-    border-color: #223f91;
-    color: #223f91;
-}
-.price-cell {
-    transition: opacity 0.2s;
-}
+.btn-currency.active { background: #223f91; color: #fff; border-color: #223f91; }
+.btn-currency:hover:not(.active) { background: #f0f4ff; border-color: #223f91; color: #223f91; }
+.price-cell { transition: opacity 0.2s; }
 .price-loading { opacity: 0.4; }
+
+/* ══ AI PANEL ══════════════════════════════════════════════════════════ */
+
+/* Floating trigger button */
+.ai-fab {
+    position: fixed; bottom: 32px; right: 32px; z-index: 8999;
+    background: #223f91; color: #fff; border: none;
+    border-radius: 50px; padding: 14px 24px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 24px rgba(34,63,145,0.4);
+    transition: background 0.18s, transform 0.15s;
+}
+.ai-fab:hover { background: #1a2f6e; transform: translateY(-2px); }
+.ai-fab:active { transform: translateY(0); }
+
+/* Overlay + panel */
+.ai-panel-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 9000; display: none; align-items: flex-end;
+}
+.ai-panel-overlay.open { display: flex; }
+.ai-panel {
+    background: #fff; border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 700px; margin: 0 auto;
+    max-height: 90vh; overflow-y: auto;
+    display: flex; flex-direction: column;
+}
+
+/* Sticky header */
+.ai-panel-header {
+    position: sticky; top: 0; background: #fff;
+    border-bottom: 1px solid #eef0f8;
+    padding: 18px 24px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 1; border-radius: 20px 20px 0 0;
+}
+.ai-panel-title {
+    font-size: 16px; font-weight: 500; color: #223f91;
+    display: flex; align-items: center; gap: 8px;
+}
+.ai-badge {
+    font-size: 11px; background: #e8f0fe; color: #223f91;
+    padding: 3px 10px; border-radius: 20px; font-weight: 400;
+}
+.ai-close-btn {
+    border: none; background: #f0f4ff; color: #223f91;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; transition: background 0.15s;
+}
+.ai-close-btn:hover { background: #dce5fb; }
+
+/* Panel body */
+.ai-panel-body { padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+/* Section label */
+.ai-section-label {
+    font-size: 10px; letter-spacing: .7px;
+    text-transform: uppercase; color: #aaa;
+    font-weight: 500; margin-bottom: 8px;
+}
+
+/* Context cards */
+.ai-ctx-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.ai-ctx-card {
+    background: #f7f9ff; border: 1px solid #e4eaf8;
+    border-radius: 10px; padding: 10px 12px;
+}
+.ai-ctx-label { font-size: 11px; color: #aaa; margin-bottom: 3px; }
+.ai-ctx-value { font-size: 13px; font-weight: 500; color: #223f91; }
+
+/* Inputs */
+.ai-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ai-input {
+    padding: 8px 12px; border: 1px solid #d0d9f0;
+    border-radius: 8px; font-size: 13px; color: #333; background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ai-input:focus { outline: none; border-color: #223f91; box-shadow: 0 0 0 3px rgba(34,63,145,.1); }
+
+/* Generate button */
+.ai-gen-btn {
+    width: 100%; padding: 13px; background: #223f91; color: #fff;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 8px; transition: background 0.18s;
+}
+.ai-gen-btn:hover:not(:disabled) { background: #1a2f6e; }
+.ai-gen-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Result box */
+.ai-result { border: 1px solid #d4e0fb; border-radius: 14px; overflow: hidden; display: none; }
+.ai-result.visible { display: block; }
+
+/* Result hero */
+.ai-result-hero {
+    background: #223f91;
+    padding: 20px 22px 16px;
+}
+.ai-result-dest {
+    font-size: 20px; font-weight: 500; color: #fff;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.ai-result-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.ai-result-tag {
+    font-size: 11px; background: rgba(255,255,255,0.18);
+    color: #fff; border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 20px; padding: 3px 11px;
+}
+
+/* Result body */
+.ai-result-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; background: #fff; }
+
+/* Raison */
+.ai-raison {
+    font-size: 13px; color: #555; line-height: 1.65;
+    padding: 12px 14px; background: #f7f9ff;
+    border-left: 3px solid #223f91; border-radius: 0 8px 8px 0;
+}
+
+/* Activity cards */
+.ai-activity-card {
+    background: #f0fff4; border: 1px solid #b7ebc8;
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 8px; margin-bottom: 6px;
+}
+.ai-activity-name { font-size: 13px; font-weight: 500; color: #1a7a3c; margin-bottom: 3px; }
+.ai-activity-meta { font-size: 11px; color: #888; }
+.ai-activity-price { font-size: 14px; font-weight: 500; color: #1a7a3c; white-space: nowrap; }
+
+/* Ticket rows */
+.ai-ticket {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #f0f4ff; font-size: 13px;
+}
+.ai-ticket:last-child { border-bottom: none; }
+.ai-ticket-name { color: #223f91; font-weight: 500; }
+
+/* Total */
+.ai-total {
+    display: flex; justify-content: space-between;
+    font-size: 15px; font-weight: 500;
+    padding: 12px 0 0; border-top: 2px solid #223f91; color: #223f91;
+}
+
+/* CTA button */
+.ai-cta-btn {
+    width: 100%; padding: 13px; background: #27ae60; color: #fff;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 8px; transition: background 0.18s;
+}
+.ai-cta-btn:hover { background: #1e8449; }
+
+/* Loading dots */
+.ai-typing { display: inline-flex; gap: 5px; align-items: center; }
+.ai-typing span {
+    width: 7px; height: 7px; background: #223f91;
+    border-radius: 50%; animation: aiBounce .8s infinite;
+}
+.ai-typing span:nth-child(2) { animation-delay: .15s; }
+.ai-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes aiBounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+}
 </style>
+
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -495,45 +500,34 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    let calendarEl = document.getElementById('calendar');
+    const calendarEl = document.getElementById('calendar');
 
-    let fc = new FullCalendar.Calendar(calendarEl, {
+    const fc = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        events: function(info, successCallback, failureCallback) {
-    // No reservation selected yet — show empty calendar
-    if (!window.selectedReservationId) {
-        successCallback([]);
-        return;
-    }
-    fetch('/reservation/' + window.selectedReservationId + '/tickets')
-        .then(res => res.json())
-        .then(data => successCallback(data))
-        .catch(() => failureCallback());
-},
-
+        events: function (info, successCallback, failureCallback) {
+            if (!window.selectedReservationId) { successCallback([]); return; }
+            fetch('/reservation/' + window.selectedReservationId + '/tickets')
+                .then(res => res.json())
+                .then(data => successCallback(data))
+                .catch(() => failureCallback());
+        },
         eventContent: function (arg) {
-            let container = document.createElement('div');
-            container.style.cssText = 'display:flex; align-items:center; justify-content:space-between; width:100%; padding:1px 4px;';
-
-            let title = document.createElement('span');
+            const container = document.createElement('div');
+            container.style.cssText = 'display:flex;align-items:center;justify-content:space-between;width:100%;padding:1px 4px;';
+            const title = document.createElement('span');
             title.textContent = arg.event.title;
-            title.style.cssText = 'font-size:12px; overflow:hidden; text-overflow:ellipsis;';
-
-            let trash = document.createElement('i');
+            title.style.cssText = 'font-size:12px;overflow:hidden;text-overflow:ellipsis;';
+            const trash = document.createElement('i');
             trash.className = 'fa fa-trash';
-            trash.style.cssText = 'cursor:pointer; color:#e55; margin-left:6px; font-size:11px; flex-shrink:0;';
+            trash.style.cssText = 'cursor:pointer;color:#e55;margin-left:6px;font-size:11px;flex-shrink:0;';
             trash.title = 'Supprimer ce ticket';
-
-            let ticketId = arg.event.extendedProps.ticketId;
+            const ticketId = arg.event.extendedProps.ticketId;
             trash.onclick = function (e) {
                 e.stopPropagation();
                 Swal.fire({
-                    title: 'Supprimer ce ticket ?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonText: 'Annuler',
-                    confirmButtonText: 'Supprimer'
+                    title: 'Supprimer ce ticket ?', icon: 'warning',
+                    showCancelButton: true, confirmButtonColor: '#d33',
+                    cancelButtonText: 'Annuler', confirmButtonText: 'Supprimer'
                 }).then(function (result) {
                     if (result.isConfirmed) {
                         fetch('/reservation/ticket/delete-ajax/' + ticketId)
@@ -542,326 +536,235 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             };
-
             container.appendChild(title);
             container.appendChild(trash);
             return { domNodes: [container] };
         },
-
         eventDidMount: function (arg) {
-            let ville = arg.event.extendedProps.ville;
-            let date  = arg.event.startStr;
-
-            let dayCell = arg.el.closest('.fc-daygrid-day');
-            if (!dayCell) return;
-            if (dayCell.querySelector('.weather-btn')) return;
-
-            let btn = document.createElement('button');
+            const ville = arg.event.extendedProps.ville;
+            const date  = arg.event.startStr;
+            const dayCell = arg.el.closest('.fc-daygrid-day');
+            if (!dayCell || dayCell.querySelector('.weather-btn')) return;
+            const btn = document.createElement('button');
             btn.className = 'weather-btn';
             btn.innerHTML = '&#9729; Météo';
             btn.dataset.ville = ville;
             btn.dataset.date  = date;
-
             btn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 openWeatherModal(this.dataset.ville, this.dataset.date);
             });
-
-            let topBar = dayCell.querySelector('.fc-daygrid-day-top');
+            const topBar = dayCell.querySelector('.fc-daygrid-day-top');
             if (topBar) topBar.appendChild(btn);
         }
     });
 
     fc.render();
 
-    // ── Reservation row click ──
     document.querySelectorAll('.reservation-row').forEach(function (row) {
-    row.addEventListener('click', function () {
-        let id = this.dataset.id;
-        window.selectedReservationId = id;
-
-        document.querySelectorAll('.weather-btn').forEach(b => b.remove());
-        document.getElementById('calendar')
-            .scrollIntoView({ behavior: 'smooth', block: 'start' });
-        fc.refetchEvents();
+        row.addEventListener('click', function () {
+            window.selectedReservationId = this.dataset.id;
+            document.querySelectorAll('.weather-btn').forEach(b => b.remove());
+            document.getElementById('calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            fc.refetchEvents();
+        });
     });
-});
 
-}); // ← END of DOMContentLoaded
+}); // END DOMContentLoaded
 
-// ═══════════════════════════════════════════════════════
-// WEATHER MODAL — outside DOMContentLoaded
-// ═══════════════════════════════════════════════════════
+// ── Weather Modal ──────────────────────────────────────────────────────
 function openWeatherModal(ville, date) {
-    let modal = document.getElementById('weather-modal');
-    let title = document.getElementById('weather-modal-title');
-    let body  = document.getElementById('weather-modal-body');
-
-    let parts = date.split('-');
-    let dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
-
-    title.textContent = '\u2601 Météo à ' + ville + ' — ' + dateFormatted;
+    const modal = document.getElementById('weather-modal');
+    const title = document.getElementById('weather-modal-title');
+    const body  = document.getElementById('weather-modal-body');
+    const parts = date.split('-');
+    title.textContent = '\u2601 Météo à ' + ville + ' — ' + parts[2] + '/' + parts[1] + '/' + parts[0];
     body.innerHTML = '<span style="color:#aaa;">Chargement...</span>';
     modal.style.display = 'flex';
-
     fetch('/meteo/' + encodeURIComponent(ville) + '/' + date)
-        .then(function (res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        })
-        .then(function (w) {
+        .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+        .then(w => {
             body.innerHTML =
-                '<div style="text-align:center; width:100%;">' +
-                    '<img src="https://openweathermap.org/img/wn/' + w.icon + '@2x.png" style="width:72px; height:72px;">' +
-                    '<div style="font-size:42px; font-weight:700; color:#223f91; margin:4px 0; line-height:1;">' + w.temp + '°C</div>' +
-                    '<div style="font-size:15px; color:#555; text-transform:capitalize; margin-bottom:16px;">' + w.description + '</div>' +
-                    '<div style="display:flex; gap:12px; justify-content:center;">' +
-                        '<div style="background:#f0f4ff; border-radius:12px; padding:10px 18px; text-align:center;">' +
-                            '<div style="font-size:18px; font-weight:600; color:#223f91;">' + (w.humidity !== undefined ? w.humidity + '%' : '--') + '</div>' +
-                            '<div style="font-size:12px; color:#888; margin-top:2px;">Humidité</div>' +
-                        '</div>' +
-                        '<div style="background:#f0f4ff; border-radius:12px; padding:10px 18px; text-align:center;">' +
-                            '<div style="font-size:18px; font-weight:600; color:#223f91;">' + (w.wind !== undefined ? w.wind + ' km/h' : '--') + '</div>' +
-                            '<div style="font-size:12px; color:#888; margin-top:2px;">Vent</div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>';
+                '<div style="text-align:center;width:100%;">' +
+                '<img src="https://openweathermap.org/img/wn/' + w.icon + '@2x.png" style="width:72px;height:72px;">' +
+                '<div style="font-size:42px;font-weight:700;color:#223f91;margin:4px 0;line-height:1;">' + w.temp + '°C</div>' +
+                '<div style="font-size:15px;color:#555;text-transform:capitalize;margin-bottom:16px;">' + w.description + '</div>' +
+                '<div style="display:flex;gap:12px;justify-content:center;">' +
+                '<div style="background:#f0f4ff;border-radius:12px;padding:10px 18px;text-align:center;">' +
+                '<div style="font-size:18px;font-weight:600;color:#223f91;">' + (w.humidity !== undefined ? w.humidity + '%' : '--') + '</div>' +
+                '<div style="font-size:12px;color:#888;margin-top:2px;">Humidité</div></div>' +
+                '<div style="background:#f0f4ff;border-radius:12px;padding:10px 18px;text-align:center;">' +
+                '<div style="font-size:18px;font-weight:600;color:#223f91;">' + (w.wind !== undefined ? w.wind + ' km/h' : '--') + '</div>' +
+                '<div style="font-size:12px;color:#888;margin-top:2px;">Vent</div></div></div></div>';
         })
-        .catch(function (err) {
-            console.error('Météo erreur:', err);
-            body.innerHTML =
-                '<div style="text-align:center; color:#c00;">' +
-                    '<div style="font-size:28px; margin-bottom:8px;">&#9888;</div>' +
-                    '<div>Impossible de charger la météo.</div>' +
-                    '<div style="font-size:12px; color:#aaa; margin-top:6px;">Vérifiez que la ville "' + ville + '" est reconnue par OpenWeather.</div>' +
-                '</div>';
+        .catch(() => {
+            body.innerHTML = '<div style="text-align:center;color:#c00;">' +
+                '<div style="font-size:28px;margin-bottom:8px;">&#9888;</div>' +
+                '<div>Impossible de charger la météo.</div>' +
+                '<div style="font-size:12px;color:#aaa;margin-top:6px;">Vérifiez que la ville "' + ville + '" est reconnue par OpenWeather.</div></div>';
         });
 }
+function closeWeatherModal() { document.getElementById('weather-modal').style.display = 'none'; }
+document.getElementById('weather-modal').addEventListener('click', function (e) { if (e.target === this) closeWeatherModal(); });
 
-function closeWeatherModal() {
-    document.getElementById('weather-modal').style.display = 'none';
-}
-
-document.getElementById('weather-modal').addEventListener('click', function (e) {
-    if (e.target === this) closeWeatherModal();
-});
-
-// ═══════════════════════════════════════════════════════
-// DELETE RESERVATION — outside DOMContentLoaded
-// ═══════════════════════════════════════════════════════
+// ── Delete reservation ─────────────────────────────────────────────────
 function deleteReservation(e, id) {
     e.preventDefault();
     Swal.fire({
-        title: 'Supprimer la réservation ?',
-        text: 'Tous les tickets liés seront libérés',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonText: 'Annuler',
-        confirmButtonText: 'Oui, supprimer'
+        title: 'Supprimer la réservation ?', text: 'Tous les tickets liés seront libérés',
+        icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
+        cancelButtonText: 'Annuler', confirmButtonText: 'Oui, supprimer'
     }).then(function (result) {
-        if (result.isConfirmed) {
-            document.getElementById('delete-form-' + id).submit();
-        }
+        if (result.isConfirmed) document.getElementById('delete-form-' + id).submit();
     });
 }
 
-// ═══════════════════════════════════════════════════════
-// CURRENCY CONVERTER — outside DOMContentLoaded
-// ═══════════════════════════════════════════════════════
+// ── Currency converter ─────────────────────────────────────────────────
 (function () {
-    let rates           = { TND: 1, EUR: null, USD: null };
+    let rates = { TND: 1, EUR: null, USD: null };
     let currentCurrency = 'TND';
-    const symbols       = { TND: 'TND', EUR: '€', USD: '$' };
-
+    const symbols = { TND: 'TND', EUR: '€', USD: '$' };
     async function fetchRates() {
         try {
             const res  = await fetch('/api/exchange-rates');
             const data = await res.json();
-            if (data.result === 'success') {
-                rates.EUR = data.conversion_rates.EUR;
-                rates.USD = data.conversion_rates.USD;
-            }
-        } catch (e) {
-            console.error('ExchangeRate API error:', e);
-        }
+            if (data.result === 'success') { rates.EUR = data.conversion_rates.EUR; rates.USD = data.conversion_rates.USD; }
+        } catch (e) { console.error('ExchangeRate API error:', e); }
     }
-
     function updatePrices(currency) {
         const rate  = rates[currency];
         const badge = document.getElementById('rate-badge');
         const cells = document.querySelectorAll('.price-cell');
-
-        if (!rate) {
-            cells.forEach(c => c.classList.add('price-loading'));
-            return;
-        }
-
+        if (!rate) { cells.forEach(c => c.classList.add('price-loading')); return; }
         cells.forEach(c => {
             c.classList.remove('price-loading');
-            const tnd       = parseFloat(c.dataset.tnd);
-            const converted = (tnd * rate).toFixed(2);
-            c.textContent   = currency === 'TND'
-                ? converted + ' TND'
-                : symbols[currency] + ' ' + converted;
+            const converted = (parseFloat(c.dataset.tnd) * rate).toFixed(2);
+            c.textContent = currency === 'TND' ? converted + ' TND' : symbols[currency] + ' ' + converted;
         });
-
-        if (currency !== 'TND') {
-            badge.style.display = 'inline-block';
-            badge.textContent   = '1 TND = ' + rate.toFixed(4) + ' ' + currency;
-        } else {
-            badge.style.display = 'none';
-        }
+        if (currency !== 'TND') { badge.style.display = 'inline-block'; badge.textContent = '1 TND = ' + rate.toFixed(4) + ' ' + currency; }
+        else { badge.style.display = 'none'; }
     }
-
     fetchRates();
-
     document.querySelectorAll('.btn-currency').forEach(btn => {
         btn.addEventListener('click', async function () {
             const currency = this.dataset.currency;
             if (currency === currentCurrency) return;
-
             document.querySelectorAll('.btn-currency').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentCurrency = currency;
-
             if (currency !== 'TND' && rates[currency] === null) {
                 document.querySelectorAll('.price-cell').forEach(c => c.classList.add('price-loading'));
                 await fetchRates();
             }
-
             updatePrices(currency);
         });
     });
 })();
 </script>
+
 {# ══ AI RECOMMENDATION PANEL ══════════════════════════════════════════ #}
-<style>
-.ai-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:none;align-items:flex-end}
-.ai-panel-overlay.open{display:flex}
-.ai-panel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:24px 28px 32px;display:flex;flex-direction:column;gap:18px}
-.ai-section-label{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#888;font-weight:500;margin-bottom:8px}
-.ai-ctx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-.ai-ctx-card{background:#f7f9ff;border-radius:10px;padding:12px 14px}
-.ai-ctx-label{font-size:11px;color:#888;margin-bottom:4px}
-.ai-ctx-value{font-size:13px;font-weight:500;color:#223f91}
-.ai-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ai-input{padding:7px 11px;border:1px solid #d0d9f0;border-radius:8px;font-size:13px;color:#333;background:#fff}
-.ai-input:focus{outline:none;border-color:#223f91;box-shadow:0 0 0 3px rgba(34,63,145,.1)}
-.ai-gen-btn{width:100%;padding:13px;background:#223f91;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-.ai-gen-btn:hover{background:#1a2f6e}
-.ai-gen-btn:disabled{opacity:.5;cursor:not-allowed}
-.ai-result{border:1px solid #c5d4f5;border-radius:14px;padding:20px;display:none;background:#fff}
-.ai-result.visible{display:block}
-.ai-rec-dest{font-size:17px;font-weight:500;color:#223f91;margin-bottom:10px}
-.ai-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.ai-tag{font-size:12px;background:#f0f4ff;color:#223f91;border:1px solid #c5d4f5;border-radius:8px;padding:4px 10px}
-.ai-raison{font-size:13px;color:#444;line-height:1.65;padding:12px;background:#f7f9ff;border-radius:10px;margin-bottom:14px}
-.ai-ticket{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f4ff;font-size:13px}
-.ai-ticket:last-child{border-bottom:none}
-.ai-total{display:flex;justify-content:space-between;font-size:15px;font-weight:500;padding-top:10px;border-top:2px solid #223f91;color:#223f91;margin-top:8px}
-.ai-typing{display:inline-flex;gap:5px;align-items:center}
-.ai-typing span{width:7px;height:7px;background:#223f91;border-radius:50%;animation:aiBounce .8s infinite}
-.ai-typing span:nth-child(2){animation-delay:.15s}
-.ai-typing span:nth-child(3){animation-delay:.3s}
-@keyframes aiBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-</style>
 
-{# Bouton déclencheur #}
-<div class="d-flex justify-content-end mb-3">
-    <button onclick="openAIPanel()" class="btn" style="background:#223f91;color:#fff;border-radius:20px;padding:10px 22px;font-size:14px;display:inline-flex;align-items:center;gap:8px;">
-        <i class="fa fa-magic"></i> Recommandation IA
-    </button>
-</div>
+{# Floating trigger button #}
+<button class="ai-fab" onclick="openAIPanel()">
+    <i class="fa fa-magic"></i> Recommandation IA
+</button>
 
-{# Panneau IA #}
+{# Slide-up panel #}
 <div class="ai-panel-overlay" id="aiPanelOverlay" onclick="handleAIOverlay(event)">
-  <div class="ai-panel" id="aiPanel">
-    <div class="d-flex justify-content-between align-items-center">
-        <div style="font-size:17px;font-weight:500;color:#223f91;display:flex;align-items:center;gap:8px;">
-            <i class="fa fa-magic"></i> Recommandation personnalisée
-            <span style="font-size:11px;background:#e8f0fe;color:#223f91;padding:3px 9px;border-radius:20px;font-weight:400">IA</span>
-        </div>
-        <button onclick="closeAIPanel()" style="border:none;background:none;font-size:24px;cursor:pointer;color:#aaa;line-height:1;">&times;</button>
-    </div>
+    <div class="ai-panel" id="aiPanel">
 
-    {# Contexte client #}
-    <div>
-        <div class="ai-section-label">Contexte analysé</div>
-        <div class="ai-ctx-grid">
-            <div class="ai-ctx-card">
-                <div class="ai-ctx-label">Réservations</div>
-                <div class="ai-ctx-value">{{ reservations|length }} voyages</div>
+        <div class="ai-panel-header">
+            <div class="ai-panel-title">
+                <i class="fa fa-magic"></i>
+                Recommandation personnalisée
+                <span class="ai-badge">IA</span>
             </div>
-            <div class="ai-ctx-card">
-                <div class="ai-ctx-label">Destinations visitées</div>
-                <div class="ai-ctx-value">
-                    {% set dests = [] %}
-                    {% for r in reservations %}{% if r.destination %}{% set dests = dests|merge([r.destination.nom]) %}{% endif %}{% endfor %}
-                    {% set dests = [] %}
-{% for r in reservations %}
-    {% if r.destination and r.destination.nom not in dests %}
-        {% set dests = dests|merge([r.destination.nom]) %}
-    {% endif %}
-{% endfor %}
-{{ dests|join(', ')|default('Aucune') }}
+            <button class="ai-close-btn" onclick="closeAIPanel()">&times;</button>
+        </div>
+
+        <div class="ai-panel-body">
+
+            {# Context cards #}
+            <div>
+                <div class="ai-section-label">Votre profil analysé</div>
+                <div class="ai-ctx-grid">
+                    <div class="ai-ctx-card">
+                        <div class="ai-ctx-label">Réservations</div>
+                        <div class="ai-ctx-value">{{ reservations|length }} voyages</div>
+                    </div>
+                    <div class="ai-ctx-card">
+                        <div class="ai-ctx-label">Destinations</div>
+                        <div class="ai-ctx-value">
+                            {% set dests = [] %}
+                            {% for r in reservations %}
+                                {% if r.destination and r.destination.nom not in dests %}
+                                    {% set dests = dests|merge([r.destination.nom]) %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ dests|join(', ')|default('Aucune') }}
+                        </div>
+                    </div>
+                    <div class="ai-ctx-card">
+                        <div class="ai-ctx-label">Budget préférence</div>
+                        <div class="ai-ctx-value">
+                            {% set pref = app.session.get('user_preference') %}
+                            {% if pref %}{{ pref.budgetMin }}–{{ pref.budgetMax }} TND{% else %}Non défini{% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="ai-ctx-card">
-                <div class="ai-ctx-label">Budget préférence</div>
-                <div class="ai-ctx-value">
-                    {% set pref = app.session.get('user_preference') %}
-                    {% if pref %}{{ pref.budgetMin }} – {{ pref.budgetMax }} TND{% else %}Non défini{% endif %}
+
+            {# Budget #}
+            <div>
+                <div class="ai-section-label">Budget pour ce voyage (TND)</div>
+                <div class="ai-row">
+                    <input type="number" class="ai-input" id="aiBudgetMin" placeholder="Min" value="500" style="width:100px">
+                    <span style="color:#ccc; font-size:20px;">—</span>
+                    <input type="number" class="ai-input" id="aiBudgetMax" placeholder="Max" value="2000" style="width:100px">
+                    <span style="font-size:13px; color:#aaa;">TND</span>
                 </div>
             </div>
+
+            {# Dates #}
+            <div>
+                <div class="ai-section-label">Période souhaitée</div>
+                <div class="ai-row">
+                    <input type="date" class="ai-input" id="aiDateDebut">
+                    <span style="color:#aaa;">→</span>
+                    <input type="date" class="ai-input" id="aiDateFin">
+                </div>
+            </div>
+
+            <button class="ai-gen-btn" id="aiGenBtn" onclick="launchAIRecommendation()">
+                <i class="fa fa-magic"></i> Générer ma recommandation
+            </button>
+
+            <div class="ai-result" id="aiResult">
+                <div id="aiResultInner"></div>
+            </div>
+
         </div>
     </div>
-
-    {# Budget #}
-    <div>
-        <div class="ai-section-label">Budget pour ce voyage (TND)</div>
-        <div class="ai-row">
-            <input type="number" class="ai-input" id="aiBudgetMin" placeholder="Min" value="500" style="width:110px">
-            <span style="color:#aaa">–</span>
-            <input type="number" class="ai-input" id="aiBudgetMax" placeholder="Max" value="2000" style="width:110px">
-            <span style="font-size:13px;color:#888">TND</span>
-        </div>
-    </div>
-
-    {# Dates #}
-    <div>
-        <div class="ai-section-label">Période souhaitée</div>
-        <div class="ai-row">
-            <input type="date" class="ai-input" id="aiDateDebut">
-            <span style="color:#aaa">→</span>
-            <input type="date" class="ai-input" id="aiDateFin">
-        </div>
-    </div>
-
-    <button class="ai-gen-btn" id="aiGenBtn" onclick="launchAIRecommendation()">
-        <i class="fa fa-magic"></i> Générer ma recommandation
-    </button>
-
-    <div class="ai-result" id="aiResult">
-        <div id="aiResultInner"></div>
-    </div>
-  </div>
 </div>
 
 <script>
 function openAIPanel() {
     document.getElementById('aiPanelOverlay').classList.add('open');
     const today = new Date();
-    const next  = new Date(); next.setDate(today.getDate() + 30);
+    const next  = new Date(); next.setDate(today.getDate() + 7);
     document.getElementById('aiDateDebut').value = today.toISOString().split('T')[0];
     document.getElementById('aiDateFin').value   = next.toISOString().split('T')[0];
 }
 function closeAIPanel() {
     document.getElementById('aiPanelOverlay').classList.remove('open');
-    document.getElementById('aiResult').classList.remove('visible');
 }
 function handleAIOverlay(e) {
     if (e.target === document.getElementById('aiPanelOverlay')) closeAIPanel();
+}
+
+function showAIResult(html) {
+    document.getElementById('aiResultInner').innerHTML = html;
+    document.getElementById('aiResult').classList.add('visible');
 }
 
 let aiLastCall = 0;
@@ -870,24 +773,18 @@ async function launchAIRecommendation() {
     const now = Date.now();
     if (now - aiLastCall < 15000) {
         const remaining = Math.ceil((15000 - (now - aiLastCall)) / 1000);
-        document.getElementById('aiResult').classList.add('visible');
-        document.getElementById('aiResultInner').innerHTML = `
-            <div style="color:#e67e22;text-align:center;padding:20px">
-                <i class="fa fa-clock-o" style="font-size:28px;margin-bottom:8px;display:block"></i>
-                Attendez encore <strong>${remaining}s</strong> avant de relancer.
-            </div>`;
+        showAIResult(`<div style="padding:24px;text-align:center;color:#e67e22;">
+            <i class="fa fa-clock-o" style="font-size:28px;display:block;margin-bottom:8px;"></i>
+            Attendez encore <strong>${remaining}s</strong> avant de relancer.
+        </div>`);
         return;
     }
     aiLastCall = now;
 
-    const btn    = document.getElementById('aiGenBtn');
-    const result = document.getElementById('aiResult');
-    const inner  = document.getElementById('aiResultInner');
-
+    const btn = document.getElementById('aiGenBtn');
     btn.disabled = true;
     btn.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>&nbsp;Analyse en cours...';
-    result.classList.add('visible');
-    inner.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>';
+    showAIResult(`<div style="padding:36px;text-align:center;"><div class="ai-typing"><span></span><span></span><span></span></div></div>`);
 
     const dateDebutVal = document.getElementById('aiDateDebut').value;
     const dateFinVal   = document.getElementById('aiDateFin').value;
@@ -905,99 +802,119 @@ async function launchAIRecommendation() {
         });
 
         const d = await resp.json();
-        console.log('RAW RESPONSE:', JSON.stringify(d));
+        console.log('AI Response:', JSON.stringify(d));
 
-        if (resp.status === 429) {
-            inner.innerHTML = `
-                <div style="color:#e67e22;text-align:center;padding:20px">
-                    <i class="fa fa-clock-o" style="font-size:28px;margin-bottom:8px;display:block"></i>
-                    <strong>IA temporairement indisponible</strong><br>
-                    <span style="font-size:13px;color:#888">Réessayez dans quelques secondes.</span>
-                </div>`;
+        if (resp.status === 429 || d.error) {
+            showAIResult(`<div style="padding:24px;text-align:center;color:#c00;">
+                <i class="fa fa-warning" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+                ${d.message || d.error || 'Erreur. Réessayez.'}
+            </div>`);
             return;
         }
 
-        if (d.error) {
-            inner.innerHTML = `<div style="color:#c00;text-align:center;padding:20px"><i class="fa fa-warning"></i> ${d.error}</div>`;
-            return;
-        }
+        const ticketIdsChoisis   = (d.tickets   || []).map(t => t.id).filter(Boolean);
+        const activiteIdsChoisis = (d.activites || []).map(a => a.id).filter(Boolean);
 
-        const ticketIdsChoisis = (d.tickets || []).map(t => t.id).filter(Boolean);
+        const activitesHTML = (d.activites || []).map(a => `
+            <div class="ai-activity-card">
+                <div>
+                    <div class="ai-activity-name">
+                        <i class="fa fa-calendar-check-o" style="margin-right:5px;font-size:12px;"></i>${a.nom}
+                    </div>
+                    <div class="ai-activity-meta">
+                        <i class="fa fa-tag" style="margin-right:3px;"></i>${a.type || ''}
+                        &nbsp;·&nbsp;
+                        <i class="fa fa-calendar" style="margin-right:3px;"></i>${a.date_debut || ''} → ${a.date_fin || ''}
+                    </div>
+                </div>
+                <div class="ai-activity-price">${a.prix} TND</div>
+            </div>`).join('');
 
         const ticketsHTML = (d.tickets || []).map(t => `
             <div class="ai-ticket">
-                <span style="color:#223f91;font-weight:500">
-                    <i class="fa fa-ticket" style="margin-right:6px"></i>${t.nom}
+                <span class="ai-ticket-name">
+                    <i class="fa fa-ticket" style="margin-right:6px;font-size:12px;"></i>${t.nom}
                 </span>
                 <span>${t.prix} TND</span>
             </div>`).join('');
 
-        inner.innerHTML = `
-            <div class="ai-rec-dest">
-                <i class="fa fa-map-marker" style="margin-right:6px"></i>${d.destination}
+        showAIResult(`
+            <div class="ai-result-hero">
+                <div class="ai-result-dest">
+                    <i class="fa fa-map-marker" style="font-size:16px;"></i>${d.destination}
+                </div>
+                <div class="ai-result-tags">
+                    <span class="ai-result-tag">📅 ${d.dateDebut} → ${d.dateFin}</span>
+                    <span class="ai-result-tag">☀️ ${d.meteo || 'Météo favorable'}</span>
+                    <span class="ai-result-tag">✅ Dans votre budget</span>
+                </div>
             </div>
-            <div class="ai-tags">
-                <span class="ai-tag">📅 ${d.dateDebut} → ${d.dateFin}</span>
-                <span class="ai-tag">☀️ ${d.meteo || 'Météo favorable'}</span>
-                <span class="ai-tag">✅ Dans votre budget</span>
-            </div>
-            <div class="ai-raison">${d.raison}</div>
-            <div class="ai-section-label">Composition de la réservation</div>
-            ${ticketsHTML}
-            <div class="ai-total"><span>Total estimé</span><span>${d.total} TND</span></div>
-            <button onclick="creerReservationIA(${d.destination_id}, ${JSON.stringify(ticketIdsChoisis)}, '${dateDebutVal}', '${dateFinVal}')"
-                style="margin-top:16px;width:100%;padding:13px;background:#27ae60;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-                <i class="fa fa-check-circle"></i> Créer cette réservation
-            </button>`;
+            <div class="ai-result-body">
+                <div class="ai-raison">${d.raison}</div>
+
+                ${activitesHTML ? `
+                <div>
+                    <div class="ai-section-label">🎯 Activités recommandées</div>
+                    ${activitesHTML}
+                </div>` : ''}
+
+                ${ticketsHTML ? `
+                <div>
+                    <div class="ai-section-label">🎫 Tickets inclus</div>
+                    ${ticketsHTML}
+                </div>` : ''}
+
+                <div class="ai-total">
+                    <span>Total estimé</span>
+                    <span>${d.total} TND</span>
+                </div>
+
+                <button class="ai-cta-btn"
+                    onclick="creerReservationIA(${d.destination_id}, ${JSON.stringify(ticketIdsChoisis)}, ${JSON.stringify(activiteIdsChoisis)}, '${dateDebutVal}', '${dateFinVal}')">
+                    <i class="fa fa-check-circle"></i> Créer cette réservation
+                </button>
+            </div>`);
 
     } catch (err) {
-        inner.innerHTML = `<div style="color:#c00;text-align:center;padding:20px"><i class="fa fa-warning"></i> Erreur réseau. Réessayez.</div>`;
+        showAIResult(`<div style="padding:24px;text-align:center;color:#c00;">
+            <i class="fa fa-warning" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+            Erreur réseau. Réessayez.
+        </div>`);
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa fa-magic"></i> Régénérer';
     }
 }
 
-// ── SEPARATE FUNCTION — outside launchAIRecommendation ──
-async function creerReservationIA(destinationId, ticketIds, dateDebut, dateFin) {
-    if (!destinationId || !ticketIds.length) {
+async function creerReservationIA(destinationId, ticketIds, activiteIds, dateDebut, dateFin) {
+    if (!destinationId || (!ticketIds.length && !activiteIds.length)) {
         Swal.fire('Erreur', "Données de réservation incomplètes.", 'error');
         return;
     }
-
     const confirmation = await Swal.fire({
         title: 'Confirmer la réservation ?',
-        text: "Une réservation sera créée avec les tickets sélectionnés par l'IA.",
-        icon: 'question',
-        showCancelButton: true,
+        text: "Une réservation sera créée avec les activités et tickets sélectionnés par l'IA.",
+        icon: 'question', showCancelButton: true,
         confirmButtonColor: '#27ae60',
-        cancelButtonText: 'Annuler',
-        confirmButtonText: 'Oui, créer !'
+        cancelButtonText: 'Annuler', confirmButtonText: 'Oui, créer !'
     });
-
     if (!confirmation.isConfirmed) return;
-
     try {
         const resp = await fetch('/api/recommandation-ia/creer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 destination_id: destinationId,
-                ticket_ids: ticketIds,
+                ticket_ids:     ticketIds,
+                activite_ids:   activiteIds,
                 dateDebut,
                 dateFin
             })
         });
-
         const d = await resp.json();
-
         if (d.success) {
-            Swal.fire({
-                title: 'Réservation créée !',
-                text: d.message,
-                icon: 'success',
-                confirmButtonText: 'Voir mes réservations'
-            }).then(() => window.location.reload());
+            Swal.fire({ title: 'Réservation créée !', text: d.message, icon: 'success', confirmButtonText: 'Voir mes réservations' })
+                .then(() => window.location.reload());
         } else {
             Swal.fire('Erreur', d.error || 'Une erreur est survenue.', 'error');
         }
@@ -1006,4 +923,5 @@ async function creerReservationIA(destinationId, ticketIds, dateDebut, dateFin) 
     }
 }
 </script>
+
 {% endblock %}

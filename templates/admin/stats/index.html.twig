@@ -1,0 +1,267 @@
+{# ==================== KPI CARDS ==================== #}
+<div class="row g-3 mb-4">
+  <div class="col-md-2">
+    <div class="card text-center h-100"><div class="card-body">
+      <p class="text-muted mb-1" style="font-size:12px;">Total réservations</p>
+      <h3 class="mb-0">{{ kpis.total }}</h3>
+    </div></div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center border-success h-100"><div class="card-body">
+      <p class="text-muted mb-1" style="font-size:12px;">Confirmées</p>
+      <h3 class="mb-0 text-success">{{ kpis.confirmed }}</h3>
+      <small class="text-muted">{{ conversionRate }}%</small>
+    </div></div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center border-danger h-100"><div class="card-body">
+      <p class="text-muted mb-1" style="font-size:12px;">Annulées</p>
+      <h3 class="mb-0 text-danger">{{ kpis.cancelled }}</h3>
+      <small class="text-muted">{{ kpis.total > 0 ? ((kpis.cancelled/kpis.total)*100)|round(1) : 0 }}%</small>
+    </div></div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center border-warning h-100"><div class="card-body">
+      <p class="text-muted mb-1" style="font-size:12px;">En attente</p>
+      <h3 class="mb-0 text-warning">{{ kpis.pending }}</h3>
+    </div></div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center h-100"><div class="card-body">
+      <p class="text-muted mb-1" style="font-size:12px;">Revenu total</p>
+      <h3 class="mb-0">{{ kpis.revenue|number_format(0,'','') }} DT</h3>
+    </div></div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center h-100"><div class="card-body">
+      <p class="text-muted mb-1" style="font-size:12px;">Budget moyen</p>
+      <h3 class="mb-0">{{ kpis.avg_cost|round(0) }} DT</h3>
+    </div></div>
+  </div>
+</div>
+
+{# ==================== CHARTS ROW 1 ==================== #}
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6 class="card-title">Revenu mensuel (DT)</h6>
+      <canvas id="revenueChart"></canvas>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6 class="card-title">Réservations par mois</h6>
+      <canvas id="monthChart"></canvas>
+    </div></div>
+  </div>
+</div>
+
+{# ==================== CHARTS ROW 2 ==================== #}
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6 class="card-title">Réservations par jour de semaine</h6>
+      <canvas id="dayChart"></canvas>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6 class="card-title">Top clients</h6>
+      <canvas id="clientChart"></canvas>
+    </div></div>
+  </div>
+</div>
+
+{# ==================== DESTINATIONS + CANCELLATIONS ==================== #}
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6 class="card-title">Top 5 destinations</h6>
+      {% for d in topDest %}
+        <div class="d-flex justify-content-between mb-1">
+          <span>{{ d.nom }}</span><strong>{{ d.total }}</strong>
+        </div>
+        <div class="progress mb-2" style="height:6px;">
+          <div class="progress-bar bg-primary" style="width:{{ (d.total / topDest[0].total * 100)|round }}%"></div>
+        </div>
+      {% endfor %}
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6 class="card-title">Annulations par destination</h6>
+      {% for d in cancelByDest %}
+        {% set rate = d.cancel_rate %}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span>{{ d.nom }}</span>
+          <span class="badge {{ rate > 15 ? 'bg-danger' : (rate > 8 ? 'bg-warning text-dark' : 'bg-success') }}">
+            {{ rate }}%
+          </span>
+        </div>
+      {% endfor %}
+    </div></div>
+  </div>
+</div>
+
+{# ==================== BEHAVIOR KPIS ==================== #}
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card text-center"><div class="card-body">
+    <h6 class="text-muted">Budget moyen</h6>
+    <h4>{{ kpis.avg_cost|round(0) }} DT</h4>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body">
+    <h6 class="text-muted">Délai moyen réservation</h6>
+    <h4>{{ avgLeadTime }} jours</h4>
+  </div></div></div>
+  <div class="col-md-4"><div class="card text-center"><div class="card-body">
+    <h6 class="text-muted">Taux de conversion</h6>
+    <h4>{{ conversionRate }}%</h4>
+  </div></div></div>
+</div>
+
+{# ==================== ANALYSIS + PREDICTIONS ==================== #}
+<div class="card border-primary mb-4">
+  <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+    <i class="bx bx-brain fs-5"></i>
+    <strong>Analyse & Prédictions</strong>
+  </div>
+  <div class="card-body" style="line-height:1.9;">
+
+    {# --- Quick analysis --- #}
+    <p class="mb-2">
+      {% set monthNames = {1:'Janvier',2:'Février',3:'Mars',4:'Avril',5:'Mai',6:'Juin',7:'Juillet',8:'Août',9:'Septembre',10:'Octobre',11:'Novembre',12:'Décembre'} %}
+      {% set dayNamesMap = {1:'Dimanche',2:'Lundi',3:'Mardi',4:'Mercredi',5:'Jeudi',6:'Vendredi',7:'Samedi'} %}
+
+      Le taux de confirmation est de <strong>{{ conversionRate }}%</strong>
+      {% if conversionRate >= 75 %}<span class="badge bg-success">Excellent</span>
+      {% elseif conversionRate >= 50 %}<span class="badge bg-warning text-dark">Correct</span>
+      {% else %}<span class="badge bg-danger">À améliorer</span>{% endif %}.
+
+      {% if bestMonth %}
+        Le meilleur mois historique est <strong>{{ monthNames[bestMonth.month] }} {{ bestMonth.year }}</strong>
+        avec <strong>{{ bestMonth.total }} réservations</strong>.
+      {% endif %}
+
+      {% if byWeekday|length > 0 %}
+        Le jour le plus actif est <strong>{{ dayNamesMap[byWeekday[0].day] }}</strong>
+        ({{ byWeekday[0].total }} réservations).
+      {% endif %}
+
+      {% if topDest|length > 0 %}
+        La destination phare est <strong>{{ topDest[0].nom }}</strong>
+        avec <strong>{{ topDest[0].total }} réservations</strong>.
+      {% endif %}
+
+      {% if cancelByDest|length > 0 and cancelByDest[0].cancel_rate > 10 %}
+        ⚠️ <strong>{{ cancelByDest[0].nom }}</strong> affiche un taux d'annulation élevé
+        (<strong>{{ cancelByDest[0].cancel_rate }}%</strong>) — à surveiller.
+      {% endif %}
+    </p>
+
+    <hr class="my-3">
+
+    {# --- Predictions --- #}
+    <h6 class="fw-bold mb-2"><i class="bx bx-rocket me-1"></i> Prédictions — mois prochain</h6>
+    <div class="row g-2 mb-3">
+      <div class="col-md-4">
+        <div class="card bg-label-primary text-center">
+          <div class="card-body py-2">
+            <p class="mb-0" style="font-size:12px;">Réservations prévues</p>
+            <h4 class="mb-0">~{{ predNextMonth }}</h4>
+            {% if trend > 0 %}<small class="text-success">+{{ trend }}% tendance</small>
+            {% elseif trend < 0 %}<small class="text-danger">{{ trend }}% tendance</small>
+            {% else %}<small class="text-muted">stable</small>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-label-success text-center">
+          <div class="card-body py-2">
+            <p class="mb-0" style="font-size:12px;">Revenu estimé</p>
+            <h4 class="mb-0">~{{ predNextRev|number_format(0,'','') }} DT</h4>
+            <small class="text-muted">basé sur 3 derniers mois</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-label-info text-center">
+          <div class="card-body py-2">
+            <p class="mb-0" style="font-size:12px;">Jour à forte demande</p>
+            <h4 class="mb-0">
+              {% if byWeekday|length > 0 %}{{ dayNamesMap[byWeekday[0].day] }}{% else %}N/A{% endif %}
+            </h4>
+            <small class="text-muted">historiquement</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-3">
+
+    {# --- Recommendations --- #}
+    <h6 class="fw-bold mb-2"><i class="bx bx-bulb me-1"></i> Recommandations</h6>
+    <ul class="mb-0" style="line-height:2;">
+      {% if conversionRate < 70 %}
+      <li>📌 Taux de conversion de {{ conversionRate }}% — simplifier le processus de confirmation ou envoyer des rappels automatiques.</li>
+      {% endif %}
+      {% if cancelByDest|length > 0 and cancelByDest[0].cancel_rate > 15 %}
+      <li>📌 Revoir l'offre de <strong>{{ cancelByDest[0].nom }}</strong> — {{ cancelByDest[0].cancel_rate }}% d'annulations.</li>
+      {% endif %}
+      {% if avgLeadTime <= 5 %}
+      <li>📌 Délai moyen de {{ avgLeadTime }} jours — créer des offres last-minute pour capter les réservations tardives.</li>
+      {% endif %}
+      {% if loyalClients > 0 %}
+      <li>📌 {{ loyalClients }} clients fidèles identifiés — un programme de fidélité augmenterait leur valeur long terme.</li>
+      {% endif %}
+      {% if trend < 0 %}
+      <li>📌 Tendance en baisse de {{ trend }}% — lancer une campagne promotionnelle sur les destinations les plus rentables.</li>
+      {% endif %}
+      {% if topDest|length > 0 %}
+      <li>📌 Renforcer les capacités sur <strong>{{ topDest[0].nom }}</strong> — destination la plus demandée.</li>
+      {% endif %}
+    </ul>
+
+  </div>
+</div>
+
+{# ==================== CHARTS JS ==================== #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('revenueChart'), {
+  type: 'line',
+  data: {
+    labels: [{% for r in byMonth %}'{{ r.month }}/{{ r.year }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{ data: [{% for r in byMonth %}{{ r.revenue }}{% if not loop.last %},{% endif %}{% endfor %}],
+      borderColor:'#696cff', fill:false, tension:0.4 }]
+  },
+  options: { responsive:true, plugins:{ legend:{ display:false } } }
+});
+new Chart(document.getElementById('monthChart'), {
+  type: 'bar',
+  data: {
+    labels: [{% for r in byMonth %}'{{ r.month }}/{{ r.year }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{ data: [{% for r in byMonth %}{{ r.reservations }}{% if not loop.last %},{% endif %}{% endfor %}],
+      backgroundColor:'#696cff99' }]
+  },
+  options: { responsive:true, plugins:{ legend:{ display:false } } }
+});
+{% set dayNamesJs = {1:'Dim',2:'Lun',3:'Mar',4:'Mer',5:'Jeu',6:'Ven',7:'Sam'} %}
+new Chart(document.getElementById('dayChart'), {
+  type: 'bar',
+  data: {
+    labels: [{% for d in byWeekday %}'{{ dayNamesJs[d.day] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{ data: [{% for d in byWeekday %}{{ d.total }}{% if not loop.last %},{% endif %}{% endfor %}],
+      backgroundColor:'#03c3ec99' }]
+  },
+  options: { responsive:true, plugins:{ legend:{ display:false } } }
+});
+new Chart(document.getElementById('clientChart'), {
+  type: 'bar',
+  data: {
+    labels: [{% for c in topClients %}'{{ c.nom }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{ data: [{% for c in topClients %}{{ c.total }}{% if not loop.last %},{% endif %}{% endfor %}],
+      backgroundColor:'#ff3e1d99' }]
+  },
+  options: { responsive:true, indexAxis:'y', plugins:{ legend:{ display:false } } }
+});
+</script>

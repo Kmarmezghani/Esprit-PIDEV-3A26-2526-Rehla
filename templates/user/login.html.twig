@@ -176,6 +176,9 @@
                 <div class="field-error" id="err-password"></div>
             </div>
 
+            <div class="g-recaptcha mb-3" data-sitekey="{{ recaptcha_v2_site_key }}"></div>
+            <div id="recaptcha-error" style="color:#dc3545;font-size:12px;margin-bottom:8px;display:none;">Veuillez cocher le reCAPTCHA.</div>
+
             <button type="submit" class="btn-connexion">
                 <i class="fa fa-sign-in me-2"></i> Se connecter
             </button>
@@ -242,7 +245,7 @@
             else             clearError('passwordField', 'err-password');
         });
 
-        /* ── Validation à la soumission ── */
+        /* ── Validation + reCAPTCHA v2 à la soumission ── */
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             let ok = true;
             const email = document.getElementById('loginEmail').value.trim();
@@ -262,8 +265,17 @@
                 clearError('passwordField', 'err-password');
             }
 
+            const captchaResp = grecaptcha.getResponse();
+            if (!captchaResp) {
+                document.getElementById('recaptcha-error').style.display = 'block';
+                ok = false;
+            } else {
+                document.getElementById('recaptcha-error').style.display = 'none';
+            }
+
             if (!ok) e.preventDefault();
         });
     </script>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
 </body>
 </html>

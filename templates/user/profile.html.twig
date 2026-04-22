@@ -247,8 +247,9 @@
 
                             <div class="form-group">
                                 <label class="font-weight-bold">Nouveau mot de passe</label>
-                                <input type="password" name="nouveau_mdp" class="form-control rounded-pill px-3"
+                                <input type="password" name="nouveau_mdp" id="profilePwd1" class="form-control rounded-pill px-3"
                                        placeholder="••••••••" required>
+                                <div id="profile-pwned-warning"></div>
                             </div>
 
                             <div class="form-group">
@@ -313,5 +314,27 @@
                 input.nextElementSibling.textContent = input.files[0].name;
             }
         }
+    </script>
+    <script>
+    /* HaveIBeenPwned – changement de mot de passe */
+    const profilePwd1 = document.getElementById('profilePwd1');
+    if (profilePwd1) {
+        profilePwd1.addEventListener('blur', function() {
+            const val = this.value;
+            if (!val || val.length < 4) return;
+            fetch('/api/check-password-pwned', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({password: val})
+            }).then(r => r.json()).then(data => {
+                const warn = document.getElementById('profile-pwned-warning');
+                if (data.pwned) {
+                    warn.innerHTML = '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;font-size:12px;padding:8px 12px;margin-top:6px;">⚠️ Ce mot de passe apparaît dans <strong>' + data.count.toLocaleString() + '</strong> fuite(s) de données connues.</div>';
+                } else {
+                    warn.innerHTML = '<div style="font-size:12px;color:#28a745;margin-top:4px;">✔ Mot de passe non compromis.</div>';
+                }
+            }).catch(() => {});
+        });
+    }
     </script>
 {% endblock %}

@@ -54,6 +54,12 @@ class Personne
     #[ORM\Column(name: "reset_token_expiry", type: "datetime", nullable: true)]
     private ?\DateTimeInterface $resetTokenExpiry = null;
 
+    #[ORM\Column(name: "suspension_fin", type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $suspensionFin = null;
+
+    #[ORM\Column(name: "derniere_connexion", type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $derniereConnexion = null;
+
     #[ORM\Column(type: "integer")]
     private int $nbPostsSuspects = 0;
 
@@ -186,6 +192,12 @@ class Personne
 
     public function getResetTokenExpiry(): ?\DateTimeInterface { return $this->resetTokenExpiry; }
     public function setResetTokenExpiry(?\DateTimeInterface $value): void { $this->resetTokenExpiry = $value; }
+
+    public function getSuspensionFin(): ?\DateTimeInterface { return $this->suspensionFin; }
+    public function setSuspensionFin(?\DateTimeInterface $value): void { $this->suspensionFin = $value; }
+
+    public function getDerniereConnexion(): ?\DateTimeInterface { return $this->derniereConnexion; }
+    public function setDerniereConnexion(?\DateTimeInterface $value): void { $this->derniereConnexion = $value; }
     public function getGroupes(): Collection
 {
     return $this->groupes;

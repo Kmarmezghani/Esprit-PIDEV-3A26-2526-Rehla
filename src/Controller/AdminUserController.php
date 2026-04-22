@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Guide;
 use App\Entity\Personne;
 use App\Entity\Preference;
+use App\Service\UserRiskAnalysisService;
+use App\UserMailerBundle\Service\UserMailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -47,7 +49,7 @@ class AdminUserController extends AbstractController
     //  MODIFIER UN UTILISATEUR (admin)
     // ─────────────────────────────────────────────────────────────
     #[Route('/admin/utilisateurs/{id}/modifier', name: 'admin_user_edit')]
-    public function edit(int $id, Request $request, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, EntityManagerInterface $em, UserMailerService $mailer): Response
     {
         $redirect = $this->requireAdmin($request);
         if ($redirect) return $redirect;
@@ -63,15 +65,30 @@ class AdminUserController extends AbstractController
         $guide = $em->getRepository(Guide::class)->findOneBy(['personne' => $personne]);
 
         if ($request->isMethod('POST')) {
-            $role       = in_array($request->request->get('role'), ['CLIENT', 'GUIDE', 'ADMIN']) ? $request->request->get('role') : 'CLIENT';
-            $statut     = $request->request->get('statutCompte', 'ACTIF');
-            $specialite = trim($request->request->get('specialite', ''));
-            $langues    = trim($request->request->get('langues', ''));
-            $experience = trim($request->request->get('experience', ''));
+            $role          = in_array($request->request->get('role'), ['CLIENT', 'GUIDE', 'ADMIN']) ? $request->request->get('role') : 'CLIENT';
+            $statut        = $request->request->get('statutCompte', 'ACTIF');
+            $suspensionFin = $request->request->get('suspension_fin', '');
+            $specialite    = trim($request->request->get('specialite', ''));
+            $langues       = trim($request->request->get('langues', ''));
+            $experience    = trim($request->request->get('experience', ''));
 
-            $oldRole = $personne->getRole();
+            $oldStatut = $personne->getStatutCompte();
+            $oldRole   = $personne->getRole();
+
             $personne->setRole($role);
             $personne->setStatutCompte($statut);
+
+            // ── Métier B : suspension temporaire ──
+            if ($statut === 'SUSPENDU' && $suspensionFin !== '') {
+                $personne->setSuspensionFin(new \DateTime($suspensionFin));
+            } else {
+                $personne->setSuspensionFin(null);
+            }
+
+            // ── UserMailerBundle : email de suspension ──
+            if ($statut === 'SUSPENDU' && $oldStatut !== 'SUSPENDU') {
+                $mailer->sendAccountSuspendedEmail($personne, $personne->getSuspensionFin());
+            }
 
             if ($role === 'GUIDE') {
                 if (!$guide) {
@@ -125,6 +142,26 @@ class AdminUserController extends AbstractController
 
         $this->addFlash('admin_success', 'Utilisateur supprimé avec succès.');
         return $this->redirectToRoute('admin_users');
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  IA — ANALYSE DES RISQUES UTILISATEURS (Gemini)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/admin/analyse-risques', name: 'admin_risk_analysis')]
+    public function riskAnalysis(Request $request, EntityManagerInterface $em, UserRiskAnalysisService $riskService): Response
+    {
+        $redirect = $this->requireAdmin($request);
+        if ($redirect) return $redirect;
+
+        $users   = $em->getRepository(Personne::class)->findAll();
+        $results = $riskService->analyzeUsers($users);
+        $debug   = $riskService->getLastDebug();
+
+        return $this->render('admin/risk_analysis.html.twig', [
+            'users'   => $users,
+            'results' => $results,
+            'debug'   => $debug,
+        ]);
     }
 
     // ─────────────────────────────────────────────────────────────

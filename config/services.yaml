@@ -8,6 +8,10 @@ parameters:
     images_directory: '%kernel.project_dir%/public/uploads'
     gemini_api_key: '%env(GEMINI_API_KEY)%'
     openrouter_api_key: '%env(OPENROUTER_API_KEY)%'
+    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+    recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
+    recaptcha_v2_site_key: '%env(RECAPTCHA_V2_SITE_KEY)%'
+    recaptcha_v2_secret_key: '%env(RECAPTCHA_V2_SECRET_KEY)%'
 
 
 services:
@@ -38,6 +42,17 @@ services:
     App\Service\GeminiRecommendationService:
         arguments:
             $geminiApiKey: '%gemini_api_key%'
+
+    App\Service\UserRiskAnalysisService:
+        arguments:
+            $geminiApiKey: '%env(GEMINI_API_KEY)%'
+            $geminiApiKey2: '%env(GEMINI_API_KEY2)%'
+            $openRouterApiKey: '%env(OPENROUTER_API_KEY)%'
+
+    App\UserMailerBundle\Service\UserMailerService:
+        autowire: true
+        autoconfigure: true
+        public: true
 
     App\Controller\PaymentController:
         arguments:

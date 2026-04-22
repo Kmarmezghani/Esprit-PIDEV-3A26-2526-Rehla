@@ -87,13 +87,24 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Statut du compte</label>
-                        <select name="statutCompte" class="form-select">
+                        <select name="statutCompte" class="form-select" id="statutSelect" onchange="toggleSuspensionFin()">
                             <option value="ACTIF"    {% if personne.statutCompte == 'ACTIF'    %}selected{% endif %}>ACTIF</option>
                             <option value="INACTIF"  {% if personne.statutCompte == 'INACTIF'  %}selected{% endif %}>INACTIF</option>
                             <option value="SUSPENDU" {% if personne.statutCompte == 'SUSPENDU' %}selected{% endif %}>SUSPENDU</option>
                         </select>
-                        <small class="text-muted">SUSPENDU bloque la connexion de cet utilisateur.</small>
+                        <small class="text-muted">SUSPENDU bloque la connexion. Un email est envoyé automatiquement.</small>
                     </div>
+                </div>
+
+                {# ── Suspension temporaire (Métier B) ── #}
+                <div id="suspensionFinBlock" class="mb-3" style="display:{% if personne.statutCompte == 'SUSPENDU' %}block{% else %}none{% endif %};">
+                    <label class="form-label fw-semibold">
+                        <i class="bx bx-time me-1" style="color:#fd7e14;"></i>
+                        Date de fin de suspension <small class="text-muted">(optionnel – laisser vide = indéfinie)</small>
+                    </label>
+                    <input type="datetime-local" name="suspension_fin" class="form-control"
+                           value="{{ personne.suspensionFin ? personne.suspensionFin|date('Y-m-d\\TH:i') : '' }}">
+                    <small class="text-muted">Si une date est définie, le compte sera réactivé automatiquement à la connexion.</small>
                 </div>
 
                 {# ── Champs Guide ── #}
@@ -151,6 +162,10 @@
 function toggleGuideFields() {
     const role = document.getElementById('roleSelect').value;
     document.getElementById('guideFields').style.display = role === 'GUIDE' ? 'block' : 'none';
+}
+function toggleSuspensionFin() {
+    const statut = document.getElementById('statutSelect').value;
+    document.getElementById('suspensionFinBlock').style.display = statut === 'SUSPENDU' ? 'block' : 'none';
 }
 </script>
 {% endblock %}

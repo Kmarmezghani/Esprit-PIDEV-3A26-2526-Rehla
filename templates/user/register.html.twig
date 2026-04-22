@@ -202,6 +202,9 @@
                 </div>
             </div>
 
+            <div class="g-recaptcha mb-3" data-sitekey="{{ recaptcha_v2_site_key }}"></div>
+            <div id="recaptcha-error-reg" style="color:#dc3545;font-size:12px;margin-bottom:8px;display:none;">Veuillez cocher le reCAPTCHA.</div>
+
             <button type="submit" class="btn-register">
                 <i class="fa fa-user-plus me-2"></i> Créer mon compte
             </button>
@@ -256,6 +259,27 @@
         function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
         function isPhone(v) { return v === '' || /^[\+\d\s\-\(\)]{6,20}$/.test(v); }
 
+        /* ── HaveIBeenPwned : vérification mot de passe compromis ── */
+        document.getElementById('pwd1').addEventListener('blur', function() {
+            const val = this.value;
+            if (!val || val.length < 4) return;
+            fetch('/api/check-password-pwned', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({password: val})
+            }).then(r => r.json()).then(data => {
+                const existing = document.getElementById('pwned-warning');
+                if (existing) existing.remove();
+                if (data.pwned) {
+                    const warn = document.createElement('div');
+                    warn.id = 'pwned-warning';
+                    warn.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;font-size:12px;padding:8px 12px;margin-top:6px;';
+                    warn.innerHTML = '⚠️ Ce mot de passe a été exposé dans <strong>' + data.count.toLocaleString() + '</strong> fuite(s) de données connues. Choisissez un mot de passe plus sécurisé.';
+                    document.getElementById('pwd1').parentElement.after(warn);
+                }
+            }).catch(() => {});
+        });
+
         /* ── API 3 : vérification email disponible en temps réel ── */
         let emailCheckTimeout = null;
         document.getElementById('rEmail').addEventListener('blur', function() {
@@ -305,7 +329,7 @@
             }
         });
 
-        /* ── Validation à la soumission ── */
+        /* ── Validation + reCAPTCHA v2 à la soumission ── */
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             let ok = true;
             rules.forEach(r => {
@@ -313,8 +337,19 @@
                 if (msg) { showErr(r.id, r.errId, msg); ok = false; }
                 else     { clearErr(r.id, r.errId); }
             });
+
+            const captchaResp = grecaptcha.getResponse();
+            if (!captchaResp) {
+                document.getElementById('recaptcha-error-reg').style.display = 'block';
+                ok = false;
+            } else {
+                document.getElementById('recaptcha-error-reg').style.display = 'none';
+            }
+
             if (!ok) e.preventDefault();
         });
     </script>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
 </body>
 </html>
+

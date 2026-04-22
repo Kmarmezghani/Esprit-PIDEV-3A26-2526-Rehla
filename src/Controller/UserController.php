@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Guide;
 use App\Entity\Personne;
 use App\Entity\Preference;
+use App\UserMailerBundle\Service\UserMailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +21,8 @@ class UserController extends AbstractController
     // ─────────────────────────────────────────────────────────────
     //  Helper : vérifie qu'un utilisateur est bien connecté
     // ─────────────────────────────────────────────────────────────
+    private string $recaptchaSecret = '';
+
     private function requireLogin(Request $request): ?Response
     {
         if (!$request->getSession()->get('user_id')) {
@@ -28,15 +31,33 @@ class UserController extends AbstractController
         return null;
     }
 
+    private function verifyRecaptchaV2(string $token): bool
+    {
+        if (empty($token)) return false;
+        $secret = $this->getParameter('recaptcha_v2_secret_key');
+        $ch = curl_init('https://www.google.com/recaptcha/api/siteverify');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => http_build_query(['secret' => $secret, 'response' => $token]),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 5,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+        ]);
+        $raw = curl_exec($ch);
+        curl_close($ch);
+        $data = json_decode($raw, true);
+        return (bool) ($data['success'] ?? false);
+    }
+
     // ─────────────────────────────────────────────────────────────
     //  CONNEXION
     // ─────────────────────────────────────────────────────────────
     #[Route('/connexion', name: 'app_login')]
-    public function login(Request $request, EntityManagerInterface $em): Response
+    public function login(Request $request, EntityManagerInterface $em, UserMailerService $mailer): Response
     {
         $session = $request->getSession();
 
-        // Déjà connecté → redirection
         if ($session->get('user_id')) {
             return $this->redirectToRoute(
                 $session->get('user_role') === 'ADMIN' ? 'admin_users' : 'home'
@@ -46,6 +67,16 @@ class UserController extends AbstractController
         $error = null;
 
         if ($request->isMethod('POST')) {
+            $recaptchaToken = $request->request->get('g-recaptcha-response', '');
+            if (!$this->verifyRecaptchaV2($recaptchaToken)) {
+                $error = 'Veuillez valider le reCAPTCHA.';
+                return $this->render('user/login.html.twig', [
+                    'error'                => $error,
+                    'recaptcha_site_key'   => $this->getParameter('recaptcha_site_key'),
+                    'recaptcha_v2_site_key'=> $this->getParameter('recaptcha_v2_site_key'),
+                ]);
+            }
+
             $email    = trim($request->request->get('email', ''));
             $password = $request->request->get('motDePasse', '');
 
@@ -53,27 +84,60 @@ class UserController extends AbstractController
             $personne = $em->getRepository(Personne::class)->findOneBy(['email' => $email]);
 
             if ($personne && $personne->getMotDePasse() === $password) {
+
+                // ── Métier B : vérifier expiration suspension ──
+                if ($personne->getStatutCompte() === 'SUSPENDU'
+                    && $personne->getSuspensionFin() !== null
+                    && $personne->getSuspensionFin() <= new \DateTime()) {
+                    $personne->setStatutCompte('ACTIF');
+                    $personne->setSuspensionFin(null);
+                    $em->flush();
+                }
+
                 if ($personne->getStatutCompte() === 'SUSPENDU') {
-                    $error = 'Votre compte a été suspendu. Contactez l\'administrateur.';
-                } else {
-                    // Ouverture de session
+                    $finMsg = $personne->getSuspensionFin()
+                        ? ' Fin prévue le ' . $personne->getSuspensionFin()->format('d/m/Y') . '.'
+                        : '';
+                    $error = 'Votre compte a été suspendu. Contactez l\'administrateur.' . $finMsg;
+
+                } elseif ($personne->getStatutCompte() === 'INACTIF') {
+                    // L'utilisateur se reconnecte → réactivation automatique
+                    $personne->setStatutCompte('ACTIF');
+                    $personne->setDerniereConnexion(new \DateTime());
+                    $em->flush();
+
                     $session->set('user_id',     $personne->getId());
                     $session->set('user_role',   $personne->getRole());
                     $session->set('user_nom',    $personne->getNom());
                     $session->set('user_prenom', $personne->getPrenom());
                     $session->set('user_photo',  $personne->getProfile_photo());
 
-                    if ($personne->getRole() === 'ADMIN') {
-                        return $this->redirectToRoute('admin_users');
-                    }
-                    return $this->redirectToRoute('home');
+                    $this->addFlash('login_info', 'Bon retour ! Votre compte a été réactivé automatiquement.');
+                    return $this->redirectToRoute($personne->getRole() === 'ADMIN' ? 'admin_users' : 'home');
+
+                } else {
+                    // Connexion normale → mettre à jour dernière connexion
+                    $personne->setDerniereConnexion(new \DateTime());
+                    $em->flush();
+
+                    $session->set('user_id',     $personne->getId());
+                    $session->set('user_role',   $personne->getRole());
+                    $session->set('user_nom',    $personne->getNom());
+                    $session->set('user_prenom', $personne->getPrenom());
+                    $session->set('user_photo',  $personne->getProfile_photo());
+
+                    return $this->redirectToRoute($personne->getRole() === 'ADMIN' ? 'admin_users' : 'home');
                 }
             } else {
                 $error = 'Email ou mot de passe incorrect.';
             }
         }
 
-        return $this->render('user/login.html.twig', ['error' => $error]);
+        return $this->render('user/login.html.twig', [
+            'error'                 => $error,
+            'recaptcha_site_key'    => $this->getParameter('recaptcha_site_key'),
+            'recaptcha_v2_site_key' => $this->getParameter('recaptcha_v2_site_key'),
+        ]);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -90,7 +154,7 @@ class UserController extends AbstractController
     //  INSCRIPTION
     // ─────────────────────────────────────────────────────────────
     #[Route('/inscription', name: 'app_register')]
-    public function register(Request $request, EntityManagerInterface $em): Response
+    public function register(Request $request, EntityManagerInterface $em, UserMailerService $mailer): Response
     {
         $session = $request->getSession();
         if ($session->get('user_id')) {
@@ -98,9 +162,14 @@ class UserController extends AbstractController
         }
 
         $errors = [];
-        $old    = [];   // données du formulaire (pour repopuler en cas d'erreur)
+        $old    = [];
 
         if ($request->isMethod('POST')) {
+            $recaptchaToken = $request->request->get('g-recaptcha-response', '');
+            if (!$this->verifyRecaptchaV2($recaptchaToken)) {
+                $errors[] = 'Veuillez valider le reCAPTCHA.';
+            }
+
             $nom        = trim($request->request->get('nom', ''));
             $prenom     = trim($request->request->get('prenom', ''));
             $email      = trim($request->request->get('email', ''));
@@ -156,15 +225,20 @@ class UserController extends AbstractController
                         $em->flush();
                     }
 
-                    $this->addFlash('login_info', 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
+                    // UserMailerBundle : email de bienvenue
+                    $mailer->sendWelcomeEmail($personne);
+
+                    $this->addFlash('login_info', 'Inscription réussie ! Un email de bienvenue vous a été envoyé.');
                     return $this->redirectToRoute('app_login');
                 }
             }
         }
 
         return $this->render('user/register.html.twig', [
-            'errors' => $errors,
-            'old'    => $old,
+            'errors'                => $errors,
+            'old'                   => $old,
+            'recaptcha_site_key'    => $this->getParameter('recaptcha_site_key'),
+            'recaptcha_v2_site_key' => $this->getParameter('recaptcha_v2_site_key'),
         ]);
     }
 
@@ -542,6 +616,86 @@ class UserController extends AbstractController
             'total'   => count($data),
             'users'   => $data,
         ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  API EXTERNE — HaveIBeenPwned : mot de passe compromis ?
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/api/check-password-pwned', name: 'api_check_pwned', methods: ['POST'])]
+    public function apiCheckPwned(Request $request): JsonResponse
+    {
+        $data     = json_decode($request->getContent(), true) ?? [];
+        $password = $data['password'] ?? '';
+
+        if (!$password) {
+            return $this->json(['pwned' => false, 'count' => 0]);
+        }
+
+        // k-Anonymity : on envoie seulement les 5 premiers chars du hash SHA1
+        $hash   = strtoupper(sha1($password));
+        $prefix = substr($hash, 0, 5);
+        $suffix = substr($hash, 5);
+
+        try {
+            $ch = curl_init('https://api.pwnedpasswords.com/range/' . $prefix);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 5,
+                CURLOPT_HTTPHEADER     => ['Add-Padding: true', 'User-Agent: Rehla-App'],
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+            ]);
+            $body     = curl_exec($ch);
+            $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200 && $body) {
+                foreach (explode("\n", $body) as $line) {
+                    $parts = explode(':', trim($line));
+                    if (count($parts) === 2 && strtoupper($parts[0]) === $suffix) {
+                        return $this->json(['pwned' => true, 'count' => (int) $parts[1]]);
+                    }
+                }
+            }
+        } catch (\Exception) {}
+
+        return $this->json(['pwned' => false, 'count' => 0]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  MÉTIER — Vérification inactivité + passage INACTIF + email
+    //  (déclenché par l'admin OU appelé en interne)
+    // ─────────────────────────────────────────────────────────────
+    #[Route('/admin/verifier-inactivite', name: 'admin_check_inactivity')]
+    public function checkInactivity(Request $request, EntityManagerInterface $em, UserMailerService $mailer): Response
+    {
+        if (!$request->getSession()->get('user_id') || $request->getSession()->get('user_role') !== 'ADMIN') {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $seuilJours = 30;
+        $limite     = new \DateTime("-{$seuilJours} days");
+        $users      = $em->getRepository(Personne::class)->findAll();
+        $count      = 0;
+
+        foreach ($users as $personne) {
+            if ($personne->getRole() === 'ADMIN') continue;
+            if ($personne->getStatutCompte() !== 'ACTIF') continue;
+
+            $derniereConnexion = $personne->getDerniereConnexion()
+                ?? $personne->getDateInscription();
+
+            if ($derniereConnexion && $derniereConnexion < $limite) {
+                $joursInactif = (int) $derniereConnexion->diff(new \DateTime())->days;
+                $personne->setStatutCompte('INACTIF');
+                $em->flush();
+                $mailer->sendInactivityEmail($personne, $joursInactif);
+                $count++;
+            }
+        }
+
+        $this->addFlash('admin_success', $count . ' compte(s) marqué(s) inactif(s) et notifié(s) par email.');
+        return $this->redirectToRoute('admin_users');
     }
 
     // ─────────────────────────────────────────────────────────────

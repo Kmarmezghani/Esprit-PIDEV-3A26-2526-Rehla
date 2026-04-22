@@ -33,7 +33,17 @@
         </li>
         <li class="menu-item {% if app.request.get('_route') == 'admin_stats' %}active{% endif %}">
             <a href="{{ path('admin_stats') }}" class="menu-link">
-                <div class="text-truncate" data-i18n="Statistiques">Statistiques utilisateurs</div>
+                <div class="text-truncate">Statistiques utilisateurs</div>
+            </a>
+        </li>
+        <li class="menu-item {% if app.request.get('_route') == 'admin_risk_analysis' %}active{% endif %}">
+            <a href="{{ path('admin_risk_analysis') }}" class="menu-link">
+                <div class="text-truncate">🤖 Analyse IA des risques</div>
+            </a>
+        </li>
+        <li class="menu-item {% if app.request.get('_route') == 'admin_check_inactivity' %}active{% endif %}">
+            <a href="{{ path('admin_check_inactivity') }}" class="menu-link">
+                <div class="text-truncate">⏱ Vérifier inactivité</div>
             </a>
         </li>
         <li class="menu-item {% if app.request.get('_route') == 'admin_blog' %}active{% endif %}">

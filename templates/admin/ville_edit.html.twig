@@ -21,7 +21,103 @@
 
             <div class="mb-3">
                 {{ form_label(form.nom) }}
-                {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                <select id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-select" required="required">
+                    <option value="{{ form.nom.vars.value|default('') }}" selected>{{ form.nom.vars.value|default('Sélectionnez d\'abord un pays') }}</option>
+                </select>
+                <small class="form-text text-muted">Les villes s'afficheront après avoir sélectionné un pays</small>
+                {% for error in form.nom.vars.errors %}
+                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.pays_id) }}
+                {{ form_widget(form.pays_id, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.pays_id.vars.errors %}
+                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form_label(form.typeTourisme) }}
+                    {{ form_widget(form.typeTourisme, {'attr': {'class': 'form-control'}}) }}
+                    {% for error in form.typeTourisme.vars.errors %}
+                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.saison) }}
+                    {{ form_widget(form.saison, {'attr': {'class': 'form-control'}}) }}
+                    {% for error in form.saison.vars.errors %}
+                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form_label(form.latitude) }}
+                    {{ form_widget(form.latitude, {'attr': {'class': 'form-control'}}) }}
+                    {% for error in form.latitude.vars.errors %}
+                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.longitude) }}
+                    {{ form_widget(form.longitude, {'attr': {'class': 'form-control'}}) }}
+                    {% for error in form.longitude.vars.errors %}
+                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.visit_count) }}
+                {{ form_widget(form.visit_count, {'attr': {'class': 'form-control'}}) }}
+                {% for error in form.visit_count.vars.errors %}
+                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center">
+                <a href="{{ path('admin_destination_index', {tab: 'ville'}) }}" class="btn btn-outline-secondary me-2"
+                   style="border-radius: 25px; padding: 10px 30px;">
+                    Retour
+                </a>
+                <button type="submit" class="btn"
+                        style="background-color: #223f91; color: #fff; border-radius: 25px; padding: 10px 30px;">
+                    Modifier
+                </button>
+            </div>
+
+{% extends 'adminbase.html.twig' %}
+
+{% block title %}Modifier une Ville{% endblock %}
+
+{% block sidebar %}
+  {% include 'admin/partials/sidebar.html.twig' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'admin/partials/navbar.html.twig' %}
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header text-center">
+            <h4>Modifier la ville</h4>
+        </div>
+        <div class="card-body">
+            {{ form_start(form) }}
+
+            <div class="mb-3">
+                {{ form_label(form.nom) }}
+                <select id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-select" required="required">
+                    <option value="{{ form.nom.vars.value|default('') }}" selected>{{ form.nom.vars.value|default('Sélectionnez d\'abord un pays') }}</option>
+                </select>
+                <small class="form-text text-muted">Les villes s'afficheront après avoir sélectionné un pays</small>
                 {% for error in form.nom.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
@@ -92,4 +188,69 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const citySelect = document.querySelector('#ville_nom');
+    const paysSelect = document.querySelector('#ville_pays_id');
+    
+    if (!citySelect || !paysSelect) return;
+
+    const initialCityValue = citySelect.value;
+
+    function loadCitiesForCountry() {
+        const selectedOption = paysSelect.options[paysSelect.selectedIndex];
+        const country = selectedOption ? selectedOption.text.trim() : '';
+        
+        citySelect.innerHTML = '<option value="">Sélectionnez une ville...</option>';
+        citySelect.disabled = true;
+        
+        if (!country) return;
+
+        citySelect.innerHTML = '<option value="">Chargement depuis API externe...</option>';
+
+        fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ country: country })
+        })
+            .then(response => response.json())
+            .then(data => {
+                citySelect.innerHTML = '<option value="">Sélectionnez une ville</option>';
+                if (!data.error && data.data && data.data.length > 0) {
+                    data.data.forEach(cityName => {
+                        const option = document.createElement('option');
+                        option.value = cityName;
+                        option.textContent = cityName;
+                        
+                        // Select the initial city if it matches
+                        if (cityName === initialCityValue) {
+                            option.selected = true;
+                        }
+                        
+                        citySelect.appendChild(option);
+                    });
+                    
+                    citySelect.disabled = false;
+                } else {
+                    citySelect.innerHTML = '<option value="">Aucune ville disponible</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching cities:', error);
+                citySelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            });
+    }
+
+    paysSelect.addEventListener('change', loadCitiesForCountry);
+
+    if (paysSelect.value) {
+        loadCitiesForCountry();
+    }
+});
+</script>
 {% endblock %}

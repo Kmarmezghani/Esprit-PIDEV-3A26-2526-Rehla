@@ -180,4 +180,70 @@ class AdminDestinationController extends AbstractController
         }
         return $this->redirectToRoute('admin_destination_index', ['tab' => 'attraction']);
     }
+
+    // --- AJAX API ENDPOINTS ---
+
+    #[Route('/api/countries/search', name: 'admin_api_countries_search', methods: ['GET'])]
+    public function searchCountries(Request $request): Response
+    {
+        $query = $request->query->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return $this->json(['countries' => []]);
+        }
+
+        $countryApi = new \App\Service\CountryApiService();
+        $countries = $countryApi->searchCountries($query);
+        
+        return $this->json(['countries' => $countries]);
+    }
+
+    #[Route('/api/cities/search', name: 'admin_api_cities_search', methods: ['GET'])]
+    public function searchCities(Request $request): Response
+    {
+        $country = $request->query->get('country', '');
+        $query = $request->query->get('q', '');
+        
+        if (empty($country) || strlen($query) < 2) {
+            return $this->json(['cities' => []]);
+        }
+
+        $cityApi = new \App\Service\CityApiService();
+        $cities = $cityApi->searchCities($country, $query);
+        
+        return $this->json(['cities' => $cities]);
+    }
+
+    #[Route('/api/cities/country', name: 'admin_api_cities_by_country', methods: ['GET'])]
+    public function getCitiesByCountry(Request $request): Response
+    {
+        $country = $request->query->get('country', '');
+        
+        if (empty($country)) {
+            return $this->json(['cities' => []]);
+        }
+
+        $cityApi = new \App\Service\CityApiService();
+        $cities = $cityApi->getCitiesByCountry($country);
+        
+        return $this->json(['cities' => $cities]);
+    }
+
+    #[Route('/api/ai/generate-description', name: 'admin_api_ai_description', methods: ['POST'])]
+    public function generateAiDescription(Request $request, \App\Service\DestinationGeminiService $aiService): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $country = $data['country'] ?? '';
+        
+        if (empty($country)) {
+            return $this->json(['error' => 'Veuillez d\'abord sélectionner ou entrer un nom de pays.'], 400);
+        }
+
+        try {
+            $description = $aiService->generateForCountry($country);
+            return $this->json(['description' => $description]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

@@ -12,14 +12,26 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use App\Service\CityApiService;
+use Doctrine\ORM\EntityManagerInterface;
 
 class VilleType extends AbstractType
 {
+    public function __construct(private EntityManagerInterface $entityManager)
+    {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom de la Ville',
+                // We use TextType here to completely avoid Symfony's strict ChoiceType validation 
+                // for dynamic options. Twig will render it as a <select> and JS will populate it.
+                'attr' => [
+                    'class' => 'form-control ville-nom-select',
+                    'placeholder' => 'Sélectionnez d\'abord un pays',
+                ],
             ])
             ->add('pays_id', EntityType::class, [
                 'class' => Pays::class,

@@ -66,6 +66,11 @@
             <span>{{ pays.nom }} <i class="fa fa-chevron-right"></i></span>
          </p>
          <h1 class="mb-0 bread">Villes en {{ pays.nom }}</h1>
+         <div class="mt-4">
+            <a href="{{ path('app_circuit_planner', {'paysId': pays.id}) }}" class="btn btn-primary px-4 py-2" style="background: #f4c430 !important; color: #1a1a1a !important; border:none; border-radius: 50px; font-weight: 700;">
+                🚀 Planifier un itinéraire intelligent en {{ pays.nom }}
+            </a>
+         </div>
      </div>
  </div>
 </div>
@@ -122,6 +127,34 @@
         </div>
     {% endfor %}
 </div>
+
+    {# ── Pagination ── #}
+    {% if villes.pageCount > 1 %}
+    <div class="row mt-5">
+        <div class="col-md-12 text-center">
+            <div class="block-27">
+                <ul>
+                    {% if villes.currentPageNumber > 1 %}
+                        <li><a href="{{ path('app_destination_villes', {'id': pays.id, 'page': villes.currentPageNumber - 1}) }}">&lt;</a></li>
+                    {% endif %}
+
+                    {% for page in 1..villes.pageCount %}
+                        {% if page == villes.currentPageNumber %}
+                            <li class="active"><span>{{ page }}</span></li>
+                        {% else %}
+                            <li><a href="{{ path('app_destination_villes', {'id': pays.id, 'page': page}) }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if villes.currentPageNumber < villes.pageCount %}
+                        <li><a href="{{ path('app_destination_villes', {'id': pays.id, 'page': villes.currentPageNumber + 1}) }}">&gt;</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 </section>
 

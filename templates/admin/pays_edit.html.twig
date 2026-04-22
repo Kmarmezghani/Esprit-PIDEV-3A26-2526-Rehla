@@ -28,8 +28,13 @@
             </div>
 
             <div class="mb-3">
-                {{ form_label(form.description) }}
-                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                    {{ form_label(form.description) }}
+                    <button type="button" id="btn-generate-ai" class="btn btn-sm" style="background-color: #e6f0ff; color: #223f91; border: 1px solid #223f91; border-radius: 20px;">
+                        ✨ Générer via IA
+                    </button>
+                </div>
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
                 {% for error in form.description.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
@@ -58,4 +63,56 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnGenerateAi = document.getElementById('btn-generate-ai');
+    const paysSelect = document.getElementById('pays_nom');
+    const descriptionInput = document.getElementById('pays_description');
+
+    if (!btnGenerateAi || !paysSelect || !descriptionInput) return;
+
+    btnGenerateAi.addEventListener('click', function() {
+        const countryName = paysSelect.options[paysSelect.selectedIndex]?.text || paysSelect.value;
+        
+        if (!countryName || countryName.trim() === '') {
+            alert('Veuillez d\'abord sélectionner ou entrer un nom de pays.');
+            return;
+        }
+
+        // Show loading state
+        const originalText = btnGenerateAi.innerHTML;
+        btnGenerateAi.innerHTML = '⏳ Génération...';
+        btnGenerateAi.disabled = true;
+
+        fetch('/admin/destination/api/ai/generate-description', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ country: countryName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Erreur: ' + data.error);
+            } else if (data.description) {
+                descriptionInput.value = data.description;
+            }
+        })
+        .catch(error => {
+            console.error('Error generating description:', error);
+            alert('Une erreur est survenue lors de la génération.');
+        })
+        .finally(() => {
+            // Restore button state
+            btnGenerateAi.innerHTML = originalText;
+            btnGenerateAi.disabled = false;
+        });
+    });
+});
+</script>
 {% endblock %}

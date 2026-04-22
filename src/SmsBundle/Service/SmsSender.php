@@ -17,13 +17,18 @@ class SmsSender
 
     public function send(string $to, string $message): void
     {
+       
         if (!str_starts_with($to, '+216')) {
             $to = '+216' . ltrim($to, '0');
         }
 
+        // 🔥 IMPORTANT : format WhatsApp
+        $to = 'whatsapp:' . $to;
+
         $this->client->messages->create($to, [
-            "from" => $this->from,
+            "from" => $this->from, 
             "body" => $message
         ]);
+
     }
 }

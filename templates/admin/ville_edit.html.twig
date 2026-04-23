@@ -160,54 +160,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- SCRIPT POUR LES COORDONNÉES AUTOMATIQUES ---
-    const latInput = document.querySelector('#ville_latitude');
-    const lonInput = document.querySelector('#ville_longitude');
+    const latInput = document.querySelector('#ville_latitude') || document.querySelector('[id$="_latitude"]');
+    const lonInput = document.querySelector('#ville_longitude') || document.querySelector('[id$="_longitude"]');
     
     if (latInput && lonInput && citySelect) {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'btn btn-sm btn-info text-white mb-3 mt-2';
-      btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+      btn.className = 'btn btn-sm btn-outline-primary mb-3';
+      btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
       
-      const wrapper = latInput.closest('.col-md-6');
-      if (wrapper && wrapper.parentNode) {
-          wrapper.parentNode.insertBefore(btn, wrapper);
+      // On insère le bouton au-dessus de la ligne (row) qui contient lat et lon
+      const row = latInput.closest('.row');
+      if (row) {
+          row.parentNode.insertBefore(btn, row);
+      } else {
+          latInput.parentNode.insertBefore(btn, latInput);
       }
       
       btn.addEventListener('click', function() {
-        let query = citySelect.options[citySelect.selectedIndex] ? citySelect.options[citySelect.selectedIndex].text : '';
+        let cityName = citySelect.value;
+        if (citySelect.tagName === 'SELECT') {
+            cityName = citySelect.options[citySelect.selectedIndex] ? citySelect.options[citySelect.selectedIndex].text : '';
+        }
 
-        if (!query || query.includes('Sélectionnez') || query.includes('Chargement')) {
-          alert('Veuillez d\'abord sélectionner un nom de Ville.');
+        if (!cityName || cityName.includes('Sélectionnez') || cityName.includes('Chargement')) {
+          alert('Veuillez d\'abord sélectionner une Ville.');
           return;
         }
         
-        btn.innerHTML = '⏳ Recherche en cours...';
+        btn.innerHTML = '⏳ Recherche...';
         btn.disabled = true;
         
-        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query))
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(cityName))
           .then(res => res.json())
           .then(data => {
             if (data && data.length > 0) {
               latInput.value = parseFloat(data[0].lat).toFixed(6);
               lonInput.value = parseFloat(data[0].lon).toFixed(6);
-              btn.innerHTML = '<i class="fa fa-check"></i> Coordonnées trouvées !';
+              btn.innerHTML = '✅ Coordonnées trouvées !';
               btn.className = 'btn btn-sm btn-success text-white mb-3 mt-2';
             } else {
-              alert('Coordonnées introuvables pour : ' + query);
-              btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+              alert('Coordonnées introuvables pour : ' + cityName);
+              btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
             }
           })
           .catch(err => {
             alert('Erreur lors de la récupération des coordonnées.');
-            btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+            btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
           })
           .finally(() => {
             btn.disabled = false;
             setTimeout(() => {
               if (btn.classList.contains('btn-success')) {
-                btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
-                btn.className = 'btn btn-sm btn-info text-white mb-3 mt-2';
+                btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+                btn.className = 'btn btn-sm btn-outline-primary mb-3 mt-2';
               }
             }, 3000);
           });

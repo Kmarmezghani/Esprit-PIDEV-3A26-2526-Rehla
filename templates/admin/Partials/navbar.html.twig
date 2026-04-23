@@ -99,7 +99,7 @@
                 <div class="flex-shrink-0 me-3">
                   <div class="avatar avatar-online">
                     {% if app.session.get('user_photo') %}
-                      <img src="{{ app.session.get('user_photo') }}" alt class="w-px-40 h-auto rounded-circle" style="object-fit:cover;" />
+                      <img src="{{ asset(app.session.get('user_photo')) }}" alt class="w-px-40 h-auto rounded-circle" style="object-fit:cover;" />
                     {% else %}
                       <img src="{{ asset('assetsback/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
                     {% endif %}

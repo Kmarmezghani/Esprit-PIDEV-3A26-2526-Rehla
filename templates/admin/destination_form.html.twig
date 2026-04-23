@@ -38,4 +38,68 @@
   .btn-primary { background-color: #223f91; border-color: #223f91; }
   .btn-primary:hover { background-color: #1a3170; border-color: #1a3170; }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Find latitude, longitude, and nom inputs dynamically
+    const latInput = document.querySelector('input[id$="_latitude"]');
+    const lonInput = document.querySelector('input[id$="_longitude"]');
+    const nomInput = document.querySelector('input[id$="_nom"], select[id$="_nom"]');
+    
+    if (latInput && lonInput && nomInput) {
+      // Create the fetch button
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-info text-white mb-3 mt-2';
+      btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+      
+      // Find the closest wrapper div for the latitude input and insert the button before it
+      const wrapper = latInput.closest('div');
+      if (wrapper && wrapper.parentNode) {
+          wrapper.parentNode.insertBefore(btn, wrapper);
+      }
+      
+      btn.addEventListener('click', function() {
+        let query = nomInput.tagName.toLowerCase() === 'select' 
+            ? nomInput.options[nomInput.selectedIndex].text 
+            : nomInput.value;
+
+        if (!query || query.includes('Sélectionnez')) {
+          alert('Veuillez d\'abord saisir ou sélectionner un nom (Ville ou Attraction).');
+          return;
+        }
+        
+        btn.innerHTML = '⏳ Recherche en cours...';
+        btn.disabled = true;
+        
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query))
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              latInput.value = parseFloat(data[0].lat).toFixed(6);
+              lonInput.value = parseFloat(data[0].lon).toFixed(6);
+              btn.innerHTML = '<i class="fa fa-check"></i> Coordonnées trouvées !';
+              btn.className = 'btn btn-sm btn-success text-white mb-3 mt-2';
+            } else {
+              alert('Coordonnées introuvables pour : ' + query);
+              btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+            }
+          })
+          .catch(err => {
+            alert('Erreur lors de la récupération des coordonnées.');
+            btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+          })
+          .finally(() => {
+            btn.disabled = false;
+            setTimeout(() => {
+              if (btn.classList.contains('btn-success')) {
+                btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+                btn.className = 'btn btn-sm btn-info text-white mb-3 mt-2';
+              }
+            }, 3000);
+          });
+      });
+    }
+  });
+</script>
 {% endblock %}

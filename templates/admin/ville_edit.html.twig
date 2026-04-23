@@ -24,99 +24,7 @@
                 <select id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-select" required="required">
                     <option value="{{ form.nom.vars.value|default('') }}" selected>{{ form.nom.vars.value|default('Sélectionnez d\'abord un pays') }}</option>
                 </select>
-                <small class="form-text text-muted">Les villes s'afficheront après avoir sélectionné un pays</small>
-                {% for error in form.nom.vars.errors %}
-                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                {% endfor %}
-            </div>
-
-            <div class="mb-3">
-                {{ form_label(form.pays_id) }}
-                {{ form_widget(form.pays_id, {'attr': {'class': 'form-control'}}) }}
-                {% for error in form.pays_id.vars.errors %}
-                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                {% endfor %}
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    {{ form_label(form.typeTourisme) }}
-                    {{ form_widget(form.typeTourisme, {'attr': {'class': 'form-control'}}) }}
-                    {% for error in form.typeTourisme.vars.errors %}
-                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                    {% endfor %}
-                </div>
-                <div class="col-md-6">
-                    {{ form_label(form.saison) }}
-                    {{ form_widget(form.saison, {'attr': {'class': 'form-control'}}) }}
-                    {% for error in form.saison.vars.errors %}
-                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    {{ form_label(form.latitude) }}
-                    {{ form_widget(form.latitude, {'attr': {'class': 'form-control'}}) }}
-                    {% for error in form.latitude.vars.errors %}
-                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                    {% endfor %}
-                </div>
-                <div class="col-md-6">
-                    {{ form_label(form.longitude) }}
-                    {{ form_widget(form.longitude, {'attr': {'class': 'form-control'}}) }}
-                    {% for error in form.longitude.vars.errors %}
-                        <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="mb-3">
-                {{ form_label(form.visit_count) }}
-                {{ form_widget(form.visit_count, {'attr': {'class': 'form-control'}}) }}
-                {% for error in form.visit_count.vars.errors %}
-                    <div class="alert alert-warning mt-1">{{ error.message }}</div>
-                {% endfor %}
-            </div>
-
-            <div class="text-center">
-                <a href="{{ path('admin_destination_index', {tab: 'ville'}) }}" class="btn btn-outline-secondary me-2"
-                   style="border-radius: 25px; padding: 10px 30px;">
-                    Retour
-                </a>
-                <button type="submit" class="btn"
-                        style="background-color: #223f91; color: #fff; border-radius: 25px; padding: 10px 30px;">
-                    Modifier
-                </button>
-            </div>
-
-{% extends 'adminbase.html.twig' %}
-
-{% block title %}Modifier une Ville{% endblock %}
-
-{% block sidebar %}
-  {% include 'admin/partials/sidebar.html.twig' %}
-{% endblock %}
-
-{% block navbar %}
-  {% include 'admin/partials/navbar.html.twig' %}
-{% endblock %}
-
-{% block body %}
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header text-center">
-            <h4>Modifier la ville</h4>
-        </div>
-        <div class="card-body">
-            {{ form_start(form) }}
-
-            <div class="mb-3">
-                {{ form_label(form.nom) }}
-                <select id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-select" required="required">
-                    <option value="{{ form.nom.vars.value|default('') }}" selected>{{ form.nom.vars.value|default('Sélectionnez d\'abord un pays') }}</option>
-                </select>
+                {% do form.nom.setRendered() %}
                 <small class="form-text text-muted">Les villes s'afficheront après avoir sélectionné un pays</small>
                 {% for error in form.nom.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
@@ -227,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         option.value = cityName;
                         option.textContent = cityName;
                         
-                        // Select the initial city if it matches
                         if (cityName === initialCityValue) {
                             option.selected = true;
                         }
@@ -250,6 +157,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (paysSelect.value) {
         loadCitiesForCountry();
+    }
+
+    // --- SCRIPT POUR LES COORDONNÉES AUTOMATIQUES ---
+    const latInput = document.querySelector('#ville_latitude');
+    const lonInput = document.querySelector('#ville_longitude');
+    
+    if (latInput && lonInput && citySelect) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-info text-white mb-3 mt-2';
+      btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+      
+      const wrapper = latInput.closest('.col-md-6');
+      if (wrapper && wrapper.parentNode) {
+          wrapper.parentNode.insertBefore(btn, wrapper);
+      }
+      
+      btn.addEventListener('click', function() {
+        let query = citySelect.options[citySelect.selectedIndex] ? citySelect.options[citySelect.selectedIndex].text : '';
+
+        if (!query || query.includes('Sélectionnez') || query.includes('Chargement')) {
+          alert('Veuillez d\'abord sélectionner un nom de Ville.');
+          return;
+        }
+        
+        btn.innerHTML = '⏳ Recherche en cours...';
+        btn.disabled = true;
+        
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query))
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              latInput.value = parseFloat(data[0].lat).toFixed(6);
+              lonInput.value = parseFloat(data[0].lon).toFixed(6);
+              btn.innerHTML = '<i class="fa fa-check"></i> Coordonnées trouvées !';
+              btn.className = 'btn btn-sm btn-success text-white mb-3 mt-2';
+            } else {
+              alert('Coordonnées introuvables pour : ' + query);
+              btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+            }
+          })
+          .catch(err => {
+            alert('Erreur lors de la récupération des coordonnées.');
+            btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+          })
+          .finally(() => {
+            btn.disabled = false;
+            setTimeout(() => {
+              if (btn.classList.contains('btn-success')) {
+                btn.innerHTML = '<i class="fa fa-map-marker"></i> Obtenir les coordonnées automatiquement';
+                btn.className = 'btn btn-sm btn-info text-white mb-3 mt-2';
+              }
+            }, 3000);
+          });
+      });
     }
 });
 </script>

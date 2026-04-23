@@ -72,6 +72,11 @@
             width: 100%;
         }
 
+        .custom-select option {
+            color: #1a1a1a;
+            background: #ffffff;
+        }
+
         .btn-generate {
             background: var(--accent-color);
             color: #1a1a1a;
@@ -190,6 +195,14 @@
                 Générer mon circuit
             </button>
 
+            <div id="ai-agent-container" style="display: none; background: rgba(244,196,48,0.1); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <i class="fa fa-magic" style="color: var(--accent-color); font-size: 18px;"></i>
+                    <strong style="color: var(--accent-color); font-size: 14px;">Rehla AI Agent</strong>
+                </div>
+                <p id="ai-agent-message" style="font-size: 13px; color: #ccc; margin: 0; font-style: italic;"></p>
+            </div>
+
             <div id="itinerary-content" class="itinerary-list">
                 <!-- Will be populated by JS -->
                 <p style="color: #666; text-align: center; margin-top: 40px;">
@@ -230,12 +243,16 @@
 
             // 3. Generate Logic
             const btnGenerate = document.getElementById('btn-generate');
+            const aiContainer = document.getElementById('ai-agent-container');
+            const aiMessage = document.getElementById('ai-agent-message');
+
             btnGenerate.addEventListener('click', async () => {
                 const budget = budgetRange.value;
                 const type = document.getElementById('tourism-type').value;
 
                 btnGenerate.disabled = true;
-                btnGenerate.textContent = 'Calcul de l\'itinéraire...';
+                btnGenerate.textContent = 'Calcul et réflexion de l\'IA...';
+                aiContainer.style.display = 'none';
 
                 try {
                     const response = await fetch('{{ path("api_circuit_generate") }}', {
@@ -271,6 +288,12 @@
                 if (data.itinerary.length === 0) {
                     content.innerHTML += '<p>Aucune destination trouvée pour ces critères.</p>';
                     return;
+                }
+
+                // Show AI Message if generated
+                if (data.aiMessage) {
+                    aiMessage.textContent = '"' + data.aiMessage + '"';
+                    aiContainer.style.display = 'block';
                 }
 
                 const pathCoords = [];

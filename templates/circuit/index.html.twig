@@ -1,0 +1,345 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planificateur d'Itinéraire Intelligent - Rehla{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        :root {
+            --primary-color: #223f91;
+            --accent-color: #f4c430;
+            --dark-bg: #1a1a1a;
+        }
+
+        .planner-container {
+            display: flex;
+            height: calc(100vh - 100px);
+            margin-top: 0;
+            overflow: hidden;
+        }
+
+        .planner-sidebar {
+            width: 400px;
+            background: var(--dark-bg);
+            color: white;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+            z-index: 1001;
+        }
+
+        #rehla-circuit-map {
+            flex: 1;
+            height: 100%;
+            z-index: 1;
+            background: #222;
+        }
+
+        .sidebar-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .custom-select, .custom-range {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .custom-select option {
+            color: #1a1a1a;
+            background: #ffffff;
+        }
+
+        .btn-generate {
+            background: var(--accent-color);
+            color: #1a1a1a;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-generate:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244,196,48,0.4);
+        }
+
+        .itinerary-list {
+            margin-top: 30px;
+        }
+
+        .itinerary-step {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+            border-left: 2px dashed rgba(255,255,255,0.2);
+        }
+
+        .itinerary-step::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .step-city {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .step-info {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .cost-badge {
+            background: rgba(244,196,48,0.2);
+            color: var(--accent-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--dark-bg);
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .leaflet-popup-tip {
+            background: var(--dark-bg);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark ftco-navbar-light" id="ftco-navbar" style="background: #1a1a1a !important; position: relative; top:0;">
+        <div class="container">
+            <a class="navbar-brand" href="{{ path('home') }}">
+                <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" style="height:40px;">
+                <span style="display: block; font-size: 12px; color: #f4c430;">Circuit Planner</span>
+            </a>
+            <div class="collapse navbar-collapse" id="ftco-nav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                    <li class="nav-item active"><a href="{{ path('app_circuit_planner') }}" class="nav-link">Planificateur</a></li>
+                    <li class="nav-item"><a href="{{ path('app_destination') }}" class="nav-link">Destinations</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="planner-container">
+        <aside class="planner-sidebar">
+            <div class="sidebar-title">
+                <i class="fa fa-map-signs"></i>
+                Mon Itinéraire
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Type de voyage</label>
+                <select id="tourism-type" class="custom-select">
+                    <option value="">Tous les types</option>
+                    {% for type in tourismTypes %}
+                        <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Budget Max: <span id="budget-val" style="color: var(--accent-color)">500</span>€</label>
+                <input type="range" class="custom-range" id="budget-range" min="100" max="5000" step="50" value="500">
+            </div>
+
+            <button id="btn-generate" class="btn-generate">
+                Générer mon circuit
+            </button>
+
+            <div id="ai-agent-container" style="display: none; background: rgba(244,196,48,0.1); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <i class="fa fa-magic" style="color: var(--accent-color); font-size: 18px;"></i>
+                    <strong style="color: var(--accent-color); font-size: 14px;">Rehla AI Agent</strong>
+                </div>
+                <p id="ai-agent-message" style="font-size: 13px; color: #ccc; margin: 0; font-style: italic;"></p>
+            </div>
+
+            <div id="itinerary-content" class="itinerary-list">
+                <!-- Will be populated by JS -->
+                <p style="color: #666; text-align: center; margin-top: 40px;">
+                    Configurez vos options et cliquez sur générer pour voir votre voyage idéal.
+                </p>
+            </div>
+        </aside>
+
+        <div id="rehla-circuit-map"></div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Initialize Map
+            const map = L.map('rehla-circuit-map').setView([36.8, 10.1], 3); // Default view over Mediterranean
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            let markers = [];
+            let polyline = null;
+
+            // 2. Budget UI Update
+            const budgetRange = document.getElementById('budget-range');
+            const budgetVal = document.getElementById('budget-val');
+            budgetRange.addEventListener('input', (e) => {
+                budgetVal.textContent = e.target.value;
+            });
+
+            // 3. Generate Logic
+            const btnGenerate = document.getElementById('btn-generate');
+            const aiContainer = document.getElementById('ai-agent-container');
+            const aiMessage = document.getElementById('ai-agent-message');
+
+            btnGenerate.addEventListener('click', async () => {
+                const budget = budgetRange.value;
+                const type = document.getElementById('tourism-type').value;
+
+                btnGenerate.disabled = true;
+                btnGenerate.textContent = 'Calcul et réflexion de l\'IA...';
+                aiContainer.style.display = 'none';
+
+                try {
+                    const response = await fetch('{{ path("api_circuit_generate") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            budget, 
+                            type,
+                            paysId: '{{ preselectedPaysId }}' || null
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    renderCircuit(data);
+                } catch (error) {
+                    console.error('Error generating circuit:', error);
+                    alert('Erreur lors de la génération du circuit.');
+                } finally {
+                    btnGenerate.disabled = false;
+                    btnGenerate.textContent = 'Générer mon circuit';
+                }
+            });
+
+            function renderCircuit(data) {
+                // Clear previous
+                markers.forEach(m => map.removeLayer(m));
+                if (polyline) map.removeLayer(polyline);
+                markers = [];
+
+                const content = document.getElementById('itinerary-content');
+                content.innerHTML = `<h5 style="margin-bottom:20px; font-size:14px; color:#aaa;">RÉSULTAT: ${data.cityCount} VILLES (${data.totalCost}€)</h5>`;
+
+                if (data.itinerary.length === 0) {
+                    content.innerHTML += '<p>Aucune destination trouvée pour ces critères.</p>';
+                    return;
+                }
+
+                // Show AI Message if generated
+                if (data.aiMessage) {
+                    aiMessage.textContent = '"' + data.aiMessage + '"';
+                    aiContainer.style.display = 'block';
+                }
+
+                const pathCoords = [];
+
+                data.itinerary.forEach((step, index) => {
+                    // Add to Sidebar
+                    const stepEl = document.createElement('div');
+                    stepEl.className = 'itinerary-step';
+                    stepEl.innerHTML = `
+                        <div class="step-city">Jour ${index + 1}: ${step.nom}</div>
+                        <div class="step-info">${step.type} • ${step.attractionsCount} Attractions</div>
+                    `;
+                    content.appendChild(stepEl);
+
+                    // Add to Map
+                    if (step.lat && step.lng) {
+                        const coord = [step.lat, step.lng];
+                        pathCoords.push(coord);
+
+                        const marker = L.marker(coord).addTo(map)
+                            .bindPopup(`
+                                <div style="text-align:center;">
+                                    <strong style="color:#f4c430; font-size:16px;">${step.nom}</strong><br>
+                                    <span style="font-size:12px;">Étape ${index + 1}</span>
+                                </div>
+                            `);
+                        markers.push(marker);
+                    }
+                });
+
+                // Draw Path Line
+                if (pathCoords.length > 1) {
+                    polyline = L.polyline(pathCoords, {
+                        color: '#f4c430',
+                        weight: 4,
+                        opacity: 0.7,
+                        dashArray: '10, 10',
+                        lineJoin: 'round'
+                    }).addTo(map);
+
+                    // Fit map to circuit
+                    map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+                } else if (pathCoords.length === 1) {
+                    map.setView(pathCoords[0], 10);
+                }
+            }
+        });
+    </script>
+{% endblock %}

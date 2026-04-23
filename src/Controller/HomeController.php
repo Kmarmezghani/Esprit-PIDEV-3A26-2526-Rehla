@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\VilleRepository;
+use App\Repository\PaysRepository;
 use App\Repository\AttractionRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\PersonneRepository;
@@ -17,7 +17,7 @@ final class HomeController extends AbstractController
     #[Route('/home', name: 'home')]
     public function index(
         Request $request,
-        VilleRepository $villeRepository,
+        PaysRepository $paysRepository,
         AttractionRepository $attractionRepository,
         PersonneRepository $personneRepository,
         NotificationRepository $notificationRepository,
@@ -40,12 +40,15 @@ final class HomeController extends AbstractController
 
         $avisList = $avisRepository->findBy([], ['id' => 'DESC'], 6);
 
+        // Top destinations ranked by composite scoring algorithm
+        $topDestinations = $paysRepository->findTopDestinations(6);
+
         return $this->render('home/index.html.twig', [
-            'villes' => $villeRepository->findBy([], ['visit_count' => 'DESC'], 6),
-            'featuredAttractions' => $attractionRepository->findBy([], ['id' => 'DESC'], 6),
-            'activityNotifications' => $activityNotifications,
+            'topDestinations'                => $topDestinations,
+            'featuredAttractions'            => $attractionRepository->findBy([], ['id' => 'DESC'], 6),
+            'activityNotifications'          => $activityNotifications,
             'hasUnreadActivityNotifications' => $hasUnreadActivityNotifications,
-            'avisList' => $avisList,
+            'avisList'                       => $avisList,
         ]);
     }
-}
+}

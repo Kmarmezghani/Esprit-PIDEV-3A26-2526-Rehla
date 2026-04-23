@@ -82,10 +82,20 @@
                 <span class="price">${{ attraction.prix }}/personne</span>
             </div>
             <div class="text p-4">
-                <div class="mb-2">
+                <div class="mb-2 d-flex justify-content-between align-items-center">
                     <span class="badge badge-primary px-2 py-1" style="background-color: #223f91; border-radius: 20px; font-size: 11px;">
                         <i class="fa fa-tag"></i> Attraction : {{ attraction.type }}
                     </span>
+                    
+                    {% if attraction.isOpenNow %}
+                        <span class="badge px-2 py-1" style="background-color: #e6f4ea; color: #1e8e3e; border: 1px solid #1e8e3e; border-radius: 20px; font-size: 10px; font-weight: bold;">
+                            <i class="fa fa-circle" style="font-size: 8px; vertical-align: middle; margin-right: 2px;"></i> Ouvert actuellement
+                        </span>
+                    {% else %}
+                        <span class="badge px-2 py-1" style="background-color: #fce8e6; color: #d93025; border: 1px solid #d93025; border-radius: 20px; font-size: 10px; font-weight: bold;">
+                            <i class="fa fa-circle" style="font-size: 8px; vertical-align: middle; margin-right: 2px;"></i> Fermé
+                        </span>
+                    {% endif %}
                 </div>
                 <h3>{{ attraction.nom }}</h3>
                 <p class="location"><span class="fa fa-map-marker"></span> {{ ville.nom }}, {{ ville.paysId.nom }}</p>
@@ -102,6 +112,34 @@
         </div>
     {% endfor %}
 </div>
+
+    {# ── Pagination ── #}
+    {% if attractions.pageCount > 1 %}
+    <div class="row mt-5">
+        <div class="col-md-12 text-center">
+            <div class="block-27">
+                <ul>
+                    {% if attractions.currentPageNumber > 1 %}
+                        <li><a href="{{ path('app_destination_attractions', {'id': ville.id, 'page': attractions.currentPageNumber - 1}) }}">&lt;</a></li>
+                    {% endif %}
+
+                    {% for page in 1..attractions.pageCount %}
+                        {% if page == attractions.currentPageNumber %}
+                            <li class="active"><span>{{ page }}</span></li>
+                        {% else %}
+                            <li><a href="{{ path('app_destination_attractions', {'id': ville.id, 'page': page}) }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if attractions.currentPageNumber < attractions.pageCount %}
+                        <li><a href="{{ path('app_destination_attractions', {'id': ville.id, 'page': attractions.currentPageNumber + 1}) }}">&gt;</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 </section>
 

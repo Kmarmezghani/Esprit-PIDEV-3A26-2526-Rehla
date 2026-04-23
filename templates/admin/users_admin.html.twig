@@ -115,7 +115,7 @@
 
               <td>
                 {% if user.profile_photo %}
-                    <img src="{{ user.profile_photo }}" alt="Photo"
+                    <img src="{{ user.profile_photo | imagine_filter('profile_thumb') }}" alt="Photo"
                          class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
                 {% else %}
                     <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo"

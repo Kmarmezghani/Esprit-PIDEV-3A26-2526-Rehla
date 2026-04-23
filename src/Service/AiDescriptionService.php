@@ -26,22 +26,85 @@ class AiDescriptionService
         ?string $name,
         ?string $type,
         ?string $destination,
-        ?string $duration
+        ?string $duration,
+        array $attractions = []
     ): string {
         if (empty($this->openRouterApiKey)) {
             throw new \RuntimeException('OPENROUTER_API_KEY manquante.');
         }
 
-        $prompt = $this->buildPrompt($name, $type, $destination, $duration);
+        $cleanAttractions = $this->cleanAttractions($attractions);
+
+        $required = 0;
+        if (count($cleanAttractions) >= 3) {
+            $required = 3;
+        } elseif (count($cleanAttractions) >= 2) {
+            $required = 2;
+        }
+
+        $prompt1 = $this->buildPrompt(
+            $name,
+            $type,
+            $destination,
+            $duration,
+            $cleanAttractions,
+            $required,
+            false
+        );
 
         $lastError = null;
 
         foreach ($this->models as $model) {
             for ($attempt = 1; $attempt <= 3; $attempt++) {
                 try {
-                    $text = $this->callOpenRouter($model, $prompt);
-                    $text = $this->clean($text);
-                    return $this->enforceTwoSentences($text);
+                    $out = $this->callOpenRouter($model, $prompt1);
+                    $out = $this->clean($out);
+                    $out = $this->enforceTwoSentences($out);
+
+                    if ($required > 0 && !$this->usesAtLeastNAttractions($out, $cleanAttractions, $required)) {
+                        $prompt2 = $this->buildPrompt(
+                            $name,
+                            $type,
+                            $destination,
+                            $duration,
+                            $cleanAttractions,
+                            $required,
+                            true
+                        );
+
+                        $out2 = $this->callOpenRouter($model, $prompt2);
+                        $out2 = $this->clean($out2);
+                        $out2 = $this->enforceTwoSentences($out2);
+
+                        if (!$this->usesAtLeastNAttractions($out2, $cleanAttractions, $required)) {
+                            $prompt3 = $this->buildRewritePrompt($out2, $cleanAttractions, $required);
+                            $out3 = $this->callOpenRouter($model, $prompt3);
+                            $out3 = $this->clean($out3);
+
+                            return $this->enforceTwoSentences($out3);
+                        }
+
+                        return $out2;
+                    }
+
+                    if ($this->looksTruncated($out)) {
+                        $prompt2 = $this->buildPrompt(
+                            $name,
+                            $type,
+                            $destination,
+                            $duration,
+                            $cleanAttractions,
+                            $required,
+                            true
+                        );
+
+                        $out2 = $this->callOpenRouter($model, $prompt2);
+                        $out2 = $this->clean($out2);
+
+                        return $this->enforceTwoSentences($out2);
+                    }
+
+                    return $out;
                 } catch (\RuntimeException $e) {
                     $lastError = $e;
 
@@ -64,7 +127,7 @@ class AiDescriptionService
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => "Tu rédiges des descriptions d’activités touristiques en français, dans un style naturel, fluide, vendeur mais concret. Réponds uniquement avec deux phrases complètes.",
+                    'content' => "Tu rédiges des descriptions d’activités touristiques en français dans un style type Airbnb : naturel, concret, structuré et pratique. Respecte strictement les consignes et retourne uniquement deux phrases complètes.",
                 ],
                 [
                     'role' => 'user',
@@ -74,8 +137,8 @@ class AiDescriptionService
             'provider' => [
                 'allow_fallbacks' => true,
             ],
-            'temperature' => 0.5,
-            'max_tokens' => 300,
+            'temperature' => 0.35,
+            'max_tokens' => 520,
         ];
 
         try {
@@ -84,7 +147,7 @@ class AiDescriptionService
                     'Authorization' => 'Bearer ' . $this->openRouterApiKey,
                     'Content-Type' => 'application/json',
                     'HTTP-Referer' => 'http://localhost',
-                    'X-Title' => 'Rehla',
+                    'X-Title' => 'TravelApp',
                 ],
                 'json' => $body,
                 'timeout' => 90,
@@ -103,16 +166,101 @@ class AiDescriptionService
                 throw new \RuntimeException('Réponse IA invalide.');
             }
 
-            return $data['choices'][0]['message']['content'];
+            return (string) $data['choices'][0]['message']['content'];
         } catch (TransportExceptionInterface $e) {
-            throw new \RuntimeException('Erreur réseau ou timeout.', 0, $e);
+            throw new \RuntimeException('Timeout sur le modèle : ' . $model, 0, $e);
         }
     }
 
-    private function buildPrompt(?string $name, ?string $type, ?string $destination, ?string $duration): string
+    private function cleanAttractions(array $attractions): array
     {
+        $clean = [];
+
+        foreach ($attractions as $attraction) {
+            if (is_array($attraction)) {
+                $line = sprintf(
+                    'Nom: %s | Type: %s | Note: %s',
+                    trim((string) ($attraction['nom'] ?? '')),
+                    trim((string) ($attraction['type'] ?? '')),
+                    trim((string) ($attraction['description'] ?? ''))
+                );
+            } else {
+                $line = trim((string) $attraction);
+            }
+
+            $line = trim(preg_replace('/\s+/', ' ', $line) ?? '');
+
+            if ($line !== '') {
+                $clean[] = $line;
+            }
+        }
+
+        $clean = array_values(array_unique($clean));
+
+        return array_slice($clean, 0, 8);
+    }
+
+    private function buildPrompt(
+        ?string $name,
+        ?string $type,
+        ?string $destination,
+        ?string $duration,
+        array $attractions,
+        int $requiredAttractions,
+        bool $strict
+    ): string {
+        $minWords = $strict ? 80 : 70;
+        $maxWords = $strict ? 115 : 105;
+
+        $allowedBlock = empty($attractions)
+            ? '- Aucune attraction disponible'
+            : implode("\n", array_map(fn($a) => '- ' . $a, $attractions));
+
+        if ($requiredAttractions >= 3) {
+            $must = "Mentionne EXACTEMENT TROIS noms d’attractions de la liste et ajoute UN détail concret (Type/Note) pour au moins DEUX d’entre elles.";
+        } elseif ($requiredAttractions === 2) {
+            $must = "Mentionne EXACTEMENT DEUX noms d’attractions de la liste et ajoute UN détail concret (Type/Note) pour CHACUNE d’elles.";
+        } else {
+            $must = "Si la liste est vide, rédige une description complète en deux phrases sans inventer de noms de lieux.";
+        }
+
         return sprintf(
-            "Rédige une description en français pour une activité touristique.\n\nNom : %s\nType : %s\nDestination : %s\nDurée : %s\n\nContraintes :\n- exactement deux phrases\n- ton professionnel, naturel et engageant\n- pas de liste à puces\n- pas de titre\n- texte clair pour aider un voyageur à comprendre l’expérience\n- éviter les phrases trop génériques\n- ne pas inventer d’informations précises non fournies",
+"Écris EXACTEMENT deux phrases complètes en français, avec un total de %d à %d mots.
+Les deux phrases doivent se terminer par un point.
+Retourne UNIQUEMENT les deux phrases, sans titre ni puces.
+
+STYLE :
+- annonce d’activité type Airbnb
+- ton naturel, professionnel, pratique
+- texte concret, pas scolaire
+
+OBLIGATOIRE :
+- %s
+- utilise les détails fournis (Type/Note) seulement si cela s’intègre naturellement
+- ne fais pas une liste mécanique d’informations
+- ne répète pas bêtement le texte de la base
+
+INTERDIT :
+- “inoubliable”, “iconique”, “opportunité”, “vue panoramique”
+- “découvrez”, “explorez”, “plongez dans”, “expérience immersive”
+- formulations trop marketing ou vagues
+
+STRUCTURE :
+- Phrase 1 : à quoi ressemble l’activité, ambiance, point de départ ou premier repère
+- Phrase 2 : suite du parcours, rythme, deuxième repère éventuel et lien avec la durée
+
+ATTRACTIONS AUTORISÉES (noms + détails) :
+%s
+
+Détails de l’activité :
+Nom : %s
+Type : %s
+Destination : %s
+Durée : %s",
+            $minWords,
+            $maxWords,
+            $must,
+            $allowedBlock,
             $this->safe($name),
             $this->safe($type),
             $this->safe($destination),
@@ -120,54 +268,160 @@ class AiDescriptionService
         );
     }
 
-    private function enforceTwoSentences(string $text): string
+    private function buildRewritePrompt(string $badOutput, array $attractions, int $required): string
     {
-        $text = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $text)) ?? '');
+        $names = [];
 
-        if ($text === '') {
+        foreach ($attractions as $line) {
+            $name = $this->extractNameFromLine($line);
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        $names = array_values(array_unique($names));
+        $namesLine = empty($names) ? '(aucune)' : implode(', ', $names);
+
+        return sprintf(
+"Réécris le texte ci-dessous en EXACTEMENT deux phrases complètes en français, avec 70 à 125 mots au total.
+Les deux phrases doivent se terminer par un point.
+Tu dois mentionner %d noms d’attractions depuis cet ensemble autorisé (copie l’orthographe exacte) : %s
+Ajoute aussi au moins un détail fourni (Type/Note) pour chaque attraction mentionnée, sans rien inventer.
+Retourne UNIQUEMENT les deux phrases.
+
+TEXTE :
+%s",
+            $required,
+            $namesLine,
+            $badOutput
+        );
+    }
+
+    private function extractNameFromLine(?string $line): string
+    {
+        $s = trim((string) $line);
+
+        if ($s === '') {
             return '';
         }
 
-        $parts = preg_split('/(?<=[\.\!\?])\s+/', $text) ?: [];
+        if (stripos($s, 'Nom:') !== false) {
+            $pos = stripos($s, 'Nom:');
+            $after = trim(substr($s, $pos + 4));
+            $pipe = strpos($after, '|');
+
+            return trim($pipe !== false ? substr($after, 0, $pipe) : $after);
+        }
+
+        if (stripos($s, 'Name:') !== false) {
+            $pos = stripos($s, 'Name:');
+            $after = trim(substr($s, $pos + 5));
+            $pipe = strpos($after, '|');
+
+            return trim($pipe !== false ? substr($after, 0, $pipe) : $after);
+        }
+
+        $pipe = strpos($s, '|');
+
+        return trim($pipe !== false ? substr($s, 0, $pipe) : $s);
+    }
+
+    private function usesAtLeastNAttractions(string $text, array $attractionLines, int $n): bool
+    {
+        if ($n <= 0) {
+            return true;
+        }
+
+        $low = mb_strtolower($text);
+        $count = 0;
+
+        foreach ($attractionLines as $line) {
+            $name = $this->extractNameFromLine($line);
+
+            if ($name === '') {
+                continue;
+            }
+
+            if (str_contains($low, mb_strtolower($name))) {
+                $count++;
+                if ($count >= $n) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function looksTruncated(?string $s): bool
+    {
+        $t = trim((string) $s);
+
+        if ($t === '') {
+            return true;
+        }
+
+        if (!preg_match('/[.!?]$/', $t)) {
+            return true;
+        }
+
+        $low = mb_strtolower($t);
+        $badEnds = [' sur.', ' à.', ' de.', ' avec.', ' pour.', ' en.', ' dans.', ' incluant.', ' autour de.'];
+
+        foreach ($badEnds as $ending) {
+            if (str_ends_with($low, $ending)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function enforceTwoSentences(?string $text): string
+    {
+        $s = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', (string) $text)) ?? '');
+
+        if ($s === '') {
+            return '';
+        }
+
+        $parts = preg_split('/(?<=[\.\!\?])\s+/', $s) ?: [];
 
         if (count($parts) >= 2) {
-            $result = trim($parts[0]) . ' ' . trim($parts[1]);
-            if (!preg_match('/[.!?]$/', $result)) {
-                $result .= '.';
+            $out = trim($parts[0]) . ' ' . trim($parts[1]);
+            if (!preg_match('/[.!?]$/', $out)) {
+                $out .= '.';
             }
-            return $result;
+            return $out;
         }
 
-        if (!preg_match('/[.!?]$/', $text)) {
-            $text .= '.';
+        if (!preg_match('/[.!?]$/', $s)) {
+            $s .= '.';
         }
 
-        return $text;
+        return $s;
     }
 
-    private function clean(?string $text): string
+    private function clean(?string $s): string
     {
-        if ($text === null) {
-            return '';
-        }
-
-        return trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $text)) ?? '');
+        return trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', (string) $s)) ?? '');
     }
 
-    private function safe(?string $value): string
+    private function safe(?string $s): string
     {
-        return trim($value ?? '');
+        return trim((string) $s);
     }
 
     private function isRetryable(\RuntimeException $e): bool
     {
-        $message = strtolower($e->getMessage());
+        $message = mb_strtolower((string) $e->getMessage());
 
         return str_contains($message, 'timeout')
-            || str_contains($message, '429')
-            || str_contains($message, '503')
+            || str_contains($message, 'timed out')
+            || str_contains($message, 'http 429')
             || str_contains($message, 'rate')
-            || str_contains($message, 'unavailable')
-            || str_contains($message, 'overloaded');
+            || str_contains($message, 'http 503')
+            || str_contains($message, 'overloaded')
+            || str_contains($message, 'unavailable');
     }
 }

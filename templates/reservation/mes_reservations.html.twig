@@ -386,7 +386,7 @@
 }
 
 /* Context cards */
-.ai-ctx-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.ai-ctx-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
 .ai-ctx-card {
     background: #f7f9ff; border: 1px solid #e4eaf8;
     border-radius: 10px; padding: 10px 12px;
@@ -704,13 +704,7 @@ function deleteReservation(e, id) {
                             {{ dests|join(', ')|default('Aucune') }}
                         </div>
                     </div>
-                    <div class="ai-ctx-card">
-                        <div class="ai-ctx-label">Budget préférence</div>
-                        <div class="ai-ctx-value">
-                            {% set pref = app.session.get('user_preference') %}
-                            {% if pref %}{{ pref.budgetMin }}–{{ pref.budgetMax }} TND{% else %}Non défini{% endif %}
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
 

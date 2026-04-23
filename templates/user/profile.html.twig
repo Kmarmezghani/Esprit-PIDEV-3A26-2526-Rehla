@@ -127,8 +127,15 @@
                 <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
                     <div class="mb-3">
                         {% if personne.profile_photo %}
-                            <img src="{{ personne.profile_photo | imagine_filter('profile_large') }}" alt="Photo de profil"
-                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            {% set rawPath = personne.profile_photo|replace({'/': ''}) %}
+                            {% set cleanPath = personne.profile_photo starts with '/' ? personne.profile_photo[1:] : personne.profile_photo %}
+                            {% if cleanPath starts with 'uploads/' %}
+                                <img src="{{ cleanPath | imagine_filter('profile_large') }}" alt="Photo de profil"
+                                     class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            {% else %}
+                                <img src="{{ personne.profile_photo }}" alt="Photo de profil"
+                                     class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            {% endif %}
                         {% else %}
                             <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
                                  class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">

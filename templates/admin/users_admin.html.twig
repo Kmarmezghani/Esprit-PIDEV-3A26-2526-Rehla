@@ -115,8 +115,14 @@
 
               <td>
                 {% if user.profile_photo %}
-                    <img src="{{ user.profile_photo | imagine_filter('profile_thumb') }}" alt="Photo"
-                         class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
+                    {% set cleanPath = user.profile_photo starts with '/' ? user.profile_photo[1:] : user.profile_photo %}
+                    {% if cleanPath starts with 'uploads/' %}
+                        <img src="{{ cleanPath | imagine_filter('profile_thumb') }}" alt="Photo"
+                             class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
+                    {% else %}
+                        <img src="{{ user.profile_photo }}" alt="Photo"
+                             class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
+                    {% endif %}
                 {% else %}
                     <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo"
                          class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">

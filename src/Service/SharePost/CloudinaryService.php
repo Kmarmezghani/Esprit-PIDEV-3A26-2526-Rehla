@@ -1,5 +1,5 @@
 <?php
-namespace App\Service;
+namespace App\Service\SharePost;
 
 use Cloudinary\Cloudinary;
 

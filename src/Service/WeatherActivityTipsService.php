@@ -158,15 +158,15 @@ class WeatherActivityTipsService
             return [];
         }
 
-    $reviewsText = !empty($reviews)
-        ? "- " . implode("\n- ", $reviews)
-        : "Aucun avis utile disponible.";
+        $reviewsText = !empty($reviews)
+            ? "- " . implode("\n- ", $reviews)
+            : "Aucun avis utile disponible.";
 
-    $nom = trim((string) $activite->getNom());
-    $description = trim((string) $activite->getDescription());
-    $type = trim((string) $activite->getTypeActivite());
+        $nom = trim((string) $activite->getNom());
+        $description = trim((string) $activite->getDescription());
+        $type = trim((string) $activite->getTypeActivite());
 
-    $prompt = "
+        $prompt = "
 Tu es un assistant de voyage.
 
 Ta mission :
@@ -191,8 +191,18 @@ Règles STRICTES :
 - Interdiction de reformuler la même idée avec des mots différents
 - Si plusieurs conseils reviennent à l’idée de prendre une couche légère, n’en garde qu’un seul
 - Ne répète pas la même recommandation sous plusieurs formes
-- Les conseils doivent couvrir des idées différentes quand c’est possible
+- Exemples de répétition interdite :
+  - veste légère / cardigan / gilet / couche supplémentaire
+  - foulard / écharpe / de quoi se couvrir
+  - se protéger du vent / éviter la fraîcheur / garder une couche en plus
+- Les conseils doivent couvrir des idées différentes quand c’est possible : vêtement, accessoire utile, confort météo, protection contre pluie/vent/soleil
 - S'il n'existe que 2 ou 3 idées utiles, ne complète pas artificiellement
+
+Température :
+- Si 18–24°C → temps modéré → ne parle pas de forte chaleur ni de froid important
+- Si > 28°C → tu peux parler de chaleur
+- Si < 12°C → tu peux parler de froid
+- N'exagère jamais la météo
 
 Format :
 - entre 2 et 5 conseils
@@ -238,12 +248,9 @@ Avis :
                 'timeout' => 40,
             ]);
 
-        $status = $response->getStatusCode();
-        $raw = $response->getContent(false);
-
-        if ($status >= 400) {
-            return $this->generateFallbackTips($weather);
-        }
+            if ($response->getStatusCode() >= 400) {
+                return [];
+            }
 
             $data = $response->toArray(false);
             $text = $data['choices'][0]['message']['content'] ?? '';

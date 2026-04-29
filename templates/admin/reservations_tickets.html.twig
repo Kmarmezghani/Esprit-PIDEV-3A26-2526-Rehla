@@ -24,6 +24,11 @@
             <i class="bx bx-purchase-tag-alt me-1"></i>Tickets
           </button>
         </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-stats">
+            <i class="bx bx-bar-chart-alt-2 me-1"></i> Statistiques
+          </button>
+        </li>
       </ul>
 
       <div class="tab-content">
@@ -70,7 +75,7 @@
                     <td>{{ reservation.nb_tickets }}</td>
                     <td>{{ reservation.coutTotal }} TND</td>
                     <td>
-                      {% if reservation.statut == 'Confirmée' %}
+                      {% if reservation.statut == 'confirmée' %}
                         <span class="badge bg-label-success">Confirmée</span>
                       {% elseif reservation.statut == 'réservée' %}
                         <span class="badge bg-label-warning">Réservée</span>
@@ -118,15 +123,15 @@
             </div>
             <div class="d-flex justify-content-end mb-3">
 
-  <select id="filterTicketType" class="form-select w-auto">
-    <option value="">Tous types</option>
-    <option value="Vol">Vol</option>
-    <option value="Transport">Transport</option>
-    <option value="Hotel">Hotel</option>
-    <option value="Activité">Activité</option>
-  </select>
+              <select id="filterTicketType" class="form-select w-auto">
+                <option value="">Tous types</option>
+                <option value="Vol">Vol</option>
+                <option value="Transport">Transport</option>
+                <option value="Hotel">Hotel</option>
+                <option value="Activité">Activité</option>
+              </select>
 
-</div>
+            </div>
             <div class="table-responsive text-nowrap">
               <table class="table">
                 <thead>
@@ -182,6 +187,10 @@
               </table>
             </div>
           </div>
+        </div>
+        {# ===== STATISTIQUES ===== #}
+        <div class="tab-pane fade" id="tab-stats">
+          {{ render(controller('App\\Controller\\StatsController::index')) }}
         </div>
 
       </div>

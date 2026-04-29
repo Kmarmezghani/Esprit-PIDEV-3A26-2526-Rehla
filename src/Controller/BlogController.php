@@ -26,6 +26,7 @@ use App\Service\AyrshareService;
 use App\Service\Messagerie\ConversationService;
 use App\Entity\Message;
 use App\Entity\Conversation;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class BlogController extends AbstractController
 
@@ -34,7 +35,9 @@ final class BlogController extends AbstractController
 #[Route('/blog', name: 'blog')]
 public function index(Request $request, EntityManagerInterface $em, ImageUploader $uploader, ToxicityChecker $toxicityChecker): Response
 {
-    $personne = $this->getConnectedUser($request, $em);
+   
+
+$personne = $this->getConnectedUser($request, $em);
 
     $post = new Post();
     $form = $this->createForm(PostType::class, $post);
@@ -61,6 +64,11 @@ if ($status === 'warning') {
 
 if ($status === 'ok') {
     $this->addFlash('success', '✅ Publication ajoutée');
+    return $this->redirectToRoute('blog');
+}
+
+if ($status === 'banned') {
+    $this->addFlash('error', '🚫 Votre compte est suspendu');
     return $this->redirectToRoute('blog');
 }
 
@@ -449,6 +457,11 @@ public function getMessages($id, EntityManagerInterface $em): JsonResponse
 
 private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
+   
+    if ($personne->getStatutCompte() === 'SUSPENDU') {
+    return 'banned';
+}
+
     if (!$form->isSubmitted() || !$form->isValid()) {
         return null;
     }
@@ -480,6 +493,16 @@ private function handlePostCreation( $form, Post $post, $personne, ImageUploader
     $em->flush();
     if ($status === 'warning') {
 
+        // ✅ incrémenter le compteur
+    $personne->incrementPostsSuspects();
+
+    // 🚨 SI >= 5 → SUSPENSION
+    if ($personne->getNbPostsSuspects() >= 5) {
+        $personne->setStatutCompte('SUSPENDU');
+    }
+
+    $em->persist($personne);
+
     // récupérer tous les admins
     $admins = $em->getRepository(Personne::class)
                  ->findBy(['role' => 'ADMIN']); 
@@ -490,6 +513,11 @@ private function handlePostCreation( $form, Post $post, $personne, ImageUploader
 
         $message = $personne->getNom() . ' ' . $personne->getPrenom()
             . ' a publié un post jugée suspect (score: ' . round($score, 2) . ') | Post ID: ' . $post->getId();
+
+          // 🚨 message spécial si suspendu
+        if ($personne->getStatutCompte() === 'SUSPENDU') {
+            $message .= ' 🚫 COMPTE SUSPENDU';
+        }
 
         $notification->setMessage($message);
         $notification->setType('POST');
@@ -662,12 +690,41 @@ public function addComment(
         $em->flush();
     }
 
+
     // 🔥 Flash message UX
     if ($status === 'warning') {
         $this->addFlash('warning', '⚠️ Commentaire sensible publié');
     } else {
         $this->addFlash('success', '✅ Commentaire ajouté');
     }
+
+    $postOwner = $post->getPersonne_id();
+
+// ne pas notifier soi-même
+if ($postOwner && $postOwner->getId() !== $personne->getId()) {
+
+    // ne pas notifier admin
+    if ($postOwner->getRole() !== 'ADMIN') {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a commenté votre post';
+
+        $notification->setMessage($message);
+        $notification->setType('COMMENT');
+        $notification->setPost_id($post);
+        $notification->setComment_id($comment);
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($postOwner);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+        $em->flush();
+    }
+}
 
     return $this->redirectToRoute('blog');
 }
@@ -733,6 +790,35 @@ public function like(Post $post, EntityManagerInterface $em, Request $request): 
 
     $em->persist($like);
     $em->flush();
+
+    // après $em->flush();
+
+$postOwner = $post->getPersonne_id();
+
+// ne pas notifier soi-même
+if ($postOwner && $postOwner->getId() !== $personne->getId()) {
+
+    // ne pas notifier admin
+    if ($postOwner->getRole() !== 'ADMIN') {
+
+        $notification = new Notification();
+
+        $message = $personne->getNom() . ' ' . $personne->getPrenom()
+            . ' a aimé votre post';
+
+        $notification->setMessage($message);
+        $notification->setType('LIKE');
+        $notification->setPost_id($post);
+        $notification->setSender_id($personne);
+        $notification->setReceiver_id($postOwner);
+        $notification->setIs_read(false);
+        $notification->setCreated_at(new \DateTime());
+        $notification->setIs_sent_sms(false);
+
+        $em->persist($notification);
+        $em->flush();
+    }
+}
 
     return new JsonResponse([
         'liked' => true,
@@ -820,7 +906,42 @@ public function share(
 }
 
 
+#[Route('/translate', name: 'translate', methods: ['POST'])]
+public function translate(Request $request, HttpClientInterface $client): JsonResponse
+{
+    $data = json_decode($request->getContent(), true);
 
+    // 🔒 Sécurité basique
+    if (!isset($data['text']) || empty($data['text'])) {
+        return $this->json(['error' => 'Texte manquant'], 400);
+    }
+
+    $target = $data['target'] ?? 'fr';
+
+    try {
+        $response = $client->request('POST', 'https://api.langbly.com/language/translate/v2', [
+            'headers' => [
+                'Authorization' => 'Bearer UrxVrp3dAkGM1hqRe5aYsL'
+            ],
+            'json' => [
+                'q' => $data['text'],
+                'source' => 'auto',
+                'target' => $target
+            ]
+        ]);
+
+        $result = $response->toArray();
+
+        return $this->json([
+            'translation' => $result['data']['translations'][0]['translatedText'] ?? ''
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->json([
+            'error' => 'Erreur traduction'
+        ], 500);
+    }
+}
 
 
 }

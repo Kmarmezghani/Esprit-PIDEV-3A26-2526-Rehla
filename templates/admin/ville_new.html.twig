@@ -20,17 +20,22 @@
             {{ form_start(form) }}
 
             <div class="mb-3">
-                {{ form_label(form.nom) }}
-                {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-                {% for error in form.nom.vars.errors %}
+                {{ form_label(form.pays_id) }}
+                {{ form_widget(form.pays_id, {'attr': {'class': 'form-control ville-pays-select'}}) }}
+                <small class="form-text text-muted">Sélectionnez un pays pour voir les villes disponibles</small>
+                {% for error in form.pays_id.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
             </div>
 
             <div class="mb-3">
-                {{ form_label(form.pays_id) }}
-                {{ form_widget(form.pays_id, {'attr': {'class': 'form-control'}}) }}
-                {% for error in form.pays_id.vars.errors %}
+                {{ form_label(form.nom) }}
+                <select id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-select" required="required">
+                    <option value="">Sélectionnez d'abord un pays</option>
+                </select>
+                {% do form.nom.setRendered() %}
+                <small class="form-text text-muted">Les villes s'afficheront après avoir sélectionné un pays</small>
+                {% for error in form.nom.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
             </div>
@@ -92,4 +97,127 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const citySelect = document.querySelector('#ville_nom');
+    const paysSelect = document.querySelector('#ville_pays_id');
+    
+    if (!citySelect || !paysSelect) return;
+
+    // Function to load cities for selected country
+    function loadCitiesForCountry() {
+        const selectedOption = paysSelect.options[paysSelect.selectedIndex];
+        const country = selectedOption ? selectedOption.text.trim() : '';
+        
+        // Clear and disable city dropdown
+        citySelect.innerHTML = '<option value="">Sélectionnez une ville...</option>';
+        citySelect.disabled = true;
+        
+        if (!country) return;
+        
+        citySelect.innerHTML = '<option value="">Chargement depuis API externe...</option>';
+
+        // Fetch cities from external API (countriesnow.space)
+        fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ country: country })
+        })
+            .then(response => response.json())
+            .then(data => {
+                citySelect.innerHTML = '<option value="">Sélectionnez une ville</option>';
+                if (!data.error && data.data && data.data.length > 0) {
+                    data.data.forEach(cityName => {
+                        const option = document.createElement('option');
+                        option.value = cityName;
+                        option.textContent = cityName;
+                        citySelect.appendChild(option);
+                    });
+                    
+                    citySelect.disabled = false;
+                } else {
+                    citySelect.innerHTML = '<option value="">Aucune ville disponible</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching cities from external API:', error);
+                citySelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            });
+    }
+
+    // When country changes, load its cities
+    paysSelect.addEventListener('change', loadCitiesForCountry);
+
+    // Load cities on page load if country is already selected
+    if (paysSelect.value) {
+        loadCitiesForCountry();
+    }
+
+    // --- SCRIPT POUR LES COORDONNÉES AUTOMATIQUES ---
+    const latInput = document.querySelector('#ville_latitude') || document.querySelector('[id$="_latitude"]');
+    const lonInput = document.querySelector('#ville_longitude') || document.querySelector('[id$="_longitude"]');
+    
+    if (latInput && lonInput && citySelect) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-outline-primary mb-3';
+      btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+      
+      // On insère le bouton au-dessus de la ligne (row) qui contient lat et lon
+      const row = latInput.closest('.row');
+      if (row) {
+          row.parentNode.insertBefore(btn, row);
+      } else {
+          latInput.parentNode.insertBefore(btn, latInput);
+      }
+      
+      btn.addEventListener('click', function() {
+        let cityName = citySelect.value;
+        if (citySelect.tagName === 'SELECT') {
+            cityName = citySelect.options[citySelect.selectedIndex] ? citySelect.options[citySelect.selectedIndex].text : '';
+        }
+
+        if (!cityName || cityName.includes('Sélectionnez') || cityName.includes('Chargement')) {
+          alert('Veuillez d\'abord sélectionner une Ville.');
+          return;
+        }
+        
+        btn.innerHTML = '⏳ Recherche...';
+        btn.disabled = true;
+        
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(cityName))
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              latInput.value = parseFloat(data[0].lat).toFixed(6);
+              lonInput.value = parseFloat(data[0].lon).toFixed(6);
+              btn.innerHTML = '✅ Coordonnées trouvées !';
+              btn.className = 'btn btn-sm btn-success text-white mb-3 mt-2';
+            } else {
+              alert('Coordonnées introuvables pour : ' + cityName);
+              btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+            }
+          })
+          .catch(err => {
+            alert('Erreur lors de la récupération des coordonnées.');
+            btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+          })
+          .finally(() => {
+            btn.disabled = false;
+            setTimeout(() => {
+              if (btn.classList.contains('btn-success')) {
+                btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+                btn.className = 'btn btn-sm btn-outline-primary mb-3 mt-2';
+              }
+            }, 3000);
+          });
+      });
+    }
+});
+</script>
 {% endblock %}

@@ -161,4 +161,23 @@ class Attraction
                 ->addViolation();
         }
     }
+
+    public function isOpenNow(): bool
+    {
+        if ($this->est_ferme) {
+            return false;
+        }
+
+        if (!$this->heure_ouverture || !$this->heure_fermeture) {
+            // S'il n'y a pas d'horaires, on suppose que c'est ouvert si ce n'est pas "fermé"
+            return true;
+        }
+
+        $now = new \DateTime();
+        $currentTime = $now->format('H:i:s');
+        $openTime = $this->heure_ouverture->format('H:i:s');
+        $closeTime = $this->heure_fermeture->format('H:i:s');
+
+        return $currentTime >= $openTime && $currentTime <= $closeTime;
+    }
 }

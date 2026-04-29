@@ -17,7 +17,7 @@
      </button>
 
       <div class="collapse navbar-collapse" id="ftco-nav">
-        <div class="search-wrapper mr-4">
+        {# <div class="search-wrapper mr-4">
           <input type="checkbox" id="searchToggle">
           
           <div class="search-box">
@@ -43,13 +43,13 @@
             </label>
 
           </div>
-        </div>
+        </div> #}
 
        <ul class="navbar-nav ml-auto">
       <li class="nav-item d-flex align-items-center mr-3">
 
         <!-- Icône Filtre -->
-   <div class="dropdown mr-3">
+   {# <div class="dropdown mr-3">
         <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
                 type="button" data-toggle="dropdown">
           <svg width="20" height="20" viewBox="0 0 512 512">
@@ -154,7 +154,7 @@
 
         </div>
       </div>
-      
+       #}
 
     <li class="nav-item "><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
     <li class="nav-item"><a href="#" class="nav-link">À propos</a></li>
@@ -297,7 +297,7 @@
            href="#" id="userDropdown" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {% if app.session.get('user_photo') %}
-                <img src="{{ app.session.get('user_photo') }}" alt="Photo de profil"
+                <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
                      class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
             {% else %}
                 <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
@@ -380,6 +380,142 @@
 </div>
 </div>
 </section>
+
+<section class="blog-tools-section" style="background:#eef2f7; padding: 24px 0 0;">
+  <div class="container">
+    <div class="card border-0 shadow-sm mb-1 p-3 rounded-4">
+      <div class="d-flex flex-wrap align-items-center justify-content-between">
+
+        <div class="search-wrapper mr-4">
+          <input type="checkbox" id="searchToggle">
+
+          <div class="search-box">
+            <form method="GET" action="{{ path('blog') }}">
+              <input type="text"
+                     name="search"
+                     onkeyup="this.form.submit()"
+                     class="search-input"
+                     placeholder="Rechercher..." />
+            </form>
+
+            <label for="searchToggle" class="search-icon">
+              <svg viewBox="0 0 512 512">
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 
+                12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 
+                0L330.7 376c-34.4 25.2-76.8 
+                40-122.7 40C93.1 416 0 322.9 
+                0 208S93.1 0 208 0S416 93.1 
+                416 208zM208 352a144 144 0 1 
+                0 0-288 144 144 0 1 0 0 288z"/>
+              </svg>
+            </label>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center mt-3 mt-md-0">
+
+          <div class="dropdown mr-3">
+            <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
+                    type="button"
+                    data-toggle="dropdown">
+              <svg width="20" height="20" viewBox="0 0 512 512">
+                <path d="M3.9 54.7C10.5 39.5 25.5 32 41.6 32H470.4c16.1 
+                0 31.1 7.5 37.7 22.7s3.5 33.1-7.9 
+                45.3L320 288.3V432c0 12.1-6.8 23.2-17.7 
+                28.6s-23.8 4.6-33.9-2.1l-64-48C195.8 
+                404.7 192 398.6 192 392V288.3L11.8 
+                100C.4 87.8-2.7 69.9 3.9 54.7z"/>
+              </svg>
+            </button>
+
+            <div class="dropdown-menu modern-dropdown shadow-lg">
+              <a class="dropdown-item" href="{{ path('blog', {likes: 2}) }}">
+                ❤️ Plus de 1000 likes
+              </a>
+
+              <div class="dropdown-divider"></div>
+
+              <a class="dropdown-item" href="{{ path('blog', {date: 'today'}) }}">
+                📅 Aujourd’hui
+              </a>
+
+              <a class="dropdown-item" href="{{ path('blog', {date: 'week'}) }}">
+                📆 Cette semaine
+              </a>
+
+              <a class="dropdown-item" href="{{ path('blog', {date: 'month'}) }}">
+                🗓️ Ce mois
+              </a>
+
+              <div class="dropdown-divider"></div>
+
+              <form method="GET" action="{{ path('blog') }}" class="px-3 py-2">
+                <input type="date"
+                       name="date_exact"
+                       class="form-control mb-2"
+                       onchange="this.form.submit()">
+              </form>
+
+              <div class="dropdown-divider"></div>
+
+              <a class="dropdown-item text-danger" href="{{ path('blog') }}">
+                ❌ Réinitialiser
+              </a>
+            </div>
+          </div>
+
+          <div class="dropdown mr-3">
+            <button class="btn p-0 border-0 bg-transparent dropdown-toggle"
+                    type="button"
+                    data-toggle="dropdown">
+              <svg width="20" height="20" viewBox="0 0 512 512">
+                <path d="M160 64c0-17.7-14.3-32-32-32S96 46.3 
+                96 64V346.7L73.4 324.1c-12.5-12.5-32.8-12.5-45.3 
+                0s-12.5 32.8 0 45.3l80 80c12.5 12.5 
+                32.8 12.5 45.3 0l80-80c12.5-12.5 
+                12.5-32.8 0-45.3s-32.8-12.5-45.3 
+                0L160 346.7V64zm192 384c17.7 0 32-14.3 
+                32-32V165.3l22.6 22.6c12.5 12.5 
+                32.8 12.5 45.3 0s12.5-32.8 
+                0-45.3l-80-80c-12.5-12.5-32.8-12.5-45.3 
+                0l-80 80c-12.5 12.5-12.5 32.8 
+                0 45.3s32.8 12.5 45.3 
+                0L320 165.3V416c0 17.7 14.3 32 32 32z"/>
+              </svg>
+            </button>
+
+            <div class="dropdown-menu modern-dropdown shadow-lg">
+              <a class="dropdown-item sort-option" data-sort="likes">
+                <i class="fa fa-heart text-danger"></i> Par likes
+              </a>
+
+              <a class="dropdown-item sort-option" data-sort="date">
+                📅 Par date
+              </a>
+
+              <a class="dropdown-item sort-option" data-sort="author">
+                👤 Par auteur
+              </a>
+
+              <div class="dropdown-divider"></div>
+
+              <a class="dropdown-item order-option" data-order="asc">
+                ⬆️ Croissant
+              </a>
+
+              <a class="dropdown-item order-option" data-order="desc">
+                ⬇️ Décroissant
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <section class="ftco-section pt-5" style="background:#eef2f7;">
 <div class="container">
 <div class="row">
@@ -508,6 +644,50 @@
     <!-- CONTENU -->
     <div class="post" data-id="{{ post.id }}">
     <p class="post-content">{{ post.contenu }}</p>
+     <button class="btn btn-sm btn-light mt-2 translate-btn"
+            data-id="{{ post.id }}">
+        <i class="fa fa-globe text-primary"></i> Traduire
+    </button>
+
+    <!-- SELECT (caché au début) -->
+    <div class="translate-box mt-2" id="translate-box-{{ post.id }}" style="display:none;">
+
+    <div class="d-flex align-items-center gap-2">
+
+        <!-- ICON -->
+       
+
+        <!-- SELECT -->
+        <select class="language-select modern-select" id="select-{{ post.id }}">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="ar">🇸🇦 العربية</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="it">🇮🇹 Italiano</option>
+            <option value="pt">🇵🇹 Português</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="tr">🇹🇷 Türkçe</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="ja">🇯🇵 日本語</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="nl">🇳🇱 Nederlands</option>
+            <option value="pl">🇵🇱 Polski</option>
+            <option value="sv">🇸🇪 Svenska</option>
+        </select>
+
+    </div>
+
+</div>
+
+    <!-- RESULT -->
+    <div class="translated-content mt-2 text-muted"
+         id="translation-{{ post.id }}"
+         style="display: none;">
+    </div>
+
+
+
   </div>
 
     <!-- IMAGE POST -->
@@ -679,6 +859,41 @@
            <!-- TEXTE -->
           <p class="comment-text">{{ comment.contenu }}</p>
 
+        <!-- 🌍 BOUTON TRADUIRE COMMENT -->
+        <button class="btn btn-sm btn-light mt-1 translate-comment-btn"
+                data-id="{{ comment.id }}">
+            <i class="fa fa-globe text-primary"></i>
+        </button>
+
+        <!-- SELECT LANGUE (caché) -->
+        <div class="translate-box mt-2"
+            id="translate-comment-box-{{ comment.id }}"
+            style="display:none;">
+
+            <select class="language-select modern-select"
+                    id="select-comment-{{ comment.id }}">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="ja">🇯🇵 日本語</option>
+            </select>
+
+        </div>
+
+        <!-- RESULTAT -->
+        <div class="translated-comment mt-1 text-muted"
+            id="translation-comment-{{ comment.id }}"
+            style="display:none;">
+        </div>
+
+
             <!-- INPUT EDIT (caché) -->
           <div class="edit-zone" style="display:none;">
             <input type="text" class="edit-input" value="{{ comment.contenu }}">
@@ -829,7 +1044,7 @@
 
 </div>
 </div>
-/*------------------------------------------------------pop up créer groupe ------------------------------------------*/
+{# /*------------------------------------------------------pop up créer groupe ------------------------------------------*/ #}
 
 <!-- MODAL CREATE GROUP -->
 <div id="createGroupModal" class="custom-modal d-none">
@@ -903,6 +1118,10 @@
   </div>
 
 </div>
+
+
+{# ── Formulaire de déconnexion (caché) ── #}
+		<form id="logoutFormHome" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -2315,12 +2534,167 @@ document.querySelectorAll(".group-item").forEach(group => {
 });
 
 
+/*---------------------------------------------traduction-------------------------------------------------*/
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".translate-btn").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            let postId = this.dataset.id;
+            let postElement = this.closest('.post');
+
+            let box = document.getElementById("translate-box-" + postId);
+            let select = document.getElementById("select-" + postId);
+
+            // afficher box au lieu du select seul
+            box.style.display = "block";
+            let targetDiv = document.getElementById("translation-" + postId);
+
+            // afficher select
+            select.style.display = "block";
+
+            // 👉 IMPORTANT : attacher event ICI
+            select.onchange = async function () {
+
+                let content = postElement.querySelector('.post-content').innerText;
+                let targetLang = this.value;
+
+                targetDiv.innerText = "Traduction...";
+                targetDiv.style.display = "block";
+
+                try {
+                    let response = await fetch("/translate", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            text: content,
+                            target: targetLang
+                        })
+                    });
+
+                    let data = await response.json();
+
+                    console.log(data);
+
+                    targetDiv.innerText = data.translation || "Erreur";
+
+                } catch (e) {
+                    console.error(e);
+                    targetDiv.innerText = "Erreur serveur";
+                }
+            };
+
+        });
+
+    });
+
+});
+
+
+
+  document.addEventListener("click", function(e) {
+
+    let button = e.target.closest(".translate-comment-btn");
+    if (!button) return;
+
+    console.log("CLICK COMMENT");
+
+    let commentId = button.dataset.id;
+
+    let box = document.getElementById("translate-comment-box-" + commentId);
+    let select = document.getElementById("select-comment-" + commentId);
+    let targetDiv = document.getElementById("translation-comment-" + commentId);
+
+    let commentElement = button.closest(".comment-bubble");
+    let content = commentElement.querySelector(".comment-text").innerText;
+
+    // 👉 afficher select
+    box.style.display = "block";
+
+    // 👉 ATTACHER UNE SEULE FOIS
+    if (!select.dataset.listener) {
+
+        select.onchange = async function () {
+
+            let targetLang = this.value;
+
+            targetDiv.innerText = "Traduction...";
+            targetDiv.style.display = "block";
+
+            try {
+                let response = await fetch("/translate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: content,
+                        target: targetLang
+                    })
+                });
+
+                let data = await response.json();
+
+                targetDiv.innerText = data.translation || "Erreur API";
+
+            } catch (error) {
+                console.error(error);
+                targetDiv.innerText = "Erreur traduction";
+            }
+        };
+
+        // ✅ marquer comme attaché
+        select.dataset.listener = "true";
+    }
+
+});
+
+
+{# deconnnexion  #}
+
+function confirmLogoutHome(e) {
+			e.preventDefault();
+			Swal.fire({
+				title: 'Déconnexion',
+				text: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+				icon: 'question',
+				showCancelButton: true,
+				confirmButtonColor: '#223f91',
+				cancelButtonColor: '#6c757d',
+				confirmButtonText: 'Oui, me déconnecter',
+				cancelButtonText: 'Annuler'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					document.getElementById('logoutFormHome').submit();
+				}
+			});
+		}
 </script>
 
 
 
 
 <style>
+
+.blog-tools-section {
+  position: relative;
+  z-index: 2;
+}
+
+.blog-tools-section .card {
+  overflow: visible !important;
+}
+
+.blog-tools-section .dropdown-menu {
+  z-index: 20 !important;
+}
+
+
 .search-input .form-control {
 border: 2px solid #e9ecef;
 border-right: none;
@@ -3710,6 +4084,41 @@ input.form-control:focus {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+/*--------------------------------------------traduction--------------------------------------*/
+
+.modern-select {
+    border-radius: 20px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.modern-select:hover {
+    background: #eef3ff;
+    border-color: #4a90e2;
+}
+
+.modern-select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+}
+
+.translate-box {
+    background: #f9fafb;
+    padding: 8px 12px;
+    border-radius: 15px;
+    display: inline-block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 

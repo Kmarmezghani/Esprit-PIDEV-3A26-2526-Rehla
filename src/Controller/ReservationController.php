@@ -538,6 +538,19 @@ public function receipt(Reservation $reservation, PdfGenerator $pdf): Response
     );
 }
 
+#[Route('/reservation/select/{id}', name: 'reservation_select', methods: ['POST'])]
+public function selectReservation(Reservation $reservation, Request $request): Response
+{
+    $userId = $request->getSession()->get('user_id');
 
+    // Security: make sure the reservation belongs to the logged-in user
+    if ($reservation->getPersonne_id()->getId() !== $userId) {
+        return $this->json(['error' => 'Unauthorized'], 403);
+    }
+
+    $request->getSession()->set('selected_reservation_id', $reservation->getId());
+
+    return $this->json(['success' => true]);
+}
 
 }

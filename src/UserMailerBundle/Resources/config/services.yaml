@@ -1,0 +1,6 @@
+services:
+    App\UserMailerBundle\Service\UserMailerService:
+        arguments:
+            $mailer: '@mailer'
+            $router: '@router'
+        public: true

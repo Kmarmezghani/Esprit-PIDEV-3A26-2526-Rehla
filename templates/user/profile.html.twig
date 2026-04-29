@@ -32,7 +32,7 @@
                        href="#" id="userDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
                         {% if app.session.get('user_photo') %}
-                            <img src="{{ app.session.get('user_photo') }}"
+                            <img src="{{ asset(app.session.get('user_photo')) }}"
                                  alt="Profil" class="rounded-circle"
                                  style="width:35px;height:35px;object-fit:cover;">
                         {% else %}
@@ -127,8 +127,14 @@
                 <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
                     <div class="mb-3">
                         {% if personne.profile_photo %}
-                            <img src="{{ personne.profile_photo }}" alt="Photo de profil"
-                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            {% set cleanPath = personne.profile_photo starts with '/' ? personne.profile_photo[1:] : personne.profile_photo %}
+                            {% if cleanPath starts with 'uploads/' %}
+                                <img src="{{ asset(cleanPath) }}" alt="Photo de profil"
+                                     class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            {% else %}
+                                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
+                                     class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            {% endif %}
                         {% else %}
                             <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
                                  class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
@@ -247,8 +253,9 @@
 
                             <div class="form-group">
                                 <label class="font-weight-bold">Nouveau mot de passe</label>
-                                <input type="password" name="nouveau_mdp" class="form-control rounded-pill px-3"
+                                <input type="password" name="nouveau_mdp" id="profilePwd1" class="form-control rounded-pill px-3"
                                        placeholder="••••••••" required>
+                                <div id="profile-pwned-warning"></div>
                             </div>
 
                             <div class="form-group">
@@ -313,5 +320,27 @@
                 input.nextElementSibling.textContent = input.files[0].name;
             }
         }
+    </script>
+    <script>
+    /* HaveIBeenPwned – changement de mot de passe */
+    const profilePwd1 = document.getElementById('profilePwd1');
+    if (profilePwd1) {
+        profilePwd1.addEventListener('blur', function() {
+            const val = this.value;
+            if (!val || val.length < 4) return;
+            fetch('/api/check-password-pwned', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({password: val})
+            }).then(r => r.json()).then(data => {
+                const warn = document.getElementById('profile-pwned-warning');
+                if (data.pwned) {
+                    warn.innerHTML = '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;font-size:12px;padding:8px 12px;margin-top:6px;">⚠️ Ce mot de passe apparaît dans <strong>' + data.count.toLocaleString() + '</strong> fuite(s) de données connues.</div>';
+                } else {
+                    warn.innerHTML = '<div style="font-size:12px;color:#28a745;margin-top:4px;">✔ Mot de passe non compromis.</div>';
+                }
+            }).catch(() => {});
+        });
+    }
     </script>
 {% endblock %}

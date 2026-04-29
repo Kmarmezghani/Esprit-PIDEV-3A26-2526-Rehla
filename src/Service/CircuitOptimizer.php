@@ -84,7 +84,7 @@ class CircuitOptimizer
         // Use Gemini API Key
         $apiKey = $_SERVER['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY3'] ?? null;
         if (!$apiKey || empty($itinerary)) {
-            return "Erreur technique : La clé API Gemini est manquante. Vérifiez le fichier .env.";
+            return null;
         }
 
         $cityNames = array_map(fn($city) => $city['nom'], $itinerary);
@@ -113,14 +113,14 @@ class CircuitOptimizer
             $data = $response->toArray();
             if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                 // Remove potential markdown asterisks returned by AI for a cleaner text
-                return str_replace(['**', '*'], '', $data['candidates'][0]['content']['parts'][0]['text']);
+                return str_replace(['*', ''], '', $data['candidates'][0]['content']['parts'][0]['text']);
             }
         } catch (\Exception $e) {
-            // Return exact error to understand why it fails
-            return "Erreur technique : " . $e->getMessage();
+            // Fail silently so no error message is shown in the UI
+            return null;
         }
 
-        return "Erreur technique : Aucune réponse valide reçue de l'IA.";
+        return null;
     }
 
     private function findNearestCityIndex(Ville $current, array $others): int

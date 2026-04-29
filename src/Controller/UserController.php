@@ -110,7 +110,7 @@ class UserController extends AbstractController
                     $session->set('user_role',   $personne->getRole());
                     $session->set('user_nom',    $personne->getNom());
                     $session->set('user_prenom', $personne->getPrenom());
-                    $session->set('user_photo',  $personne->getProfile_photo());
+                    $session->set('user_photo',  ltrim($personne->getProfile_photo() ?? '', '/'));
 
                     $this->addFlash('login_info', 'Bon retour ! Votre compte a été réactivé automatiquement.');
                     return $this->redirectToRoute($personne->getRole() === 'ADMIN' ? 'admin_users' : 'home');
@@ -124,7 +124,7 @@ class UserController extends AbstractController
                     $session->set('user_role',   $personne->getRole());
                     $session->set('user_nom',    $personne->getNom());
                     $session->set('user_prenom', $personne->getPrenom());
-                    $session->set('user_photo',  $personne->getProfile_photo());
+                    $session->set('user_photo',  ltrim($personne->getProfile_photo() ?? '', '/'));
 
                     return $this->redirectToRoute($personne->getRole() === 'ADMIN' ? 'admin_users' : 'home');
                 }
@@ -299,7 +299,7 @@ class UserController extends AbstractController
                     // Mise à jour de la session
                     $session->set('user_nom',    $nom);
                     $session->set('user_prenom', $prenom);
-                    $session->set('user_photo',  $personne->getProfile_photo());
+                    $session->set('user_photo',  ltrim($personne->getProfile_photo() ?? '', '/'));
 
                     $this->addFlash('profile_success', 'Profil mis à jour avec succès !');
                     return $this->redirectToRoute('app_profile');

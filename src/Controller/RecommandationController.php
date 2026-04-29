@@ -190,7 +190,7 @@ PROMPT;
             CURLOPT_POST           => true,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_TIMEOUT        => 180,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
             CURLOPT_POSTFIELDS     => json_encode([
                 "contents" => [[
@@ -199,6 +199,9 @@ PROMPT;
                 "generationConfig" => [
                     "temperature"     => 0.2,
                     "maxOutputTokens" => 8192,
+                    "thinkingConfig"  => [
+            "thinkingBudget" => 0
+        ]
                 ]
             ]),
         ]);
@@ -367,4 +370,5 @@ public function creerDepuisIA(
         'message'        => 'Réservation créée avec succès !'
     ]);
 }
+
 }

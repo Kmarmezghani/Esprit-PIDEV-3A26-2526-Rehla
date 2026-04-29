@@ -63,10 +63,7 @@ class WeatherActivityTipsService
 
         $cacheKey = $this->buildCacheKey($activite, $reviews, $weather);
 
-        $tips = $this->cache->get($cacheKey, function (ItemInterface $item) use ($activite, $reviews, $weather) {
-            $item->expiresAfter(86400); // 24 heures
-            return $this->generateTips($activite, $reviews, $weather);
-        });
+       $tips = $this->generateTips($activite, $reviews, $weather);
 
         return [
             'tips' => is_array($tips) ? $tips : [],
@@ -140,22 +137,22 @@ class WeatherActivityTipsService
     }
 
     private function generateTips(Activite $activite, array $reviews, array $weather): array
-    {
-        $apiKey = $_ENV['GEMINI_API_KEY'] ?? null;
+{
+    $apiKey = $_ENV['GEMINI_API_KEY'] ?? null;
 
-        if (!$apiKey) {
-            return [];
-        }
+    if (!$apiKey) {
+        return $this->generateFallbackTips($weather);
+    }
 
-        $reviewsText = !empty($reviews)
-            ? "- " . implode("\n- ", $reviews)
-            : "Aucun avis utile disponible.";
+    $reviewsText = !empty($reviews)
+        ? "- " . implode("\n- ", $reviews)
+        : "Aucun avis utile disponible.";
 
-        $nom = trim((string) $activite->getNom());
-        $description = trim((string) $activite->getDescription());
-        $type = trim((string) $activite->getTypeActivite());
+    $nom = trim((string) $activite->getNom());
+    $description = trim((string) $activite->getDescription());
+    $type = trim((string) $activite->getTypeActivite());
 
-        $prompt = "
+    $prompt = "
 Tu es un assistant de voyage.
 
 Ta mission :
@@ -180,18 +177,8 @@ Règles STRICTES :
 - Interdiction de reformuler la même idée avec des mots différents
 - Si plusieurs conseils reviennent à l’idée de prendre une couche légère, n’en garde qu’un seul
 - Ne répète pas la même recommandation sous plusieurs formes
-- Exemples de répétition interdite :
-  - veste légère / cardigan / gilet / couche supplémentaire
-  - foulard / écharpe / de quoi se couvrir
-  - se protéger du vent / éviter la fraîcheur / garder une couche en plus
-- Les conseils doivent couvrir des idées différentes quand c’est possible : vêtement, accessoire utile, confort météo, protection contre pluie/vent/soleil
+- Les conseils doivent couvrir des idées différentes quand c’est possible
 - S'il n'existe que 2 ou 3 idées utiles, ne complète pas artificiellement
-
-Température :
-- Si 18–24°C → temps modéré → ne parle pas de forte chaleur ni de froid important
-- Si > 28°C → tu peux parler de chaleur
-- Si < 12°C → tu peux parler de froid
-- N'exagère jamais la météo
 
 Format :
 - entre 2 et 5 conseils
@@ -215,41 +202,101 @@ Avis :
 {$reviewsText}
 ";
 
-        $body = [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $prompt]
-                    ]
+    $body = [
+        'contents' => [
+            [
+                'parts' => [
+                    ['text' => $prompt]
                 ]
             ]
-        ];
+        ]
+    ];
 
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey;
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey;
 
-        try {
-            $response = $this->client->request('POST', $url, [
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ],
-                'json' => $body,
-                'timeout' => 40
-            ]);
+    try {
+        $response = $this->client->request('POST', $url, [
+            'headers' => [
+                'Content-Type' => 'application/json'
+            ],
+            'json' => $body,
+            'timeout' => 40
+        ]);
 
-            if ($response->getStatusCode() >= 400) {
-                return [];
-            }
+        $status = $response->getStatusCode();
+        $raw = $response->getContent(false);
 
-            $data = $response->toArray(false);
-
-            $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-
-            return $this->parseTips($text);
-        } catch (\Exception $e) {
-            return [];
+        if ($status >= 400) {
+            return $this->generateFallbackTips($weather);
         }
+
+        $data = json_decode($raw, true);
+        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+        $tips = $this->parseTips($text);
+
+        if (empty($tips)) {
+            return $this->generateFallbackTips($weather);
+        }
+
+        return $tips;
+    } catch (\Exception $e) {
+        return $this->generateFallbackTips($weather);
+    }
+}
+private function generateFallbackTips(array $weather): array
+{
+    $tips = [];
+
+    $temp = (int) ($weather['temp'] ?? 0);
+    $description = mb_strtolower((string) ($weather['description'] ?? ''));
+    $humidity = (int) ($weather['humidity'] ?? 0);
+    $wind = (int) ($weather['wind'] ?? 0);
+
+    if ($temp < 12) {
+        $tips[] = "Prévoyez un vêtement chaud pour rester à l’aise pendant l’activité.";
+    } elseif ($temp >= 12 && $temp <= 18) {
+        $tips[] = "Une veste légère peut être utile si vous restez dehors un moment.";
+    } elseif ($temp > 28) {
+        $tips[] = "Pensez à prendre de l’eau pour rester à l’aise par temps chaud.";
     }
 
+    if ($wind >= 25) {
+        $tips[] = "Le vent peut être gênant, prévoyez une tenue adaptée et évitez les accessoires trop légers.";
+    } elseif ($wind >= 15) {
+        $tips[] = "Une légère brise est prévue, un petit vêtement de plus peut apporter plus de confort.";
+    }
+
+    if (
+        str_contains($description, 'pluie') ||
+        str_contains($description, 'averse') ||
+        str_contains($description, 'bruine')
+    ) {
+        $tips[] = "Un parapluie ou une veste imperméable peut être utile en cas de pluie.";
+    }
+
+    if (
+        str_contains($description, 'soleil') ||
+        str_contains($description, 'dégagé') ||
+        str_contains($description, 'ensoleillé')
+    ) {
+        $tips[] = "Des lunettes de soleil peuvent améliorer votre confort si l’exposition est forte.";
+    }
+
+    if ($humidity >= 80 && $temp >= 20) {
+        $tips[] = "L’air peut paraître plus lourd que prévu, privilégiez une tenue confortable.";
+    }
+
+    $tips = array_values(array_unique($tips));
+    $tips = $this->filterSimilarTips($tips);
+    $tips = $this->removeIdeaRepetitions($tips);
+
+    if (count($tips) < 2) {
+        $tips[] = "Consultez la météo juste avant le départ pour adapter votre tenue si nécessaire.";
+    }
+
+    return array_slice($tips, 0, 5);
+}
     private function parseTips(string $content): array
 {
     $lines = preg_split('/\R/', $content);

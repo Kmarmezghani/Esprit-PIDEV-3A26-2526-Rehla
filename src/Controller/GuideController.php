@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Activite;
+use App\Entity\Attraction;
 use App\Form\ActiviteType;
 use App\Repository\ActiviteRepository;
+use App\Repository\AttractionRepository;
 use App\Repository\GuideRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\PersonneRepository;
@@ -220,16 +222,17 @@ if ($userId) {
 #[Route('/guide/activite/generate-description', name: 'guide_generate_description', methods: ['POST'])]
 public function generateDescription(
     Request $request,
-    AiDescriptionService $aiDescriptionService
+    AiDescriptionService $aiDescriptionService,
+    AttractionRepository $attractionRepository
 ): JsonResponse {
     $data = json_decode($request->getContent(), true);
 
-    $nom = $data['nom'] ?? '';
-    $type = $data['typeActivite'] ?? '';
-    $destination = $data['destination'] ?? '';
-    $duration = $data['duration'] ?? '';
+    $nom = trim($data['nom'] ?? '');
+    $type = trim($data['typeActivite'] ?? '');
+    $destination = trim($data['destination'] ?? '');
+    $duration = trim($data['duration'] ?? '');
 
-    if (trim($nom) === '' || trim($type) === '' || trim($destination) === '') {
+    if ($nom === '' || $type === '' || $destination === '') {
         return $this->json([
             'success' => false,
             'message' => 'Veuillez remplir au moins le nom, le type et la destination avant de générer la description.'
@@ -237,21 +240,40 @@ public function generateDescription(
     }
 
     try {
+        $attractions = $attractionRepository->createQueryBuilder('a')
+            ->join('a.ville_id', 'v')
+            ->where('v.id = :villeId')
+            ->setParameter('villeId', (int) $destination)
+            ->getQuery()
+            ->getResult();
+
+        $attractionData = array_map(
+            fn($attraction) => [
+                'nom' => $attraction->getNom(),
+                'type' => $attraction->getType(),
+                'description' => $attraction->getDescription(),
+            ],
+            $attractions
+        );
+
         $description = $aiDescriptionService->generate(
             $nom,
             $type,
             $destination,
-            $duration
+            $duration,
+            $attractionData
         );
 
         return $this->json([
             'success' => true,
-            'description' => $description
+            'description' => $description,
+            'attractions_used' => $attractionData
         ]);
     } catch (\Throwable $e) {
         return $this->json([
             'success' => false,
-            'message' => 'La génération de la description a échoué.'
+            'message' => 'La génération de la description a échoué.',
+            'error' => $e->getMessage(),
         ], 500);
     }
 }

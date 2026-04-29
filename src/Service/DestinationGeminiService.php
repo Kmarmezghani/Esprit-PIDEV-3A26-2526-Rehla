@@ -16,10 +16,9 @@ class DestinationGeminiService
 
     public function generateForCountry(string $countryName): string
     {
-        $apiKey = $_ENV['GEMINI_API_KEY3'] ?? $_SERVER['GEMINI_API_KEY3'] ?? $_ENV['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY'] ?? null;
-
+        $apiKey = $_ENV['GEMINI_API_KEY3'] ?? $_SERVER['GEMINI_API_KEY3'] ?? null;
         if (empty($apiKey)) {
-            throw new \RuntimeException('Clé API Gemini manquante dans le fichier .env');
+            throw new \RuntimeException('Clé API Gemini3 manquante dans le fichier .env');
         }
 
         $prompt = sprintf(
@@ -27,7 +26,7 @@ class DestinationGeminiService
             $this->safe($countryName)
         );
 
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey;
+        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
 
         try {
             $response = $this->httpClient->request('POST', $url, [

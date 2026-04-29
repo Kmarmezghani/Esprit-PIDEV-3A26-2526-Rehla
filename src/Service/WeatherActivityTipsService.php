@@ -4,17 +4,19 @@ namespace App\Service;
 
 use App\Entity\Activite;
 use App\Repository\AvisRepository;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class WeatherActivityTipsService
 {
     public function __construct(
         private AvisRepository $avisRepository,
         private HttpClientInterface $client,
-        private CacheInterface $cache
+        private CacheInterface $cache,
+        private string $mistralApiKey = '',
     ) {
+        $this->mistralApiKey = $_ENV['MISTRAL_API_KEY'] ?? $_SERVER['MISTRAL_API_KEY'] ?? '';
     }
 
     public function getTipsForActivity(Activite $activite): array
@@ -39,7 +41,7 @@ class WeatherActivityTipsService
         if (!$ville || !$dateDebut) {
             return [
                 'tips' => [],
-                'weather' => null
+                'weather' => null,
             ];
         }
 
@@ -57,17 +59,21 @@ class WeatherActivityTipsService
         if (!$weather) {
             return [
                 'tips' => [],
-                'weather' => null
+                'weather' => null,
             ];
         }
 
         $cacheKey = $this->buildCacheKey($activite, $reviews, $weather);
 
-       $tips = $this->generateTips($activite, $reviews, $weather);
+        $tips = $this->cache->get($cacheKey, function (ItemInterface $item) use ($activite, $reviews, $weather) {
+            $item->expiresAfter(86400);
+
+            return $this->generateTips($activite, $reviews, $weather);
+        });
 
         return [
             'tips' => is_array($tips) ? $tips : [],
-            'weather' => $weather
+            'weather' => $weather,
         ];
     }
 
@@ -81,7 +87,7 @@ class WeatherActivityTipsService
 
     private function getWeather(string $ville, string $date): ?array
     {
-        $apiKey = $_ENV['OPENWEATHER_API_KEY'] ?? null;
+        $apiKey = $_ENV['OPENWEATHER_API_KEY'] ?? $_SERVER['OPENWEATHER_API_KEY'] ?? null;
 
         if (!$apiKey) {
             return null;
@@ -93,14 +99,24 @@ class WeatherActivityTipsService
                     'q' => $ville,
                     'appid' => $apiKey,
                     'units' => 'metric',
-                    'lang' => 'fr'
-                ]
+                    'lang' => 'fr',
+                ],
             ]);
 
-            $data = $response->toArray();
+            $data = $response->toArray(false);
 
             if (!isset($data['list']) || !is_array($data['list']) || empty($data['list'])) {
                 return null;
+            }
+
+            foreach ($data['list'] as $forecast) {
+                if (
+                    isset($forecast['dt_txt'])
+                    && str_starts_with($forecast['dt_txt'], $date)
+                    && str_contains($forecast['dt_txt'], '12:00:00')
+                ) {
+                    return $this->formatWeather($forecast);
+                }
             }
 
             foreach ($data['list'] as $forecast) {
@@ -110,7 +126,7 @@ class WeatherActivityTipsService
             }
 
             return $this->formatWeather($data['list'][0]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }
@@ -137,22 +153,20 @@ class WeatherActivityTipsService
     }
 
     private function generateTips(Activite $activite, array $reviews, array $weather): array
-{
-    $apiKey = $_ENV['GEMINI_API_KEY'] ?? null;
+    {
+        if (!$this->mistralApiKey) {
+            return [];
+        }
 
-    if (!$apiKey) {
-        return $this->generateFallbackTips($weather);
-    }
+        $reviewsText = !empty($reviews)
+            ? "- " . implode("\n- ", $reviews)
+            : "Aucun avis utile disponible.";
 
-    $reviewsText = !empty($reviews)
-        ? "- " . implode("\n- ", $reviews)
-        : "Aucun avis utile disponible.";
+        $nom = trim((string) $activite->getNom());
+        $description = trim((string) $activite->getDescription());
+        $type = trim((string) $activite->getTypeActivite());
 
-    $nom = trim((string) $activite->getNom());
-    $description = trim((string) $activite->getDescription());
-    $type = trim((string) $activite->getTypeActivite());
-
-    $prompt = "
+        $prompt = "
 Tu es un assistant de voyage.
 
 Ta mission :
@@ -177,8 +191,18 @@ Règles STRICTES :
 - Interdiction de reformuler la même idée avec des mots différents
 - Si plusieurs conseils reviennent à l’idée de prendre une couche légère, n’en garde qu’un seul
 - Ne répète pas la même recommandation sous plusieurs formes
-- Les conseils doivent couvrir des idées différentes quand c’est possible
+- Exemples de répétition interdite :
+  - veste légère / cardigan / gilet / couche supplémentaire
+  - foulard / écharpe / de quoi se couvrir
+  - se protéger du vent / éviter la fraîcheur / garder une couche en plus
+- Les conseils doivent couvrir des idées différentes quand c’est possible : vêtement, accessoire utile, confort météo, protection contre pluie/vent/soleil
 - S'il n'existe que 2 ou 3 idées utiles, ne complète pas artificiellement
+
+Température :
+- Si 18–24°C → temps modéré → ne parle pas de forte chaleur ni de froid important
+- Si > 28°C → tu peux parler de chaleur
+- Si < 12°C → tu peux parler de froid
+- N'exagère jamais la météo
 
 Format :
 - entre 2 et 5 conseils
@@ -202,228 +226,169 @@ Avis :
 {$reviewsText}
 ";
 
-    $body = [
-        'contents' => [
-            [
-                'parts' => [
-                    ['text' => $prompt]
-                ]
-            ]
-        ]
-    ];
-
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey;
-
-    try {
-        $response = $this->client->request('POST', $url, [
-            'headers' => [
-                'Content-Type' => 'application/json'
+        $body = [
+            'model' => 'mistral-small-latest',
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $prompt,
+                ],
             ],
-            'json' => $body,
-            'timeout' => 40
-        ]);
+            'temperature' => 0.3,
+            'max_tokens' => 400,
+        ];
 
-        $status = $response->getStatusCode();
-        $raw = $response->getContent(false);
+        try {
+            $response = $this->client->request('POST', 'https://api.mistral.ai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->mistralApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $body,
+                'timeout' => 40,
+            ]);
 
-        if ($status >= 400) {
-            return $this->generateFallbackTips($weather);
+            if ($response->getStatusCode() >= 400) {
+                return [];
+            }
+
+            $data = $response->toArray(false);
+            $text = $data['choices'][0]['message']['content'] ?? '';
+
+            return $this->parseTips($text);
+        } catch (\Throwable $e) {
+            return [];
         }
-
-        $data = json_decode($raw, true);
-        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-
-        $tips = $this->parseTips($text);
-
-        if (empty($tips)) {
-            return $this->generateFallbackTips($weather);
-        }
-
-        return $tips;
-    } catch (\Exception $e) {
-        return $this->generateFallbackTips($weather);
-    }
-}
-private function generateFallbackTips(array $weather): array
-{
-    $tips = [];
-
-    $temp = (int) ($weather['temp'] ?? 0);
-    $description = mb_strtolower((string) ($weather['description'] ?? ''));
-    $humidity = (int) ($weather['humidity'] ?? 0);
-    $wind = (int) ($weather['wind'] ?? 0);
-
-    if ($temp < 12) {
-        $tips[] = "Prévoyez un vêtement chaud pour rester à l’aise pendant l’activité.";
-    } elseif ($temp >= 12 && $temp <= 18) {
-        $tips[] = "Une veste légère peut être utile si vous restez dehors un moment.";
-    } elseif ($temp > 28) {
-        $tips[] = "Pensez à prendre de l’eau pour rester à l’aise par temps chaud.";
     }
 
-    if ($wind >= 25) {
-        $tips[] = "Le vent peut être gênant, prévoyez une tenue adaptée et évitez les accessoires trop légers.";
-    } elseif ($wind >= 15) {
-        $tips[] = "Une légère brise est prévue, un petit vêtement de plus peut apporter plus de confort.";
-    }
-
-    if (
-        str_contains($description, 'pluie') ||
-        str_contains($description, 'averse') ||
-        str_contains($description, 'bruine')
-    ) {
-        $tips[] = "Un parapluie ou une veste imperméable peut être utile en cas de pluie.";
-    }
-
-    if (
-        str_contains($description, 'soleil') ||
-        str_contains($description, 'dégagé') ||
-        str_contains($description, 'ensoleillé')
-    ) {
-        $tips[] = "Des lunettes de soleil peuvent améliorer votre confort si l’exposition est forte.";
-    }
-
-    if ($humidity >= 80 && $temp >= 20) {
-        $tips[] = "L’air peut paraître plus lourd que prévu, privilégiez une tenue confortable.";
-    }
-
-    $tips = array_values(array_unique($tips));
-    $tips = $this->filterSimilarTips($tips);
-    $tips = $this->removeIdeaRepetitions($tips);
-
-    if (count($tips) < 2) {
-        $tips[] = "Consultez la météo juste avant le départ pour adapter votre tenue si nécessaire.";
-    }
-
-    return array_slice($tips, 0, 5);
-}
     private function parseTips(string $content): array
-{
-    $lines = preg_split('/\R/', $content);
-    $tips = [];
+    {
+        $lines = preg_split('/\R/', $content);
+        $tips = [];
 
-    foreach ($lines as $line) {
-        $tip = trim($line);
-        $tip = preg_replace('/^[•\-\*]+\s*/u', '', $tip);
-        $tip = preg_replace('/^\d+[\).\-\s]+/u', '', $tip);
-        $tip = trim($tip);
+        foreach ($lines as $line) {
+            $tip = trim($line);
+            $tip = preg_replace('/^[•\-\*]+\s*/u', '', $tip);
+            $tip = preg_replace('/^\d+[\).\-\s]+/u', '', $tip);
+            $tip = trim($tip);
 
-        if ($tip !== '') {
-            $tips[] = $tip;
-        }
-    }
-
-    $tips = array_values(array_unique($tips));
-    $tips = $this->filterSimilarTips($tips);
-    $tips = $this->removeIdeaRepetitions($tips);
-
-    return array_slice($tips, 0, 5);
-}
-private function filterSimilarTips(array $tips): array
-{
-    $filtered = [];
-
-    foreach ($tips as $tip) {
-        $normalizedTip = mb_strtolower($tip);
-        $normalizedTip = preg_replace('/[^\p{L}\p{N}\s]/u', '', $normalizedTip);
-        $normalizedTip = preg_replace('/\s+/u', ' ', $normalizedTip);
-        $normalizedTip = trim($normalizedTip);
-
-        $isSimilar = false;
-
-        foreach ($filtered as $kept) {
-            $normalizedKept = mb_strtolower($kept);
-            $normalizedKept = preg_replace('/[^\p{L}\p{N}\s]/u', '', $normalizedKept);
-            $normalizedKept = preg_replace('/\s+/u', ' ', $normalizedKept);
-            $normalizedKept = trim($normalizedKept);
-
-            similar_text($normalizedTip, $normalizedKept, $percent);
-
-            if ($percent >= 70) {
-                $isSimilar = true;
-                break;
+            if ($tip !== '') {
+                $tips[] = $tip;
             }
         }
 
-        if (!$isSimilar) {
-            $filtered[] = $tip;
-        }
+        $tips = array_values(array_unique($tips));
+        $tips = $this->filterSimilarTips($tips);
+        $tips = $this->removeIdeaRepetitions($tips);
+
+        return array_slice($tips, 0, 5);
     }
 
-    return $filtered;
-}
-private function removeIdeaRepetitions(array $tips): array
-{
-    $result = [];
-    $seenThemes = [];
+    private function filterSimilarTips(array $tips): array
+    {
+        $filtered = [];
 
-    foreach ($tips as $tip) {
-        $text = mb_strtolower($tip);
+        foreach ($tips as $tip) {
+            $normalizedTip = mb_strtolower($tip);
+            $normalizedTip = preg_replace('/[^\p{L}\p{N}\s]/u', '', $normalizedTip);
+            $normalizedTip = preg_replace('/\s+/u', ' ', $normalizedTip);
+            $normalizedTip = trim($normalizedTip);
 
-        $theme = 'other';
+            $isSimilar = false;
 
-        if (
-            str_contains($text, 'veste') ||
-            str_contains($text, 'gilet') ||
-            str_contains($text, 'cardigan') ||
-            str_contains($text, 'couche') ||
-            str_contains($text, 'couvrir') ||
-            str_contains($text, 'se couvrir')
-        ) {
-            $theme = 'light_layer';
-        } elseif (
-            str_contains($text, 'foulard') ||
-            str_contains($text, 'écharpe') ||
-            str_contains($text, 'echarpe') ||
-            str_contains($text, 'châle') ||
-            str_contains($text, 'chale')
-        ) {
-            $theme = 'scarf';
-        } elseif (
-            str_contains($text, 'vent') ||
-            str_contains($text, 'rafale') ||
-            str_contains($text, 'brise')
-        ) {
-            $theme = 'wind';
-        } elseif (
-            str_contains($text, 'soleil') ||
-            str_contains($text, 'lunettes') ||
-            str_contains($text, 'crème solaire') ||
-            str_contains($text, 'creme solaire') ||
-            str_contains($text, 'uv')
-        ) {
-            $theme = 'sun';
-        } elseif (
-            str_contains($text, 'pluie') ||
-            str_contains($text, 'averse') ||
-            str_contains($text, 'parapluie') ||
-            str_contains($text, 'imperméable') ||
-            str_contains($text, 'impermeable')
-        ) {
-            $theme = 'rain';
-        } elseif (
-            str_contains($text, 'chaud') ||
-            str_contains($text, 'chaleur') ||
-            str_contains($text, 'hydrater') ||
-            str_contains($text, 'eau')
-        ) {
-            $theme = 'heat';
-        } elseif (
-            str_contains($text, 'frais') ||
-            str_contains($text, 'fraîcheur') ||
-            str_contains($text, 'fraicheur') ||
-            str_contains($text, 'soirée') ||
-            str_contains($text, 'soiree')
-        ) {
-            $theme = 'cool_evening';
+            foreach ($filtered as $kept) {
+                $normalizedKept = mb_strtolower($kept);
+                $normalizedKept = preg_replace('/[^\p{L}\p{N}\s]/u', '', $normalizedKept);
+                $normalizedKept = preg_replace('/\s+/u', ' ', $normalizedKept);
+                $normalizedKept = trim($normalizedKept);
+
+                similar_text($normalizedTip, $normalizedKept, $percent);
+
+                if ($percent >= 70) {
+                    $isSimilar = true;
+                    break;
+                }
+            }
+
+            if (!$isSimilar) {
+                $filtered[] = $tip;
+            }
         }
 
-        if (!in_array($theme, $seenThemes, true) || $theme === 'other') {
-            $result[] = $tip;
-            $seenThemes[] = $theme;
-        }
+        return $filtered;
     }
 
-    return $result;
-}
+    private function removeIdeaRepetitions(array $tips): array
+    {
+        $result = [];
+        $seenThemes = [];
+
+        foreach ($tips as $tip) {
+            $text = mb_strtolower($tip);
+            $theme = 'other';
+
+            if (
+                str_contains($text, 'veste') ||
+                str_contains($text, 'gilet') ||
+                str_contains($text, 'cardigan') ||
+                str_contains($text, 'couche') ||
+                str_contains($text, 'couvrir') ||
+                str_contains($text, 'se couvrir')
+            ) {
+                $theme = 'light_layer';
+            } elseif (
+                str_contains($text, 'foulard') ||
+                str_contains($text, 'écharpe') ||
+                str_contains($text, 'echarpe') ||
+                str_contains($text, 'châle') ||
+                str_contains($text, 'chale')
+            ) {
+                $theme = 'scarf';
+            } elseif (
+                str_contains($text, 'vent') ||
+                str_contains($text, 'rafale') ||
+                str_contains($text, 'brise')
+            ) {
+                $theme = 'wind';
+            } elseif (
+                str_contains($text, 'soleil') ||
+                str_contains($text, 'lunettes') ||
+                str_contains($text, 'crème solaire') ||
+                str_contains($text, 'creme solaire') ||
+                str_contains($text, 'uv')
+            ) {
+                $theme = 'sun';
+            } elseif (
+                str_contains($text, 'pluie') ||
+                str_contains($text, 'averse') ||
+                str_contains($text, 'parapluie') ||
+                str_contains($text, 'imperméable') ||
+                str_contains($text, 'impermeable')
+            ) {
+                $theme = 'rain';
+            } elseif (
+                str_contains($text, 'chaud') ||
+                str_contains($text, 'chaleur') ||
+                str_contains($text, 'hydrater') ||
+                str_contains($text, 'eau')
+            ) {
+                $theme = 'heat';
+            } elseif (
+                str_contains($text, 'frais') ||
+                str_contains($text, 'fraîcheur') ||
+                str_contains($text, 'fraicheur') ||
+                str_contains($text, 'soirée') ||
+                str_contains($text, 'soiree')
+            ) {
+                $theme = 'cool_evening';
+            }
+
+            if (!in_array($theme, $seenThemes, true) || $theme === 'other') {
+                $result[] = $tip;
+                $seenThemes[] = $theme;
+            }
+        }
+
+        return $result;
+    }
 }

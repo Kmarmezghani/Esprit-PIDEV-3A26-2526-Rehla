@@ -7,17 +7,17 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class GeminiRecommendationService
+class MistralRecommendationService
 {
-    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=';
-    private const DEBUG = true;
+   private const ENDPOINT = 'https://api.mistral.ai/v1/chat/completions';
+private const DEBUG = true;
 
-    public function __construct(
-        private HttpClientInterface $httpClient,
-        private string $geminiApiKey,
-        private CacheInterface $cache
-    ) {
-    }
+  public function __construct(
+    private HttpClientInterface $httpClient,
+    private CacheInterface $cache,
+    private string $mistralApiKey
+) {
+}
 
     /**
      * Cached version:
@@ -31,9 +31,11 @@ class GeminiRecommendationService
         array $candidates,
         string $userProfileText
     ): array {
-        if (empty($candidates) || empty($userProfileText) || empty($this->geminiApiKey)) {
-            return [];
-        }
+        $mistralApiKey = $_ENV['MISTRAL_API_KEY'] ?? $_SERVER['MISTRAL_API_KEY'] ?? '';
+
+if (empty($candidates) || empty($userProfileText) || empty($mistralApiKey)) {
+    return [];
+}
 
         $cacheKey = $this->buildCacheKey($userId, $userProfileText, $candidates);
 
@@ -53,9 +55,11 @@ class GeminiRecommendationService
      */
     public function rankActivityIdsMax3(array $candidates, string $userProfileText): array
     {
-        if (empty($this->geminiApiKey)) {
-            return [];
-        }
+        $mistralApiKey = $_ENV['MISTRAL_API_KEY'] ?? $_SERVER['MISTRAL_API_KEY'] ?? '';
+
+if (empty($mistralApiKey)) {
+    return [];
+}
 
         if (empty($candidates)) {
             return [];
@@ -99,31 +103,36 @@ Règles:
         );
 
         $body = [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $prompt]
-                    ]
-                ]
-            ]
-        ];
+    'model' => 'mistral-small-latest',
+    'messages' => [
+        [
+            'role' => 'user',
+            'content' => $prompt,
+        ],
+    ],
+    'temperature' => 0.2,
+    'max_tokens' => 300,
+    'response_format' => [
+        'type' => 'json_object',
+    ],
+];
 
         try {
-            $response = $this->httpClient->request('POST', self::ENDPOINT . $this->geminiApiKey, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $body,
-                'timeout' => 20,
-            ]);
-
+            $response = $this->httpClient->request('POST', self::ENDPOINT, [
+    'headers' => [
+        'Authorization' => 'Bearer ' . $mistralApiKey,
+        'Content-Type' => 'application/json',
+    ],
+    'json' => $body,
+    'timeout' => 20,
+]);
             $statusCode = $response->getStatusCode();
             $raw = $response->getContent(false);
 
             if (self::DEBUG) {
                 dump([
-                    'gemini_status' => $statusCode,
-                    'gemini_raw' => $raw,
+                    'mistral_status' => $statusCode,
+                    'mistral_raw' => $raw,
                 ]);
             }
 
@@ -133,8 +142,7 @@ Règles:
 
             $data = json_decode($raw, true);
 
-            $modelText = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
+           $modelText = $data['choices'][0]['message']['content'] ?? null;
             if (!$modelText) {
                 return [];
             }
@@ -207,7 +215,7 @@ Règles:
         $preferencesFingerprint = $this->buildPreferencesFingerprint($userProfileText);
         $activitiesFingerprint = $this->buildActivitiesFingerprint($candidates);
 
-        return 'gemini_reco_' . $userId . '_' . $preferencesFingerprint . '_' . $activitiesFingerprint;
+        return 'mistral_reco_' . $userId . '_' . $preferencesFingerprint . '_' . $activitiesFingerprint;
     }
 
     private function safe(?string $value): string

@@ -20,20 +20,33 @@
             {{ form_start(form) }}
 
             <div class="mb-3">
-                {{ form_label(form.nom) }}
-                <select id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-select" required="required">
-                    <option value="{{ form.nom.vars.value|default('') }}" selected>{{ form.nom.vars.value|default('Sélectionnez d\'abord un pays') }}</option>
-                </select>
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                    {{ form_label(form.nom) }}
+                    <button type="button" id="btn-generate-image" class="btn btn-sm" style="background-color: #f0fdf4; color: #166534; border: 1px solid #166534; border-radius: 20px;">
+                        🖼️ Générer Image
+                    </button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="{{ form.nom.vars.id }}" name="{{ form.nom.vars.full_name }}" class="form-control ville-nom-input" list="ville-list" placeholder="Sélectionnez d'abord un pays" required="required" value="{{ form.nom.vars.value|default('') }}">
+                    <datalist id="ville-list"></datalist>
+                </div>
                 {% do form.nom.setRendered() %}
-                <small class="form-text text-muted">Les villes s'afficheront après avoir sélectionné un pays</small>
+                <small class="form-text text-muted">Tapez le nom ou choisissez dans la liste après avoir sélectionné un pays</small>
                 {% for error in form.nom.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
             </div>
 
+            <div id="image-preview-container" class="mb-3 text-center" style="{{ ville.image ? '' : 'display: none;' }}">
+                <label class="d-block mb-1">Aperçu de l'image</label>
+                <img id="image-preview" src="{{ ville.image ? '/uploads/destinations/' ~ ville.image : '' }}" class="img-thumbnail" style="max-height: 200px;">
+            </div>
+
+            {{ form_widget(form.image, {'attr': {'id': 'hidden-image-input'}}) }}
+
             <div class="mb-3">
                 {{ form_label(form.pays_id) }}
-                {{ form_widget(form.pays_id, {'attr': {'class': 'form-control'}}) }}
+                {{ form_widget(form.pays_id, {'attr': {'class': 'form-control ville-pays-select'}}) }}
                 {% for error in form.pays_id.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
@@ -101,95 +114,81 @@
 {% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const citySelect = document.querySelector('#ville_nom');
-    const paysSelect = document.querySelector('#ville_pays_id');
+    const cityInput = document.querySelector('.ville-nom-input');
+    const cityDatalist = document.querySelector('#ville-list');
+    const paysSelect = document.querySelector('.ville-pays-select') || document.querySelector('#ville_pays_id');
+    const latInput = document.querySelector('#ville_latitude') || document.querySelector('[id$="_latitude"]');
+    const lonInput = document.querySelector('#ville_longitude') || document.querySelector('[id$="_longitude"]');
+    const btnGenerateImage = document.getElementById('btn-generate-image');
+    const imagePreview = document.getElementById('image-preview');
+    const imageContainer = document.getElementById('image-preview-container');
+    const hiddenImageInput = document.getElementById('hidden-image-input');
     
-    if (!citySelect || !paysSelect) return;
+    if (!cityInput || !cityDatalist || !paysSelect) return;
 
-    const initialCityValue = citySelect.value;
-
+    // --- 1. CHARGEMENT DES VILLES ---
     function loadCitiesForCountry() {
         const selectedOption = paysSelect.options[paysSelect.selectedIndex];
-        const country = selectedOption ? selectedOption.text.trim() : '';
+        const country = selectedOption && selectedOption.value ? selectedOption.text.trim() : '';
         
-        citySelect.innerHTML = '<option value="">Sélectionnez une ville...</option>';
-        citySelect.disabled = true;
+        cityDatalist.innerHTML = '';
         
-        if (!country) return;
-
-        citySelect.innerHTML = '<option value="">Chargement depuis API externe...</option>';
+        if (!country || country.toLowerCase().includes('sélectionnez')) {
+            cityInput.placeholder = "Sélectionnez d'abord un pays";
+            cityInput.disabled = true;
+            return;
+        }
+        
+        cityInput.disabled = false;
+        cityInput.placeholder = "Chargement des villes pour " + country + "...";
 
         fetch('https://countriesnow.space/api/v0.1/countries/cities', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ country: country })
         })
             .then(response => response.json())
             .then(data => {
-                citySelect.innerHTML = '<option value="">Sélectionnez une ville</option>';
+                cityDatalist.innerHTML = '';
                 if (!data.error && data.data && data.data.length > 0) {
                     data.data.forEach(cityName => {
                         const option = document.createElement('option');
                         option.value = cityName;
-                        option.textContent = cityName;
-                        
-                        if (cityName === initialCityValue) {
-                            option.selected = true;
-                        }
-                        
-                        citySelect.appendChild(option);
+                        cityDatalist.appendChild(option);
                     });
-                    
-                    citySelect.disabled = false;
+                    cityInput.placeholder = "Tapez ou sélectionnez une ville";
                 } else {
-                    citySelect.innerHTML = '<option value="">Aucune ville disponible</option>';
+                    cityInput.placeholder = "Ville non trouvée, tapez-la manuellement";
                 }
             })
             .catch(error => {
-                console.error('Error fetching cities:', error);
-                citySelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                console.error('Error:', error);
+                cityInput.placeholder = "Erreur API, tapez manuellement";
             });
     }
 
     paysSelect.addEventListener('change', loadCitiesForCountry);
+    if (paysSelect.value) { loadCitiesForCountry(); }
 
-    if (paysSelect.value) {
-        loadCitiesForCountry();
-    }
-
-    // --- SCRIPT POUR LES COORDONNÉES AUTOMATIQUES ---
-    const latInput = document.querySelector('#ville_latitude') || document.querySelector('[id$="_latitude"]');
-    const lonInput = document.querySelector('#ville_longitude') || document.querySelector('[id$="_longitude"]');
-    
-    if (latInput && lonInput && citySelect) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn btn-sm btn-outline-primary mb-3';
-      btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+    // --- 2. COORDONNÉES AUTOMATIQUES ---
+    if (latInput && lonInput) {
+      const btnCoords = document.createElement('button');
+      btnCoords.type = 'button';
+      btnCoords.className = 'btn btn-sm btn-outline-primary mb-3 mt-2';
+      btnCoords.innerHTML = '📍 Obtenir les coordonnées automatiquement';
       
-      // On insère le bouton au-dessus de la ligne (row) qui contient lat et lon
       const row = latInput.closest('.row');
-      if (row) {
-          row.parentNode.insertBefore(btn, row);
-      } else {
-          latInput.parentNode.insertBefore(btn, latInput);
-      }
+      if (row) { row.parentNode.insertBefore(btnCoords, row); }
       
-      btn.addEventListener('click', function() {
-        let cityName = citySelect.value;
-        if (citySelect.tagName === 'SELECT') {
-            cityName = citySelect.options[citySelect.selectedIndex] ? citySelect.options[citySelect.selectedIndex].text : '';
-        }
-
+      btnCoords.addEventListener('click', function() {
+        let cityName = cityInput.value;
         if (!cityName || cityName.includes('Sélectionnez') || cityName.includes('Chargement')) {
-          alert('Veuillez d\'abord sélectionner une Ville.');
+          alert('Veuillez d\'abord entrer un nom de ville.');
           return;
         }
         
-        btn.innerHTML = '⏳ Recherche...';
-        btn.disabled = true;
+        btnCoords.innerHTML = '⏳ Recherche...';
+        btnCoords.disabled = true;
         
         fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(cityName))
           .then(res => res.json())
@@ -197,27 +196,66 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data && data.length > 0) {
               latInput.value = parseFloat(data[0].lat).toFixed(6);
               lonInput.value = parseFloat(data[0].lon).toFixed(6);
-              btn.innerHTML = '✅ Coordonnées trouvées !';
-              btn.className = 'btn btn-sm btn-success text-white mb-3 mt-2';
+              btnCoords.innerHTML = '✅ Coordonnées trouvées !';
+              btnCoords.className = 'btn btn-sm btn-success text-white mb-3 mt-2';
             } else {
               alert('Coordonnées introuvables pour : ' + cityName);
-              btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+              btnCoords.innerHTML = '📍 Obtenir les coordonnées automatiquement';
             }
           })
           .catch(err => {
             alert('Erreur lors de la récupération des coordonnées.');
-            btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+            btnCoords.innerHTML = '📍 Obtenir les coordonnées automatiquement';
           })
           .finally(() => {
-            btn.disabled = false;
+            btnCoords.disabled = false;
             setTimeout(() => {
-              if (btn.classList.contains('btn-success')) {
-                btn.innerHTML = '📍 Obtenir les coordonnées automatiquement';
-                btn.className = 'btn btn-sm btn-outline-primary mb-3 mt-2';
-              }
+              btnCoords.innerHTML = '📍 Obtenir les coordonnées automatiquement';
+              btnCoords.className = 'btn btn-sm btn-outline-primary mb-3 mt-2';
             }, 3000);
           });
       });
+    }
+
+    // --- 3. GÉNÉRATION D'IMAGE ---
+    if (btnGenerateImage) {
+        btnGenerateImage.addEventListener('click', function() {
+            let cityName = cityInput.value;
+            if (!cityName || cityName.includes('Sélectionnez') || cityName.includes('Chargement')) {
+                alert('Veuillez d\'abord entrer un nom de ville.');
+                return;
+            }
+
+            const originalText = btnGenerateImage.innerHTML;
+            btnGenerateImage.innerHTML = '⏳ Recherche...';
+            btnGenerateImage.disabled = true;
+
+            fetch('/admin/destination/api/generate-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ type: 'ville', id: '{{ ville.id }}', name: cityName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Erreur: ' + data.error);
+                } else if (data.url) {
+                    imagePreview.src = data.url;
+                    imageContainer.style.display = 'block';
+                    if (hiddenImageInput) {
+                        hiddenImageInput.value = data.filename;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error generating image:', error);
+                alert('Une erreur est survenue lors de la recherche d\'image.');
+            })
+            .finally(() => {
+                btnGenerateImage.innerHTML = originalText;
+                btnGenerateImage.disabled = false;
+            });
+        });
     }
 });
 </script>

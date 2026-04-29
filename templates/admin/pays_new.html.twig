@@ -20,12 +20,24 @@
             {{ form_start(form) }}
 
             <div class="mb-3">
-                {{ form_label(form.nom) }}
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                    {{ form_label(form.nom) }}
+                    <button type="button" id="btn-generate-image" class="btn btn-sm" style="background-color: #f0fdf4; color: #166534; border: 1px solid #166534; border-radius: 20px;">
+                        🖼️ Générer Image
+                    </button>
+                </div>
                 {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
                 {% for error in form.nom.vars.errors %}
                     <div class="alert alert-warning mt-1">{{ error.message }}</div>
                 {% endfor %}
             </div>
+
+            <div id="image-preview-container" class="mb-3 text-center" style="display: none;">
+                <label class="d-block mb-1">Aperçu de l'image</label>
+                <img id="image-preview" src="" class="img-thumbnail" style="max-height: 200px;">
+            </div>
+
+            {{ form_widget(form.image, {'attr': {'id': 'hidden-image-input'}}) }}
 
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-end mb-1">
@@ -113,6 +125,59 @@ document.addEventListener('DOMContentLoaded', function() {
             btnGenerateAi.disabled = false;
         });
     });
+
+    // --- SCRIPT POUR LA GÉNÉRATION D'IMAGE ---
+    const btnGenerateImage = document.getElementById('btn-generate-image');
+    const imagePreview = document.getElementById('image-preview');
+    const imageContainer = document.getElementById('image-preview-container');
+    const hiddenImageInput = document.getElementById('hidden-image-input');
+
+    if (btnGenerateImage && paysSelect) {
+        btnGenerateImage.addEventListener('click', function() {
+            const countryName = paysSelect.options[paysSelect.selectedIndex]?.text || paysSelect.value;
+            
+            if (!countryName || countryName.trim() === '') {
+                alert('Veuillez d\'abord entrer un nom de pays.');
+                return;
+            }
+
+            const originalText = btnGenerateImage.innerHTML;
+            btnGenerateImage.innerHTML = '⏳ Recherche...';
+            btnGenerateImage.disabled = true;
+
+            fetch('/admin/destination/api/generate-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    type: 'pays', 
+                    name: countryName 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Erreur: ' + data.error);
+                } else if (data.url) {
+                    imagePreview.src = data.url;
+                    imageContainer.style.display = 'block';
+                    if (hiddenImageInput) {
+                        hiddenImageInput.value = data.filename;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error generating image:', error);
+                alert('Une erreur est survenue lors de la recherche d\'image.');
+            })
+            .finally(() => {
+                btnGenerateImage.innerHTML = originalText;
+                btnGenerateImage.disabled = false;
+            });
+        });
+    }
 });
 </script>
 {% endblock %}

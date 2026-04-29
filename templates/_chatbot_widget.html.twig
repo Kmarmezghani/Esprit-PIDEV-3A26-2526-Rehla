@@ -1,0 +1,155 @@
+<!-- Floating Chatbot Widget -->
+<div id="rehla-chatbot" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: 'Inter', sans-serif;">
+    <!-- Chat Toggle Button with Pulse Animation -->
+    <button id="chatbot-toggle" style="width: 60px; height: 60px; border-radius: 50%; background: #223f91; color: white; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(34,63,145,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; position: relative;" class="pulse-btn">
+        <i class="fa fa-comments" style="font-size: 24px;"></i>
+        <!-- Welcome Tooltip -->
+        <div id="chatbot-welcome" style="position: absolute; right: 70px; top: 10px; background: white; color: #333; padding: 10px 15px; border-radius: 12px; font-size: 13px; width: 180px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: none; border: 1px solid #eee;">
+            Besoin d'aide pour votre budget ? ✈️
+            <div style="position: absolute; right: -5px; top: 15px; width: 10px; height: 10px; background: white; transform: rotate(45deg); border-right: 1px solid #eee; border-top: 1px solid #eee;"></div>
+        </div>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chatbot-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; transform-origin: bottom right;">
+        <!-- Header -->
+        <div style="background: #223f91; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h5 style="margin: 0; font-size: 16px; font-weight: 700;">Assistant Rehla</h5>
+                <small style="opacity: 0.8;">Expert Voyage & Itinéraire</small>
+            </div>
+            <button id="chatbot-close" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 20px;">&times;</button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chatbot-messages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+            <div style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; border-bottom-left-radius: 2px; align-self: flex-start; max-width: 85%; font-size: 14px; color: #333;">
+                Bonjour ! Je suis votre conseiller Rehla. Je peux vous aider à découvrir nos destinations ou à optimiser votre budget pour une ville.
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div style="padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px;">
+            <input type="text" id="chatbot-input" placeholder="Posez votre question..." style="flex: 1; border: 1px solid #ddd; border-radius: 25px; padding: 10px 15px; outline: none; font-size: 14px;">
+            <button id="chatbot-send" style="background: #223f91; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideUp {
+        from { transform: scale(0.8) translateY(20px); opacity: 0; }
+        to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    @keyframes pulse-blue {
+        0% { box-shadow: 0 0 0 0 rgba(34, 63, 145, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(34, 63, 145, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 63, 145, 0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .pulse-btn {
+        animation: pulse-blue 2s infinite;
+    }
+    #chatbot-window.open {
+        display: flex !important;
+        animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #chatbot-welcome.show {
+        display: block !important;
+        animation: fadeIn 0.5s ease;
+    }
+    .chat-msg-user {
+        background: linear-gradient(135deg, #223f91, #1a306d);
+        color: white;
+        padding: 12px 18px;
+        border-radius: 18px;
+        border-bottom-right-radius: 4px;
+        align-self: flex-end;
+        max-width: 85%;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(34,63,145,0.2);
+    }
+    .chat-msg-ai {
+        background: white;
+        color: #333;
+        padding: 12px 18px;
+        border-radius: 18px;
+        border-bottom-left-radius: 4px;
+        align-self: flex-start;
+        max-width: 85%;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('chatbot-toggle');
+    const windowEl = document.getElementById('chatbot-window');
+    const welcome = document.getElementById('chatbot-welcome');
+    const close = document.getElementById('chatbot-close');
+    const input = document.getElementById('chatbot-input');
+    const send = document.getElementById('chatbot-send');
+    const messages = document.getElementById('chatbot-messages');
+
+    // Show welcome tooltip after 3 seconds
+    setTimeout(() => {
+        if (windowEl.style.display !== 'flex') {
+            welcome.classList.add('show');
+        }
+    }, 3000);
+
+    toggle.onclick = () => {
+        windowEl.classList.toggle('open');
+        welcome.classList.remove('show');
+    };
+
+    close.onclick = () => { windowEl.classList.remove('open'); };
+
+    const addMessage = (text, isUser = false) => {
+        const div = document.createElement('div');
+        div.className = isUser ? 'chat-msg-user' : 'chat-msg-ai';
+        div.innerHTML = text.replace(/\n/g, '<br>');
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    };
+
+    const handleSend = async () => {
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        addMessage(text, true);
+
+        // Loading indicator
+        const loading = document.createElement('div');
+        loading.className = 'chat-msg-ai';
+        loading.innerHTML = '<i class="fa fa-circle-o-notch fa-spin"></i> En train de réfléchir...';
+        messages.appendChild(loading);
+        messages.scrollTop = messages.scrollHeight;
+
+        try {
+            const response = await fetch('{{ path("app_chatbot_chat") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await response.json();
+            messages.removeChild(loading);
+            addMessage(data.response);
+        } catch (error) {
+            messages.removeChild(loading);
+            addMessage("Désolé, une erreur est survenue.");
+        }
+    };
+
+    send.onclick = handleSend;
+    input.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
+});
+</script>

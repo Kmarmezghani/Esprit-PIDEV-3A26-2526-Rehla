@@ -35,6 +35,9 @@ class Pays
     #[Assert\PositiveOrZero(message: 'Le nombre de visites ne peut pas être négatif.')]
     private ?int $visit_count;
 
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $image = null;
+
     public function getId()
     {
         return $this->id;
@@ -74,6 +77,17 @@ class Pays
     public function setVisitCount(?int $value): self
     {
         $this->visit_count = $value !== null ? max(0, $value) : null;
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
         return $this;
     }
 

@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use App\Service\CityApiService;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Doctrine\ORM\EntityManagerInterface;
 
 class VilleType extends AbstractType
@@ -72,6 +73,9 @@ class VilleType extends AbstractType
                     'All Year' => 'All Year',
                 ],
                 'placeholder' => 'Sélectionnez une saison',
+            ])
+            ->add('image', HiddenType::class, [
+                'required' => false,
             ]);
     }
 

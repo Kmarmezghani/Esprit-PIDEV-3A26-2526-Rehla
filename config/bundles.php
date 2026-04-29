@@ -18,4 +18,5 @@ return [
     App\SmsBundle\SmsBundle::class => ['all' => true],
     App\UserMailerBundle\UserMailerBundle::class => ['all' => true],
     CalendarBundle\CalendarBundle::class => ['all' => true],
+    Liip\ImagineBundle\LiipImagineBundle::class => ['all' => true],
 ];

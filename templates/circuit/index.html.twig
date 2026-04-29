@@ -195,13 +195,6 @@
                 Générer mon circuit
             </button>
 
-            <div id="ai-agent-container" style="display: none; background: rgba(244,196,48,0.1); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 20px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <i class="fa fa-magic" style="color: var(--accent-color); font-size: 18px;"></i>
-                    <strong style="color: var(--accent-color); font-size: 14px;">Rehla AI Agent</strong>
-                </div>
-                <p id="ai-agent-message" style="font-size: 13px; color: #ccc; margin: 0; font-style: italic;"></p>
-            </div>
 
             <div id="itinerary-content" class="itinerary-list">
                 <!-- Will be populated by JS -->
@@ -243,16 +236,13 @@
 
             // 3. Generate Logic
             const btnGenerate = document.getElementById('btn-generate');
-            const aiContainer = document.getElementById('ai-agent-container');
-            const aiMessage = document.getElementById('ai-agent-message');
 
             btnGenerate.addEventListener('click', async () => {
                 const budget = budgetRange.value;
                 const type = document.getElementById('tourism-type').value;
 
                 btnGenerate.disabled = true;
-                btnGenerate.textContent = 'Calcul et réflexion de l\'IA...';
-                aiContainer.style.display = 'none';
+                btnGenerate.textContent = 'Calcul en cours...';
 
                 try {
                     const response = await fetch('{{ path("api_circuit_generate") }}', {
@@ -283,43 +273,100 @@
                 markers = [];
 
                 const content = document.getElementById('itinerary-content');
-                content.innerHTML = `<h5 style="margin-bottom:20px; font-size:14px; color:#aaa;">RÉSULTAT: ${data.cityCount} VILLES (${data.totalCost}€)</h5>`;
+                
+                // Calculate percentage of budget used
+                const budgetPercent = Math.min(100, (data.totalCost / data.maxBudget) * 100);
+                
+                content.innerHTML = `
+                    <div style="margin-bottom:25px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h5 style="font-size:12px; color:#aaa; margin-bottom:10px; display:flex; justify-content:space-between; letter-spacing: 1px;">
+                            <span>BUDGET UTILISÉ</span>
+                            <span style="color:var(--accent-color)">${data.totalCost}€ / ${data.maxBudget}€</span>
+                        </h5>
+                        <div style="background:rgba(255,255,255,0.1); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="width:${budgetPercent}%; background:var(--accent-color); height:100%; transition: width 1s ease-in-out; box-shadow: 0 0 10px var(--accent-color);"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                            <span style="font-size:11px; color:#666;">${data.cityCount} villes au total</span>
+                            <span style="font-size:11px; color:#666;">${Math.round(budgetPercent)}% du budget</span>
+                        </div>
+                    </div>
+                `;
 
                 if (data.itinerary.length === 0) {
-                    content.innerHTML += '<p>Aucune destination trouvée pour ces critères.</p>';
+                    content.innerHTML += '<p style="text-align:center; color:#888; margin-top:40px;">Aucune destination trouvée pour ces critères.</p>';
                     return;
-                }
-
-                // Show AI Message if generated
-                if (data.aiMessage) {
-                    aiMessage.textContent = '"' + data.aiMessage + '"';
-                    aiContainer.style.display = 'block';
                 }
 
                 const pathCoords = [];
 
                 data.itinerary.forEach((step, index) => {
-                    // Add to Sidebar
+                    // 1. Add to Sidebar
                     const stepEl = document.createElement('div');
                     stepEl.className = 'itinerary-step';
+                    
+                    let attractionsHtml = '';
+                    if (step.attractions && step.attractions.length > 0) {
+                        attractionsHtml = '<div style="margin-top:12px;">';
+                        step.attractions.forEach(attr => {
+                            attractionsHtml += `
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px; border-left: 2px solid var(--accent-color);">
+                                    <div style="flex:1;">
+                                        <div style="font-size:13px; font-weight:600; color:#fff;">${attr.nom}</div>
+                                        <div style="font-size:11px; color:#777;">${attr.type} • ${attr.ouverture}-${attr.fermeture}</div>
+                                    </div>
+                                    <div style="font-size:12px; font-weight:700; color:var(--accent-color); margin-left:10px;">${attr.prix}€</div>
+                                </div>
+                            `;
+                        });
+                        attractionsHtml += '</div>';
+                    } else {
+                        attractionsHtml = '<div style="font-size:12px; color:#555; font-style:italic; margin-top:8px; padding-left: 10px;">Pas d\'attractions incluses dans le budget.</div>';
+                    }
+
                     stepEl.innerHTML = `
-                        <div class="step-city">Jour ${index + 1}: ${step.nom}</div>
-                        <div class="step-info">${step.type} • ${step.attractionsCount} Attractions</div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div class="step-city">Jour ${index + 1}: ${step.nom}</div>
+                            <span class="cost-badge">${step.totalCityCost}€</span>
+                        </div>
+                        <div class="step-info">${step.type} • Frais séjour: ${step.baseCost}€</div>
+                        ${attractionsHtml}
                     `;
                     content.appendChild(stepEl);
 
-                    // Add to Map
+                    // 2. Add to Map
                     if (step.lat && step.lng) {
                         const coord = [step.lat, step.lng];
                         pathCoords.push(coord);
 
-                        const marker = L.marker(coord).addTo(map)
-                            .bindPopup(`
-                                <div style="text-align:center;">
-                                    <strong style="color:#f4c430; font-size:16px;">${step.nom}</strong><br>
-                                    <span style="font-size:12px;">Étape ${index + 1}</span>
+                        let popupHtml = `
+                            <div style="min-width:220px; padding: 5px;">
+                                <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px;">
+                                    <div style="font-size:11px; color:var(--accent-color); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Jour ${index + 1}</div>
+                                    <strong style="color:#fff; font-size:18px;">${step.nom}</strong>
+                                    <div style="font-size:12px; color:#aaa; margin-top:2px;">${step.totalCityCost}€ total</div>
                                 </div>
-                            `);
+                                <div style="max-height:180px; overflow-y:auto; padding-right:5px;">
+                                    <div style="font-size:11px; color:#666; margin-bottom:8px; font-weight:700;">ATTRACTIONS SÉLECTIONNÉES:</div>
+                        `;
+
+                        if (step.attractions && step.attractions.length > 0) {
+                            step.attractions.forEach(attr => {
+                                popupHtml += `
+                                    <div style="margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                                        <span style="color:#eee; flex:1; padding-right:10px;">${attr.nom}</span>
+                                        <span style="color:var(--accent-color); font-weight:700;">${attr.prix}€</span>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            popupHtml += '<div style="font-size:12px; color:#555; font-style:italic;">Aucune attraction.</div>';
+                        }
+
+                        popupHtml += '</div></div>';
+
+                        const marker = L.marker(coord).addTo(map)
+                            .bindPopup(popupHtml);
                         markers.push(marker);
                     }
                 });
@@ -329,13 +376,13 @@
                     polyline = L.polyline(pathCoords, {
                         color: '#f4c430',
                         weight: 4,
-                        opacity: 0.7,
+                        opacity: 0.6,
                         dashArray: '10, 10',
                         lineJoin: 'round'
                     }).addTo(map);
 
                     // Fit map to circuit
-                    map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+                    map.fitBounds(polyline.getBounds(), { padding: [80, 80] });
                 } else if (pathCoords.length === 1) {
                     map.setView(pathCoords[0], 10);
                 }

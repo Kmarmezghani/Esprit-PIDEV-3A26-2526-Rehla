@@ -7,11 +7,13 @@ parameters:
     activities_directory: '%kernel.project_dir%/public/uploads/activities'
     images_directory: '%kernel.project_dir%/public/uploads'
     gemini_api_key: '%env(GEMINI_API_KEY)%'
+    gemini_api_key_4: '%env(GEMINI_API_KEY4)%'
     openrouter_api_key: '%env(OPENROUTER_API_KEY)%'
     recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
     recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
     recaptcha_v2_site_key: '%env(RECAPTCHA_V2_SITE_KEY)%'
     recaptcha_v2_secret_key: '%env(RECAPTCHA_V2_SECRET_KEY)%'
+    unsplash_access_key: '%env(UNSPLASH_ACCESS_KEY)%'
 
 
 services:
@@ -68,8 +70,8 @@ services:
             $sid: '%env(TWILIO_SID)%'
             $token: '%env(TWILIO_TOKEN)%'
             $from: '%env(TWILIO_FROM)%'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-# config/services.yaml
-
+    App\Service\KnapsackOptimizerService: ~
     
+    App\Service\ChatbotService:
+        arguments:
+            $geminiApiKey4: '%env(GEMINI_API_KEY4)%'

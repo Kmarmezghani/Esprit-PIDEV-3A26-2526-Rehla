@@ -48,6 +48,9 @@ class Ville
     #[ORM\Column(type: "string")]
     private string $saison;
 
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $image = null;
+
     public function getId()
     {
         return $this->id;
@@ -130,6 +133,17 @@ class Ville
     public function setSaison($value)
     {
         $this->saison = $value;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
+        return $this;
     }
 
     #[ORM\OneToMany(mappedBy: "ville_id", targetEntity: Attraction::class)]

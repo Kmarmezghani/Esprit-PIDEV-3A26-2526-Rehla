@@ -9,6 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use App\Service\CountryApiService;
 
 class PaysType extends AbstractType
@@ -60,6 +61,9 @@ class PaysType extends AbstractType
                 'label' => 'Nombre de visites',
                 'required' => false,
                 'attr' => ['min' => 0],
+            ])
+            ->add('image', HiddenType::class, [
+                'required' => false,
             ]);
     }
 

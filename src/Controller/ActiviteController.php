@@ -18,11 +18,11 @@ use App\Entity\Reservation;
 use App\Entity\Ticket;
 use App\Entity\Waitlist;
 use App\Service\BookingEmailService;
-use App\Service\GeminiRecommendationService;
 use App\Service\ActivityMaintenanceService;
 use App\Entity\Notification;
 use App\Repository\NotificationRepository;
 use App\Repository\WaitlistRepository;
+use App\Service\MistralRecommendationService;
 use App\Service\WaitlistService;
 use App\Service\WeatherActivityTipsService;
 use Knp\Component\Pager\PaginatorInterface;
@@ -35,7 +35,7 @@ public function index(
     Request $request,
     ActiviteRepository $activiteRepository,
     PersonneRepository $personneRepository,
-    GeminiRecommendationService $geminiRecommendationService,
+    MistralRecommendationService $geminiRecommendationService,
     ActivityMaintenanceService $activityMaintenanceService,
     EntityManagerInterface $em,
     NotificationRepository $notificationRepository,

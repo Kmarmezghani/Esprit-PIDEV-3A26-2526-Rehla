@@ -159,4 +159,32 @@ class CircuitOptimizer
 
         return $earthRadius * $c;
     }
+
+    private function calculateCityMinCost(Ville $ville): float
+    {
+        $basePrice = 85.0; // Base cost for accommodation/transport per city
+        $attractions = $ville->getAttractions();
+        
+        if ($attractions->count() > 0) {
+            $total = 0;
+            foreach ($attractions as $attr) {
+                $total += $attr->getPrix();
+            }
+            $basePrice += ($total / $attractions->count());
+        }
+        
+        return round($basePrice, 2);
+    }
+
+    private function formatCityData(Ville $ville): array
+    {
+        return [
+            'id' => $ville->getId(),
+            'nom' => $ville->getNom(),
+            'lat' => $ville->getLatitude(),
+            'lng' => $ville->getLongitude(),
+            'type' => $ville->getTypeTourisme(),
+            'attractionsCount' => $ville->getAttractions()->count()
+        ];
+    }
 }

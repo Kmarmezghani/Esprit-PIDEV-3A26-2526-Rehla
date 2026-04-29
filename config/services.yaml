@@ -52,6 +52,16 @@ services:
         autoconfigure: true
         public: true
 
+    App\UserAvatarBundle\Service\AvatarService:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    App\UserAvatarBundle\Twig\AvatarExtension:
+        autowire: true
+        autoconfigure: true
+        tags: ['twig.extension']
+
     App\Controller\PaymentController:
         arguments:
             $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'

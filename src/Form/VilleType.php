@@ -12,16 +12,12 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use App\Service\CityApiService;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class VilleType extends AbstractType
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -76,7 +72,38 @@ class VilleType extends AbstractType
             ])
             ->add('image', HiddenType::class, [
                 'required' => false,
+                'mapped' => false,
             ]);
+
+        $builder->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $event): void {
+            $data = $event->getData();
+            if (!$data instanceof Ville) {
+                return;
+            }
+            $form = $event->getForm();
+            if (!$form->has('image')) {
+                return;
+            }
+            $form->get('image')->setData($data->getImage() ?? '');
+        });
+
+        $builder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event): void {
+            $form = $event->getForm();
+            if (!$form->isRoot()) {
+                return;
+            }
+            $data = $event->getData();
+            if (!$data instanceof Ville) {
+                return;
+            }
+            if (!$form->has('image')) {
+                return;
+            }
+            $img = trim((string) ($form->get('image')->getData() ?? ''));
+            if ($img !== '') {
+                $data->setImage($img);
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

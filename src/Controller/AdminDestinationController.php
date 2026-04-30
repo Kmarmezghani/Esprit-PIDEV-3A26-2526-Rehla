@@ -77,9 +77,16 @@ class AdminDestinationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Guarantee we get the image from POST data even if unmapped
+            $postData = $request->request->all('pays');
+            $img = $postData['image'] ?? '';
+
+            if ($img !== '') {
+                $pays->setImage($img);
+            }
+            
             $em->persist($pays);
             $em->flush();
-            $this->addFlash('success', 'Pays enregistré avec succès !');
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'pays']);
         }
 
@@ -115,9 +122,16 @@ class AdminDestinationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Guarantee we get the image from POST data even if unmapped
+            $postData = $request->request->all('ville');
+            $img = $postData['image'] ?? '';
+
+            if ($img !== '') {
+                $ville->setImage($img);
+            }
+            
             $em->persist($ville);
             $em->flush();
-            $this->addFlash('success', 'Ville enregistrée !');
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'ville']);
         }
 
@@ -241,6 +255,27 @@ class AdminDestinationController extends AbstractController
         try {
             $description = $aiService->generateForCountry($country);
             return $this->json(['description' => $description]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    #[Route('/api/ai/suggest-ville-profile', name: 'admin_api_ai_suggest_ville', methods: ['POST'])]
+    public function suggestVilleProfile(Request $request, \App\Service\DestinationGeminiService $aiService): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $ville = $data['ville'] ?? '';
+        
+        if (empty($ville)) {
+            return $this->json(['error' => 'Veuillez entrer un nom de ville.'], 400);
+        }
+        
+        try {
+            $suggestion = $aiService->suggestCityProfile($ville);
+            if (isset($suggestion['error'])) {
+                return $this->json(['error' => $suggestion['error']], 500);
+            }
+            return $this->json($suggestion);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }

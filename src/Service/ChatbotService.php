@@ -9,27 +9,47 @@ use Throwable;
 
 class ChatbotService
 {
-    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=';
+    /** gemini-pro retiré par Google (404). Ordre identique à UserRiskAnalysisService::GEMINI_MODELS. */
+    private const GEMINI_MODELS_TRY_ORDER = [
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-2.5-flash',
+    ];
 
     public function __construct(
         private HttpClientInterface $httpClient,
         private string $geminiApiKey4,
         private KnapsackOptimizerService $optimizer,
         private VilleRepository $villeRepository,
-        private PaysRepository $paysRepository
+        private PaysRepository $paysRepository,
+        private \App\Repository\PersonneRepository $personneRepository
     ) {}
 
-    public function getResponse(string $userMessage): string
+    public function getResponse(string $userMessage, ?int $userId = null): string
     {
         try {
             // 1. Fetch current database state for the context (Simplified)
             $allPays = $this->paysRepository->findAll();
-            $dbContent = "Destinations Rehla :\n";
+            $dbContent = "Catalogue Rehla (Destinations, Attractions, Activités Guidées) :\n";
             foreach ($allPays as $p) {
-                $villes = $p->getVilles();
-                $vNames = [];
-                foreach ($villes as $v) { $vNames[] = $v->getNom(); }
-                $dbContent .= "- " . $p->getNom() . " (" . implode(', ', $vNames) . ")\n";
+                $dbContent .= "- " . $p->getNom() . " :\n";
+                foreach ($p->getVilles() as $v) {
+                    $attractions = [];
+                    foreach ($v->getAttractions() as $a) {
+                        $attractions[] = $a->getNom();
+                    }
+                    
+                    $activites = [];
+                    foreach ($v->getActivites() as $act) {
+                        $guideName = $act->getGuide() ? " (Guide: " . $act->getGuide()->getPrenom() . " " . $act->getGuide()->getNom() . ")" : "";
+                        $activites[] = $act->getNom() . $guideName;
+                    }
+
+                    $attrText = !empty($attractions) ? " | Attractions: " . implode(', ', $attractions) : "";
+                    $actText = !empty($activites) ? " | Séjours/Activités Guidées: " . implode(', ', $activites) : "";
+                    
+                    $dbContent .= "   * " . $v->getNom() . $attrText . $actText . "\n";
+                }
             }
 
             // 2. Detect if the user is asking for a budget plan
@@ -45,12 +65,28 @@ class ChatbotService
                 }
             }
 
-            // 3. Prepare the System Prompt
-            $systemPrompt = "Tu es l'assistant Rehla. RÉPONDS TRÈS COURT.
+            // 3. Personalize Context with User Preferences
+            $prefText = "";
+            if ($userId) {
+                $personne = $this->personneRepository->find($userId);
+                if ($personne && count($personne->getPreferences()) > 0) {
+                    $pref = $personne->getPreferences()->first();
+                    $prefText = "\n\nINFORMATIONS SUR L'UTILISATEUR ACTUEL :\n"
+                        . "- Budget Max : " . ($pref->getBudgetMax() ? $pref->getBudgetMax() . "€" : "Non précisé") . "\n"
+                        . "- Types de voyages préférés : " . ($pref->getTypesVoyage() ?: "Non précisé") . "\n"
+                        . "- Centres d'intérêt : " . ($pref->getCentresInteret() ?: "Non précisé") . "\n"
+                        . "-> RÈGLE : Utilise ces informations pour personnaliser tes recommandations (propose des destinations ou activités qui correspondent à ses goûts et son budget).";
+                }
+            }
+
+            // 4. Prepare the System Prompt
+            $systemPrompt = "Tu es l'assistant Rehla.
             RÈGLES :
-            1. Utilise UNIQUEMENT ces destinations : " . $dbContent . "
-            2. Pas de longs discours.
-            3. Si budget mentionné, utilise : " . ($optimizationResult ? json_encode($optimizationResult['selected']) : 'aucun');
+            1. Utilise UNIQUEMENT le catalogue suivant : \n" . $dbContent . "
+            2. Sois direct et concis (pas de longs paragraphes).
+            3. Si on te demande des recommandations de séjours, des visites ou des activités, propose les options disponibles dans la ville (en mentionnant le nom du guide si c'est une activité guidée).
+            4. Si budget mentionné, utilise : " . ($optimizationResult ? json_encode($optimizationResult['selected']) : 'aucun')
+            . $prefText;
 
             return $this->callGemini($systemPrompt, $userMessage);
         } catch (\Exception $e) {
@@ -61,30 +97,52 @@ class ChatbotService
     private function callGemini(string $system, string $user): string
     {
         $prompt = $system . "\n\nUtilisateur : " . $user;
-        $url = self::ENDPOINT . $this->geminiApiKey4;
+        $lastError = '';
 
-        try {
-            $response = $this->httpClient->request('POST', $url, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'contents' => [['parts' => [['text' => $prompt]]]]
-                ],
-                'timeout' => 30
-            ]);
+        foreach (self::GEMINI_MODELS_TRY_ORDER as $model) {
+            $url = 'https://generativelanguage.googleapis.com/v1beta/models/'
+                . $model . ':generateContent?key=' . $this->geminiApiKey4;
 
-            $content = $response->getContent(false);
-            $statusCode = $response->getStatusCode();
+            try {
+                $response = $this->httpClient->request('POST', $url, [
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => [
+                        'contents' => [['parts' => [['text' => $prompt]]]],
+                        'generationConfig' => [
+                            'temperature' => 0.4,
+                            'maxOutputTokens' => 1024,
+                        ],
+                    ],
+                    'timeout' => 30,
+                ]);
 
-            if ($statusCode !== 200) {
-                return "Erreur API ({$statusCode}) : " . substr($content, 0, 100);
+                $content = $response->getContent(false);
+                $statusCode = $response->getStatusCode();
+
+                if ($statusCode === 200) {
+                    $data = json_decode($content, true);
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                    if ($text !== null && $text !== '') {
+                        return $text;
+                    }
+
+                    return "Désolé, je ne peux pas répondre pour le moment.";
+                }
+
+                $lastError = "Erreur API ({$statusCode}) modèle {$model} : " . substr($content, 0, 200);
+                if (in_array($statusCode, [404, 429, 503, 500])) {
+                    continue;
+                }
+
+                return $lastError;
+            } catch (Throwable $e) {
+                $lastError = 'Erreur Technique : ' . $e->getMessage();
+                continue;
             }
-
-            $data = json_decode($content, true);
-            return $data['candidates'][0]['content']['parts'][0]['text'] ?? "Désolé, je ne peux pas répondre pour le moment.";
-        } catch (Throwable $e) {
-            return "Erreur Technique : " . $e->getMessage();
         }
+
+        return "DEBUG Error: " . $lastError;
     }
 }

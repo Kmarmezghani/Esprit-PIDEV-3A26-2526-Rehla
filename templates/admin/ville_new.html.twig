@@ -53,6 +53,15 @@
 
             {{ form_widget(form.image, {'attr': {'id': 'hidden-image-input'}}) }}
 
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Profil Touristique</h6>
+                <button type="button" id="btn-suggest-profile" class="btn btn-sm" style="background-color: #fdf4f0; color: #b45309; border: 1px solid #b45309; border-radius: 20px;">
+                    🪄 Suggérer Profil via IA
+                </button>
+            </div>
+            <div id="ai-profile-hint" class="alert alert-info py-2" style="display: none; font-size: 0.9rem;">
+                <!-- Hint will be injected here -->
+            </div>
             <div class="row mb-3">
                 <div class="col-md-6">
                     {{ form_label(form.typeTourisme) }}
@@ -124,11 +133,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagePreview = document.getElementById('image-preview');
     const imageContainer = document.getElementById('image-preview-container');
     const hiddenImageInput = document.getElementById('hidden-image-input');
-    
-    if (!cityInput || !cityDatalist || !paysSelect) return;
+
+    // --- 3. GÉNÉRATION D'IMAGE ---
+    if (btnGenerateImage) {
+        btnGenerateImage.addEventListener('click', function() {
+            let cityName = '';
+            if (cityInput) {
+                cityName = (cityInput.value || '').trim();
+            }
+            if (!cityName) {
+                alert('Veuillez d\'abord taper un nom de ville dans le champ "Nom".');
+                return;
+            }
+
+            const originalText = btnGenerateImage.innerHTML;
+            btnGenerateImage.innerHTML = '⏳ Génération...';
+            btnGenerateImage.disabled = true;
+
+            fetch('/admin/destination/api/generate-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ type: 'ville', name: cityName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Erreur: ' + data.error);
+                } else if (data.url) {
+                    // Show preview
+                    const preview = document.getElementById('image-preview');
+                    const container = document.getElementById('image-preview-container');
+                    if (preview) preview.src = data.url;
+                    if (container) container.style.display = 'block';
+
+                    // Store filename in hidden field - try multiple selectors
+                    const hiddenField = document.getElementById('hidden-image-input')
+                        || document.getElementById('ville_image')
+                        || document.querySelector('input[type="hidden"][name*="image"]');
+                    if (hiddenField) hiddenField.value = data.filename;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur génération image:', error);
+                alert('Une erreur est survenue. Vérifiez la console.');
+            })
+            .finally(() => {
+                btnGenerateImage.innerHTML = originalText;
+                btnGenerateImage.disabled = false;
+            });
+        });
+    }
+
+    if (!cityInput || !paysSelect) return;
 
     // --- 1. CHARGEMENT DES VILLES ---
     function loadCitiesForCountry() {
+        if (!cityDatalist) return;
         const selectedOption = paysSelect.options[paysSelect.selectedIndex];
         const country = selectedOption && selectedOption.value ? selectedOption.text.trim() : '';
         
@@ -136,11 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!country || country.toLowerCase().includes('sélectionnez')) {
             cityInput.placeholder = "Sélectionnez d'abord un pays";
-            cityInput.disabled = true;
             return;
         }
         
-        cityInput.disabled = false;
         cityInput.placeholder = "Chargement des villes pour " + country + "...";
 
         fetch('https://countriesnow.space/api/v0.1/countries/cities', {
@@ -217,42 +275,41 @@ document.addEventListener('DOMContentLoaded', function() {
           });
       });
     }
-
-    // --- 3. GÉNÉRATION D'IMAGE ---
-    if (btnGenerateImage) {
-        btnGenerateImage.addEventListener('click', function() {
+    // --- 3. IA PROFIL TOURISTIQUE ---
+    const btnSuggestProfile = document.getElementById('btn-suggest-profile');
+    const hintDiv = document.getElementById('ai-profile-hint');
+    if (btnSuggestProfile && hintDiv) {
+        btnSuggestProfile.addEventListener('click', function() {
             let cityName = cityInput.value;
             if (!cityName || cityName.includes('Sélectionnez') || cityName.includes('Chargement')) {
                 alert('Veuillez d\'abord entrer un nom de ville.');
                 return;
             }
 
-            const originalText = btnGenerateImage.innerHTML;
-            btnGenerateImage.innerHTML = '⏳ Recherche...';
-            btnGenerateImage.disabled = true;
+            btnSuggestProfile.innerHTML = '⏳ Recherche...';
+            btnSuggestProfile.disabled = true;
+            hintDiv.style.display = 'none';
 
-            fetch('/admin/destination/api/generate-image', {
+            fetch('{{ path("admin_api_ai_suggest_ville") }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ type: 'ville', name: cityName })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ville: cityName })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert('Erreur: ' + data.error);
-                } else if (data.url) {
-                    imagePreview.src = data.url;
-                    imageContainer.style.display = 'block';
-                    if (hiddenImageInput) { hiddenImageInput.value = data.filename; }
+                    alert(data.error);
+                } else {
+                    hintDiv.innerHTML = '<strong>L\'IA conseille :</strong> Type : <em>' + data.typeTourisme + '</em> | Saison : <em>' + data.saison + '</em>';
+                    hintDiv.style.display = 'block';
                 }
             })
-            .catch(error => {
-                console.error('Error generating image:', error);
-                alert('Une erreur est survenue lors de la recherche d\'image.');
+            .catch(err => {
+                alert('Erreur lors de la suggestion.');
             })
             .finally(() => {
-                btnGenerateImage.innerHTML = originalText;
-                btnGenerateImage.disabled = false;
+                btnSuggestProfile.innerHTML = '🪄 Suggérer Profil via IA';
+                btnSuggestProfile.disabled = false;
             });
         });
     }

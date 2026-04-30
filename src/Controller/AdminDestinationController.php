@@ -11,6 +11,7 @@ use App\Form\AttractionType;
 use App\Repository\PaysRepository;
 use App\Repository\VilleRepository;
 use App\Repository\AttractionRepository;
+use App\Service\KMeansClusteringService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -326,5 +327,28 @@ class AdminDestinationController extends AbstractController
             'filename' => $filename,
             'url' => '/uploads/destinations/' . $filename
         ]);
+    }
+
+    #[Route('/clustering', name: 'admin_destination_clustering')]
+    public function clustering(KMeansClusteringService $clusteringService, Request $request): Response
+    {
+        $k = $request->query->getInt('k', 3);
+        $result = $clusteringService->clusterCities($k);
+
+        return $this->render('admin/clustering.html.twig', [
+            'clusters' => $result,
+            'k' => $k
+        ]);
+    }
+
+    #[Route('/api/clustering', name: 'admin_api_clustering', methods: ['POST'])]
+    public function apiClustering(KMeansClusteringService $clusteringService, Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $k = $data['k'] ?? 3;
+
+        $result = $clusteringService->clusterCities($k);
+
+        return $this->json($result);
     }
 }

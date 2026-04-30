@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}K-Means Clustering - Admin{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('home') }}">
+            <img src="{{ asset('assets/images/IMG_20260125_122708_191-removebg-preview.png') }}" alt="Rehla Logo" class="logo-default" style="height:50px; display:block;">
+            <img src="{{ asset('assets/images/bluelogo.png') }}" alt="Rehla Logo" class="logo-scrolled" style="height:50px; display:none;">
+            <span style="display: block; font-size: 14px ; color: #223f91;">Explore the World</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="oi oi-menu"></span> Menu
+        </button>
+
+        <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a href="{{ path('home') }}" class="nav-link">Accueil</a></li>
+                <li class="nav-item"><a href="{{ path('admin_users') }}" class="nav-link">Administration</a></li>
+                <li class="nav-item active"><a href="{{ path('admin_destination_index') }}" class="nav-link">Destinations</a></li>
+                <li class="nav-item"><a href="{{ path('admin_destination_clustering') }}" class="nav-link">Clustering</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
+            <div class="col-md-9 ftco-animate pb-5 text-center">
+                <p class="breadcrumbs"><span class="mr-2"><a href="{{ path('admin_destination_index') }}">Admin <i class="fa fa-chevron-right"></i></a></span> <span>Clustering <i class="fa fa-chevron-right"></i></span></p>
+                <h1 class="mb-0 bread">K-Means Clustering</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="ftco-section">
+    <div class="container">
+        <!-- Algorithm Explanation -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <div class="card" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="card-body p-5">
+                        <h3 class="mb-4" style="color: #223f91; font-weight: 700;">
+                            <i class="fa fa-cogs me-2"></i> Algorithme K-Means
+                        </h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 style="font-weight: 600; color: #333;">Principe:</h5>
+                                <p style="color: #666; line-height: 1.8;">
+                                    L'algorithme K-Means regroupe les villes similaires en K clusters basés sur leurs caractéristiques:
+                                </p>
+                                <ul style="color: #666; line-height: 2;">
+                                    <li><strong>Coordonnées géographiques</strong> (latitude, longitude)</li>
+                                    <li><strong>Type de tourisme</strong> (Seaside, Desert, Mountain, Urban, Cultural)</li>
+                                    <li><strong>Saison</strong> (Winter, Spring, Summer, Autumn, All Year)</li>
+                                    <li><strong>Prix moyen des attractions</strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 style="font-weight: 600; color: #333;">Étapes:</h5>
+                                <ol style="color: #666; line-height: 2;">
+                                    <li>Normalisation des données (0-1)</li>
+                                    <li>Initialisation des centroïdes (K-Means++)</li>
+                                    <li>Assignation des villes au centroïde le plus proche</li>
+                                    <li>Recalcul des centroïdes (moyenne du cluster)</li>
+                                    <li>Répétition jusqu'à convergence</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div>
+                                <label style="font-weight: 600; color: #333;">Nombre de clusters (K):</label>
+                                <select id="kSelect" class="form-control ml-2" style="width: auto; display: inline-block; border-radius: 10px;">
+                                    <option value="2" {{ k == 2 ? 'selected' : '' }}>2</option>
+                                    <option value="3" {{ k == 3 ? 'selected' : '' }}>3</option>
+                                    <option value="4" {{ k == 4 ? 'selected' : '' }}>4</option>
+                                    <option value="5" {{ k == 5 ? 'selected' : '' }}>5</option>
+                                    <option value="6" {{ k == 6 ? 'selected' : '' }}>6</option>
+                                </select>
+                            </div>
+                            <button id="runClustering" class="btn btn-primary" style="background: #223f91; border-radius: 10px; font-weight: 600;">
+                                <i class="fa fa-play me-2"></i> Exécuter K-Means
+                            </button>
+                            <div id="loading" style="display: none;">
+                                <i class="fa fa-spinner fa-spin"></i> Calcul en cours...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        {% if clusters.error is defined %}
+            <div class="alert alert-danger" style="border-radius: 15px;">
+                <i class="fa fa-exclamation-triangle me-2"></i> {{ clusters.error }}
+            </div>
+        {% else %}
+            <!-- Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+                        <div class="card-body p-4">
+                            <h5 style="font-weight: 700; color: #223f91; margin-bottom: 15px;">
+                                <i class="fa fa-chart-bar me-2"></i> Statistiques
+                            </h5>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div style="font-size: 32px; font-weight: 700; color: #223f91;">{{ clusters.k }}</div>
+                                    <div style="color: #666; font-size: 14px;">Clusters (K)</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div style="font-size: 32px; font-weight: 700; color: #f06d06;">{{ clusters.iterations }}</div>
+                                    <div style="color: #666; font-size: 14px;">Itérations</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div style="font-size: 32px; font-weight: 700; color: #16a34a;">
+                                        {% set totalCities = clusters.clusters|reduce((acc, cluster) => acc + cluster.count, 0) %}
+                                        {{ totalCities }}
+                                    </div>
+                                    <div style="color: #666; font-size: 14px;">Villes total</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div style="font-size: 32px; font-weight: 700; color: #9b59b6;">
+                                        {% set avgCities = (totalCities / clusters.k)|round(1) %}
+                                        {{ avgCities }}
+                                    </div>
+                                    <div style="color: #666; font-size: 14px;">Villes/cluster (moy)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clusters Visualization -->
+            <div class="row">
+                {% for cluster in clusters.clusters %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); border-top: 4px solid {{ cluster.color }};">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 style="font-weight: 700; color: #333;">
+                                        <span style="display: inline-block; width: 15px; height: 15px; background: {{ cluster.color }}; border-radius: 50%; margin-right: 10px;"></span>
+                                        Cluster {{ cluster.id + 1 }}
+                                    </h5>
+                                    <span class="badge" style="background: {{ cluster.color }}; color: white; font-size: 14px; padding: 8px 15px; border-radius: 20px;">
+                                        {{ cluster.count }} villes
+                                    </span>
+                                </div>
+                                
+                                <!-- Centroid Info -->
+                                <div class="mb-3 p-3" style="background: #f8f9fa; border-radius: 10px;">
+                                    <small style="color: #666; font-weight: 600;">Centroïde (normalisé):</small>
+                                    <div style="font-size: 12px; color: #333; margin-top: 5px;">
+                                        <strong>Lat:</strong> {{ cluster.centroid[0]|number_format(3) }} | 
+                                        <strong>Lng:</strong> {{ cluster.centroid[1]|number_format(3) }} | 
+                                        <strong>Type:</strong> {{ cluster.centroid[2]|number_format(1) }} | 
+                                        <strong>Saison:</strong> {{ cluster.centroid[3]|number_format(1) }} | 
+                                        <strong>Prix:</strong> {{ cluster.centroid[4]|number_format(3) }}
+                                    </div>
+                                </div>
+
+                                <!-- Cities List -->
+                                <div style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Ville</th>
+                                                <th>Pays</th>
+                                                <th>Type</th>
+                                                <th>Saison</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for city in cluster.cities %}
+                                                <tr>
+                                                    <td>{{ city.nom }}</td>
+                                                    <td>{{ city.paysId.nom }}</td>
+                                                    <td><span class="badge badge-info" style="font-size: 11px;">{{ city.typeTourisme }}</span></td>
+                                                    <td><span class="badge badge-secondary" style="font-size: 11px;">{{ city.saison }}</span></td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+document.getElementById('runClustering').addEventListener('click', function() {
+    const k = document.getElementById('kSelect').value;
+    const loading = document.getElementById('loading');
+    const button = this;
+    
+    loading.style.display = 'block';
+    button.disabled = true;
+    
+    fetch('{{ path('admin_api_clustering') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ k: parseInt(k) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        window.location.href = '{{ path('admin_destination_clustering') }}?k=' + k;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        loading.style.display = 'none';
+        button.disabled = false;
+        alert('Erreur lors du clustering');
+    });
+});
+</script>
+{% endblock %}

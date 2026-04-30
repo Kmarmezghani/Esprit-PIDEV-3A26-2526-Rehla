@@ -55,13 +55,13 @@
 		</div>
 	</nav>
 
-<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ ville.image ? asset('uploads/destinations/' ~ ville.image) : asset('assets/images/bg_1.jpg') }}');">
   <div class="overlay"></div>
   <div class="container">
     <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
       <div class="col-md-9 ftco-animate pb-5 text-center">
          <p class="breadcrumbs">
-            <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span> 
+            <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span>
             <span class="mr-2"><a href="{{ path('app_destination') }}">Destinations <i class="fa fa-chevron-right"></i></a></span>
             <span class="mr-2"><a href="{{ path('app_destination_villes', {'id': ville.paysId.id}) }}">{{ ville.paysId.nom }} <i class="fa fa-chevron-right"></i></a></span>
             <span>{{ ville.nom }} <i class="fa fa-chevron-right"></i></span>

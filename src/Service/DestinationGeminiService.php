@@ -16,9 +16,9 @@ class DestinationGeminiService
 
     public function generateForCountry(string $countryName): string
     {
-        $apiKey = $_ENV['GEMINI_API_KEY3'] ?? $_SERVER['GEMINI_API_KEY3'] ?? null;
+        $apiKey = $_ENV['GEMINI_API_KEY4'] ?? $_SERVER['GEMINI_API_KEY4'] ?? null;
         if (empty($apiKey)) {
-            throw new \RuntimeException('Clé API Gemini3 manquante dans le fichier .env');
+            throw new \RuntimeException('Clé API Gemini4 manquante dans le fichier .env');
         }
 
         $prompt = sprintf(
@@ -80,9 +80,9 @@ class DestinationGeminiService
 
     public function suggestCityProfile(string $cityName): array
     {
-        $apiKey = $_ENV['GEMINI_API_KEY3'] ?? $_SERVER['GEMINI_API_KEY3'] ?? null;
+        $apiKey = $_ENV['GEMINI_API_KEY4'] ?? $_SERVER['GEMINI_API_KEY4'] ?? null;
         if (empty($apiKey)) {
-            throw new \RuntimeException('Clé API Gemini3 manquante dans le fichier .env');
+            throw new \RuntimeException('Clé API Gemini4 manquante dans le fichier .env');
         }
 
         $prompt = sprintf(

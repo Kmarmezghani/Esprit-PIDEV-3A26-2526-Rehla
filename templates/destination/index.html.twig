@@ -116,6 +116,31 @@
 
 <section class="ftco-section">
    <div class="container">
+
+    {# ── Search Bar ── #}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form action="{{ path('app_destination') }}" method="get" class="form-inline justify-content-center">
+                <div class="input-group" style="max-width: 500px; width: 100%;">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher un pays..." value="{{ search }}" style="border-radius: 25px 0 0 25px; border: 2px solid #223f91;">
+                    {% if search %}
+                        <a href="{{ path('app_destination') }}" class="btn btn-outline-secondary" style="border: 2px solid #223f91; border-left: none;">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn" style="background-color: #223f91; color: white; border-radius: 0 25px 25px 0;">
+                        <i class="fa fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </form>
+            {% if search %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">Résultats pour: <strong>{{ search }}</strong></small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="row">
     {% for pays in paysList %}
        <div class="col-md-4 ftco-animate">

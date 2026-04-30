@@ -22,18 +22,26 @@ final class DestinationController extends AbstractController
         PaysRepository $paysRepository,
         PaginatorInterface $paginator
     ): Response {
-        $query = $paysRepository->createQueryBuilder('p')
-            ->orderBy('p.nom', 'ASC')
-            ->getQuery();
+        $search = $request->query->get('search', '');
+
+        $qb = $paysRepository->createQueryBuilder('p');
+
+        if (!empty($search)) {
+            $qb->where('p.nom LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        $qb->orderBy('p.nom', 'ASC');
 
         $paysList = $paginator->paginate(
-            $query,
+            $qb->getQuery(),
             $request->query->getInt('page', 1),
             6
         );
 
         return $this->render('destination/index.html.twig', [
             'paysList' => $paysList,
+            'search' => $search,
         ]);
     }
 

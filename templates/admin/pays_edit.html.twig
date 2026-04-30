@@ -84,8 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const paysSelect = document.getElementById('pays_nom');
     const descriptionInput = document.getElementById('pays_description');
 
-    if (!btnGenerateAi || !paysSelect || !descriptionInput) return;
-
+    if (btnGenerateAi && paysSelect && descriptionInput) {
     btnGenerateAi.addEventListener('click', function() {
         const countryName = paysSelect.options[paysSelect.selectedIndex]?.text || paysSelect.value;
         
@@ -125,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btnGenerateAi.disabled = false;
         });
     });
+    }
 
     // Image Generation Logic
     const btnGenerateImage = document.getElementById('btn-generate-image');

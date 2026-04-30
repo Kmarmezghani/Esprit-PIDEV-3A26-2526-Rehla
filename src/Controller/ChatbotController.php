@@ -20,7 +20,8 @@ class ChatbotController extends AbstractController
             return $this->json(['response' => 'Veuillez entrer un message.'], 400);
         }
 
-        $response = $chatbotService->getResponse($message);
+        $userId = $request->getSession()->get('user_id');
+        $response = $chatbotService->getResponse($message, $userId);
 
         return $this->json(['response' => $response]);
     }

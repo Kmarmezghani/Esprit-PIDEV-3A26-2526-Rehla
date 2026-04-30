@@ -77,4 +77,72 @@ class DestinationGeminiService
     {
         return trim($value ?? '');
     }
+
+    public function suggestCityProfile(string $cityName): array
+    {
+        $apiKey = $_ENV['GEMINI_API_KEY3'] ?? $_SERVER['GEMINI_API_KEY3'] ?? null;
+        if (empty($apiKey)) {
+            throw new \RuntimeException('Clé API Gemini3 manquante dans le fichier .env');
+        }
+
+        $prompt = sprintf(
+            "Tu es un expert en tourisme. Pour la ville de %s, choisis le meilleur typeTourisme. Tu DOIS choisir EXACTEMENT l'un de ces 5 mots anglais : Seaside, Desert, Mountain, Urban, Cultural. Choisis ensuite la meilleure saison. Tu DOIS choisir EXACTEMENT l'un de ces 5 mots anglais : Winter, Spring, Summer, Autumn, All Year. Ne traduis pas ces mots en français. Réponds UNIQUEMENT avec un objet JSON valide au format exact suivant: {\"typeTourisme\": \"...\", \"saison\": \"...\"}",
+            $this->safe($cityName)
+        );
+
+        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
+
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt]
+                            ]
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'responseMimeType' => 'application/json',
+                    ],
+                ],
+                'timeout' => 15,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $content = $response->getContent(false);
+
+            if ($statusCode !== 200) {
+                throw new \RuntimeException("Gemini HTTP {$statusCode}");
+            }
+
+            $data = json_decode($content, true);
+            $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+            if ($text === null) {
+                throw new \RuntimeException('Réponse IA invalide depuis Gemini.');
+            }
+
+            // Remove markdown code blocks if any
+            $text = preg_replace('/```json\s*/', '', $text);
+            $text = preg_replace('/```\s*/', '', $text);
+
+            $result = json_decode(trim($text), true);
+            
+            if (!$result || !isset($result['typeTourisme']) || !isset($result['saison'])) {
+                 return ['typeTourisme' => 'Non défini', 'saison' => 'Non défini'];
+            }
+
+            return [
+                'typeTourisme' => $result['typeTourisme'],
+                'saison' => $result['saison'],
+            ];
+
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
 }

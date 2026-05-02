@@ -17,6 +17,9 @@ return [
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
     App\SmsBundle\SmsBundle::class => ['all' => true],
     App\UserMailerBundle\UserMailerBundle::class => ['all' => true],
+    App\UserPdfBundle\UserPdfBundle::class => ['all' => true],
+    App\UserAvatarBundle\UserAvatarBundle::class => ['all' => true],
     CalendarBundle\CalendarBundle::class => ['all' => true],
     Liip\ImagineBundle\LiipImagineBundle::class => ['all' => true],
+    Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle::class => ['all' => true],
 ];

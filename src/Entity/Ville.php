@@ -48,6 +48,9 @@ class Ville
     #[ORM\Column(type: "string")]
     private string $saison;
 
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $image = null;
+
     public function getId()
     {
         return $this->id;
@@ -132,6 +135,17 @@ class Ville
         $this->saison = $value;
     }
 
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
+        return $this;
+    }
+
     #[ORM\OneToMany(mappedBy: "ville_id", targetEntity: Attraction::class)]
     private Collection $attractions;
 
@@ -140,7 +154,7 @@ class Ville
         return $this->attractions;
     }
 
-    #[ORM\OneToMany(mappedBy: "destination_id", targetEntity: Activite::class)]
+    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Activite::class)]
     private Collection $activites;
 
         public function getActivites(): Collection
@@ -152,7 +166,7 @@ class Ville
         {
             if (!$this->activites->contains($activite)) {
                 $this->activites[] = $activite;
-                $activite->setDestination_id($this);
+                $activite->setDestination($this);
             }
     
             return $this;
@@ -162,14 +176,14 @@ class Ville
         {
             if ($this->activites->removeElement($activite)) {
                 // set the owning side to null (unless already changed)
-                if ($activite->getDestination_id() === $this) {
-                    $activite->setDestination_id(null);
+                if ($activite->getDestination() === $this) {
+                    $activite->setDestination(null);
                 }
             }
     
             return $this;
         }
 
-    #[ORM\OneToMany(mappedBy: "destination_id", targetEntity: Ticket::class)]
+    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Ticket::class)]
     private Collection $tickets;
 }

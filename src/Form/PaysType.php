@@ -9,6 +9,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use App\Service\CountryApiService;
 
 class PaysType extends AbstractType
@@ -60,7 +63,43 @@ class PaysType extends AbstractType
                 'label' => 'Nombre de visites',
                 'required' => false,
                 'attr' => ['min' => 0],
+            ])
+            ->add('image', HiddenType::class, [
+                'required' => false,
+                'mapped' => false,
             ]);
+
+        // Sync hidden (edit). Create stays empty until POST / JS.
+        $builder->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $event): void {
+            $data = $event->getData();
+            if (!$data instanceof Pays) {
+                return;
+            }
+            $form = $event->getForm();
+            if (!$form->has('image')) {
+                return;
+            }
+            $form->get('image')->setData($data->getImage() ?? '');
+        });
+
+        // After children are submitted, copy unmapped image onto the entity (covers create + modifier).
+        $builder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event): void {
+            $form = $event->getForm();
+            if (!$form->isRoot()) {
+                return;
+            }
+            $data = $event->getData();
+            if (!$data instanceof Pays) {
+                return;
+            }
+            if (!$form->has('image')) {
+                return;
+            }
+            $img = trim((string) ($form->get('image')->getData() ?? ''));
+            if ($img !== '') {
+                $data->setImage($img);
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

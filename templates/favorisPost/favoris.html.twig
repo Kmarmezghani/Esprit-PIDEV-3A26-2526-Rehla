@@ -37,10 +37,7 @@
                                 class="rounded-circle"
                                 style="width:35px;height:35px;object-fit:cover;">
                         {% else %}
-                            <img src="{{ asset('assets/images/default-user.png') }}"
-                                alt="Profil"
-                                class="rounded-circle"
-                                style="width:35px;height:35px;object-fit:cover;">
+                            <span style="display:inline-block;width:35px;height:35px;border-radius:50%;overflow:hidden;vertical-align:middle;">{{ avatar_svg(app.session.get('user_prenom') ?? '', app.session.get('user_nom') ?? '') | raw }}</span>
                         {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"

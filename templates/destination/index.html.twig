@@ -36,8 +36,7 @@
                 <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
                      class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
             {% else %}
-                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                     class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
+                <span style="display:inline-block;width:35px;height:35px;border-radius:50%;overflow:hidden;vertical-align:middle;">{{ avatar_svg(app.session.get('user_prenom') ?? '', app.session.get('user_nom') ?? '') | raw }}</span>
             {% endif %}
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
@@ -117,12 +116,37 @@
 
 <section class="ftco-section">
    <div class="container">
+
+    {# ── Search Bar ── #}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form action="{{ path('app_destination') }}" method="get" class="form-inline justify-content-center">
+                <div class="input-group" style="max-width: 500px; width: 100%;">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher un pays..." value="{{ search }}" style="border-radius: 25px 0 0 25px; border: 2px solid #223f91;">
+                    {% if search %}
+                        <a href="{{ path('app_destination') }}" class="btn btn-outline-secondary" style="border: 2px solid #223f91; border-left: none;">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn" style="background-color: #223f91; color: white; border-radius: 0 25px 25px 0;">
+                        <i class="fa fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </form>
+            {% if search %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">Résultats pour: <strong>{{ search }}</strong></small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="row">
     {% for pays in paysList %}
        <div class="col-md-4 ftco-animate">
           <div class="project-wrap" style="position: relative; overflow: hidden; height: 100%;">
              <a href="{{ path('app_destination_villes', {'id': pays.id}) }}" style="display: block; color: inherit; text-decoration: none; height: 100%;">
-                <div class="img" style="background-image: url('{{ asset('assets/images/place-' ~ (loop.index % 5 + 1) ~ '.jpg') }}');">
+                <div class="img" style="background-image: url('{{ pays.image ? asset('uploads/destinations/' ~ pays.image) : asset('assets/images/place-' ~ (loop.index % 5 + 1) ~ '.jpg') }}');">
                     <span class="price">{{ pays.villes|length }} Cities</span>
                 </div>
                 <div class="text p-4 text-center">
@@ -260,6 +284,28 @@
 <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
 
 <form id="logoutFormHome" method="get" action="{{ path('app_logout') }}" style="display:none;"></form>
+
+<style>
+    .project-wrap {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 15px;
+        background: white;
+    }
+    .project-wrap:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
+    }
+    .project-wrap .img {
+        transition: all 0.6s ease;
+        border-radius: 15px 15px 0 0;
+    }
+    .project-wrap:hover .img {
+        transform: scale(1.08);
+    }
+    .project-wrap .text {
+        border-radius: 0 0 15px 15px;
+    }
+</style>
 
 <script>
 function confirmLogoutHome(e) {

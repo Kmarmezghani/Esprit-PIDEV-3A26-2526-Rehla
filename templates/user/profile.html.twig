@@ -36,9 +36,7 @@
                                  alt="Profil" class="rounded-circle"
                                  style="width:35px;height:35px;object-fit:cover;">
                         {% else %}
-                            <img src="{{ asset('assets/images/default-user.png') }}"
-                                 alt="Profil" class="rounded-circle"
-                                 style="width:35px;height:35px;object-fit:cover;">
+                            <span style="display:inline-block;width:35px;height:35px;border-radius:50%;overflow:hidden;vertical-align:middle;">{{ avatar_svg(app.session.get('user_prenom') ?? '', app.session.get('user_nom') ?? '') | raw }}</span>
                         {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
@@ -132,12 +130,10 @@
                                 <img src="{{ asset(cleanPath) }}" alt="Photo de profil"
                                      class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
                             {% else %}
-                                <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                                     class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                                {{ avatar_svg(personne.prenom, personne.nom) | raw }}
                             {% endif %}
                         {% else %}
-                            <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo de profil"
-                                 class="rounded-circle" style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
+                            <span style="display:inline-block;width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #223f91;">{{ avatar_svg(personne.prenom, personne.nom) | raw }}</span>
                         {% endif %}
                     </div>
                     <h5 class="mb-0 font-weight-bold" style="color:#1a1a2e;">

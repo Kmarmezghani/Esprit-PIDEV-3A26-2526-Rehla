@@ -4,5 +4,11 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+user_avatar_bundle:
+    resource:
+        path: ../src/UserAvatarBundle/Controller/
+        namespace: App\UserAvatarBundle\Controller
+    type: attribute
+
 tattali_calendar:
     resource: "@CalendarBundle/Resources/config/routing.yaml"

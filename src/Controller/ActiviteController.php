@@ -130,12 +130,14 @@ $activites = $paginator->paginate(
         }
     }
 
-    foreach ($activites as $activite) {
-        $activeHoldCount = $waitlistRepository->countActiveHoldsForActivity($activite);
+    $activeHoldsCounts = $waitlistRepository->countActiveHoldsForActivities();
 
-        $activityCanBook[$activite->getId()] =
-            ((int) $activite->getMaxPlaces() > 0) && ($activeHoldCount === 0);
-    }
+foreach ($activites as $activite) {
+    $activeHoldCount = $activeHoldsCounts[$activite->getId()] ?? 0;
+
+    $activityCanBook[$activite->getId()] =
+        ((int) $activite->getMaxPlaces() > 0) && ($activeHoldCount === 0);
+}
 
     $recommendedIds = array_map(
         fn($activity) => $activity->getId(),

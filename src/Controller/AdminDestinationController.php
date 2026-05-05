@@ -11,6 +11,7 @@ use App\Form\AttractionType;
 use App\Repository\PaysRepository;
 use App\Repository\VilleRepository;
 use App\Repository\AttractionRepository;
+use App\Service\KMeansClusteringService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -77,9 +78,16 @@ class AdminDestinationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Guarantee we get the image from POST data even if unmapped
+            $postData = $request->request->all('pays');
+            $img = $postData['image'] ?? '';
+
+            if ($img !== '') {
+                $pays->setImage($img);
+            }
+            
             $em->persist($pays);
             $em->flush();
-            $this->addFlash('success', 'Pays enregistré avec succès !');
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'pays']);
         }
 
@@ -115,9 +123,16 @@ class AdminDestinationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Guarantee we get the image from POST data even if unmapped
+            $postData = $request->request->all('ville');
+            $img = $postData['image'] ?? '';
+
+            if ($img !== '') {
+                $ville->setImage($img);
+            }
+            
             $em->persist($ville);
             $em->flush();
-            $this->addFlash('success', 'Ville enregistrée !');
             return $this->redirectToRoute('admin_destination_index', ['tab' => 'ville']);
         }
 
@@ -238,12 +253,102 @@ class AdminDestinationController extends AbstractController
         if (empty($country)) {
             return $this->json(['error' => 'Veuillez d\'abord sélectionner ou entrer un nom de pays.'], 400);
         }
-
         try {
             $description = $aiService->generateForCountry($country);
             return $this->json(['description' => $description]);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    #[Route('/api/ai/suggest-ville-profile', name: 'admin_api_ai_suggest_ville', methods: ['POST'])]
+    public function suggestVilleProfile(Request $request, \App\Service\DestinationGeminiService $aiService): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $ville = $data['ville'] ?? '';
+        
+        if (empty($ville)) {
+            return $this->json(['error' => 'Veuillez entrer un nom de ville.'], 400);
+        }
+        
+        try {
+            $suggestion = $aiService->suggestCityProfile($ville);
+            if (isset($suggestion['error'])) {
+                return $this->json(['error' => $suggestion['error']], 500);
+            }
+            return $this->json($suggestion);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    #[Route('/api/generate-image', name: 'admin_api_generate_image', methods: ['POST'])]
+    public function generateImage(Request $request, \App\Service\UnsplashService $unsplashService, EntityManagerInterface $em, \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface $params): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $type = $data['type'] ?? ''; // 'pays' or 'ville'
+        $id = $data['id'] ?? null;
+        $name = $data['name'] ?? '';
+
+        if (empty($name)) {
+            return $this->json(['error' => 'Veuillez entrer un nom pour la recherche.'], 400);
+        }
+
+        // Use Unsplash to find and download an image
+        $filename = $unsplashService->fetchAndSaveImage($name, $name);
+
+        if (!$filename) {
+            return $this->json(['error' => 'Erreur lors de la génération de l\'image (Vérifiez votre clé API Unsplash).'], 500);
+        }
+
+        // If we have an ID, save it to the database immediately
+        if ($id) {
+            $entity = ($type === 'pays') 
+                ? $em->getRepository(Pays::class)->find($id) 
+                : $em->getRepository(Ville::class)->find($id);
+
+            if ($entity) {
+                // DELETE OLD IMAGE FROM DISK
+                $oldImage = $entity->getImage();
+                if ($oldImage) {
+                    $projectDir = $params->get('kernel.project_dir');
+                    $oldFilePath = $projectDir . '/public/uploads/destinations/' . $oldImage;
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
+                }
+
+                $entity->setImage($filename);
+                $em->flush();
+            }
+        }
+
+        return $this->json([
+            'filename' => $filename,
+            'url' => '/uploads/destinations/' . $filename
+        ]);
+    }
+
+    #[Route('/clustering', name: 'admin_destination_clustering')]
+    public function clustering(KMeansClusteringService $clusteringService, Request $request): Response
+    {
+        $k = $request->query->getInt('k', 3);
+        $result = $clusteringService->clusterCities($k);
+
+        return $this->render('admin/clustering.html.twig', [
+            'clusters' => $result,
+            'k' => $k
+        ]);
+    }
+
+    #[Route('/api/clustering', name: 'admin_api_clustering', methods: ['POST'])]
+    public function apiClustering(KMeansClusteringService $clusteringService, Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $k = $data['k'] ?? 3;
+
+        $result = $clusteringService->clusterCities($k);
+
+        return $this->json($result);
     }
 }

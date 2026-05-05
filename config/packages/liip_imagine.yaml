@@ -1,0 +1,23 @@
+liip_imagine:
+    resolvers:
+        default:
+            web_path: ~
+
+    filter_sets:
+        cache: ~
+
+        # Filter for small city/country cards
+        squared_thumbnail:
+            quality: 75
+            filters:
+                thumbnail:
+                    size: [400, 400]
+                    mode: outbound
+
+        # Filter for large banners at the top of the page
+        banner:
+            quality: 80
+            filters:
+                thumbnail:
+                    size: [1200, 400]
+                    mode: outbound

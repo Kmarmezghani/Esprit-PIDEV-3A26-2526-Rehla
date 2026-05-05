@@ -55,13 +55,13 @@
 		</div>
 	</nav>
 
-<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('assets/images/bg_1.jpg')}}');">
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ ville.image ? asset('uploads/destinations/' ~ ville.image) : asset('assets/images/bg_1.jpg') }}');">
   <div class="overlay"></div>
   <div class="container">
     <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-center">
       <div class="col-md-9 ftco-animate pb-5 text-center">
          <p class="breadcrumbs">
-            <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span> 
+            <span class="mr-2"><a href="{{ path('home') }}">Accueil <i class="fa fa-chevron-right"></i></a></span>
             <span class="mr-2"><a href="{{ path('app_destination') }}">Destinations <i class="fa fa-chevron-right"></i></a></span>
             <span class="mr-2"><a href="{{ path('app_destination_villes', {'id': ville.paysId.id}) }}">{{ ville.paysId.nom }} <i class="fa fa-chevron-right"></i></a></span>
             <span>{{ ville.nom }} <i class="fa fa-chevron-right"></i></span>
@@ -138,6 +138,50 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
+    {# ── Similar Cities Section ── #}
+    {% if similarCities is not empty and similarCities|length > 0 %}
+    <section class="ftco-section" style="background: #f8f9fa;">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-12 text-center">
+                    <h2 style="font-weight: 700; color: #223f91; margin-bottom: 10px;">
+                        <i class="fa fa-map-marker-alt me-2"></i> Destinations similaires à {{ ville.nom }}
+                    </h2>
+                    <p style="color: #666;">Basé sur le type de tourisme, la saison, et les caractéristiques</p>
+                </div>
+            </div>
+            <div class="row">
+                {% for similar in similarCities %}
+                    <div class="col-md-3 ftco-animate">
+                        <div class="project-wrap" style="position: relative; overflow: hidden; height: 100%;">
+                            <a href="{{ path('app_destination_attractions', {'id': similar.city.id}) }}" style="display: block; color: inherit; text-decoration: none; height: 100%;">
+                                <div class="img" style="background-image: url('{{ similar.city.image ? asset('uploads/destinations/' ~ similar.city.image) : asset('assets/images/place-' ~ (loop.index % 5 + 1) ~ '.jpg') }}');">
+                                    <span class="price" style="background: rgba(34,63,145,0.9);">
+                                        {{ (similar.similarity * 100)|round(0) }}% similaire
+                                    </span>
+                                </div>
+                                <div class="text p-4 text-center">
+                                    <h3>{{ similar.city.nom }}</h3>
+                                    <p class="location"><span class="fa fa-map-marker"></span> {{ similar.city.paysId.nom }}</p>
+                                    <div class="mb-2">
+                                        <span class="badge badge-primary px-2 py-1" style="background-color: #223f91; border-radius: 20px; font-size: 11px;">
+                                            <i class="fa fa-tag"></i> {{ similar.city.typeTourisme }}
+                                        </span>
+                                        <span class="badge badge-info px-2 py-1" style="background-color: #e8f0fe; color: #223f91; border-radius: 20px; font-size: 11px; border: 1px solid #223f91;">
+                                            <i class="fa fa-sun-o"></i> {{ similar.city.saison }}
+                                        </span>
+                                    </div>
+                                    <p style="font-size: 12px; color: #666;">{{ similar.city.attractions|length }} attractions</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
     {% endif %}
 
 </div>

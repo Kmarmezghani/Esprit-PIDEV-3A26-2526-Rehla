@@ -7,6 +7,7 @@ use App\Entity\Ville;
 use App\Repository\PaysRepository;
 use App\Repository\VilleRepository;
 use App\Repository\AttractionRepository;
+use App\Service\KMeansClusteringService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,18 +23,26 @@ final class DestinationController extends AbstractController
         PaysRepository $paysRepository,
         PaginatorInterface $paginator
     ): Response {
-        $query = $paysRepository->createQueryBuilder('p')
-            ->orderBy('p.nom', 'ASC')
-            ->getQuery();
+        $search = $request->query->get('search', '');
+
+        $qb = $paysRepository->createQueryBuilder('p');
+
+        if (!empty($search)) {
+            $qb->where('p.nom LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        $qb->orderBy('p.nom', 'ASC');
 
         $paysList = $paginator->paginate(
-            $query,
+            $qb->getQuery(),
             $request->query->getInt('page', 1),
             6
         );
 
         return $this->render('destination/index.html.twig', [
             'paysList' => $paysList,
+            'search' => $search,
         ]);
     }
 
@@ -73,7 +82,8 @@ final class DestinationController extends AbstractController
         Ville $ville,
         Request $request,
         EntityManagerInterface $entityManager,
-        PaginatorInterface $paginator
+        PaginatorInterface $paginator,
+        KMeansClusteringService $clusteringService
     ): Response {
         // Increment visit count for the city
         $currentCount = $ville->getVisitCount() ?? 0;
@@ -93,9 +103,13 @@ final class DestinationController extends AbstractController
             9
         );
 
+        // Find similar cities using clustering
+        $similarCities = $clusteringService->findSimilarCities($ville, 4);
+
         return $this->render('destination/attractions.html.twig', [
-            'ville'       => $ville,
-            'attractions' => $attractions,
+            'ville'          => $ville,
+            'attractions'    => $attractions,
+            'similarCities'  => $similarCities,
         ]);
     }
 }

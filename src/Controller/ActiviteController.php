@@ -48,9 +48,13 @@ public function index(
     $activityMaintenanceService->refreshStatusesAndFlashSales();
 
     $destination = trim((string) $request->query->get('destination', ''));
-    $dateDebut = $request->query->get('date_debut');
+    $dateDebut = $request->query->get('dateDebut');
+    $dateDebut = is_string($dateDebut) ? $dateDebut : null;
     $dateFin = $request->query->get('date_fin');
+    $dateFin = is_string($dateFin) ? $dateFin : null;
+
     $prixMax = $request->query->get('prix_max');
+    $prixMax = is_string($prixMax) ? $prixMax : null;
 
     $queryBuilder = $activiteRepository->searchFrontQueryBuilder(
     $destination,
@@ -126,12 +130,14 @@ $activites = $paginator->paginate(
         }
     }
 
-    foreach ($activites as $activite) {
-        $activeHoldCount = $waitlistRepository->countActiveHoldsForActivity($activite);
+    $activeHoldsCounts = $waitlistRepository->countActiveHoldsForActivities();
 
-        $activityCanBook[$activite->getId()] =
-            ((int) $activite->getMaxPlaces() > 0) && ($activeHoldCount === 0);
-    }
+foreach ($activites as $activite) {
+    $activeHoldCount = $activeHoldsCounts[$activite->getId()] ?? 0;
+
+    $activityCanBook[$activite->getId()] =
+        ((int) $activite->getMaxPlaces() > 0) && ($activeHoldCount === 0);
+}
 
     $recommendedIds = array_map(
         fn($activity) => $activity->getId(),
@@ -318,9 +324,13 @@ public function show(
 
         $this->addFlash('success', 'Votre avis a été supprimé.');
 
-        return $this->redirectToRoute('activite_show', [
-            'id' => $activite->getId()
-        ]);
+       if (!$activite) {
+    throw $this->createNotFoundException('Activité non trouvée');
+}
+
+return $this->redirectToRoute('activite_show', [
+    'id' => $activite->getId()
+]);
     }
     #[Route('/activite/{id}/reserver', name: 'activite_reserver', methods: ['POST'])]
 public function reserver(

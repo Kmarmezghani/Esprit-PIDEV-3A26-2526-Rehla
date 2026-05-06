@@ -105,14 +105,22 @@ class Activite
     // --- Getters et Setters ---
     public function getId(): int { return $this->id; }
 
-    public function getNom(): string { return $this->nom ?? ''; }
-    public function setNom(?string $nom): self { $this->nom = $nom ?? ''; return $this; }
+    public function getNom(): ?string{ return $this->nom ?? ''; }
+    public function setNom(string $nom): self
+{
+    $this->nom = $nom;
+    return $this;
+}
 
     public function getDescription(): string { return $this->description ?? ''; }
     public function setDescription(?string $description): self { $this->description = $description ?? ''; return $this; }
 
-    public function getPrix(): float { return $this->prix ?? 0; }
-    public function setPrix(?float $prix): self { $this->prix = $prix ?? 0; return $this; }
+   public function getPrix(): ?float{ return $this->prix ?? 0; }
+    public function setPrix(float $prix): self
+{
+    $this->prix = $prix;
+    return $this;
+}
 
     public function getTypeActivite(): string { return $this->typeActivite ?? ''; }
     public function setTypeActivite(?string $typeActivite): self { $this->typeActivite = $typeActivite ?? ''; return $this; }

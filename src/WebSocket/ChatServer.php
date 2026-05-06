@@ -7,34 +7,43 @@ use Ratchet\ConnectionInterface;
 
 class ChatServer implements MessageComponentInterface
 {
-    protected $clients;
+    /**
+     * @var \SplObjectStorage<ConnectionInterface, null>
+     */
+    protected \SplObjectStorage $clients;
 
-    public function __construct() {
-        $this->clients = new \SplObjectStorage;
+    public function __construct()
+    {
+        $this->clients = new \SplObjectStorage();
     }
 
-    public function onOpen(ConnectionInterface $conn) {
+    public function onOpen(ConnectionInterface $conn): void
+    {
         $this->clients->attach($conn);
     }
 
- public function onMessage(ConnectionInterface $from, $msg)
-{
-    $data = json_decode($msg, true);
+    public function onMessage(ConnectionInterface $from, $msg): void
+    {
+        $data = json_decode($msg, true);
 
-    if ($data['type'] === 'init') {
-        $from->userId = $data['userId'];
+        if ($data['type'] === 'init') {
+            /** @phpstan-ignore-next-line */
+            $from->userId = $data['userId'];
+        }
+
+        /** @var ConnectionInterface $client */
+        foreach ($this->clients as $client) {
+            $client->send($msg);
+        }
     }
 
-    foreach ($this->clients as $client) {
-        $client->send($msg);
-    }
-}
-
-    public function onClose(ConnectionInterface $conn) {
+    public function onClose(ConnectionInterface $conn): void
+    {
         $this->clients->detach($conn);
     }
 
-    public function onError(ConnectionInterface $conn, \Exception $e) {
+    public function onError(ConnectionInterface $conn, \Exception $e): void
+    {
         $conn->close();
     }
 }

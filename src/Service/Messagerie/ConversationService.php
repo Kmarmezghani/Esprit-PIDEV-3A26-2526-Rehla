@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ConversationService
 {
-    public function getOrCreateConversation(Personne $u1, Personne $u2, EntityManagerInterface $em)
+    public function getOrCreateConversation(Personne $u1, Personne $u2, EntityManagerInterface $em) : Conversation
     {
 
         if ($u1->getId() > $u2->getId()) {

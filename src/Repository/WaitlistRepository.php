@@ -108,4 +108,25 @@ public function findActiveHoldForActivity(Activite $activite): ?Waitlist
         ->getQuery()
         ->getOneOrNullResult();
 }
+public function countActiveHoldsForActivities(): array
+{
+    $rows = $this->createQueryBuilder('w')
+        ->select('IDENTITY(w.activite) AS activiteId, COUNT(w.id) AS total')
+        ->andWhere('w.status = :status')
+        ->andWhere('w.holdExpiresAt IS NOT NULL')
+        ->andWhere('w.holdExpiresAt > :now')
+        ->setParameter('status', 'HOLD')
+        ->setParameter('now', new \DateTime())
+        ->groupBy('w.activite')
+        ->getQuery()
+        ->getArrayResult();
+
+    $result = [];
+
+    foreach ($rows as $row) {
+        $result[(int) $row['activiteId']] = (int) $row['total'];
+    }
+
+    return $result;
+}
 }

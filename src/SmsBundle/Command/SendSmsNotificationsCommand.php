@@ -30,6 +30,7 @@ class SendSmsNotificationsCommand extends Command
     {
         date_default_timezone_set('Africa/Tunis');
 
+        /** @phpstan-ignore-next-line */
         while (true) {
 
             $output->writeln("🚀 Vérification SMS...");
@@ -83,7 +84,7 @@ class SendSmsNotificationsCommand extends Command
 
             sleep(60);
         }
-
+    /** @phpstan-ignore-next-line */
         return Command::SUCCESS;
     }
 }

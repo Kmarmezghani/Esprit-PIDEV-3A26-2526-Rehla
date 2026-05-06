@@ -162,4 +162,5 @@ class Notification
         $this->is_sent_sms = $value;
         return $this;
     }
+    
 }

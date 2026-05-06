@@ -372,7 +372,7 @@ class BookingEmailService
         $safePrice = number_format($price, 2, '.', '');
 
         $qrContent = sprintf(
-            'http://192.168.1.37/rehla/public/booking-pass/booking_pass_%d.pdf',
+            'http://10.131.185.76/rehla/public/booking-pass/booking_pass_%d.pdf',
             $reservationId
         );
 

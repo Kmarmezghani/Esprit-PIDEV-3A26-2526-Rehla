@@ -11,6 +11,7 @@ use App\Entity\Post;
 use App\Entity\Personne;
 use App\Form\PostType; 
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 final class ProfilePostsController extends AbstractController
 {

@@ -13,7 +13,7 @@ use App\Form\PostType;
 use App\Entity\Favoris;
 use App\Entity\Favoris_post;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 final class FavorisController extends AbstractController
 {
      #[Route('/profil/posts/favoris', name: 'favoris_posts')]

@@ -190,7 +190,7 @@ PROMPT;
             CURLOPT_POST           => true,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_TIMEOUT        => 240,
+            CURLOPT_TIMEOUT        => 340,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
             CURLOPT_POSTFIELDS     => json_encode([
                 "contents" => [[

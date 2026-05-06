@@ -7,6 +7,9 @@ use App\Entity\Personne;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Notification;
 use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+
+
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
@@ -41,10 +44,10 @@ private ?int $id = null;
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
+    // public function setId($value)
+    // {
+    //     $this->id = $value;
+    // }
 
     public function getTitre()
     {
@@ -105,6 +108,13 @@ private ?int $id = null;
     {
         $this->image = $value;
     }
+    public function __construct()
+{
+    $this->commentaires = new ArrayCollection();
+    $this->favoris_posts = new ArrayCollection();
+    $this->likess = new ArrayCollection();
+    $this->notifications = new ArrayCollection();
+}
 
     #[ORM\OneToMany(mappedBy: "post_id", targetEntity: Commentaire::class)]
     private Collection $commentaires;
@@ -173,5 +183,9 @@ public function removeLikes(Likes $like): self
 public function getFavorisPosts(): Collection
 {
     return $this->favoris_posts;
+}
+public function getNotifications(): Collection
+{
+    return $this->notifications;
 }
 }

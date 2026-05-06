@@ -15,26 +15,39 @@ class GeoLocalisationService
         $this->client = $client;
     }
 
-   public function localize(string $imagePath): array
-{
-    $formData = new FormDataPart([
-        'image' => new DataPart(fopen($imagePath, 'r'), 'image.jpg')
-    ]);
+    /**
+     * @return array<string, mixed>
+     */
+    public function localize(string $imagePath): array
+    {
+        $file = fopen($imagePath, 'r');
 
-    try {
-        $response = $this->client->request('POST', 'http://127.0.0.1:5001/localize', [
-            'headers' => $formData->getPreparedHeaders()->toArray(),
-            'body' => $formData->bodyToIterable(),
+        if ($file === false) {
+            throw new \Exception('Impossible d’ouvrir le fichier image.');
+        }
+
+        $formData = new FormDataPart([
+            'image' => new DataPart($file, 'image.jpg')
         ]);
 
-        $content = $response->getContent(false); 
+        try {
+            $response = $this->client->request(
+                'POST',
+                'http://127.0.0.1:5001/localize',
+                [
+                    'headers' => $formData->getPreparedHeaders()->toArray(),
+                    'body' => $formData->bodyToIterable(),
+                ]
+            );
 
-        return json_decode($content, true);
+            $content = $response->getContent(false);
 
-    } catch (\Exception $e) {
-        throw new \Exception("Flask API error: " . $e->getMessage());
+            return json_decode($content, true);
+
+        } catch (\Exception $e) {
+            throw new \Exception(
+                'Flask API error: ' . $e->getMessage()
+            );
+        }
     }
-}
-
-
 }

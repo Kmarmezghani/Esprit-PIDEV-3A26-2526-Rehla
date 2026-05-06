@@ -26,6 +26,7 @@ use App\Service\SharePost\AyrshareService;
 use App\Service\Messagerie\ConversationService;
 use App\Entity\Message;
 use App\Entity\Conversation;
+use App\Repository\PostRepository;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class BlogController extends AbstractController
@@ -571,6 +572,7 @@ private function getFilteredPosts(Request $request, EntityManagerInterface $em)
     $sort = $request->query->get('sort');
     $order = $request->query->get('order');
 
+    /** @var PostRepository $repo */
     $repo = $em->getRepository(Post::class);
 
     if ($search) {

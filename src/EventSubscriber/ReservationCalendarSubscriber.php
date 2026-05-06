@@ -27,8 +27,11 @@ class ReservationCalendarSubscriber implements EventSubscriberInterface
     public function onCalendarSetData(CalendarEvent $calendar): void
     {
         $start = $calendar->getStart();
-        $end   = $calendar->getEnd();
+$end   = $calendar->getEnd();
 
+if (!$start instanceof \DateTimeInterface || !$end instanceof \DateTimeInterface) {
+    return;
+}
         $session = $this->requestStack->getSession();
         $userId  = $session->get('user_id');
 

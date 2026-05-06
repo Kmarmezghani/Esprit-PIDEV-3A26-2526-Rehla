@@ -55,10 +55,7 @@ class Reservation
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
+    
 
     public function getDateReservation()
     {
@@ -75,10 +72,11 @@ class Reservation
         return $this->dateDebut;
     }
 
-    public function setDateDebut($value)
-    {
-        $this->dateDebut = $value;
-    }
+    public function setDateDebut(\DateTimeInterface $value): self
+{
+    $this->dateDebut = $value;
+    return $this;
+}
 
     public function getDateFin()
     {
@@ -95,20 +93,22 @@ class Reservation
         return $this->statut;
     }
 
-    public function setStatut($value)
-    {
-        $this->statut = $value;
-    }
+    public function setStatut(string $value): self
+{
+    $this->statut = $value;
+    return $this;
+}
 
     public function getCoutTotal()
     {
         return $this->coutTotal;
     }
 
-    public function setCoutTotal($value)
-    {
-        $this->coutTotal = $value;
-    }
+    public function setCoutTotal(float $value): self
+{
+    $this->coutTotal = $value;
+    return $this;
+}
 
     public function getPersonne_id()
     {

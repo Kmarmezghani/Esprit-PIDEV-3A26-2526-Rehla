@@ -42,22 +42,16 @@ public function meteo($ville, $date, HttpClientInterface $client): JsonResponse
 
         // ✅ Fallback: use the first available forecast entry
         $first = $data['list'][0];
-       return $this->json([
-    'temp'        => round($forecast['main']['temp']),
-    'description' => $forecast['weather'][0]['description'],
-    'icon'        => $forecast['weather'][0]['icon'],
-    'humidity'    => $forecast['main']['humidity'],          // ← add this
-    'wind'        => round($forecast['wind']['speed'] * 3.6) // ← m/s → km/h
+return $this->json([
+    'temp'        => round($first['main']['temp']),
+    'description' => $first['weather'][0]['description'],
+    'icon'        => $first['weather'][0]['icon'],
+    'humidity'    => $first['main']['humidity'],
+    'wind'        => round($first['wind']['speed'] * 3.6)
 ]);
 
     } catch (\Exception $e) {
-       return $this->json([
-    'temp'        => round($forecast['main']['temp']),
-    'description' => $forecast['weather'][0]['description'],
-    'icon'        => $forecast['weather'][0]['icon'],
-    'humidity'    => $forecast['main']['humidity'],          // ← add this
-    'wind'        => round($forecast['wind']['speed'] * 3.6) // ← m/s → km/h
-]);
-    }
+    return $this->json(['error' => 'Météo indisponible'], 500);
+}
 }
 }

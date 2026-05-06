@@ -29,8 +29,8 @@ public function index(Request $request, EntityManagerInterface $em): Response
     if ($search) {
         $reservations = $em->getRepository(Reservation::class)
             ->createQueryBuilder('r')
-            ->leftJoin('r.personne_id', 'p')
-            ->leftJoin('r.destination', 'd')
+            >leftJoin('r.personne_id', 'p')->addSelect('p')
+    ->leftJoin('r.destination', 'd')->addSelect('d')
             ->where('p.nom LIKE :search OR d.nom LIKE :search OR r.statut LIKE :search')
             ->setParameter('search', '%' . $search . '%')
             ->getQuery()
@@ -44,7 +44,16 @@ public function index(Request $request, EntityManagerInterface $em): Response
             ->getQuery()
             ->getResult();
     } else {
-        $reservations = $em->getRepository(Reservation::class)->findAll();
+        $reservations = $em->getRepository(Reservation::class)
+    ->createQueryBuilder('r')
+    ->leftJoin('r.destination', 'd')
+    ->addSelect('d')
+    ->leftJoin('r.personne_id', 'p')
+    ->addSelect('p')
+    ->leftJoin('r.tickets', 't')
+    ->addSelect('t')
+    ->getQuery()
+    ->getResult();
         $tickets = $em->getRepository(Ticket::class)->findAll();
     }
 
@@ -161,7 +170,12 @@ public function reservationTickets(Reservation $reservation, EntityManagerInterf
     $tickets = $em->getRepository(Ticket::class)
                   ->findBy(['reservation_id' => $reservation]);
 
-    $reservations = $em->getRepository(Reservation::class)->findAll();
+    $reservations = $em->getRepository(Reservation::class)
+    ->createQueryBuilder('r')
+    ->leftJoin('r.destination', 'd')
+    ->addSelect('d')
+    ->getQuery()
+    ->getResult();
 
     return $this->render('admin/reservations_tickets.html.twig', [
         'reservations' => $reservations,
@@ -169,37 +183,40 @@ public function reservationTickets(Reservation $reservation, EntityManagerInterf
         'selectedReservation' => $reservation
     ]);
 }
+
 #[Route('/reservation/{id}/tickets', name: 'reservation_tickets')]
 public function getTickets(Reservation $reservation): Response
 {
     $events = [];
-    $ville = $reservation->getDestination()->getNom();
+
+    $ville = $reservation->getDestination()?->getNom();
 
     foreach ($reservation->getTickets() as $ticket) {
+
         $start = clone $reservation->getDateDebut();
         $end   = clone $reservation->getDateFin();
 
-        // Loop through every day of the reservation
         $current = clone $start;
+
         while ($current <= $end) {
             $events[] = [
-                'id'    => $ticket->getId() . '-' . $current->format('Y-m-d'),
-                'realId' => $ticket->getId(), // ← used for deletion
-                'title' => $ticket->getType(),
-                'start' => $current->format('Y-m-d'),
-                'end'   => $current->format('Y-m-d'),
+                'id'     => $ticket->getId() . '-' . $current->format('Y-m-d'),
+                'realId' => $ticket->getId(),
+                'title'  => $ticket->getType(),
+                'start'  => $current->format('Y-m-d'),
+                'end'    => $current->format('Y-m-d'),
                 'extendedProps' => [
-                    'ville'   => $ville,
+                    'ville'    => $ville,
                     'ticketId' => $ticket->getId()
                 ]
             ];
+
             $current->modify('+1 day');
         }
     }
 
     return $this->json($events);
 }
-
 #[Route('/mes-reservations', name: 'mes_reservations')]
 public function mesReservations(Request $request,
 PersonneRepository $personneRepository,
@@ -212,11 +229,13 @@ NotificationRepository $notificationRepository, EntityManagerInterface $em): Res
     }
 
     $reservations = $em->getRepository(Reservation::class)
-        ->createQueryBuilder('r')
-        ->where('r.personne_id = :id')
-        ->setParameter('id', $userId)
-        ->getQuery()
-        ->getResult();
+    ->createQueryBuilder('r')
+    ->leftJoin('r.destination', 'd')
+    ->addSelect('d')
+    ->where('r.personne_id = :id')
+    ->setParameter('id', $userId)
+    ->getQuery()
+    ->getResult();
 
     $hasUnreadActivityNotifications = false;
 $activityNotifications = [];

@@ -53,13 +53,16 @@ final class DestinationController extends AbstractController
         EntityManagerInterface $entityManager,
         PaginatorInterface $paginator
     ): Response {
-        // Increment visit count for the country
-        $currentCount = $pays->getVisitCount() ?? 0;
-        $pays->setVisitCount($currentCount + 1);
+        // Increment visit count for the country using getReference to avoid extra SELECT
+        $paysRef = $entityManager->getReference(Pays::class, $pays->getId());
+        $currentCount = $paysRef->getVisitCount() ?? 0;
+        $paysRef->setVisitCount($currentCount + 1);
         $entityManager->flush();
 
         $query = $entityManager->getRepository(Ville::class)
             ->createQueryBuilder('v')
+            ->leftJoin('v.attractions', 'a')
+            ->addSelect('a')
             ->where('v.pays_id = :pays')
             ->setParameter('pays', $pays)
             ->orderBy('v.nom', 'ASC')

@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 use App\Entity\Pays;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Attraction;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -14,6 +15,12 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[UniqueEntity(fields: ['nom', 'pays_id'], message: 'Cette ville existe déjà dans ce pays.')]
 class Ville
 {
+    public function __construct()
+    {
+        $this->attractions = new ArrayCollection();
+        $this->activites = new ArrayCollection();
+        $this->tickets = new ArrayCollection();
+    }
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -157,32 +164,32 @@ class Ville
     #[ORM\OneToMany(mappedBy: "destination", targetEntity: Activite::class)]
     private Collection $activites;
 
-        public function getActivites(): Collection
-        {
-            return $this->activites;
+    public function getActivites(): Collection
+    {
+        return $this->activites;
+    }
+
+    public function addActivite(Activite $activite): self
+    {
+        if (!$this->activites->contains($activite)) {
+            $this->activites[] = $activite;
+            $activite->setDestination($this);
         }
-    
-        public function addActivite(Activite $activite): self
-        {
-            if (!$this->activites->contains($activite)) {
-                $this->activites[] = $activite;
-                $activite->setDestination($this);
+
+        return $this;
+    }
+
+    public function removeActivite(Activite $activite): self
+    {
+        if ($this->activites->removeElement($activite)) {
+            // set the owning side to null (unless already changed)
+            if ($activite->getDestination() === $this) {
+                $activite->setDestination(null);
             }
-    
-            return $this;
         }
-    
-        public function removeActivite(Activite $activite): self
-        {
-            if ($this->activites->removeElement($activite)) {
-                // set the owning side to null (unless already changed)
-                if ($activite->getDestination() === $this) {
-                    $activite->setDestination(null);
-                }
-            }
-    
-            return $this;
-        }
+
+        return $this;
+    }
 
     #[ORM\OneToMany(mappedBy: "destination", targetEntity: Ticket::class)]
     private Collection $tickets;

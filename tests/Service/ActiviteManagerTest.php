@@ -14,6 +14,7 @@ class ActiviteManagerTest extends TestCase
         $a->setNom("Randonnée");
         $a->setPrix(100);
         $a->setDateDebut(new \DateTime('2026-06-01'));
+        
         $a->setDateFin(new \DateTime('2026-06-02'));
         $a->setGuide(null);
         $a->setMaxPlaces(0);

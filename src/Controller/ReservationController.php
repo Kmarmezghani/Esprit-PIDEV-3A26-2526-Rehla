@@ -29,8 +29,8 @@ public function index(Request $request, EntityManagerInterface $em): Response
     if ($search) {
         $reservations = $em->getRepository(Reservation::class)
             ->createQueryBuilder('r')
-            >leftJoin('r.personne_id', 'p')->addSelect('p')
-    ->leftJoin('r.destination', 'd')->addSelect('d')
+            ->leftJoin('r.personne_id', 'p')->addSelect('p')
+            ->leftJoin('r.destination', 'd')->addSelect('d')
             ->where('p.nom LIKE :search OR d.nom LIKE :search OR r.statut LIKE :search')
             ->setParameter('search', '%' . $search . '%')
             ->getQuery()

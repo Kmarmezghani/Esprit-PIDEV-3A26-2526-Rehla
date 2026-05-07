@@ -21,7 +21,6 @@ class UserController extends AbstractController
     // ─────────────────────────────────────────────────────────────
     //  Helper : vérifie qu'un utilisateur est bien connecté
     // ─────────────────────────────────────────────────────────────
-    private string $recaptchaSecret = '';
 
     private function requireLogin(Request $request): ?Response
     {
@@ -42,7 +41,7 @@ class UserController extends AbstractController
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT        => 5,
             CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
         ]);
         $raw = curl_exec($ch);
         curl_close($ch);
@@ -643,7 +642,7 @@ class UserController extends AbstractController
                 CURLOPT_TIMEOUT        => 5,
                 CURLOPT_HTTPHEADER     => ['Add-Padding: true', 'User-Agent: Rehla-App'],
                 CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_SSL_VERIFYHOST => 0,
             ]);
             $body     = curl_exec($ch);
             $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);

@@ -60,7 +60,11 @@
             "branch": "main",
             "version": "1.8",
             "ref": "d1227d002b70d1a1f941d91845fcd7ac7fbfc929"
-        }
+        },
+        "files": [
+            "./config/packages/liip_imagine.yaml",
+            "./config/routes/liip_imagine.yaml"
+        ]
     },
     "phpstan/phpstan": {
         "version": "2.1",
@@ -69,12 +73,10 @@
             "branch": "main",
             "version": "1.0",
             "ref": "5e490cc197fb6bb1ae22e5abbc531ddc633b6767"
-
         },
         "files": [
             "./phpstan.dist.neon"
         ]
-
     },
     "phpunit/phpunit": {
         "version": "11.5",
@@ -98,7 +100,10 @@
             "branch": "main",
             "version": "1.2",
             "ref": "e805aba9eff5372e2d149a9ff56566769e22819d"
-        }
+        },
+        "files": [
+            "./config/packages/stof_doctrine_extensions.yaml"
+        ]
     },
     "stripe/stripe-php": {
         "version": "20.0",

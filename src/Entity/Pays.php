@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Reservation;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -13,6 +14,11 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[UniqueEntity(fields: ['nom'], message: 'Ce pays existe déjà.')]
 class Pays
 {
+    public function __construct()
+    {
+        $this->villes = new ArrayCollection();
+        $this->reservations = new ArrayCollection();
+    }
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

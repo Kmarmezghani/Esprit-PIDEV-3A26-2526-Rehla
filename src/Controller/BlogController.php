@@ -77,14 +77,15 @@ if ($status === 'banned') {
     $users = $em->getRepository(Personne::class)->findAll();
     $groups = $personne->getGroupes();
 
-        $groups = $em->createQueryBuilder()
-        ->select('g')
-        ->from(\App\Entity\Groupe::class, 'g')
-        ->join('g.membres', 'm')
-        ->where('m = :user')
-        ->setParameter('user', $personne)
-        ->getQuery()
-        ->getResult();
+     $groups = $em->createQuery(
+    'SELECT g, c
+     FROM App\Entity\Groupe g
+     JOIN g.membres m
+     LEFT JOIN g.conversation c
+     WHERE m = :user'
+    )
+    ->setParameter('user', $personne)
+    ->getResult();
 
         $conversations = $em->createQueryBuilder()
             ->select('c')

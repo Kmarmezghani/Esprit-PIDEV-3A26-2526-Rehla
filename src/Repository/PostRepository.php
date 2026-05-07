@@ -16,14 +16,18 @@ class PostRepository extends ServiceEntityRepository
     }
 
 
-   public function findLatestPosts()
+public function findLatestPosts()
 {
-    return $this->createQueryBuilder('p')
-        ->leftJoin('p.commentaires', 'c')
-        ->addSelect('c')
-        ->orderBy('p.datePublication', 'DESC')
-        ->getQuery()
-        ->getResult();
+   return $this->createQueryBuilder('p')
+    ->leftJoin('p.commentaires', 'c')
+    ->addSelect('c')
+    ->leftJoin('p.likess', 'l')
+    ->addSelect('l')
+    ->leftJoin('p.favoris_posts', 'f') 
+    ->addSelect('f')                
+    ->orderBy('p.datePublication', 'DESC')
+    ->getQuery()
+    ->getResult();
 }
 
 public function searchByContent($keyword)
@@ -31,6 +35,8 @@ public function searchByContent($keyword)
     return $this->createQueryBuilder('p')
         ->leftJoin('p.commentaires', 'c')
         ->addSelect('c')
+        ->leftJoin('p.likess', 'l')  
+        ->addSelect('l')            
         ->where('p.contenu LIKE :keyword')
         ->setParameter('keyword', '%' . $keyword . '%')
         ->orderBy('p.datePublication', 'DESC')
@@ -41,6 +47,7 @@ public function findByLikes($minLikes)
 {
     return $this->createQueryBuilder('p')
         ->leftJoin('p.likess', 'l')
+        ->addSelect('l') 
         ->groupBy('p.id')
         ->having('COUNT(l.id) >= :minLikes')
         ->setParameter('minLikes', $minLikes)
@@ -50,7 +57,11 @@ public function findByLikes($minLikes)
 }
 public function findByDateFilter($filter)
 {
-    $qb = $this->createQueryBuilder('p');
+    $qb = $this->createQueryBuilder('p')
+    ->leftJoin('p.commentaires', 'c')
+    ->addSelect('c')
+    ->leftJoin('p.likess', 'l')
+    ->addSelect('l');
     $now = new \DateTime();
 
     if ($filter === 'today') {
@@ -95,22 +106,29 @@ public function findByExactDate($date)
     $end = (clone $start)->setTime(23, 59, 59);
 
     return $this->createQueryBuilder('p')
-        ->where('p.datePublication BETWEEN :start AND :end')
-        ->setParameter('start', $start)
-        ->setParameter('end', $end)
-        ->orderBy('p.datePublication', 'DESC')
-        ->getQuery()
-        ->getResult();
+    ->leftJoin('p.commentaires', 'c')
+    ->addSelect('c')
+    ->leftJoin('p.likess', 'l')
+    ->addSelect('l')
+    ->where('p.datePublication BETWEEN :start AND :end')
+    ->setParameter('start', $start)
+    ->setParameter('end', $end)
+    ->orderBy('p.datePublication', 'DESC')
+    ->getQuery()
+    ->getResult();
 }
 public function findSorted($sort, $order)
 {
-    $qb = $this->createQueryBuilder('p');
+     $qb = $this->createQueryBuilder('p')
+        ->leftJoin('p.likess', 'l')
+        ->addSelect('l'); 
 
     if ($sort === 'likes') {
-        $qb->leftJoin('p.likess', 'l')
-           ->groupBy('p.id')
-           ->orderBy('COUNT(l.id)', $order);
-    }
+    $qb->leftJoin('p.likess', 'l')
+       ->addSelect('l') 
+       ->groupBy('p.id')
+       ->orderBy('COUNT(l.id)', $order);
+}
 
     if ($sort === 'date') {
         $qb->orderBy('p.datePublication', $order);
@@ -123,6 +141,8 @@ public function findSorted($sort, $order)
 
     return $qb->getQuery()->getResult();
 }
+
+
 
     
 }

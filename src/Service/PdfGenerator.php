@@ -9,8 +9,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class PdfGenerator
 {
-    private $twig;
-    private $params;
+    private Environment $twig;
+private ParameterBagInterface $params;
+    
 
     public function __construct(Environment $twig, ParameterBagInterface $params)
     {

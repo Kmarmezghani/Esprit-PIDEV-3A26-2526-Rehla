@@ -123,7 +123,7 @@ Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown, sans explication
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT        => 30,
                 CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_SSL_VERIFYHOST => 0,
             ]);
             $raw      = curl_exec($ch);
             $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -166,7 +166,7 @@ Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown, sans explication
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT        => 30,
             CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
         ]);
         $raw      = curl_exec($ch);
         $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);

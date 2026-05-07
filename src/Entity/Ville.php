@@ -58,24 +58,26 @@ class Ville
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $image = null;
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
+    public function setId(int $value): self
     {
         $this->id = $value;
+        return $this;
     }
 
-    public function getNom()
+    public function getNom(): string
     {
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom(string $value): self
     {
         $this->nom = $value;
+        return $this;
     }
 
     public function getPaysId(): Pays
@@ -122,24 +124,26 @@ class Ville
         return $this;
     }
 
-    public function getTypeTourisme()
+    public function getTypeTourisme(): string
     {
         return $this->typeTourisme;
     }
 
-    public function setTypeTourisme($value)
+    public function setTypeTourisme(string $value): self
     {
         $this->typeTourisme = $value;
+        return $this;
     }
 
-    public function getSaison()
+    public function getSaison(): string
     {
         return $this->saison;
     }
 
-    public function setSaison($value)
+    public function setSaison(string $value): self
     {
         $this->saison = $value;
+        return $this;
     }
 
     public function getImage(): ?string

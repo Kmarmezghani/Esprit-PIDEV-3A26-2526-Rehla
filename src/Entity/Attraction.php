@@ -52,14 +52,15 @@ class Attraction
     #[ORM\Column(type: "boolean", nullable: true)]
     private ?bool $est_ferme;
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
+    public function setId(int $value): self
     {
         $this->id = $value;
+        return $this;
     }
 
     public function getNom(): string

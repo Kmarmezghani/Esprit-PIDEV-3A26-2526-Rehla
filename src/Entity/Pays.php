@@ -6,7 +6,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use App\Entity\Reservation;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -17,7 +16,6 @@ class Pays
     public function __construct()
     {
         $this->villes = new ArrayCollection();
-        $this->reservations = new ArrayCollection();
     }
 
     #[ORM\Id]
@@ -44,14 +42,15 @@ class Pays
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $image = null;
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
+    public function setId(int $value): self
     {
         $this->id = $value;
+        return $this;
     }
 
     public function getNom(): ?string
@@ -65,14 +64,15 @@ class Pays
         return $this;
     }
 
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(string $value): self
     {
         $this->description = $value;
+        return $this;
     }
 
     public function getVisitCount(): ?int
@@ -109,7 +109,7 @@ class Pays
     {
         if (!$this->villes->contains($ville)) {
             $this->villes[] = $ville;
-            $ville->setPays_id($this);
+            $ville->setPaysId($this);
         }
 
         return $this;
@@ -119,38 +119,8 @@ class Pays
     {
         if ($this->villes->removeElement($ville)) {
             // set the owning side to null (unless already changed)
-            if ($ville->getPays_id() === $this) {
-                $ville->setPays_id(null);
-            }
-        }
-
-        return $this;
-    }
-
-    #[ORM\OneToMany(mappedBy: "destination_id", targetEntity: Reservation::class)]
-    private Collection $reservations;
-
-    public function getReservations(): Collection
-    {
-        return $this->reservations;
-    }
-
-    public function addReservation(Reservation $reservation): self
-    {
-        if (!$this->reservations->contains($reservation)) {
-            $this->reservations[] = $reservation;
-            $reservation->setDestination_id($this);
-        }
-
-        return $this;
-    }
-
-    public function removeReservation(Reservation $reservation): self
-    {
-        if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
-            if ($reservation->getDestination_id() === $this) {
-                $reservation->setDestination_id(null);
+            if ($ville->getPaysId() === $this) {
+                $ville->setPaysId(null);
             }
         }
 

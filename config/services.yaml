@@ -2,7 +2,7 @@
 
 parameters:
     activities_directory: '%kernel.project_dir%/public/uploads/activities'
-    images_directory: '%kernel.project_dir%/public/uploads'
+    images_directory: 'C:/shared_uploads'
     gemini_api_key: '%env(GEMINI_API_KEY)%'
     gemini_api_key_4: '%env(GEMINI_API_KEY4)%'
     openrouter_api_key: '%env(OPENROUTER_API_KEY)%'

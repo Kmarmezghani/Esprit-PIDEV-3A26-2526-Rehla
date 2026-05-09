@@ -20,9 +20,12 @@
 {% else %}
 <div class="msg-row received-row">
 
-    <img class="avatar2"
-         src="{{ sender_photo ? asset(sender_photo) : asset('assets/images/default-user.png') }}">
-
+   <img class="avatar2"
+         src="{% if sender_photo %}
+            {{ path('file_show') }}?path={{ sender_photo|url_encode }}
+         {% else %}
+            {{ asset('assets/images/default-user.png') }}
+         {% endif %}">
     <div>
 
         {% if sender_name %}

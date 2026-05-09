@@ -222,14 +222,25 @@
         <!-- LIST -->
           <div class="messenger-list">
           
-          {% for item in chatList %}
+{% for item in chatList %}
 
-          <div class="messenger-item"
-          data-id="{{ item.user.id }}"
-          data-name="{{ item.user.nom }} {{ item.user.prenom }}"
-          data-photo="{{ item.user.profile_photo ? asset(item.user.profile_photo) : asset('assets/images/default-user.png') }}">
+<div class="messenger-item"
+     data-id="{{ item.user.id }}"
+     data-name="{{ item.user.nom }} {{ item.user.prenom }}"
+     data-photo="{% if item.user.profile_photo %}
+        {{ path('file_show') }}?path={{ item.user.profile_photo|url_encode }}
+     {% else %}
+        {{ asset('assets/images/default-user.png') }}
+     {% endif %}">
 
-              <img src="{{ asset(item.user.profile_photo ? item.user.profile_photo : 'assets/images/default-user.png') }}" class="avatar">
+    <img 
+    src="{% if item.user.profile_photo %}
+        {{ path('file_show') }}?path={{ item.user.profile_photo|url_encode }}
+    {% else %}
+        {{ asset('assets/images/default-user.png') }}
+    {% endif %}"
+    class="avatar">
+
 
               <div class="msg-content">
 
@@ -580,10 +591,13 @@
     <div class="d-flex align-items-center mb-2">
 
       <!-- IMAGE PROFIL -->
-    <img src="{{ post.personne_id and post.personne_id.profile_photo 
-    ? asset(post.personne_id.profile_photo) 
-    : asset('assets/img/bg_1.jpg') }}"
-     class="profile-img mr-2">
+    <img 
+src="{% if post.personne_id and post.personne_id.profile_photo %}
+    {{ path('file_show') }}?path={{ post.personne_id.profile_photo|url_encode }}
+{% else %}
+    {{ asset('assets/img/bg_1.jpg') }}
+{% endif %}"
+class="profile-img mr-2">
 
 
 
@@ -691,7 +705,7 @@
 
     <!-- IMAGE POST -->
    {% if post.image %}
-  <img src="{{ asset(post.image) }}"
+ <img src="{{ path('file_show') }}?path={{ post.image }}"
        class="img-fluid rounded mt-2"
        data-post="{{ post.id }}">
 {% endif %}
@@ -1089,7 +1103,13 @@
     {% for user in users %}
       <div class="participant-item" data-id="{{ user.id }}">
 
-        <img src="{{ asset(user.profile_photo ?? 'assets/images/default-user.png') }}" class="avatar">
+       <img 
+src="{% if user.profile_photo %}
+    {{ path('file_show') }}?path={{ user.profile_photo|url_encode }}
+{% else %}
+    {{ asset('assets/images/default-user.png') }}
+{% endif %}"
+class="avatar">
 
         <span class="name">
           {{ user.nom }} {{ user.prenom }}

@@ -456,7 +456,13 @@ public function getMessages($id, EntityManagerInterface $em): JsonResponse
 
 
 /*------------------------------------------------------posting--------------------------------------------------------*/
+#[Route('/file', name: 'file_show')]
+public function show(Request $request): Response
+{
+    $path = $request->query->get('path');
 
+    return new \Symfony\Component\HttpFoundation\BinaryFileResponse($path);
+}
 private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
    

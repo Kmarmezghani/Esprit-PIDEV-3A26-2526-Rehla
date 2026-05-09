@@ -1,12 +1,19 @@
 {
     "ahmed-bhs/doctrine-doctor": {
-        "version": "1.1",
+
+        "version": "1.0",
+
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
             "version": "0.1",
             "ref": "0a0c0e3972f784e628c4f759d2fb446e9eeb4959"
-        }
+
+        },
+        "files": [
+            "./config/packages/doctrine_doctor.yaml"
+        ]
+
     },
     "doctrine/deprecations": {
         "version": "1.1",
@@ -57,7 +64,13 @@
             "branch": "main",
             "version": "1.8",
             "ref": "d1227d002b70d1a1f941d91845fcd7ac7fbfc929"
-        }
+
+        },
+        "files": [
+            "./config/packages/liip_imagine.yaml",
+            "./config/routes/liip_imagine.yaml"
+        ]
+
     },
     "phpstan/phpstan": {
         "version": "2.1",

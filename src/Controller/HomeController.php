@@ -51,4 +51,4 @@ final class HomeController extends AbstractController
             'avisList'                       => $avisList,
         ]);
     }
-}
+}

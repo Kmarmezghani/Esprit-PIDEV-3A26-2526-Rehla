@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 use App\Entity\Pays;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Attraction;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -14,6 +15,12 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[UniqueEntity(fields: ['nom', 'pays_id'], message: 'Cette ville existe déjà dans ce pays.')]
 class Ville
 {
+    public function __construct()
+    {
+        $this->attractions = new ArrayCollection();
+        $this->activites = new ArrayCollection();
+        $this->tickets = new ArrayCollection();
+    }
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -51,24 +58,26 @@ class Ville
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $image = null;
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
+    public function setId(int $value): self
     {
         $this->id = $value;
+        return $this;
     }
 
-    public function getNom()
+    public function getNom(): string
     {
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom(string $value): self
     {
         $this->nom = $value;
+        return $this;
     }
 
     public function getPaysId(): Pays
@@ -115,24 +124,26 @@ class Ville
         return $this;
     }
 
-    public function getTypeTourisme()
+    public function getTypeTourisme(): string
     {
         return $this->typeTourisme;
     }
 
-    public function setTypeTourisme($value)
+    public function setTypeTourisme(string $value): self
     {
         $this->typeTourisme = $value;
+        return $this;
     }
 
-    public function getSaison()
+    public function getSaison(): string
     {
         return $this->saison;
     }
 
-    public function setSaison($value)
+    public function setSaison(string $value): self
     {
         $this->saison = $value;
+        return $this;
     }
 
     public function getImage(): ?string
@@ -157,32 +168,32 @@ class Ville
     #[ORM\OneToMany(mappedBy: "destination", targetEntity: Activite::class)]
     private Collection $activites;
 
-        public function getActivites(): Collection
-        {
-            return $this->activites;
+    public function getActivites(): Collection
+    {
+        return $this->activites;
+    }
+
+    public function addActivite(Activite $activite): self
+    {
+        if (!$this->activites->contains($activite)) {
+            $this->activites[] = $activite;
+            $activite->setDestination($this);
         }
-    
-        public function addActivite(Activite $activite): self
-        {
-            if (!$this->activites->contains($activite)) {
-                $this->activites[] = $activite;
-                $activite->setDestination($this);
+
+        return $this;
+    }
+
+    public function removeActivite(Activite $activite): self
+    {
+        if ($this->activites->removeElement($activite)) {
+            // set the owning side to null (unless already changed)
+            if ($activite->getDestination() === $this) {
+                $activite->setDestination(null);
             }
-    
-            return $this;
         }
-    
-        public function removeActivite(Activite $activite): self
-        {
-            if ($this->activites->removeElement($activite)) {
-                // set the owning side to null (unless already changed)
-                if ($activite->getDestination() === $this) {
-                    $activite->setDestination(null);
-                }
-            }
-    
-            return $this;
-        }
+
+        return $this;
+    }
 
     #[ORM\OneToMany(mappedBy: "destination", targetEntity: Ticket::class)]
     private Collection $tickets;

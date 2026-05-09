@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Tests;
-
 namespace App\Tests\Service;
 
 use App\Entity\Post;

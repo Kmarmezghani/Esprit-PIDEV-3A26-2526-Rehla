@@ -14,9 +14,13 @@ class AvisRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Avis::class);
     }
-    public function findByActivite($activite)
+   public function findByActivite($activite)
 {
     return $this->createQueryBuilder('a')
+        ->leftJoin('a.personne', 'p')
+        ->addSelect('p')
+        ->leftJoin('a.activite', 'act')
+        ->addSelect('act')
         ->andWhere('a.activite = :act')
         ->setParameter('act', $activite)
         ->orderBy('a.dateAvis', 'DESC')
@@ -24,13 +28,29 @@ class AvisRepository extends ServiceEntityRepository
         ->getResult();
 }
 public function findOneByPersonneAndActivite(Personne $personne, Activite $activite): ?Avis
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.personne = :personne')
-            ->andWhere('a.activite = :activite')
-            ->setParameter('personne', $personne)
-            ->setParameter('activite', $activite)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
+{
+    return $this->createQueryBuilder('a')
+        ->leftJoin('a.personne', 'p')
+        ->addSelect('p')
+        ->leftJoin('a.activite', 'act')
+        ->addSelect('act')
+        ->andWhere('a.personne = :personne')
+        ->andWhere('a.activite = :activite')
+        ->setParameter('personne', $personne)
+        ->setParameter('activite', $activite)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+public function findLatestWithRelations(int $limit)
+{
+    return $this->createQueryBuilder('a')
+        ->leftJoin('a.personne', 'p')   // charge personne
+        ->addSelect('p')
+        ->leftJoin('a.activite', 'act') // charge activite
+        ->addSelect('act')
+        ->orderBy('a.id', 'DESC')
+        ->setMaxResults($limit)
+        ->getQuery()
+        ->getResult();
+}
 }

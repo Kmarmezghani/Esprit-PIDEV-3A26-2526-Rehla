@@ -1,4 +1,7 @@
 package Controllers;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.*;
 
 import javafx.animation.KeyFrame;
@@ -41,10 +44,7 @@ import services.*;
 import java.io.File;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javafx.collections.ListChangeListener;
 import util.Session;
@@ -112,6 +112,7 @@ private PostService postService = new PostService();
     private Image shareImage;
     private Image editImage;
     private Image deleteImage;
+    private static final String UPLOAD_DIR = "C:/shared_uploads/";
     private static final Image HEART_EMPTY =
             new Image(ClientPostsController.class
                     .getResource("/Backoffice/icons/blackHeart.png")
@@ -867,7 +868,12 @@ private PostService postService = new PostService();
         // ================= IMAGE (OPTIONNELLE) =================
         if (post.getImage() != null && !post.getImage().isBlank()) {
 
-            File file = new File(post.getImage());
+            String fileName = post.getImage()
+                    .replace("/uploads/", "");
+
+            File file = new File(
+                    UPLOAD_DIR + fileName
+            );
 
             if (file.exists()) {
 
@@ -1517,10 +1523,43 @@ private PostService postService = new PostService();
 
     private void savePost(String contenu, double score) {
 
-        String imagePath = selectedImageFile != null
-                ? selectedImageFile.getAbsolutePath()
-                : null;
+        String imagePath = null;
 
+        // ================= IMAGE =================
+        if (selectedImageFile != null) {
+
+            try {
+
+                // créer dossier si inexistant
+                Files.createDirectories(Paths.get(UPLOAD_DIR));
+
+                // nom unique
+                String fileName = UUID.randomUUID()
+                        + "_"
+                        + selectedImageFile.getName();
+
+                // destination réelle
+                Path destination = Paths.get(UPLOAD_DIR, fileName);
+
+                // copie image
+                Files.copy(
+                        selectedImageFile.toPath(),
+                        destination,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+
+                // chemin enregistré en BD
+                imagePath = "/uploads/" + fileName;
+
+                System.out.println("Image copiée vers : "
+                        + destination.toAbsolutePath());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // ================= POST =================
         Post newPost = new Post(
                 0,
                 "",
@@ -1550,8 +1589,6 @@ private PostService postService = new PostService();
 
         postsContainer.getChildren()
                 .add(0, createPostCard(savedPost, singleCount));
-
-
 
         txtNewPost.clear();
         selectedImageFile = null;

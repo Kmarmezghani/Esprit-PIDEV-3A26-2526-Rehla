@@ -202,10 +202,18 @@
               <div class="group-item"
                   data-id="{{ group.id }}"
                   data-name="{{ group.nom }}"
-                  data-photo="{{ group.image ? asset(group.image) : asset('assets/images/default-user.png') }}">
+                  data-photo="{% if group.image %}
+                {{ path('file_show') }}?path={{ group.image|url_encode }}
+             {% else %}
+                {{ asset('assets/images/default-user.png') }}
+             {% endif %}">
 
                   <div class="group-avatar">
-                      <img src="{{ group.image ? asset(group.image) : asset('assets/images/default-user.png') }}">
+                      {% if group.image %}
+                          <img src="{{ path('file_show') }}?path={{ group.image|url_encode }}">
+                      {% else %}
+                          <img src="{{ asset('assets/images/default-user.png') }}">
+                      {% endif %}
                   </div>
 
                   <div class="group-name">
@@ -308,7 +316,7 @@
            href="#" id="userDropdown" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {% if app.session.get('user_photo') %}
-                <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
+                <img  src="{{ path('file_show') }}?path={{ app.session.get('user_photo')|url_encode }}" alt="Photo de profil"
                      class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
             {% else %}
                 <span style="display:inline-block;width:35px;height:35px;border-radius:50%;overflow:hidden;vertical-align:middle;">{{ avatar_svg(app.session.get('user_prenom') ?? '', app.session.get('user_nom') ?? '') | raw }}</span>
@@ -632,7 +640,9 @@ class="profile-img mr-2">
           <a class="dropdown-item open-edit"
             data-id="{{ post.id }}"
             data-contenu="{{ post.contenu }}"
-            data-image="{{ post.image }}">
+            data-image="{% if post.image %}
+                {{ path('file_show') }}?path={{ post.image|url_encode }}
+            {% endif %}"
             <i class="fa fa-edit"></i> Modifier
           </a>
           <a class="dropdown-item text-danger"
@@ -860,9 +870,13 @@ class="profile-img mr-2">
     {% for comment in post.commentaires %}
       <div class="comment-box">
 
-        <img src="{{ comment.personne_id.profile_photo ? asset(comment.personne_id.profile_photo) : asset('assets/images/bg_2.jpg') }}"
-             class="comment-avatar">
-
+       <img 
+src="{% if comment.personne_id.profile_photo %}
+    {{ path('file_show') }}?path={{ comment.personne_id.profile_photo|url_encode }}
+{% else %}
+    {{ asset('assets/images/bg_2.jpg') }}
+{% endif %}"
+class="comment-avatar">
         <div class="comment-bubble">
           <div class="comment-header">
             <strong>{{ comment.personne_id.nom }} {{ comment.personne_id.prenom }}</strong>
@@ -939,10 +953,10 @@ class="profile-img mr-2">
   <!-- FOOTER -->
 <form method="POST" id="commentForm">
   <div class="popup-footer">
-
-    {% if app.session.get('user_photo') %}
-  <img src="{{ asset(app.session.get('user_photo')) }}" 
-       class="comment-avatar-small">
+{% if app.session.get('user_photo') %}
+  <img 
+  src="{{ path('file_show') }}?path={{ app.session.get('user_photo')|url_encode }}"
+  class="comment-avatar-small">
 {% else %}
   <span style="display:inline-block;width:36px;height:36px;border-radius:50%;overflow:hidden;vertical-align:middle;">{{ avatar_svg(app.session.get('user_prenom') ?? '', app.session.get('user_nom') ?? '') | raw }}</span>
 {% endif %}

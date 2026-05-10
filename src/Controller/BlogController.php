@@ -267,16 +267,21 @@ public function createGroup(Request $request, EntityManagerInterface $em): JsonR
                 $groupe->addMembre($user);
             }
         }
-        if ($imageFile) {
+       if ($imageFile) {
+
             $newFilename = uniqid().'.'.$imageFile->guessExtension();
 
-            $imageFile->move(
-                $this->getParameter('kernel.project_dir') . '/public/uploads/groups',
-                $newFilename
-            );
+            $dir = 'C:/shared_uploads/groups';
 
-            $groupe->setImage('uploads/groups/' . $newFilename);
-        }
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
+            }
+
+            $imageFile->move($dir, $newFilename);
+
+            // DB = chemin complet
+            $groupe->setImage($dir . '/' . $newFilename);
+}
 
         $em->persist($groupe);
         $em->flush();
@@ -362,20 +367,26 @@ public function send(Request $request, EntityManagerInterface $em)
     $msg->setConversation($conv);
 
     // 📸 UPLOAD IMAGE
-    if ($imageFile) {
-        $newFilename = uniqid().'.'.$imageFile->guessExtension();
+if ($imageFile) {
 
-        try {
-            $imageFile->move(
-                $this->getParameter('kernel.project_dir') . '/public/uploads/chat',
-                $newFilename
-            );
+    $newFilename = uniqid().'.'.$imageFile->guessExtension();
 
-            $msg->setImage('uploads/chat/' . $newFilename);
-        } catch (FileException $e) {
-            return $this->json(['error' => 'Upload failed']);
-        }
+    $dir = 'C:/shared_uploads/chat';
+
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
     }
+
+    try {
+        $imageFile->move($dir, $newFilename);
+
+        // 🔥 IMPORTANT : DB = chemin COMPLET
+        $msg->setImage($dir . '/' . $newFilename);
+
+    } catch (FileException $e) {
+        return $this->json(['error' => 'Upload failed']);
+    }
+}
 
     $em->persist($msg);
     $em->flush();

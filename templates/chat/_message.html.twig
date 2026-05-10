@@ -8,7 +8,7 @@
     <div>
 
         {% if image %}
-            <img src="/{{ image }}" class="chat-img">
+            <img src="{{ path('file_show') }}?path={{ image|url_encode }}" class="chat-img">
         {% else %}
             <div class="msg sent">{{ message }}</div>
         {% endif %}
@@ -33,7 +33,7 @@
         {% endif %}
 
         {% if image %}
-            <img src="/{{ image }}" class="chat-img">
+            <img src="{{ path('file_show') }}?path={{ image|url_encode }}" class="chat-img">
         {% else %}
             <div class="msg received">{{ message }}</div>
         {% endif %}

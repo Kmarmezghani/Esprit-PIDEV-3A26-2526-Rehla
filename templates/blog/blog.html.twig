@@ -1481,13 +1481,16 @@ document.addEventListener("DOMContentLoaded", function () {
       postIdInput.value = id;
       contenuInput.value = contenu;
 
-      if (image) {
-        imagePreview.src = "/" + image;
-      } else {
-        imagePreview.src = "/assets/images/bg_1.jpg";
-      }
+        if (image) {
 
-      // 🔥 action dynamique (route Symfony)
+        imagePreview.src = image;
+
+    } else {
+
+        imagePreview.src = "/assets/images/bg_1.jpg";
+    }
+
+  
       form.action = "/post/edit/" + id;
 
       // afficher popup

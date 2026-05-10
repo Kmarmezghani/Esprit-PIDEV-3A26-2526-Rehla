@@ -624,16 +624,45 @@ public function delete(Post $post, EntityManagerInterface $em): Response
 
     return $this->redirectToRoute('blog');
 }
+
 #[Route('/post/edit/{id}', name: 'post_edit', methods: ['POST'])]
-public function edit(Request $request, Post $post, EntityManagerInterface $em): Response
+public function edit(
+    Request $request,
+    Post $post,
+    EntityManagerInterface $em
+): Response
 {
-    $post->setContenu($request->request->get('contenu'));
+    $post->setContenu(
+        $request->request->get('contenu')
+    );
 
     $imageFile = $request->files->get('image');
+
     if ($imageFile) {
-        $newFilename = uniqid().'.'.$imageFile->guessExtension();
-        $imageFile->move($this->getParameter('images_directory'), $newFilename);
-        $post->setImage('uploads/'.$newFilename);
+
+        // dossier partagé
+        $uploadDir = 'C:/shared_uploads/';
+
+        // créer dossier si inexistant
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // nom unique
+        $newFilename =
+            uniqid('post_') . '.' . $imageFile->guessExtension();
+
+        // déplacement fichier
+        $imageFile->move($uploadDir, $newFilename);
+
+        // chemin COMPLET
+        $fullPath = $uploadDir . $newFilename;
+
+        // uniformiser slashs
+        $fullPath = str_replace('\\', '/', $fullPath);
+
+        // sauvegarde DB
+        $post->setImage($fullPath);
     }
 
     $em->flush();

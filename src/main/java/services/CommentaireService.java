@@ -101,6 +101,7 @@ public class CommentaireService  {
         SELECT c.*, 
                p.nom AS p_nom, 
                p.prenom AS p_prenom,
+               p.profile_photo,
                po.contenu AS post_contenu
         FROM commentaire c
         JOIN personne p ON c.personne_id = p.id
@@ -124,6 +125,7 @@ public class CommentaireService  {
                 auteur.setId(rs.getInt("personne_id"));
                 auteur.setNom(rs.getString("p_nom"));
                 auteur.setPrenom(rs.getString("p_prenom"));
+                auteur.setProfilePhoto(rs.getString("profile_photo"));
                 c.setAuteur(auteur);
 
                 // Post complet
@@ -143,8 +145,8 @@ public class CommentaireService  {
     }
     public List<Commentaire> getCommentairesByPost(Post post) {
         List<Commentaire> commentaires = new ArrayList<>();
-        String sql = "SELECT c.id, c.contenu, c.dateCommentaire, p.id AS auteur_id, p.prenom, p.nom " +
-                "FROM commentaire c " +
+        String sql = "SELECT c.id, c.contenu, c.dateCommentaire, p.id AS auteur_id, p.prenom, p.nom , p.profile_photo" +
+                " FROM commentaire c " +
                 "JOIN personne p ON c.personne_id = p.id " +
                 "WHERE c.post_id = ?";
         try {
@@ -166,6 +168,7 @@ public class CommentaireService  {
                 auteur.setId(rs.getInt("auteur_id"));
                 auteur.setPrenom(rs.getString("prenom"));
                 auteur.setNom(rs.getString("nom"));
+                auteur.setProfilePhoto(rs.getString("profile_photo"));
                 c.setAuteur(auteur);
 
                 // Post

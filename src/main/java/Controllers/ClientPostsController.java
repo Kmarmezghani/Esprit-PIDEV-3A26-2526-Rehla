@@ -258,20 +258,24 @@ private PostService postService = new PostService();
     @FXML
     private void goToMyProfile(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogProfileView.fxml"));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/Frontoffice/blogProfileView.fxml")
+            );
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
-                    Objects.requireNonNull(getClass().getResource("/Frontoffice/css/blog_styles.css")).toExternalForm()
+                    Objects.requireNonNull(
+                            getClass().getResource("/Frontoffice/css/blog_styles.css")
+                    ).toExternalForm()
             );
 
-            Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
-            else stage.getScene().setRoot(root);
+            MenuItem menuItem = (MenuItem) event.getSource();
+            Stage stage = (Stage) menuItem.getParentPopup().getOwnerWindow();
 
-            root.applyCss();
-            root.layout();
+            stage.setScene(scene);
+            stage.show();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -775,9 +779,14 @@ private PostService postService = new PostService();
 
 // Avatar
         ImageView avatar = new ImageView();
+//-----------------------------------------------------------------------
+        String path = null;
 
-        String path = currentUser.getProfilePhoto();
-
+        if (post.getAuteur() != null) {
+            path = post.getAuteur().getProfilePhoto();
+        }
+        System.out.println("PROFILE PHOTO = " + path);
+//--------------------------------------------------------------------
         if (path != null && !path.isBlank()) {
 
             File file = new File(path.trim());

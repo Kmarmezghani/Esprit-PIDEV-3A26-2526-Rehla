@@ -111,23 +111,31 @@ public class UpdatePostController {
 
     private String copierImagePath(File imageFile) throws IOException {
 
-        String dossier = System.getProperty("user.home") + "/myapp/uploads/";
+        // dossier partagé
+        String dossier = "C:/shared_uploads/";
+
+        // créer le dossier s'il n'existe pas
         Files.createDirectories(Paths.get(dossier));
 
+        // extension image
         String extension = imageFile.getName()
                 .substring(imageFile.getName().lastIndexOf("."));
 
+        // nom unique
         String fileName = "post_" + System.currentTimeMillis() + extension;
 
-        Path destination = Paths.get(dossier + fileName);
+        // destination finale
+        Path destination = Paths.get(dossier, fileName);
 
+        // copie image
         Files.copy(
                 imageFile.toPath(),
                 destination,
                 StandardCopyOption.REPLACE_EXISTING
         );
 
-        return destination.toAbsolutePath().toString();
+        // retourner le chemin complet
+        return destination.toString();
     }
 
 }

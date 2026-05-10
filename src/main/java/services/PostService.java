@@ -83,7 +83,7 @@ public class PostService implements IService<Post> {
         List<Post> posts = new ArrayList<>();
 
         String sql = """
-        SELECT p.*, pe.nom, pe.prenom,
+        SELECT p.*, pe.nom, pe.prenom, pe.profile_photo,
                COUNT(DISTINCT l.id) AS nb_likes,
                COUNT(DISTINCT c.id) AS nb_commentaires
         FROM post p
@@ -102,6 +102,7 @@ public class PostService implements IService<Post> {
                 auteur.setId(rs.getInt("personne_id"));
                 auteur.setNom(rs.getString("nom"));
                 auteur.setPrenom(rs.getString("prenom"));
+                auteur.setProfilePhoto(rs.getString("profile_photo"));
 
                 int nbLikes = rs.getInt("nb_likes");
                 int nbCommentaires = rs.getInt("nb_commentaires");
@@ -207,7 +208,7 @@ public class PostService implements IService<Post> {
         List<Post> posts = new ArrayList<>();
 
         String sql = """
-        SELECT p.*, pe.nom, pe.prenom,
+        SELECT p.*, pe.nom, pe.prenom, pe.profile_photo,
                (COUNT(DISTINCT l.id) * 2 +
                 COUNT(DISTINCT c.id) * 3) AS score_popularite
 
@@ -230,6 +231,7 @@ public class PostService implements IService<Post> {
                 auteur.setId(rs.getInt("personne_id"));
                 auteur.setNom(rs.getString("nom"));
                 auteur.setPrenom(rs.getString("prenom"));
+                auteur.setProfilePhoto(rs.getString("profile_photo"));
 
                 Post post = new Post(
                         rs.getInt("id"),

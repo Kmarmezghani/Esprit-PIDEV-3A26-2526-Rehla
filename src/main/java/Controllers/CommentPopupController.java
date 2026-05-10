@@ -267,7 +267,11 @@ public class CommentPopupController implements Initializable {
 
         Image imageToUse = defaultAvatar;
 
-        String path = currentUser.getProfilePhoto();
+        String path = null;
+
+        if (commentObj.getAuteur() != null) {
+            path = commentObj.getAuteur().getProfilePhoto();
+        }
 
         if (path != null && !path.isBlank()) {
             File file = new File(path.trim());

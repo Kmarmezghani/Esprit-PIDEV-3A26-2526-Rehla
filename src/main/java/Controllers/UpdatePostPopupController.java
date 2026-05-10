@@ -55,9 +55,13 @@ public class UpdatePostPopupController implements Initializable {
             post.setContenu(txtContent.getText());
 
             if(selectedFile != null){
-                post.setImage(selectedFile.getAbsolutePath());
+                try {
+                    String path = copierImage(selectedFile);
+                    post.setImage(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-
             PostService postService = new PostService();
             postService.update(post);
 
@@ -83,5 +87,26 @@ public class UpdatePostPopupController implements Initializable {
             selectedFile = file;
             imgPreview.setImage(new Image(file.toURI().toString()));
         }
+    }
+
+    private String copierImage(File file) throws Exception {
+
+        String dossier = "C:/shared_uploads/";
+        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dossier));
+
+        String extension = file.getName().substring(file.getName().lastIndexOf("."));
+
+        String fileName = "post_" + System.currentTimeMillis() + extension;
+
+        java.nio.file.Path destination =
+                java.nio.file.Paths.get(dossier + fileName);
+
+        java.nio.file.Files.copy(
+                file.toPath(),
+                destination,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+        );
+
+        return destination.toString().replace("\\", "/");
     }
 }

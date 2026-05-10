@@ -868,12 +868,7 @@ private PostService postService = new PostService();
         // ================= IMAGE (OPTIONNELLE) =================
         if (post.getImage() != null && !post.getImage().isBlank()) {
 
-            String fileName = post.getImage()
-                    .replace("/uploads/", "");
-
-            File file = new File(
-                    UPLOAD_DIR + fileName
-            );
+            File file = new File(post.getImage().trim());
 
             if (file.exists()) {
 
@@ -1549,7 +1544,9 @@ private PostService postService = new PostService();
                 );
 
                 // chemin enregistré en BD
-                imagePath = "/uploads/" + fileName;
+                imagePath = destination.toAbsolutePath()
+                        .toString()
+                        .replace("\\", "/");
 
                 System.out.println("Image copiée vers : "
                         + destination.toAbsolutePath());

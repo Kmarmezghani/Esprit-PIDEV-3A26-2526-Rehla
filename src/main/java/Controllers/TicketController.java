@@ -127,8 +127,6 @@ public class TicketController {
         cb_type.setValue(type != null ? type : null);
 
         // ----- DATES -----
-        dp_start.setValue(ticket.getDateDebut() != null ? ticket.getDateDebut().toLocalDate() : null);
-        dp_end.setValue(ticket.getDateFin() != null ? ticket.getDateFin().toLocalDate() : null);
 
         // ----- DESTINATION -----
         Integer destId = ticket.getDestinationId();
@@ -188,9 +186,7 @@ public class TicketController {
                 destinationId ,
                 type,
                 prix,
-                "Available",
-                null,
-                null
+                "Available"
         );
 
         ticketService.add(newTicket);
@@ -213,8 +209,7 @@ public class TicketController {
         String prixStr = tf_prix.getText();
         String selectedDestination = cb_destination.getValue();
 
-        LocalDate localDateDebut = dp_start.getValue();
-        LocalDate localDateFin = dp_end.getValue();
+
 
         // ===== VALIDATION BASIQUE =====
         if (type == null || prixStr.isEmpty() || selectedDestination == null) {
@@ -237,52 +232,6 @@ public class TicketController {
         }
 
         // ===== CHECK RESERVATION =====
-        boolean hasReservation = ticket.getReservationId() != null;
-
-        if (hasReservation) {
-
-            if (localDateDebut == null || localDateFin == null) {
-                showError("Dates are required for reserved tickets.");
-                return;
-            }
-
-           /* if (localDateDebut.isBefore(LocalDate.now())) {
-                showError("Start date cannot be in the past.");
-                return;
-            }*/
-
-            if (localDateFin.isBefore(localDateDebut)) {
-                showError("End date cannot be before start date.");
-                return;
-            }
-
-            // SET DATES
-            ticket.setDateDebut(Date.valueOf(localDateDebut));
-            ticket.setDateFin(Date.valueOf(localDateFin));
-
-        } else {
-            // 🟢 Dates OPTIONAL
-            if (localDateDebut != null && localDateFin != null) {
-
-                if (localDateDebut.isBefore(LocalDate.now())) {
-                    showError("Start date cannot be in the past.");
-                    return;
-                }
-
-                if (localDateFin.isBefore(localDateDebut)) {
-                    showError("End date cannot be before start date.");
-                    return;
-                }
-
-                ticket.setDateDebut(Date.valueOf(localDateDebut));
-                ticket.setDateFin(Date.valueOf(localDateFin));
-
-            } else {
-                // Optional → allow null in DB
-                ticket.setDateDebut(null);
-                ticket.setDateFin(null);
-            }
-        }
 
         // ===== DESTINATION =====
         Integer destinationId = destinationMap.get(selectedDestination);

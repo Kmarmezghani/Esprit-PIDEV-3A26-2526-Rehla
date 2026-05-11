@@ -9,8 +9,7 @@ public class Ticket {
     private String type;
     private double prix;
     private String statut;
-    private Date dateDebut;
-    private Date dateFin;
+
     private int destinationId;
     private String destinationNom;
     private boolean selected;
@@ -21,28 +20,26 @@ public class Ticket {
 
     // CREATE
     public Ticket(Integer reservationId, Integer activiteId, int destinationId,
-                  String type, double prix, String statut, Date dateDebut, Date dateFin) {
+                  String type, double prix, String statut) {
         this.reservationId = reservationId;
         this.activiteId = activiteId;
         this.destinationId = destinationId;
         this.type = type;
         this.prix = prix;
         this.statut = statut;
-        this.dateDebut = dateDebut;
-        this.dateFin = dateFin;
+
     }
 
     // READ / UPDATE
     public Ticket(int id, Integer reservationId, Integer activiteId, String type,
-                  double prix, String statut, Date dateDebut, Date dateFin, int destinationId) {
+                  double prix, String statut,  int destinationId) {
         this.id = id;
         this.reservationId = reservationId;
         this.activiteId = activiteId;
         this.type = type;
         this.prix = prix;
         this.statut = statut;
-        this.dateDebut = dateDebut;
-        this.dateFin = dateFin;
+
         this.destinationId = destinationId;
     }
 
@@ -56,9 +53,7 @@ public class Ticket {
 
     public String getStatut() {return statut;}
 
-    public Date getDateDebut() {return dateDebut;}
 
-    public Date getDateFin() {return dateFin;}
 
     public int getDestinationId() { return destinationId; }
     public Integer getActiviteId() { return activiteId; }
@@ -77,9 +72,7 @@ public class Ticket {
 
     public void setStatut(String statut) {this.statut = statut;}
 
-    public void setDateDebut(Date dateDebut) {this.dateDebut = dateDebut;}
 
-    public void setDateFin(Date dateFin) {this.dateFin = dateFin;}
 
     public void setDestinationId(int destinationId) { this.destinationId = destinationId; }
 

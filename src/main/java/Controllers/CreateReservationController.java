@@ -47,13 +47,7 @@ public class CreateReservationController {
 
             Ticket first = tickets.get(0);
 
-            if (first.getDateDebut() != null) {
-                dpStartDate.setValue(first.getDateDebut().toLocalDate());
-            }
 
-            if (first.getDateFin() != null) {
-                dpEndDate.setValue(first.getDateFin().toLocalDate());
-            }
         }
     }
 

@@ -12,7 +12,7 @@ public class AnalyticsReservationService {
     // 1️⃣ TOTAL REVENUE
     public double getTotalRevenue() {
         double total = 0;
-        String sql = "SELECT SUM(coutTotal) FROM reservation WHERE statut = 'PAID'";
+        String sql = "SELECT SUM(coutTotal) FROM reservation WHERE statut = 'confirmée'";
 
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -37,7 +37,7 @@ public class AnalyticsReservationService {
                 SELECT MONTH(dateReservation) as month,
                        SUM(coutTotal) as revenue
                 FROM reservation
-                WHERE statut = 'PAID'
+                WHERE statut = 'confirmée'
                 GROUP BY MONTH(dateReservation)
                 """;
 
@@ -88,7 +88,7 @@ public class AnalyticsReservationService {
 
         String sql = """
                 SELECT 
-                (SELECT COUNT(*) FROM reservation WHERE statut='PAID') /
+                (SELECT COUNT(*) FROM reservation WHERE statut='confirmée') /
                 (SELECT COUNT(*) FROM reservation) * 100
                 AS conversionRate
                 """;

@@ -21,8 +21,8 @@ public class TicketService implements IService<Ticket> {
 
         String sql = """
             INSERT INTO ticket
-            (reservation_id, activite_id, destination_id, type, prix, statut, dateDebut, dateFin)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (reservation_id, activite_id, destination_id, type, prix, statut)
+            VALUES (?, ?, ?, ?, ?, ?)
         """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -37,8 +37,7 @@ public class TicketService implements IService<Ticket> {
             ps.setString(4, ticket.getType());
             ps.setDouble(5, ticket.getPrix());
             ps.setString(6, ticket.getStatut());
-            ps.setDate(7, ticket.getDateDebut());
-            ps.setDate(8, ticket.getDateFin());
+
 
             ps.executeUpdate();
             System.out.println("Ticket added successfully!");
@@ -48,21 +47,20 @@ public class TicketService implements IService<Ticket> {
         }
     }
 
+
     @Override
     public void update(Ticket ticket) {
 
         String sql = """
-            UPDATE ticket SET
-              reservation_id = ?,
-              activite_id = ?,
-              destination_id = ?,
-              type = ?,
-              prix = ?,
-              statut = ?,
-              dateDebut = ?,
-              dateFin = ?
-            WHERE id = ?
-        """;
+        UPDATE ticket SET
+          reservation_id = ?,
+          activite_id = ?,
+          destination_id = ?,
+          type = ?,
+          prix = ?,
+          statut = ?
+        WHERE id = ?
+    """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -76,9 +74,7 @@ public class TicketService implements IService<Ticket> {
             ps.setString(4, ticket.getType());
             ps.setDouble(5, ticket.getPrix());
             ps.setString(6, ticket.getStatut());
-            ps.setDate(7, ticket.getDateDebut());
-            ps.setDate(8, ticket.getDateFin());
-            ps.setInt(9, ticket.getId());
+            ps.setInt(7, ticket.getId());
 
             ps.executeUpdate();
             System.out.println("Ticket updated successfully!");
@@ -87,7 +83,6 @@ public class TicketService implements IService<Ticket> {
             e.printStackTrace();
         }
     }
-
     @Override
     public void delete(Ticket ticket) {
         Integer resId = ticket.getReservationId();
@@ -135,8 +130,6 @@ public class TicketService implements IService<Ticket> {
                         rs.getString("type"),
                         rs.getDouble("prix"),
                         rs.getString("statut"),
-                        rs.getDate("dateDebut"),
-                        rs.getDate("dateFin"),
                         rs.getInt("destination_id")
                 );
 
@@ -165,7 +158,12 @@ public class TicketService implements IService<Ticket> {
 
     public List<Ticket> getTicketsByReservation(int reservationId) {
         List<Ticket> list = new ArrayList<>();
-        String sql = "SELECT * FROM ticket WHERE reservation_id = ?";
+        String sql = """
+        SELECT t.*, v.nom AS destination_nom
+        FROM ticket t
+        LEFT JOIN ville v ON t.destination_id = v.id
+        WHERE t.reservation_id = ?
+    """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, reservationId);
@@ -179,9 +177,11 @@ public class TicketService implements IService<Ticket> {
                 t.setType(rs.getString("type"));
                 t.setPrix(rs.getDouble("prix"));
                 t.setStatut(rs.getString("statut"));
-                t.setDateDebut(rs.getDate("dateDebut"));
-                t.setDateFin(rs.getDate("dateFin"));
+
                 t.setDestinationId(rs.getInt("destination_id"));
+
+                // ⭐ NEW PART (same as getAll)
+                t.setDestinationNom(rs.getString("destination_nom"));
                 list.add(t);
             }
 
@@ -226,8 +226,7 @@ public class TicketService implements IService<Ticket> {
                 ticket.setType(rs.getString("type"));
                 ticket.setPrix(rs.getDouble("prix"));
                 ticket.setStatut(rs.getString("statut"));
-                ticket.setDateDebut(rs.getDate("dateDebut"));
-                ticket.setDateFin(rs.getDate("dateFin"));
+
                 ticket.setDestinationId(rs.getInt("destination_id"));
                 ticket.setDestinationNom(rs.getString("destination_nom"));
 
@@ -242,7 +241,7 @@ public class TicketService implements IService<Ticket> {
     }
 
     public String getDestinationName(int destinationId) {
-        String query = "SELECT nom FROM destination WHERE id = ?";
+        String query = "SELECT nom FROM ville WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, destinationId);
             ResultSet rs = ps.executeQuery();
@@ -257,8 +256,8 @@ public class TicketService implements IService<Ticket> {
                                    int qty, double prixUnitaire, Integer destinationId) throws SQLException {
 
         String sql = """
-        INSERT INTO ticket(reservation_id, activite_id, destination_id, type, prix, statut, dateDebut, dateFin)
-        VALUES (?, ?, ?, 'activity', ?, 'reserved', NULL, NULL)
+        INSERT INTO ticket(reservation_id, activite_id, destination_id, type, prix, statut)
+        VALUES (?, ?, ?, 'activity', ?, 'reserved')
     """;
 
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -278,11 +277,10 @@ public class TicketService implements IService<Ticket> {
     public void addActivityTicket(Connection cn, int reservationId, int activiteId) throws SQLException {
 
         // On récupère infos de l'activité pour remplir ticket proprement
-        String fetchAct = "SELECT prix, destination_id, date_debut, date_fin FROM activite WHERE id = ?";
+        String fetchAct = "SELECT prix, destination_idFROM activite WHERE id = ?";
         double prix;
         Integer destinationId;
-        Date dateDebut;
-        Date dateFin;
+
 
         try (PreparedStatement ps = cn.prepareStatement(fetchAct)) {
             ps.setInt(1, activiteId);
@@ -292,14 +290,11 @@ public class TicketService implements IService<Ticket> {
             prix = rs.getDouble("prix");
             int dest = rs.getInt("destination_id");
             destinationId = rs.wasNull() ? null : dest;
-
-            dateDebut = rs.getDate("date_debut");
-            dateFin = rs.getDate("date_fin");
         }
 
         String insert = """
-        INSERT INTO ticket (reservation_id, activite_id, destination_id, type, prix, statut, dateDebut, dateFin)
-        VALUES (?, ?, ?, 'activity', ?, 'reserved', ?, ?)
+        INSERT INTO ticket (reservation_id, activite_id, destination_id, type, prix, statut)
+        VALUES (?, ?, ?, 'activity', ?, 'reserved')
     """;
 
         try (PreparedStatement ps = cn.prepareStatement(insert)) {
@@ -310,8 +305,7 @@ public class TicketService implements IService<Ticket> {
             else ps.setInt(3, destinationId);
 
             ps.setDouble(4, prix);
-            ps.setDate(5, dateDebut);
-            ps.setDate(6, dateFin);
+
 
             ps.executeUpdate();
         }

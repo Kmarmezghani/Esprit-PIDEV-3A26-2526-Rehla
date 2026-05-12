@@ -20,6 +20,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import java.sql.Time;
+import java.time.LocalTime;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -149,12 +150,13 @@ public class CityDetailController {
         nameBox.getChildren().add(nameLabel);
         headerBox.getChildren().addAll(typeIcon, nameBox);
         
-        // Status badge
-        Label statusBadge = new Label(attraction.isEstFerme() ? "CLOSED" : "OPEN");
+        // Status badge based on current time
+        boolean isOpen = checkIfAttractionIsOpen(attraction);
+        Label statusBadge = new Label(isOpen ? "OPEN" : "CLOSED");
         statusBadge.setFont(Font.font("System", FontWeight.BOLD, 10));
         statusBadge.setTextFill(Color.WHITE);
-        statusBadge.setStyle(attraction.isEstFerme() ? 
-            "-fx-background-color: #ef4444; " : "-fx-background-color: #10b981;");
+        statusBadge.setStyle(isOpen ? 
+            "-fx-background-color: #10b981; " : "-fx-background-color: #ef4444;");
         statusBadge.setPadding(new Insets(4, 8, 4, 8));
         statusBadge.setStyle(statusBadge.getStyle() + " -fx-background-radius: 12;");
         
@@ -246,6 +248,26 @@ public class CityDetailController {
             case "sports": return "S";
             case "cultural": return "C";
             default: return "•";
+        }
+    }
+    
+    private boolean checkIfAttractionIsOpen(Attraction attraction) {
+        try {
+            Time openTime = attraction.getHeureOuverture();
+            Time closeTime = attraction.getHeureFermeture();
+            
+            if (openTime == null || closeTime == null) {
+                return !attraction.isEstFerme(); // Fallback to database flag
+            }
+            
+            LocalTime now = LocalTime.now();
+            LocalTime open = openTime.toLocalTime();
+            LocalTime close = closeTime.toLocalTime();
+            
+            // Check if current time is within opening hours
+            return !now.isBefore(open) && !now.isAfter(close);
+        } catch (Exception e) {
+            return !attraction.isEstFerme(); // Fallback to database flag on error
         }
     }
     

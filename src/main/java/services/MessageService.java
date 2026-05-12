@@ -11,13 +11,13 @@ import java.util.List;
 
 public class MessageService {
 
-    /*private final String URL = "jdbc:mysql://localhost:3306/rehla?useSSL=false&serverTimezone=UTC";
+    private final String URL = "jdbc:mysql://localhost:3306/rehla?useSSL=false&serverTimezone=UTC";
     private final String USER = "root";
-    private final String PASSWORD = "";*/
+    private final String PASSWORD = "";
 
-    private final String URL = "jdbc:mysql://127.0.0.1:3306/rehla?useSSL=false&serverTimezone=UTC";
+   /* private final String URL = "jdbc:mysql://127.0.0.1:3306/rehla?useSSL=false&serverTimezone=UTC";
     private final String USER = "REHLA";
-    private final String PASSWORD = "Rehla123";
+    private final String PASSWORD = "Rehla123";*/
 
 
     // Envoyer un message

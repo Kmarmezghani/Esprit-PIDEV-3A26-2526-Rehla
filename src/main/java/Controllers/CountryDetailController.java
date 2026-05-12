@@ -35,17 +35,17 @@ import java.util.stream.Collectors;
 public class CountryDetailController {
 
     @FXML
-    private Label countryFlagLabel;
-
-    @FXML
     private Label countryNameLabel;
-
     @FXML
     private Label countryDescriptionLabel;
-
+    @FXML
+    private ImageView countryImageView;
+    @FXML
+    private Label countryFlagLabel;
+    @FXML
+    private Label citiesSectionLabel;
     @FXML
     private Label citiesCountLabel;
-
     @FXML
     private FlowPane citiesFlowPane;
 
@@ -64,6 +64,9 @@ public class CountryDetailController {
         countryFlagLabel.setText(getCountryEmoji(currentPays.getNom()));
         countryNameLabel.setText(currentPays.getNom());
         countryDescriptionLabel.setText(currentPays.getDescription());
+        
+        // Load country image
+        loadCountryImage();
         
         // Increment country visit count
         paysService.incrementVisitCount(currentPays.getId());
@@ -236,6 +239,80 @@ public class CountryDetailController {
         imageView.setFitHeight(140);
         imageView.setPreserveRatio(false);
         return imageView;
+    }
+
+    private void loadCountryImage() {
+        try {
+            // Try to load country image based on country name
+            String countryName = currentPays.getNom().toLowerCase().replace(" ", "_");
+            String imagePath = "/Frontoffice/images/countries/" + countryName + ".jpg";
+            
+            System.out.println("DEBUG: Trying to load country image: " + imagePath);
+            URL url = getClass().getResource(imagePath);
+            if (url != null) {
+                countryImageView.setImage(new Image(url.toExternalForm()));
+                countryImageView.setVisible(true);
+                System.out.println("DEBUG: Country image loaded successfully: " + imagePath);
+                return;
+            }
+            
+            // Try alternative names
+            loadAlternativeCountryImages();
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error loading country image: " + e.getMessage());
+            // Fallback to default or hide image
+            countryImageView.setVisible(false);
+        }
+    }
+    
+    private void loadAlternativeCountryImages() {
+        // Try to find any image that starts with the country name
+        String countryName = currentPays.getNom().toLowerCase();
+        String[] alternatives = {
+            countryName.replace(" ", "_"),
+            countryName.replace(" ", ""),
+            countryName.substring(0, 3).toLowerCase()
+        };
+        
+        for (String alt : alternatives) {
+            String imagePath = "/Frontoffice/images/countries/" + alt + ".jpg";
+            URL url = getClass().getResource(imagePath);
+            if (url != null) {
+                countryImageView.setImage(new Image(url.toExternalForm()));
+                countryImageView.setVisible(true);
+                System.out.println("DEBUG: Alternative country image loaded: " + imagePath);
+                return;
+            }
+        }
+        
+        // Try to find any image that contains the country name
+        try {
+            String[] imageFiles = {
+                "france_69f1abc8474ed.jpg", "italy_69f2dacbbe77d.jpg", 
+                "algeria_69f1ae563d4a6.jpg", "tunisia", "spain", "germany",
+                "china_69f2cba778fd0.jpg", "australia_69f2901959bfc.jpg",
+                "argentina_69f2925d7faae.jpg", "belgium_69f291419d7cf.jpg"
+            };
+            
+            for (String imageFile : imageFiles) {
+                if (imageFile.toLowerCase().contains(countryName)) {
+                    String imagePath = "/Frontoffice/images/countries/" + imageFile;
+                    URL url = getClass().getResource(imagePath);
+                    if (url != null) {
+                        countryImageView.setImage(new Image(url.toExternalForm()));
+                        countryImageView.setVisible(true);
+                        System.out.println("DEBUG: Country image found by partial match: " + imagePath);
+                        return;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error in alternative image search: " + e.getMessage());
+        }
+        
+        // Hide image if no suitable image found
+        countryImageView.setVisible(false);
+        System.out.println("DEBUG: No country image found for " + currentPays.getNom() + ", hiding ImageView");
     }
 
     private String getCountryEmoji(String countryName) {

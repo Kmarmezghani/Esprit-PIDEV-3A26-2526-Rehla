@@ -102,25 +102,29 @@
                     <content>
                         <VBox spacing="30.0" style="-fx-background-color: #ffffff;">
                             <!-- Country Header -->
-                            <VBox alignment="CENTER" spacing="15.0" style="-fx-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -fx-padding: 70;">
-                                <Label fx:id="countryFlagLabel" text="&#127467;&#127479;" textFill="WHITE">
-                                    <font>
-                                        <Font size="80.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="countryNameLabel" text="France" textFill="#223f91" style="-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.8), 10, 0, 0, 2);">
-                                    <font>
-                                        <Font name="System Bold" size="56.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="countryDescriptionLabel" text="Description of the country..." textFill="#223f91" wrapText="true">
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                    <VBox.margin>
-                                        <Insets left="100.0" right="100.0" />
-                                    </VBox.margin>
-                                </Label>
+                            <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: #ffffff; -fx-padding: 0;">
+                                <ImageView fx:id="countryImageView" fitHeight="450" fitWidth="1000" pickOnBounds="true" preserveRatio="false">
+                                </ImageView>
+                                <VBox alignment="CENTER" spacing="0.0" style="-fx-background-color: #ffffff; -fx-padding: 5;">
+                                    <Label fx:id="countryFlagLabel" text="&#127467;&#127479;" textFill="WHITE">
+                                        <font>
+                                            <Font size="80.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="countryNameLabel" text="France" textFill="#223f91" style="-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.8), 10, 0, 0, 2);">
+                                        <font>
+                                            <Font name="System Bold" size="56.0" />
+                                        </font>
+                                    </Label>
+                                    <Label fx:id="countryDescriptionLabel" text="Description of the country..." textFill="#223f91" wrapText="true">
+                                        <font>
+                                            <Font size="16.0" />
+                                        </font>
+                                        <VBox.margin>
+                                            <Insets left="100.0" right="100.0" />
+                                        </VBox.margin>
+                                    </Label>
+                                </VBox>
                             </VBox>
                             
                             <!-- Cities Section -->

@@ -12,6 +12,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -26,6 +28,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import java.net.URL;
 import models.Pays;
 import models.Ville;
 import services.AttractionService;
@@ -43,6 +46,9 @@ public class CityDetailController {
 
     @FXML
     private Label countryNameLabel;
+
+    @FXML
+    private ImageView cityImageView;
 
     @FXML
     private Label regionLabel;
@@ -85,6 +91,9 @@ public class CityDetailController {
     private void displayCityInfo() {
         cityNameLabel.setText(currentVille.getNom());
         
+        // Load city image
+        loadCityImage();
+        
         // Fetch country name
         String countryName = "Unknown Country";
         // In a real app, you would fetch the country object. For now, placeholder or service call.
@@ -122,7 +131,7 @@ public class CityDetailController {
     private VBox createAttractionCard(Attraction attraction) {
         VBox card = new VBox(10);
         card.setPrefSize(320, 180);
-        card.setStyle("-fx-background-color: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); " +
+        card.setStyle("-fx-background-color: #ffffff; " +
                 "-fx-border-radius: 20; " +
                 "-fx-background-radius: 20; " +
                 "-fx-border-color: #e5e7eb; " +
@@ -198,7 +207,7 @@ public class CityDetailController {
         
         // Enhanced hover effects
         card.setOnMouseEntered(e -> {
-            card.setStyle("-fx-background-color: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); " +
+            card.setStyle("-fx-background-color: #f0f9ff; " +
                     "-fx-border-radius: 20; " +
                     "-fx-background-radius: 20; " +
                     "-fx-border-color: #3b82f6; " +
@@ -212,7 +221,7 @@ public class CityDetailController {
         });
         
         card.setOnMouseExited(e -> {
-            card.setStyle("-fx-background-color: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); " +
+            card.setStyle("-fx-background-color: #ffffff; " +
                     "-fx-border-radius: 20; " +
                     "-fx-background-radius: 20; " +
                     "-fx-border-color: #e5e7eb; " +
@@ -277,6 +286,39 @@ public class CityDetailController {
             open.toString().substring(0, 5), close.toString().substring(0, 5));
     }
     
+    private void loadCityImage() {
+        try {
+            // Try to load city image from database field
+            String imageFilename = currentVille.getImage();
+            if (imageFilename != null && !imageFilename.trim().isEmpty()) {
+                String imagePath = "/Frontoffice/images/countries/" + imageFilename;
+                URL url = getClass().getResource(imagePath);
+                if (url != null) {
+                    cityImageView.setImage(new Image(url.toExternalForm()));
+                    System.out.println("DEBUG: City image loaded from database: " + imagePath);
+                    return;
+                }
+            }
+            
+            // Try city name-based image
+            String cityName = currentVille.getNom().toLowerCase().replace(" ", "_");
+            String imagePath = "/Frontoffice/images/countries/" + cityName + ".jpg";
+            URL url = getClass().getResource(imagePath);
+            if (url != null) {
+                cityImageView.setImage(new Image(url.toExternalForm()));
+                System.out.println("DEBUG: City image loaded by name: " + imagePath);
+                return;
+            }
+            
+            // Hide image if no suitable image found
+            cityImageView.setVisible(false);
+            System.out.println("DEBUG: No city image found, hiding ImageView");
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error loading city image: " + e.getMessage());
+            cityImageView.setVisible(false);
+        }
+    }
+
     private void showAttractionDetails(Attraction attraction) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(attraction.getNom());

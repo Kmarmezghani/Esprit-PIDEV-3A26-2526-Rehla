@@ -12,6 +12,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
@@ -19,6 +21,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+
+import java.net.URL;
 import models.Pays;
 import models.Ville;
 import services.AttractionService;
@@ -48,6 +52,7 @@ public class CountryDetailController {
     private Pays currentPays;
     private final VilleService villeService = new VilleService();
     private final AttractionService attractionService = new AttractionService();
+    private final services.PaysService paysService = new services.PaysService();
 
     public void setPays(Pays pays) {
         this.currentPays = pays;
@@ -59,6 +64,9 @@ public class CountryDetailController {
         countryFlagLabel.setText(getCountryEmoji(currentPays.getNom()));
         countryNameLabel.setText(currentPays.getNom());
         countryDescriptionLabel.setText(currentPays.getDescription());
+        
+        // Increment country visit count
+        paysService.incrementVisitCount(currentPays.getId());
     }
 
     private void loadCities() {
@@ -70,6 +78,9 @@ public class CountryDetailController {
                 (cities.size() == 1 ? "city" : "cities"));
 
         for (Ville ville : cities) {
+            // Increment city visit count when displaying card
+            villeService.incrementVisitCount(ville.getId());
+            
             VBox cityCard = createCityCard(ville);
             citiesFlowPane.getChildren().add(cityCard);
         }
@@ -85,9 +96,8 @@ public class CountryDetailController {
         card.setAlignment(Pos.TOP_LEFT);
         card.setPadding(new Insets(28));
 
-        // City icon
-        Label iconLabel = new Label("City");
-        iconLabel.setFont(Font.font("System", 50));
+        // City Image
+        ImageView cityImageView = createCityImage(ville);
 
         Label nameLabel = new Label(ville.getNom());
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 26));
@@ -153,7 +163,7 @@ public class CountryDetailController {
         });
 
 
-        card.getChildren().addAll(iconLabel, nameLabel, typeLabel,
+        card.getChildren().addAll(cityImageView, nameLabel, typeLabel,
                 seasonLabel, attractionsLabel,bookButton);
 
         // Hover effect
@@ -182,6 +192,50 @@ public class CountryDetailController {
         });
 
         return card;
+    }
+
+    private ImageView createCityImage(Ville ville) {
+        // Check if image filename is null or empty
+        String imageFilename = ville.getImage();
+        if (imageFilename == null || imageFilename.trim().isEmpty()) {
+            System.out.println("DEBUG: No city image filename in database, using fallback");
+            return createDefaultCityImage();
+        }
+        
+        String imagePath = "/Frontoffice/images/countries/" + imageFilename;
+        
+        System.out.println("DEBUG: Trying to load city image: " + imagePath);
+        
+        try {
+            URL url = getClass().getResource(imagePath);
+            System.out.println("DEBUG: City image URL resolved: " + (url != null ? url.toString() : "NULL"));
+            
+            if (url != null) {
+                ImageView imageView = new ImageView(new Image(url.toExternalForm()));
+                imageView.setFitWidth(290);
+                imageView.setFitHeight(140);
+                imageView.setPreserveRatio(false);
+                System.out.println("DEBUG: City image loaded successfully");
+                return imageView;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception loading city image: " + e.getMessage());
+            // Fall back to default
+        }
+        
+        System.out.println("DEBUG: Using fallback city image");
+        // Fallback to default image
+        return createDefaultCityImage();
+    }
+
+    private ImageView createDefaultCityImage() {
+        String defaultPath = "/Frontoffice/images/cities/city-default.jpg";
+        URL url = getClass().getResource(defaultPath);
+        ImageView imageView = new ImageView(new Image(url.toExternalForm()));
+        imageView.setFitWidth(290);
+        imageView.setFitHeight(140);
+        imageView.setPreserveRatio(false);
+        return imageView;
     }
 
     private String getCountryEmoji(String countryName) {

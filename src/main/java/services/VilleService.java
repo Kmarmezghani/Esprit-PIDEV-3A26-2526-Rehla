@@ -87,6 +87,11 @@ public class VilleService implements IService<Ville> {
                 ville.setLongitude(rs.getDouble("longitude"));
                 ville.setTypeTourisme(rs.getString("typeTourisme"));
                 ville.setSaison(rs.getString("saison"));
+                // Debug: Check what database actually returns
+                String imageValue = rs.getString("image");
+                System.out.println("DEBUG: Database ville.id=" + rs.getInt("id") + " image='" + imageValue + "'");
+                
+                ville.setImage(imageValue);
                 villes.add(ville);
             }
         } catch (SQLException e) {
@@ -113,6 +118,11 @@ public class VilleService implements IService<Ville> {
                 ville.setLongitude(rs.getDouble("longitude"));
                 ville.setTypeTourisme(rs.getString("typeTourisme"));
                 ville.setSaison(rs.getString("saison"));
+                // Debug: Check what database actually returns
+                String imageValue = rs.getString("image");
+                System.out.println("DEBUG: Database ville.id=" + rs.getInt("id") + " image='" + imageValue + "'");
+                
+                ville.setImage(imageValue);
                 villes.add(ville);
             }
         } catch (SQLException e) {

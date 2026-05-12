@@ -12,18 +12,25 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.stage.Modality;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority;
+import java.sql.Time;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Pays;
 import models.Ville;
 import services.AttractionService;
+import models.Attraction;
 import services.VilleService;
-
+import java.util.Locale;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,23 +98,187 @@ public class CityDetailController {
     }
 
     private void loadAttractions() {
-        // Implement loading attractions logic here
-        // List<Attraction> attractions = attractionService.getByVilleId(currentVille.getId());
-        // ... display logic ...
-        noAttractionsLabel.setVisible(true); // Default for now
+        // Get attractions for current city from database
+        List<Attraction> attractions = attractionService.getByVilleId(currentVille.getId());
+        
+        if (attractions.isEmpty()) {
+            noAttractionsLabel.setVisible(true);
+            noAttractionsLabel.setText("No attractions available for this city");
+            return;
+        }
+        
+        // Hide "no attractions" label
+        noAttractionsLabel.setVisible(false);
+        
+        // Display attractions in UI
+        attractionsFlowPane.getChildren().clear();
+        for (Attraction attraction : attractions) {
+            VBox attractionCard = createAttractionCard(attraction);
+            attractionsFlowPane.getChildren().add(attractionCard);
+        }
+    }
+    
+    private VBox createAttractionCard(Attraction attraction) {
+        VBox card = new VBox(10);
+        card.setPrefSize(320, 180);
+        card.setStyle("-fx-background-color: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); " +
+                "-fx-border-radius: 20; " +
+                "-fx-background-radius: 20; " +
+                "-fx-border-color: #e5e7eb; " +
+                "-fx-border-width: 1; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 8); " +
+                "-fx-cursor: hand; " +
+                "-fx-padding: 20; " +
+                "-fx-border-insets: 2;");
+        
+        // Header with icon and name
+        HBox headerBox = new HBox(12);
+        headerBox.setAlignment(Pos.CENTER_LEFT);
+        
+        // Type icon
+        Label typeIcon = new Label(getIconForType(attraction.getType()));
+        typeIcon.setFont(Font.font("System", 24));
+        typeIcon.setTextFill(Color.web("#6366f1"));
+        
+        // Attraction Name
+        VBox nameBox = new VBox(2);
+        Label nameLabel = new Label(attraction.getNom());
+        nameLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
+        nameLabel.setTextFill(Color.web("#1e293b"));
+        
+        nameBox.getChildren().add(nameLabel);
+        headerBox.getChildren().addAll(typeIcon, nameBox);
+        
+        // Status badge
+        Label statusBadge = new Label(attraction.isEstFerme() ? "CLOSED" : "OPEN");
+        statusBadge.setFont(Font.font("System", FontWeight.BOLD, 10));
+        statusBadge.setTextFill(Color.WHITE);
+        statusBadge.setStyle(attraction.isEstFerme() ? 
+            "-fx-background-color: #ef4444; " : "-fx-background-color: #10b981;");
+        statusBadge.setPadding(new Insets(4, 8, 4, 8));
+        statusBadge.setStyle(statusBadge.getStyle() + " -fx-background-radius: 12;");
+        
+        // Description
+        String desc = attraction.getDescription();
+        if (desc != null && desc.length() > 80) {
+            desc = desc.substring(0, 80) + "...";
+        }
+        Label descLabel = new Label(desc);
+        descLabel.setFont(Font.font("System", 11));
+        descLabel.setTextFill(Color.web("#64748b"));
+        descLabel.setWrapText(true);
+        descLabel.setMaxHeight(40);
+        
+        // Opening hours
+        String hoursText = formatHours(attraction.getHeureOuverture(), attraction.getHeureFermeture());
+        Label hoursLabel = new Label(hoursText);
+        hoursLabel.setFont(Font.font("System", 10));
+        hoursLabel.setTextFill(Color.web("#6b7280"));
+        
+        // Price and rating row
+        HBox infoRow = new HBox(15);
+        infoRow.setAlignment(Pos.CENTER_LEFT);
+        
+        // Price
+        String priceText = (attraction.getPrix() > 0) ? 
+            String.format(Locale.US, "%.0f TND", attraction.getPrix()) : "Free";
+        Label priceLabel = new Label(priceText);
+        priceLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+        priceLabel.setTextFill(Color.web("#059669"));
+        
+        // Spacer
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        infoRow.getChildren().addAll(priceLabel, spacer);
+        
+        card.getChildren().addAll(headerBox, statusBadge, descLabel, hoursLabel, infoRow);
+        
+        // Enhanced hover effects
+        card.setOnMouseEntered(e -> {
+            card.setStyle("-fx-background-color: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); " +
+                    "-fx-border-radius: 20; " +
+                    "-fx-background-radius: 20; " +
+                    "-fx-border-color: #3b82f6; " +
+                    "-fx-border-width: 2; " +
+                    "-fx-effect: dropshadow(gaussian, rgba(59,130,246,0.15), 25, 0, 0, 10); " +
+                    "-fx-cursor: hand; " +
+                    "-fx-padding: 20; " +
+                    "-fx-border-insets: 2;");
+            card.setScaleX(1.05);
+            card.setScaleY(1.05);
+        });
+        
+        card.setOnMouseExited(e -> {
+            card.setStyle("-fx-background-color: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); " +
+                    "-fx-border-radius: 20; " +
+                    "-fx-background-radius: 20; " +
+                    "-fx-border-color: #e5e7eb; " +
+                    "-fx-border-width: 1; " +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 8); " +
+                    "-fx-cursor: hand; " +
+                    "-fx-padding: 20; " +
+                    "-fx-border-insets: 2;");
+            card.setScaleX(1.0);
+            card.setScaleY(1.0);
+        });
+        
+        // Click handler for details
+        card.setOnMouseClicked(e -> {
+            showAttractionDetails(attraction);
+        });
+        
+        return card;
+    }
+    
+    private String getIconForType(String type) {
+        if (type == null) return "•";
+        switch (type.toLowerCase()) {
+            case "museum": return "M";
+            case "park": return "P";
+            case "restaurant": return "R";
+            case "shopping": return "S";
+            case "beach": return "B";
+            case "mountain": return "M";
+            case "historical": return "H";
+            case "entertainment": return "E";
+            case "nature": return "N";
+            case "sports": return "S";
+            case "cultural": return "C";
+            default: return "•";
+        }
+    }
+    
+    private String formatHours(Time open, Time close) {
+        if (open == null || close == null) return "Hours not available";
+        return String.format("%s - %s", 
+            open.toString().substring(0, 5), close.toString().substring(0, 5));
+    }
+    
+    private void showAttractionDetails(Attraction attraction) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(attraction.getNom());
+        alert.setHeaderText(null);
+        alert.setContentText(String.format(
+            "Type: %s\nPrice: %.0f TND\nStatus: %s\n\n%s", 
+            attraction.getType(), attraction.getPrix(), 
+            attraction.isEstFerme() ? "Currently Closed" : "Currently Open",
+            formatHours(attraction.getHeureOuverture(), attraction.getHeureFermeture())
+        ));
+        alert.showAndWait();
     }
 
     @FXML
     void goBack(ActionEvent event) {
-        // Navigate back logic
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/CountryDetailPage.fxml"));
             Parent root = loader.load();
             
-            // We need to pass the country back. This requires storing the country in this controller or fetching it.
-            // For now, let's just go back to Home or Country Browse if context is lost.
-            // Ideally: CountryDetailController controller = loader.getController();
-            // controller.setPays(currentVille.getPays()); // Need to fetch Pays object
+            // Get the country detail controller and pass the Pays object
+            CountryDetailController controller = loader.getController();
+            services.PaysService paysService = new services.PaysService();
+            Pays country = paysService.getById(currentVille.getPaysId());
+            controller.setPays(country);
             
             Stage stage = (Stage) cityNameLabel.getScene().getWindow();
             if (stage.getScene() == null) {

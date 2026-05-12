@@ -5,6 +5,7 @@ public class Pays {
     private String nom;
     private String description;
     private int visitCount;
+    private String image;
 
     // Constructors
     public Pays() {}
@@ -31,6 +32,14 @@ public class Pays {
         this.nom = nom;
         this.description = description;
         this.visitCount = visitCount;
+    }
+
+    public Pays(int id, String nom, String description, int visitCount, String image) {
+        this.id = id;
+        this.nom = nom;
+        this.description = description;
+        this.visitCount = visitCount;
+        this.image = image;
     }
 
     // Getters and Setters
@@ -66,6 +75,14 @@ public class Pays {
         this.visitCount = visitCount;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     @Override
     public String toString() {
         return "Pays{" +
@@ -73,6 +90,7 @@ public class Pays {
                 ", nom='" + nom + '\'' +
                 ", description='" + description + '\'' +
                 ", visitCount=" + visitCount +
+                ", image='" + image + '\'' +
                 '}';
     }
 }

@@ -9,23 +9,26 @@ public class Ville {
     private double longitude;
     private String typeTourisme;
     private String saison;
+    private String image;
 
     // Constructors
     public Ville() {}
 
-    public Ville(String nom, int paysId, String typeTourisme, String saison) {
+    public Ville(String nom, int paysId, String typeTourisme, String saison, String image) {
         this.nom = nom;
         this.paysId = paysId;
         this.typeTourisme = typeTourisme;
         this.saison = saison;
+        this.image = image;
     }
 
-    public Ville(int id, String nom, int paysId, String typeTourisme, String saison) {
+    public Ville(int id, String nom, int paysId, String typeTourisme, String saison, String image) {
         this.id = id;
         this.nom = nom;
         this.paysId = paysId;
         this.typeTourisme = typeTourisme;
         this.saison = saison;
+        this.image = image;
     }
 
     // Getters and Setters
@@ -93,6 +96,14 @@ public class Ville {
         this.saison = saison;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     @Override
     public String toString() {
         return "Ville{" +
@@ -104,6 +115,8 @@ public class Ville {
                 ", longitude=" + longitude +
                 ", typeTourisme='" + typeTourisme + '\'' +
                 ", saison='" + saison + '\'' +
+                ", image='" + image + '\'' +
+                ", image='" + image + '\'' +
                 '}';
     }
 }

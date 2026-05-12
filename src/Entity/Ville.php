@@ -194,7 +194,4 @@ class Ville
 
         return $this;
     }
-
-    #[ORM\OneToMany(mappedBy: "destination", targetEntity: Ticket::class)]
-    private Collection $tickets;
-}
+} 

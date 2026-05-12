@@ -267,16 +267,21 @@ public function createGroup(Request $request, EntityManagerInterface $em): JsonR
                 $groupe->addMembre($user);
             }
         }
-        if ($imageFile) {
+       if ($imageFile) {
+
             $newFilename = uniqid().'.'.$imageFile->guessExtension();
 
-            $imageFile->move(
-                $this->getParameter('kernel.project_dir') . '/public/uploads/groups',
-                $newFilename
-            );
+            $dir = 'C:/shared_uploads/groups';
 
-            $groupe->setImage('uploads/groups/' . $newFilename);
-        }
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
+            }
+
+            $imageFile->move($dir, $newFilename);
+
+            // DB = chemin complet
+            $groupe->setImage($dir . '/' . $newFilename);
+}
 
         $em->persist($groupe);
         $em->flush();
@@ -362,20 +367,26 @@ public function send(Request $request, EntityManagerInterface $em)
     $msg->setConversation($conv);
 
     // 📸 UPLOAD IMAGE
-    if ($imageFile) {
-        $newFilename = uniqid().'.'.$imageFile->guessExtension();
+if ($imageFile) {
 
-        try {
-            $imageFile->move(
-                $this->getParameter('kernel.project_dir') . '/public/uploads/chat',
-                $newFilename
-            );
+    $newFilename = uniqid().'.'.$imageFile->guessExtension();
 
-            $msg->setImage('uploads/chat/' . $newFilename);
-        } catch (FileException $e) {
-            return $this->json(['error' => 'Upload failed']);
-        }
+    $dir = 'C:/shared_uploads/chat';
+
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
     }
+
+    try {
+        $imageFile->move($dir, $newFilename);
+
+        // 🔥 IMPORTANT : DB = chemin COMPLET
+        $msg->setImage($dir . '/' . $newFilename);
+
+    } catch (FileException $e) {
+        return $this->json(['error' => 'Upload failed']);
+    }
+}
 
     $em->persist($msg);
     $em->flush();
@@ -456,7 +467,13 @@ public function getMessages($id, EntityManagerInterface $em): JsonResponse
 
 
 /*------------------------------------------------------posting--------------------------------------------------------*/
+#[Route('/file', name: 'file_show')]
+public function show(Request $request): Response
+{
+    $path = $request->query->get('path');
 
+    return new \Symfony\Component\HttpFoundation\BinaryFileResponse($path);
+}
 private function handlePostCreation( $form, Post $post, $personne, ImageUploader $uploader, EntityManagerInterface $em, ToxicityChecker $toxicityChecker ): ?string
 {
    
@@ -607,16 +624,45 @@ public function delete(Post $post, EntityManagerInterface $em): Response
 
     return $this->redirectToRoute('blog');
 }
+
 #[Route('/post/edit/{id}', name: 'post_edit', methods: ['POST'])]
-public function edit(Request $request, Post $post, EntityManagerInterface $em): Response
+public function edit(
+    Request $request,
+    Post $post,
+    EntityManagerInterface $em
+): Response
 {
-    $post->setContenu($request->request->get('contenu'));
+    $post->setContenu(
+        $request->request->get('contenu')
+    );
 
     $imageFile = $request->files->get('image');
+
     if ($imageFile) {
-        $newFilename = uniqid().'.'.$imageFile->guessExtension();
-        $imageFile->move($this->getParameter('images_directory'), $newFilename);
-        $post->setImage('uploads/'.$newFilename);
+
+        // dossier partagé
+        $uploadDir = 'C:/shared_uploads/';
+
+        // créer dossier si inexistant
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // nom unique
+        $newFilename =
+            uniqid('post_') . '.' . $imageFile->guessExtension();
+
+        // déplacement fichier
+        $imageFile->move($uploadDir, $newFilename);
+
+        // chemin COMPLET
+        $fullPath = $uploadDir . $newFilename;
+
+        // uniformiser slashs
+        $fullPath = str_replace('\\', '/', $fullPath);
+
+        // sauvegarde DB
+        $post->setImage($fullPath);
     }
 
     $em->flush();

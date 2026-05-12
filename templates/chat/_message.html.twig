@@ -8,7 +8,7 @@
     <div>
 
         {% if image %}
-            <img src="/{{ image }}" class="chat-img">
+            <img src="{{ path('file_show') }}?path={{ image|url_encode }}" class="chat-img">
         {% else %}
             <div class="msg sent">{{ message }}</div>
         {% endif %}
@@ -20,9 +20,12 @@
 {% else %}
 <div class="msg-row received-row">
 
-    <img class="avatar2"
-         src="{{ sender_photo ? asset(sender_photo) : asset('assets/images/default-user.png') }}">
-
+   <img class="avatar2"
+         src="{% if sender_photo %}
+            {{ path('file_show') }}?path={{ sender_photo|url_encode }}
+         {% else %}
+            {{ asset('assets/images/default-user.png') }}
+         {% endif %}">
     <div>
 
         {% if sender_name %}
@@ -30,7 +33,7 @@
         {% endif %}
 
         {% if image %}
-            <img src="/{{ image }}" class="chat-img">
+            <img src="{{ path('file_show') }}?path={{ image|url_encode }}" class="chat-img">
         {% else %}
             <div class="msg received">{{ message }}</div>
         {% endif %}

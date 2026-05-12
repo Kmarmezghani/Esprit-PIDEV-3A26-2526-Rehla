@@ -32,7 +32,7 @@
                        href="#" id="userDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
                         {% if app.session.get('user_photo') %}
-                            <img src="{{ asset(app.session.get('user_photo')) }}"
+                            <img  src="{{ path('file_show') }}?path={{ app.session.get('user_photo')|url_encode }}"
                                 alt="Profil"
                                 class="rounded-circle"
                                 style="width:35px;height:35px;object-fit:cover;">
@@ -126,7 +126,7 @@
                 <div class="card border-0 shadow-sm text-center p-4" style="border-radius:20px;">
                     <div class="mb-3">
                     {% if personne.profile_photo %}
-                            <img src="{{ asset(personne.profile_photo) }}" alt="Photo de profil"
+                            <img src="{{ path('file_show') }}?path={{ personne.profile_photo|url_encode }}"
                                 class="rounded-circle"
                                 style="width:100px;height:100px;object-fit:cover;border:3px solid #223f91;">
                         {% else %}
@@ -181,10 +181,13 @@
     <div class="d-flex align-items-center mb-2">
 
       <!-- IMAGE PROFIL -->
-    <img src="{{ post.personne_id and post.personne_id.profile_photo 
-    ? asset(post.personne_id.profile_photo) 
-    : asset('assets/img/bg_1.jpg') }}"
-     class="profile-img mr-2">
+  <img 
+src="{% if post.personne_id and post.personne_id.profile_photo %}
+    {{ path('file_show') }}?path={{ post.personne_id.profile_photo|url_encode }}
+{% else %}
+    {{ asset('assets/img/bg_1.jpg') }}
+{% endif %}"
+class="profile-img mr-2">
 
 
 
@@ -219,7 +222,9 @@
           <a class="dropdown-item open-edit"
             data-id="{{ post.id }}"
             data-contenu="{{ post.contenu }}"
-            data-image="{{ post.image }}">
+            data-image="{% if post.image %}
+            {{ path('file_show') }}?path={{ post.image|url_encode }}
+        {% endif %}"
             <i class="fa fa-edit"></i> Modifier
           </a>
           <a class="dropdown-item text-danger"
@@ -247,8 +252,8 @@
   </div>
 
     <!-- IMAGE POST -->
-   {% if post.image %}
-  <img src="{{ asset(post.image) }}"
+{% if post.image %}
+ <img src="{{ path('file_show') }}?path={{ post.image }}"
        class="img-fluid rounded mt-2"
        data-post="{{ post.id }}">
 {% endif %}
@@ -326,8 +331,13 @@
     {% for comment in post.commentaires %}
       <div class="comment-box">
 
-        <img src="{{ comment.personne_id.profile_photo ? asset(comment.personne_id.profile_photo) : asset('assets/images/bg_2.jpg') }}"
-             class="comment-avatar">
+      <img 
+      src="{% if comment.personne_id.profile_photo %}
+          {{ path('file_show') }}?path={{ comment.personne_id.profile_photo|url_encode }}
+      {% else %}
+          {{ asset('assets/images/bg_2.jpg') }}
+      {% endif %}"
+      class="comment-avatar">
 
         <div class="comment-bubble">
           <div class="comment-header">
@@ -371,7 +381,7 @@
 <form method="POST" id="commentForm">
   <div class="popup-footer">
 
-    <img src="{{ asset('assets/images/bg_2.jpg') }}" class="comment-avatar-small">
+    <img src="{{ path('file_show') }}?path={{ app.session.get('user_photo')|url_encode }}" class="comment-avatar-small">
     <input type="text" name="contenu" id="comment_input"
            placeholder="Écrire un commentaire...">
     <input type="hidden" id="comment_post_id">

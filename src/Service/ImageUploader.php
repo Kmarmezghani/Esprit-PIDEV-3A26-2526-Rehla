@@ -13,6 +13,6 @@ class ImageUploader
 
         $file->move($dir, $newFilename);
 
-        return 'uploads/'.$newFilename;
+        return $dir . DIRECTORY_SEPARATOR . $newFilename;
     }
 }

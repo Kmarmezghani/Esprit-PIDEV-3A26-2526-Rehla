@@ -2,12 +2,12 @@
 
 ## 🌍 Overview
 
-Rehla is a comprehensive full-stack web application designed to centralize and simplify travel and leisure activities planning. The platform provides users with an integrated environment to explore destinations, discover activities, interact through social features, and manage reservations seamlessly.
+Rehla is a comprehensive desktop application built with Java/JavaFX designed to centralize and simplify travel and leisure activities planning. The platform provides users with an integrated environment to explore destinations, discover activities, interact through social features, and manage reservations seamlessly.
 
 **Academic Context:**
 Developed as part of PIDEV – 3rd Year Engineering Program at Esprit School of Engineering (Academic Year 2025–2026)
 
-**Project Goal:** Solve fragmentation in existing travel platforms by offering a unified, intuitive, and feature-rich solution.
+**Project Goal:** Solve fragmentation in existing travel platforms by offering a unified, intuitive, and feature-rich desktop solution.
 
 ## 🚀 Key Features
 
@@ -90,25 +90,26 @@ Developed as part of PIDEV – 3rd Year Engineering Program at Esprit School of 
 ## 🛠 Tech Stack
 
 ### Frontend Technologies
-- **HTML5 / CSS3** - Modern web standards
-- **JavaScript** - Interactive functionality
-- **Bootstrap** - Responsive design framework
-- **Twig** - Symfony templating engine
+- **JavaFX 21.0.2** - Modern desktop application framework
+- **FXML** - Declarative UI markup language
+- **CSS3** - Styling and theming
+- **Java 17** - Core programming language
 
 ### Backend Technologies
-- **Symfony Framework (PHP 8.1+)** - Robust MVC architecture
-- **Doctrine ORM** - Database abstraction layer
+- **Java 17** - Object-oriented programming
+- **Maven** - Build automation and dependency management
 - **MySQL Database** - Relational data storage
+- **JDBC** - Database connectivity
 - **File System Handling** - Secure uploads management
 - **Security System** - Authentication & authorization
-- **PDF Generation** - DomPDF for ticket generation
-- **QR Code Generation** - Endroid QR code bundle
-- **Email Services** - Google Mailer integration
-- **Pagination** - KNP Paginator bundle
-- **Image Processing** - Liip Imagine bundle
-- **WebSocket Support** - Ratchet for real-time messaging
-- **Cloud Storage** - Cloudinary for file uploads
+- **PDF Generation** - iText 7 for ticket generation
+- **QR Code Generation** - ZXing library
+- **Email Services** - Jakarta Mail integration
+- **WebSocket Support** - Custom socket server for real-time messaging
 - **Payment Integration** - Stripe payment processing
+- **SMS Integration** - Twilio for OTP and notifications
+- **Face Recognition** - Webcam capture integration
+- **Environment Configuration** - Dotenv for secure configuration
 
 ## 🏗 Architecture
 
@@ -117,7 +118,7 @@ Developed as part of PIDEV – 3rd Year Engineering Program at Esprit School of 
 ┌─────────────────────────────────────────┐
 │              Presentation Layer         │
 │  ┌─────────────────────────────┐        │
-│  │    Views (Twig Templates)   │        │
+│  │    Views (FXML + CSS)       │        │
 │  └─────────────────────────────┘        │
 │              Controllers                │
 │  ┌─────────────────────────────┐        │
@@ -127,7 +128,7 @@ Developed as part of PIDEV – 3rd Year Engineering Program at Esprit School of 
 │  ┌─────────────────────────────┐        │
 │  │      Data Access Layer      │        │
 │  └─────────────────────────────┘        │
-│           Repositories                  │
+│           Models                      │
 │  ┌─────────────────────────────┐        │
 │  │      Data Models            │        │
 │  └─────────────────────────────┘        │
@@ -141,24 +142,30 @@ Developed as part of PIDEV – 3rd Year Engineering Program at Esprit School of 
 - **Social Module** - Posts, comments, likes
 - **Reservation Module** - Booking and ticketing
 - **Admin Dashboard Module** - Management and analytics
+- **Socket Server Module** - Real-time messaging
 
 ## 📁 Project Structure
 
 ```
 Rehla/
 ├── src/
-│   ├── Controller/          # HTTP request handlers
-│   ├── Entity/            # Data models
-│   ├── Repository/         # Database queries
-│   ├── Service/           # Business logic
-│   └── Form/              # Form handling
-├── templates/             # Twig templates
-├── public/
-│   ├── uploads/           # File storage
-│   └── assets/            # Static assets
-├── config/               # Configuration files
-├── migrations/            # Database schema
-└── tests/               # Unit tests
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── Controllers/      # FXML controllers
+│   │   │   ├── models/          # Data models
+│   │   │   ├── services/        # Business logic
+│   │   │   ├── util/            # Utility classes
+│   │   │   ├── SocketServer/    # WebSocket server
+│   │   │   └── rehla/           # Main application
+│   │   └── resources/
+│   │       ├── Frontoffice/      # Frontend FXML files
+│   │       ├── Backoffice/       # Backend FXML files
+│   │       ├── css/             # Stylesheets
+│   │       └── images/          # Static images
+│   └── test/                    # Unit tests
+├── uploads/                    # File storage
+├── pom.xml                     # Maven configuration
+└── .env                        # Environment variables
 ```
 
 ## Getting Started
@@ -170,137 +177,129 @@ git clone https://github.com/Kmarmezghani/Esprit-PIDEV-3A26-2526-Rehla
 
 ### 2. Install dependencies
 ```bash
-composer install
+mvn clean install
 ```
 
 ### 3. Configure environment
-Update `.env` file:
+Database configuration is hardcoded in `src/main/java/util/DBConnection.java`:
+```java
+private final String url = "jdbc:mysql://localhost:3306/rehla";
+private final String user = "root";
+private final String password = "";
 ```
-DATABASE_URL="mysql://username:password@127.0.0.1:3306/rehla"
+
+For external API integrations (Stripe, Twilio), create `.env` file in project root:
+```
+STRIPE_SECRET_KEY=your_stripe_secret_key
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
 ```
 
 ### 4. Create database
 ```bash
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
+# Create MySQL database
+mysql -u root -e "CREATE DATABASE rehla;"
 ```
 
-### 5. Run the server
+### 5. Run the application
 ```bash
-php -S localhost:8000 -c C:\xampp\php\php.ini -t public
+mvn javafx:run
 ```
 
 ## 🔧 Configuration
 
 ### Database Configuration
 ```bash
-# DATABASE_URL format for MySQL
-DATABASE_URL="mysql://root:@127.0.0.1:3306/rehla"
+# JDBC URL format for MySQL
+DB_URL=jdbc:mysql://localhost:3306/rehla
+DB_USER=root
+DB_PASSWORD=
 ```
 
 ### File Upload Configuration
-```yaml
-# config/services.yaml
-parameters:
-    activities_directory: '%kernel.project_dir%/public/uploads/activities'
-    images_directory: '%kernel.project_dir%/public/uploads'
+```java
+// File paths are configured in util classes
+String uploadsDirectory = "uploads/";
+String activitiesDirectory = "uploads/activities/";
+String imagesDirectory = "uploads/images/";
 ```
 
 ## 📊 Performance Optimizations
 
 ### Database Optimizations
-- **N+1 Query Resolution**: Reduced from 12 to 7 queries per page
-- **Query Optimization**: Implemented JOIN FETCH strategies
+- **Query Optimization**: Efficient JDBC query implementation
 - **Indexing**: Proper database indexes for search queries
-- **Connection Pooling**: Efficient database connection management
+- **Connection Management**: Efficient database connection handling
+- **Batch Operations**: Optimized bulk data operations
 
 ### Frontend Optimizations
 - **Image Compression**: Automatic image optimization
-- **Lazy Loading**: On-demand content loading
-- **Caching**: Browser and server-side caching
-- **CDN Ready**: Asset optimization for production
+- **Lazy Loading**: On-demand content loading in JavaFX
+- **CSS Optimization**: Efficient styling and theming
+- **FXML Caching**: UI component caching for better performance
 
 ### Performance Metrics
-- **Query Optimization**: Implemented efficient database queries
+- **Query Optimization**: Efficient JDBC queries with prepared statements
 - **Image Processing**: Optimized file handling and compression
-- **Caching Strategy**: Browser and server-side caching implemented
+- **Memory Management**: Efficient JavaFX scene graph management
 
 ## 🔒 Security Features
 
 ### Authentication & Authorization
 - **Role-based Access Control**: User, Guide, Admin roles
-- **Session Management**: Secure session handling
+- **Session Management**: Secure session handling in JavaFX
 - **Password Encryption**: Bcrypt hashing
+- **Face Recognition**: Webcam-based authentication
 
 ### Data Protection
-- **Input Validation**: Form validation with constraints
-- **SQL Injection Prevention**: Parameterized queries
-- **CSRF Protection**: Token-based form protection
+- **Input Validation**: Form validation with JavaFX constraints
+- **SQL Injection Prevention**: Prepared statements with JDBC
+- **Environment Variables**: Secure configuration with Dotenv
 - **User Authorization**: Reservation ownership verification
 
 ## 🧪 Testing
 
 ### Run Unit Tests
 ```bash
-php bin/phpunit
+mvn test
 ```
 
 ### Run Static Analysis
 ```bash
-php vendor/bin/phpstan analyse src/
+mvn clean compile
 ```
 
 ### Test Coverage
-- **Unit Tests**: Service layer validation (ActiviteManager, AttractionValidator, PostManager, ReservationManager, UserManager)
+- **Unit Tests**: Service layer validation (Controllers, Services, Models)
 - **Service Tests**: Business logic validation and edge cases
-- **Manager Tests**: Activity, attraction, post, reservation, and user management validation
+- **Integration Tests**: Database connectivity and external API integration
 
 ## 📚 API Documentation
 
-### Authentication API
-- `POST /api/login` - User login authentication
-- `GET  /api/check-email` - Check email availability
-- `POST /api/check-password-pwned` - Check if password is compromised
+### External Services Integration
+- **Stripe API** - Payment processing and invoice generation
+- **Twilio API** - SMS notifications and OTP verification
+- **Weather API** - Weather forecast integration for destinations
+- **Currency Exchange API** - Real-time TND to EUR/USD conversion
+- **AI Services** - Integration with various AI providers for recommendations and descriptions
 
-### User Management API
-- `GET  /api/users` - List users (admin only, requires API key)
+### Service Classes
+- **DestinationGeminiService** - AI-generated country descriptions
+- **AiDescriptionService** - Professional activity descriptions
+- **MistralRecommendationService** - AI-powered activity recommendations
+- **ChatbotService** - AI-powered travel assistance
+- **UserRiskAnalysisService** - User behavior analysis
+- **WeatherActivityTipsService** - Weather-based activity recommendations
+- **Currency Exchange Service** - Real-time exchange rates
 
-### AI & Recommendations API
-- `POST /api/recommandation-ia` - AI-powered activity recommendations
-- `POST /api/recommandation-ia/creer` - Create reservation from AI recommendation
-
-### External Services API
-- `GET  /api/exchange-rates` - Get currency exchange rates (TND to EUR/USD)
-- `GET  /api/tickets-by-destination` - Get tickets by destination
-- `POST /api/circuit/generate` - Generate optimized travel circuits
-
-### Admin Management API
-- `GET  /api/countries/search` - Search countries (admin)
-- `GET  /api/cities/search` - Search cities (admin)
-- `GET  /api/cities/country` - Get cities by country (admin)
-- `POST /api/ai/generate-description` - Generate AI descriptions (admin)
-- `POST /api/ai/suggest-ville-profile` - AI city profile suggestions (admin)
-- `POST /api/generate-image` - Generate images from Unsplash (admin)
-- `POST /api/clustering` - K-means clustering analysis (admin)
-
-### Weather API
-- `GET  /meteo/{ville}/{date}` - Get weather forecast for city and date
-
-## 🚀 Deployment
-
-### Production Setup
-1. **Environment Variables**: Set production `.env` values
-2. **Database**: Configure production database
-3. **Web Server**: Configure Apache/Nginx
-4. **Start Application**: Use PHP built-in server or web server
 
 ## 🤝 Contributing
 
 ### Development Workflow
 1. Fork the repository
-2. Create feature branch: `git checkout -b branchefinalSymfony`
+2. Create feature branch: `git checkout -b branchefinalTest`
 3. Make changes and commit
-4. Push to fork: `git push origin branchefinalSymfony`
+4. Push to fork: `git push origin branchefinalTest`
 5. Create Pull Request
 
 ## 👥 Contributors

@@ -238,7 +238,7 @@ public class MyActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -290,7 +290,7 @@ public class MyActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -338,7 +338,7 @@ public class MyActivitiesPageController {
             Stage stage = getStageFromEvent(event);
 
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -367,3 +367,4 @@ public class MyActivitiesPageController {
     }
 
 }
+

@@ -173,7 +173,7 @@ public class SecurityCenterController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -263,7 +263,7 @@ public class SecurityCenterController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -342,7 +342,7 @@ public class SecurityCenterController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -374,3 +374,4 @@ public class SecurityCenterController implements Initializable {
         alert.showAndWait();
     }
 }
+

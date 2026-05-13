@@ -202,7 +202,7 @@ public class HomePageController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -390,7 +390,7 @@ public class HomePageController implements Initializable {
             if (stage == null) stage = getAnyStage();
 
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
 
@@ -570,7 +570,7 @@ public class HomePageController implements Initializable {
             Stage stage = getStageFromEvent(event);
             if (stage == null) stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
 
@@ -591,7 +591,7 @@ public class HomePageController implements Initializable {
             Stage stage = getStageFromEvent(event);
             if (stage == null) stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
 
@@ -625,7 +625,7 @@ public class HomePageController implements Initializable {
                     Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/loginPage.fxml"));
                     Stage stage = getStageFromEvent(event);
                     if (stage == null) stage = getAnyStage();
-                    if (stage != null) stage.setScene(new Scene(root));
+                    if (stage != null) util.NavigationUtil.switchScene(stage, root);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -666,7 +666,7 @@ public class HomePageController implements Initializable {
 
             Stage stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
         } catch (IOException e) {
@@ -684,7 +684,7 @@ public class HomePageController implements Initializable {
 
             Stage stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
 
@@ -703,7 +703,7 @@ public class HomePageController implements Initializable {
 
             Stage stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
 
@@ -719,7 +719,7 @@ public class HomePageController implements Initializable {
 
             Stage stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
         } catch (IOException e) {
@@ -814,7 +814,7 @@ public class HomePageController implements Initializable {
             Stage stage = getStageFromEvent(event);
             if (stage == null) stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
         } catch (Exception e) {
@@ -831,7 +831,7 @@ public class HomePageController implements Initializable {
             Stage stage = getStageFromEvent(event);
             if (stage == null) stage = getAnyStage();
             if (stage != null) {
-                if (stage.getScene() == null) stage.setScene(new Scene(root));
+                if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
                 else stage.getScene().setRoot(root);
             }
 
@@ -1085,7 +1085,7 @@ public class HomePageController implements Initializable {
             Stage stage = getAnyStage();
             if (stage == null) stage = (Stage) ((Node) flashDealsBox).getScene().getWindow();
 
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();

@@ -144,7 +144,7 @@ public class PostsPageController implements Initializable {
             // Use setRoot to keep window size
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -154,3 +154,4 @@ public class PostsPageController implements Initializable {
         }
     }
 }
+

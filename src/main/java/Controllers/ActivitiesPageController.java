@@ -764,7 +764,7 @@ public class ActivitiesPageController {
             controller.setActivity(a);
 
             Stage stage = (Stage) activitiesFlowPane.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -916,7 +916,7 @@ public class ActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = getStageFromEvent(event);
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -936,7 +936,7 @@ public class ActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -987,7 +987,7 @@ public class ActivitiesPageController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -1004,7 +1004,7 @@ public class ActivitiesPageController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/MyReservation.fxml"));
             Parent root = loader.load();
 
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();

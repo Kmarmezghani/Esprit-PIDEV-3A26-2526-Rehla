@@ -219,7 +219,7 @@ private PostService postService = new PostService();
             Parent root = loader.load();
 
             Stage stage = getStageFromEvent(event);
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -244,7 +244,7 @@ private PostService postService = new PostService();
             Parent root = loader.load();
 
             Stage stage = (Stage) anyNodeOnScene.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -304,7 +304,7 @@ private PostService postService = new PostService();
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -322,7 +322,7 @@ private PostService postService = new PostService();
             MenuItem item = (MenuItem) event.getSource();
             Stage stage = (Stage) item.getParentPopup().getOwnerWindow();
 
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -712,7 +712,7 @@ private PostService postService = new PostService();
 
             Stage stage = new Stage();
             stage.setTitle("Chat avec " + user.getNom());
-            stage.setScene(new Scene(popup));
+            util.NavigationUtil.switchScene(stage, popup);
             stage.show();
 
         }catch(Exception e){
@@ -1793,6 +1793,7 @@ private PostService postService = new PostService();
     }
 
 }
+
 
 
 

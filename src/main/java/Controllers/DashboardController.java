@@ -222,13 +222,13 @@ public class DashboardController {
     @FXML private TableView<Personne> tableuser;
     @FXML private TableView<Preference> tablePreferences;
     //-------------------------------------------------------------------
-    @FXML private TableColumn<Personne, Integer> colUserId;
     @FXML private TableColumn<Personne, String> colUserNom;
     @FXML private TableColumn<Personne, String> colUserPrenom;
     @FXML private TableColumn<Personne, String> colUserEmail;
     @FXML private TableColumn<Personne, String> colUserRole;
     @FXML private TableColumn<Personne, String> colUserStatut;
     @FXML private TableColumn<Personne, String> colUserDateInsc;
+    @FXML private TableColumn<Personne, Void> colUserActions;
     @FXML private TableColumn<Preference, String> colPrefUser;
     @FXML private TableColumn<Preference, Double> colPrefBudgetMin;
     @FXML private TableColumn<Preference, Double> colPrefBudgetMax;
@@ -667,7 +667,7 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Edit Activity");
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.showAndWait();
 
             refreshActiviteTable();
@@ -910,7 +910,7 @@ public class DashboardController {
 
             Stage stage = new Stage();
             stage.setTitle("Admin Analytics");
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
 
             // Makes it popup modal
             stage.initModality(Modality.APPLICATION_MODAL);
@@ -1201,6 +1201,29 @@ public class DashboardController {
     void maxwindow(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setMaximized(!stage.isMaximized());
+    }
+
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Déconnexion");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Êtes-vous sûr de vouloir vous déconnecter ?");
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                try {
+                    util.Session.clear();
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/loginPage.fxml"));
+                    Parent loginRoot = loader.load();
+                    util.NavigationUtil.switchScene(
+                        (Stage) ((Node) event.getSource()).getScene().getWindow(),
+                        loginRoot
+                    );
+                } catch (Exception e) {
+                    System.err.println("[Logout] Failed: " + e.getMessage());
+                }
+            }
+        });
     }
 
     @FXML
@@ -1623,7 +1646,7 @@ public class DashboardController {
 
             Stage stage = new Stage();
             stage.setTitle("Ajouter Post");
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.showAndWait();
 
             loadPosts(); // refresh après fermeture
@@ -1729,7 +1752,7 @@ public class DashboardController {
 
             Stage stage = new Stage();
             stage.setTitle("Modifier Post");
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             /*attendre jusqu'a la fermiture de la fenetre et puis récuperer tt les posts*/
             stage.showAndWait();
 
@@ -1838,35 +1861,145 @@ public class DashboardController {
     }
     /*------------------------------------------Module users------------------------------------------*/
 
+    /** Top-right global Refresh button — reloads whatever tab is active */
+    @FXML
+    void refreshCurrentTab(ActionEvent event) {
+        util.DBConnection.resetInstance(); // destroy entire singleton
+        refreshUsersTable();
+        refreshPreferencesTable();
+    }
+
     @FXML
     void refreshUsersTable(ActionEvent event) {
+        util.DBConnection.resetInstance(); // destroy entire singleton
         refreshUsersTable();
     }
 
     @FXML
     void refreshPreferencesTable(ActionEvent event) {
+        util.DBConnection.resetInstance(); // destroy entire singleton
         refreshPreferencesTable();
     }
 
     private void initUsersTable() {
-        colUserId.setCellValueFactory(cell -> new SimpleIntegerProperty(cell.getValue().getId()).asObject());
         colUserNom.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNom()));
         colUserPrenom.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPrenom()));
         colUserEmail.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEmail()));
-        colUserRole.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getRole()));
+        colUserRole.setCellValueFactory(cell -> {
+            String r = cell.getValue().getRole();
+            if (r == null) return new SimpleStringProperty("CLIENT");
+            switch (r.toUpperCase()) {
+                case "ADMIN": return new SimpleStringProperty("ADMIN");
+                case "GUIDE": return new SimpleStringProperty("GUIDE");
+                default:      return new SimpleStringProperty("CLIENT");
+            }
+        });
         colUserStatut.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getStatutCompte()));
         colUserDateInsc.setCellValueFactory(cell -> {
             var dt = cell.getValue().getDateInscription();
             String s = dt != null ? dt.format(DATE_FORMAT) : "";
             return new SimpleStringProperty(s);
         });
+        // ── Actions column : Edit + Delete buttons ─────────────────
+        colUserActions.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            private final javafx.scene.control.Button btnEdit   = new javafx.scene.control.Button("✏ Modifier");
+            private final javafx.scene.control.Button btnDelete = new javafx.scene.control.Button("🗑 Supprimer");
+            private final javafx.scene.layout.HBox box = new javafx.scene.layout.HBox(4, btnEdit, btnDelete);
+            {
+                btnEdit.setStyle("-fx-background-color:#223f91;-fx-text-fill:white;-fx-font-size:10px;-fx-cursor:hand;-fx-padding:3 7;");
+                btnDelete.setStyle("-fx-background-color:#dc3545;-fx-text-fill:white;-fx-font-size:10px;-fx-cursor:hand;-fx-padding:3 7;");
+                btnEdit.setOnAction(e -> editUserRole(getTableView().getItems().get(getIndex())));
+                btnDelete.setOnAction(e -> deleteUser(getTableView().getItems().get(getIndex())));
+            }
+            @Override protected void updateItem(Void v, boolean empty) {
+                super.updateItem(v, empty);
+                setGraphic(empty ? null : box);
+            }
+        });
+
         userList.setAll(personneService.getAll());
         tableuser.setItems(userList);
     }
 
+    private void editUserRole(Personne p) {
+        // Don't allow editing admin accounts
+        if ("admin".equalsIgnoreCase(p.getRole()) || "ADMIN".equals(p.getRole())) {
+            new Alert(Alert.AlertType.WARNING, "Impossible de modifier un compte ADMIN.").showAndWait();
+            return;
+        }
+
+        // Build choice dialog for role
+        javafx.scene.control.ChoiceDialog<String> roleDialog =
+            new javafx.scene.control.ChoiceDialog<>(
+                p.getRole() != null ? p.getRole().toUpperCase() : "CLIENT",
+                "CLIENT", "GUIDE", "ADMIN"
+            );
+        roleDialog.setTitle("Modifier le rôle");
+        roleDialog.setHeaderText("Utilisateur : " + p.getPrenom() + " " + p.getNom());
+        roleDialog.setContentText("Nouveau rôle :");
+
+        // Build choice dialog for statut
+        javafx.scene.control.ChoiceDialog<String> statutDialog =
+            new javafx.scene.control.ChoiceDialog<>(
+                p.getStatutCompte() != null ? p.getStatutCompte() : "ACTIF",
+                "ACTIF", "INACTIF", "SUSPENDU"
+            );
+        statutDialog.setTitle("Modifier le statut");
+        statutDialog.setHeaderText("Utilisateur : " + p.getPrenom() + " " + p.getNom());
+        statutDialog.setContentText("Nouveau statut :");
+
+        roleDialog.showAndWait().ifPresent(newRole -> {
+            statutDialog.showAndWait().ifPresent(newStatut -> {
+                p.setRole(newRole);
+                p.setStatutCompte(newStatut);
+                try {
+                    personneService.update(p);
+                    util.DBConnection.resetInstance();
+                    refreshUsersTable();
+                    new Alert(Alert.AlertType.INFORMATION,
+                        "Utilisateur mis à jour avec succès.").showAndWait();
+                } catch (Exception ex) {
+                    new Alert(Alert.AlertType.ERROR,
+                        "Erreur : " + ex.getMessage()).showAndWait();
+                }
+            });
+        });
+    }
+
+    private void deleteUser(Personne p) {
+        // Protect admin accounts
+        if ("admin".equalsIgnoreCase(p.getRole()) || "ADMIN".equals(p.getRole())) {
+            new Alert(Alert.AlertType.WARNING, "Impossible de supprimer un compte ADMIN.").showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Supprimer l'utilisateur");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Supprimer le compte de " + p.getPrenom() + " " + p.getNom() + " ?\nCette action est irréversible.");
+
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                try {
+                    personneService.delete(p);
+                    util.DBConnection.resetInstance();
+                    refreshUsersTable();
+                    new Alert(Alert.AlertType.INFORMATION,
+                        "Utilisateur supprimé avec succès.").showAndWait();
+                } catch (Exception ex) {
+                    new Alert(Alert.AlertType.ERROR,
+                        "Erreur : " + ex.getMessage()).showAndWait();
+                }
+            }
+        });
+    }
+
     private void refreshUsersTable() {
-        userList.setAll(personneService.getAll());
+        // New PersonneService instance ensures a truly fresh DB query
+        services.PersonneService freshService = new services.PersonneService();
+        userList.setAll(freshService.getAll());
         tableuser.setItems(userList);
+        tableuser.refresh();
     }
 
     private void initPreferencesTable() {
@@ -1898,3 +2031,4 @@ public class DashboardController {
 
 
 }
+

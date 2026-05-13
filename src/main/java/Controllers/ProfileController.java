@@ -275,7 +275,7 @@ public class ProfileController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/HomePage.fxml"));
             Stage stage = (Stage) fieldNom.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -285,7 +285,7 @@ public class ProfileController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/loginPage.fxml"));
             Stage stage = (Stage) fieldNom.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -308,3 +308,4 @@ public class ProfileController {
         alert.showAndWait();
     }
 }
+

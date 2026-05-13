@@ -173,7 +173,7 @@ public class BlogProfileController {
             Parent root = loader.load();
 
             Stage stage = getStageFromEvent(event);
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -212,7 +212,7 @@ void goToMyReservations(ActionEvent event) {
         Parent root = loader.load();
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-        stage.setScene(new Scene(root));
+        util.NavigationUtil.switchScene(stage, root);
         stage.show();
     } catch (Exception e) {
         e.printStackTrace();
@@ -1036,7 +1036,7 @@ void goToMyReservations(ActionEvent event) {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -1051,3 +1051,4 @@ void goToMyReservations(ActionEvent event) {
         alert.showAndWait();
     }
 }
+

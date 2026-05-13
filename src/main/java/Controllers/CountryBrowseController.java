@@ -211,7 +211,7 @@ public class CountryBrowseController implements Initializable {
             
             Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -230,7 +230,7 @@ public class CountryBrowseController implements Initializable {
             
             Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -301,3 +301,4 @@ public class CountryBrowseController implements Initializable {
         alert.showAndWait();
     }
 }
+

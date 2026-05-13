@@ -11,20 +11,17 @@ import java.util.List;
 
 public class PersonneService implements IService<Personne> {
 
-    private  Connection conn;
+    public PersonneService() {}
 
-    public PersonneService() {
-        this.conn = DBConnection.getInstance().getConn();
-        if (this.conn == null) {
-            throw new IllegalStateException("La connexion à la DB n'a pas été établie !");
-        }
+    /** Always returns the live connection — auto-reconnects if stale. */
+    private Connection conn() {
+        return DBConnection.getInstance().getConn();
     }
 
     @Override
     public void add(Personne p) {
-        if (conn == null) throw new IllegalStateException("DB not connected");
         String sql = "INSERT INTO `personne` (`nom`, `prenom`, `email`, `motDePasse`, `dateInscription`, `role`, `statutCompte`) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, p.getNom());
             ps.setString(2, p.getPrenom());
             ps.setString(3, p.getEmail());
@@ -46,8 +43,6 @@ public class PersonneService implements IService<Personne> {
 
     @Override
     public void update(Personne p) {
-        if (conn == null) throw new IllegalStateException("DB not connected");
-
         String sql = """
         UPDATE `personne` 
         SET `nom` = ?, 
@@ -63,7 +58,7 @@ public class PersonneService implements IService<Personne> {
         WHERE `id` = ?
     """;
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, p.getNom());
             ps.setString(2, p.getPrenom());
             ps.setString(3, p.getEmail());
@@ -91,7 +86,7 @@ public class PersonneService implements IService<Personne> {
     @Override
     public void delete(Personne p) {
         String sql = "DELETE FROM `personne` WHERE `id` = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, p.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -104,7 +99,7 @@ public class PersonneService implements IService<Personne> {
     public List<Personne> getAll() {
         List<Personne> list = new ArrayList<>();
         String sql = "SELECT * FROM `personne`";
-        try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+        try (Statement st = conn().createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
             System.err.println("[DB] PersonneService getAll: " + e.getMessage());
@@ -117,7 +112,7 @@ public class PersonneService implements IService<Personne> {
     public Personne findByEmail(String email) {
         if (email == null || email.isBlank()) return null;
         String sql = "SELECT * FROM `personne` WHERE `email` = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, email.trim());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
@@ -130,7 +125,7 @@ public class PersonneService implements IService<Personne> {
 
     public Personne getById(int id) {
         String sql = "SELECT * FROM `personne` WHERE `id` = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs);
@@ -204,7 +199,7 @@ public class PersonneService implements IService<Personne> {
 
         String sql = "SELECT * FROM `personne` WHERE `role` = ? LIMIT 1";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
 
             ps.setString(1, toDbRole(role)); // utilise ta méthode existante 🔥
 
@@ -230,7 +225,7 @@ public class PersonneService implements IService<Personne> {
                 "FROM personne " +
                 "WHERE telephone IS NOT NULL AND heureNotif IS NOT NULL";
 
-        try (PreparedStatement ps = this.conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = this.conn().prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
 
@@ -261,7 +256,7 @@ public class PersonneService implements IService<Personne> {
     }
     public Personne getByEmail(String email) {
         String sql = "SELECT * FROM personne WHERE email = ? LIMIT 1";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -285,7 +280,7 @@ public class PersonneService implements IService<Personne> {
     }
     public String getEmailById(int id) {
         String sql = "SELECT email FROM personne WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getString("email");
@@ -298,7 +293,7 @@ public class PersonneService implements IService<Personne> {
 
     public String getFullNameById(int id) {
         String sql = "SELECT nom, prenom FROM personne WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -314,7 +309,7 @@ public class PersonneService implements IService<Personne> {
     }
     public boolean existsById(int id) throws SQLException {
         String sql = "SELECT 1 FROM personne WHERE id = ? LIMIT 1";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -326,9 +321,8 @@ public class PersonneService implements IService<Personne> {
      * Update last_login_at when a user successfully logs in.
      */
     public void updateLastLogin(int userId, LocalDateTime when) {
-        if (conn == null) throw new IllegalStateException("DB not connected");
         String sql = "UPDATE personne SET last_login_at = ? WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setTimestamp(1, when != null ? Timestamp.valueOf(when) : null);
             ps.setInt(2, userId);
             ps.executeUpdate();
@@ -345,7 +339,6 @@ public class PersonneService implements IService<Personne> {
      * @return number of rows updated
      */
     public int deactivateInactiveAccounts(int inactivityDays) {
-        if (conn == null) throw new IllegalStateException("DB not connected");
         if (inactivityDays <= 0) return 0;
 
         LocalDateTime cutoff = LocalDateTime.now().minusDays(inactivityDays);
@@ -360,7 +353,7 @@ public class PersonneService implements IService<Personne> {
               )
         """;
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setTimestamp(1, Timestamp.valueOf(cutoff));
             ps.setTimestamp(2, Timestamp.valueOf(cutoff));
             return ps.executeUpdate();

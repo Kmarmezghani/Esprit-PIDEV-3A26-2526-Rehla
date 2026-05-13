@@ -202,7 +202,7 @@ public class VerifyOTPController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/HomePage.fxml"));
                 Stage stage = (Stage) verifyButton.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } catch (IOException e) {
                 e.printStackTrace();
                 showAlert(Alert.AlertType.ERROR, "Error", "Could not open home page.");
@@ -269,7 +269,7 @@ public class VerifyOTPController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/loginPage.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
         } catch (IOException e) {
             e.printStackTrace();
         }

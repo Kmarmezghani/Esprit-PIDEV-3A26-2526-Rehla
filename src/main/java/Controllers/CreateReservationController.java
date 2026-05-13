@@ -123,7 +123,7 @@ public class CreateReservationController {
 
             Stage stage = new Stage();
             stage.setTitle("My Reservations");
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.show();
 
         } catch (IOException e) {

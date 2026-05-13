@@ -46,7 +46,7 @@ public class BookingTypeController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(path));
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,7 +193,7 @@ public class BookingTypeController {
             controller.setSelectedTickets(selectedPack);
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
 
             System.out.println("🎁 Smart Pack Generated! Total = " + bestTotal);
 

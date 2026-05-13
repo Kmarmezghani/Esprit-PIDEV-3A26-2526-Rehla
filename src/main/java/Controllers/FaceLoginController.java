@@ -287,7 +287,7 @@ public class FaceLoginController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/loginPage.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -299,7 +299,7 @@ public class FaceLoginController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Frontoffice/HomePage.fxml"));
             Stage stage = (Stage) webcamView.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();

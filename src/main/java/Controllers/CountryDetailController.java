@@ -208,7 +208,7 @@ public class CountryDetailController {
 
             Stage stage = (Stage) citiesFlowPane.getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -227,7 +227,7 @@ public class CountryDetailController {
 
             Stage stage = (Stage) citiesFlowPane.getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -319,3 +319,4 @@ public class CountryDetailController {
         }
     }
 }
+

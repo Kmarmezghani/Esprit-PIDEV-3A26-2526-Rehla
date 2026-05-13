@@ -203,7 +203,7 @@ public class FrontTicketsController {
             controller.setSelectedTickets(selectedTickets);
 
             Stage stage = new Stage();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.setTitle("Create Reservation");
             stage.show();
 
@@ -269,7 +269,7 @@ public class FrontTicketsController {
                 controller.setSelectedTickets(selectedTickets);
 
                 Stage stage = new Stage();
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
                 stage.setTitle("Create Reservation");
                 stage.show();
             }

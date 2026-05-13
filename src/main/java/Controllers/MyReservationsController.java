@@ -597,7 +597,7 @@ public class MyReservationsController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Choose Ticket Type");
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.showAndWait();
 
             reservationService.updateReservationStats(selectedReservation.getId());
@@ -624,7 +624,7 @@ public class MyReservationsController {
             Stage stage = new Stage();
             stage.setTitle("Modifier Réservation");
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
             stage.showAndWait();
 
             Reservation updated = reservationService.getById(reservation.getId());
@@ -766,7 +766,7 @@ public class MyReservationsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/HomePage.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) tableReservation.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            util.NavigationUtil.switchScene(stage, root);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -779,7 +779,7 @@ public class MyReservationsController {
             Parent root = loader.load();
 
             Stage stage = (Stage) searchField.getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -798,7 +798,7 @@ public class MyReservationsController {
             Parent root = loader.load();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();
@@ -855,7 +855,7 @@ public class MyReservationsController {
 
             Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -907,7 +907,7 @@ public class MyReservationsController {
 
             Stage stage = (Stage) searchField.getScene().getWindow();
             if (stage.getScene() == null) {
-                stage.setScene(new Scene(root));
+                util.NavigationUtil.switchScene(stage, root);
             } else {
                 stage.getScene().setRoot(root);
             }
@@ -941,7 +941,7 @@ public class MyReservationsController {
             MenuItem item = (MenuItem) event.getSource();
             Stage stage = (Stage) item.getParentPopup().getOwnerWindow();
 
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
 
             root.applyCss();

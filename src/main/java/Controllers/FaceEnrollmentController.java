@@ -344,7 +344,7 @@ public class FaceEnrollmentController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(path));
             Stage stage = (Stage) (webcamView != null ? webcamView.getScene().getWindow() : captureButton.getScene().getWindow());
-            if (stage.getScene() == null) stage.setScene(new Scene(root));
+            if (stage.getScene() == null) util.NavigationUtil.switchScene(stage, root);
             else stage.getScene().setRoot(root);
             root.applyCss();
             root.layout();

@@ -56,6 +56,9 @@ Developed as part of **PIDEV – 3rd Year Engineering Program at Esprit School o
 - View and manage personal reservations with status tracking
 - Generate printable tickets with booking details
 - Admin reservation and ticket management interface
+- Integrated secure payment during reservation with invoice generation.
+- Destination weather forecast displayed.
+- Automatic currency conversion based on the user’s preferred currency.
 
 ### **💬 Posts Management**
 - Add comments with text validation and regex patterns

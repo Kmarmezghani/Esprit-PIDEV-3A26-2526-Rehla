@@ -10,6 +10,7 @@ public class DBConnection {
             + "&useServerPrepStmts=false";
     private final String user = "root";
     private final String password = "";
+
     private Connection conn;
     private static DBConnection instance;
 

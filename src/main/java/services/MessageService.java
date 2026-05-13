@@ -15,6 +15,7 @@ public class MessageService {
     private final String USER = "root";
     private final String PASSWORD = "";
 
+
     // Envoyer un message
     public void sendMessage(Message msg) {
         String sql = "INSERT INTO message(conversation_id,sender_id,contenu) VALUES (?,?,?)";

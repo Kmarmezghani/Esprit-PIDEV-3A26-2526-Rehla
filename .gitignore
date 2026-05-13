@@ -39,3 +39,8 @@ build/
 
 # Environment variables
 .env
+
+# Log files
+*.log
+hs_err_pid*
+replay_pid*

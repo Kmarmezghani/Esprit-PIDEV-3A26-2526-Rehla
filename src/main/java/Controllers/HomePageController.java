@@ -238,16 +238,16 @@ public class HomePageController implements Initializable {
 
     private VBox createTopDestinationCard(Ville ville, String paysNom) {
 
-        double cardW = 215;
-        double imgH = 135;
+        double cardW = 280;
+        double imgH = 180;
 
         VBox card = new VBox();
         card.getStyleClass().add("destCard");
         card.setPrefWidth(cardW);
         card.setMaxWidth(cardW);
 
-        String key = safeKey(ville.getNom());
-        ImageView iv = createCityImage(key, cardW, imgH, 18);
+        // Use actual city image from database if available
+        ImageView iv = createCityImage(ville, cardW, imgH, 18);
 
         VBox body = new VBox(6);
         body.getStyleClass().add("destBody");
@@ -730,9 +730,15 @@ public class HomePageController implements Initializable {
     // =========================
     // IMAGE HELPERS
     // =========================
-    private ImageView createCityImage(String cityKey, double w, double h, double arc) {
-        String path = "/Frontoffice/images/cities/" + cityKey + ".jpg";
-        return createGenericImage(path, w, h, arc);
+    private ImageView createCityImage(Ville ville, double w, double h, double arc) {
+        String imageFilename = ville.getImage();
+        if (imageFilename == null || imageFilename.trim().isEmpty()) {
+            String defaultPath = "/Frontoffice/images/cities/city-default.jpg";
+            return createGenericImage(defaultPath, w, h, arc);
+        }
+        
+        String imagePath = "/Frontoffice/images/countries/" + imageFilename;
+        return createGenericImage(imagePath, w, h, arc);
     }
 
     private ImageView createGenericImage(String path, double w, double h, double arc) {

@@ -13,6 +13,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -107,10 +109,9 @@ public class CountryBrowseController implements Initializable {
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(25));
 
-        // Country Flag Emoji
-        Label flagLabel = new Label(getCountryEmoji(pays.getNom()));
-        flagLabel.setFont(Font.font("System", 60));
-
+        // Country Image
+        ImageView countryImageView = createCountryImage(pays);
+        
         Label nameLabel = new Label(pays.getNom());
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
         nameLabel.setTextFill(Color.web("#223f91"));
@@ -128,7 +129,7 @@ public class CountryBrowseController implements Initializable {
         cityCountLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         cityCountLabel.setTextFill(Color.web("#3A5BC7"));
 
-        card.getChildren().addAll(flagLabel, nameLabel, continentLabel, cityCountLabel);
+        card.getChildren().addAll(countryImageView, nameLabel, continentLabel, cityCountLabel);
 
         // Hover effect
         card.setOnMouseEntered(e -> {
@@ -154,6 +155,50 @@ public class CountryBrowseController implements Initializable {
         card.setOnMouseClicked(e -> navigateToCountry(pays));
 
         return card;
+    }
+
+    private ImageView createCountryImage(Pays pays) {
+        // Check if image filename is null or empty
+        String imageFilename = pays.getImage();
+        if (imageFilename == null || imageFilename.trim().isEmpty()) {
+            System.out.println("DEBUG: No image filename in database, using fallback");
+            return createDefaultCountryImage();
+        }
+        
+        String imagePath = "/Frontoffice/images/countries/" + imageFilename;
+        
+        System.out.println("DEBUG: Trying to load image: " + imagePath);
+        
+        try {
+            URL url = getClass().getResource(imagePath);
+            System.out.println("DEBUG: URL resolved: " + (url != null ? url.toString() : "NULL"));
+            
+            if (url != null) {
+                ImageView imageView = new ImageView(new Image(url.toExternalForm()));
+                imageView.setFitWidth(280);
+                imageView.setFitHeight(140);
+                imageView.setPreserveRatio(false);
+                System.out.println("DEBUG: Image loaded successfully");
+                return imageView;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception loading image: " + e.getMessage());
+            // Fall back to default
+        }
+        
+        System.out.println("DEBUG: Using fallback image");
+        // Fallback to default image
+        return createDefaultCountryImage();
+    }
+
+    private ImageView createDefaultCountryImage() {
+        String defaultPath = "/Frontoffice/images/cities/city-default.jpg";
+        URL url = getClass().getResource(defaultPath);
+        ImageView imageView = new ImageView(new Image(url.toExternalForm()));
+        imageView.setFitWidth(280);
+        imageView.setFitHeight(140);
+        imageView.setPreserveRatio(false);
+        return imageView;
     }
 
     private String getCountryEmoji(String countryName) {
@@ -231,6 +276,40 @@ public class CountryBrowseController implements Initializable {
             Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
             if (stage.getScene() == null) {
                 util.NavigationUtil.switchScene(stage, root);
+            } else {
+                stage.getScene().setRoot(root);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void goToPosts(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/blogAllPosts.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
+            } else {
+                stage.getScene().setRoot(root);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void goToActivities(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Frontoffice/ActivitiesPage.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = (Stage) countriesFlowPane.getScene().getWindow();
+            if (stage.getScene() == null) {
+                stage.setScene(new Scene(root));
             } else {
                 stage.getScene().setRoot(root);
             }

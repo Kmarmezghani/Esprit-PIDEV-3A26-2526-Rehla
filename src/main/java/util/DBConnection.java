@@ -6,16 +6,14 @@ import java.sql.SQLException;
 
 public class DBConnection {
 
-    private String url = "jdbc:mysql://localhost:3306/rehla09";
-    private String user = "root";
-    private String password = "";
+    private final String url = "jdbc:mysql://localhost:3306/rehla"
+            + "?autoReconnect=true&useSSL=false&cachePrepStmts=false"
+            + "&useServerPrepStmts=false";
+    private final String user = "root";
+    private final String password = "";
 
 
-   /* private String url = "jdbc:mysql://localhost:3306/rehla";
-
-     private String url = "jdbc:mysql://127.0.0.1:3306/rehla";
-     private String user = "REHLA";
-     private String password = "Rehla123";*/
+   /* private String url = "jdbc:mysql://localhost:3306/rehla";*/
 
     private Connection conn;
     private static DBConnection instance;

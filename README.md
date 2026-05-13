@@ -347,11 +347,11 @@ GET  /meteo/{ville}/{date}         # Get weather forecast for city and date
 ## 👥 Contributors
 
 ### **Development Team**
-- **[Ammamou Yosr]** 
-- **[Bouriga Zeineb]** 
-- **[Mezghani Kmar]** 
-- **[El Ayech Mohamed Rayen]** 
-- **[Trabelsi Anissa ]** 
+- **Amamou Yosr** 
+- **Bouriga Zeineb** 
+- **Mezghani Kmar** 
+- **El Ayech Mohamed Rayen** 
+- **Trabelsi Anissa** 
 
 
 ### **Academic Supervision**

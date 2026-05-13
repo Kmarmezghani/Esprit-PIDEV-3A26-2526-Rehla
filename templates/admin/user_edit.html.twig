@@ -35,13 +35,16 @@
         <div class="card-body">
             <div class="d-flex align-items-center mb-3">
                 {% if personne.profile_photo %}
-                    <img src="{{ personne.profile_photo }}" alt="Photo"
-                         class="rounded-circle me-3"
-                         style="width:60px;height:60px;object-fit:cover;border:2px solid #223f91;">
+                    {% set cleanPath = personne.profile_photo starts with '/' ? personne.profile_photo[1:] : personne.profile_photo %}
+                    {% if cleanPath starts with 'uploads/' %}
+                        <img src="{{ asset(cleanPath) }}" alt="Photo"
+                             class="rounded-circle me-3"
+                             style="width:60px;height:60px;object-fit:cover;border:2px solid #223f91;">
+                    {% else %}
+                        <span style="display:inline-block;width:60px;height:60px;border-radius:50%;overflow:hidden;margin-right:1rem;border:2px solid #223f91;">{{ avatar_svg(personne.prenom, personne.nom) | raw }}</span>
+                    {% endif %}
                 {% else %}
-                    <img src="{{ asset('assets/images/default-user.png') }}" alt="Photo"
-                         class="rounded-circle me-3"
-                         style="width:60px;height:60px;object-fit:cover;border:2px solid #223f91;">
+                    <span style="display:inline-block;width:60px;height:60px;border-radius:50%;overflow:hidden;margin-right:1rem;border:2px solid #223f91;">{{ avatar_svg(personne.prenom, personne.nom) | raw }}</span>
                 {% endif %}
                 <div>
                     <h5 class="mb-0">{{ personne.prenom }} {{ personne.nom }}</h5>

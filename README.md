@@ -34,11 +34,13 @@ Developed as part of **PIDEV – 3rd Year Engineering Program at Esprit School o
 - Search and filtering by destination, date range, and maximum price
 - Activity participation system with booking integration
 - Guide activity creation and management
-- Admin validation workflow (approve/reject) with notifications
 - Full CRUD operations for activity management
 - Activity rating system (average ratings from reviews)
 - Review system with user feedback and moderation
 - Activity status management (available, unavailable, flash sales)
+- Email confirmations for successful bookings
+- Waitlist management for fully booked activities
+- Cancellation workflow with email notifications
 
 ### **🌍 Destinations Management**
 - Browse destinations (countries, cities, attractions) with pagination
@@ -52,10 +54,7 @@ Developed as part of **PIDEV – 3rd Year Engineering Program at Esprit School o
 ### **📅 Reservations Management**
 - Complete booking system for activities and destinations
 - View and manage personal reservations with status tracking
-- Cancellation workflow with email notifications
 - Generate printable tickets with booking details
-- Email confirmations for successful bookings
-- Waitlist management for fully booked activities
 - Admin reservation and ticket management interface
 
 ### **💬 Posts Management**
@@ -64,6 +63,7 @@ Developed as part of **PIDEV – 3rd Year Engineering Program at Esprit School o
 - Admin moderation for comments and posts
 - Comment management with minimum length validation
 - Post likes tracking and display with sorting capabilities
+- Admin validation workflow (approve/reject) with notifications
 
 ### **⭐ Favorites System**
 - Add/remove posts to personal favorites
@@ -210,7 +210,7 @@ php -S localhost:8000 -c C:\xampp\php\php.ini -t public
 ### **Database Configuration**
 ```env
 # DATABASE_URL format for MySQL
-DATABASE_URL="mysql://root:@127.0.0.1:3306/rehla09"
+DATABASE_URL="mysql://root:@127.0.0.1:3306/rehla"
 ```
 
 ### **File Upload Configuration**
@@ -337,9 +337,9 @@ GET  /meteo/{ville}/{date}         # Get weather forecast for city and date
 
 ### **Development Workflow**
 1. Fork the repository
-2. Create feature branch: `git checkout -b zeinebsymfony`
+2. Create feature branch: `git checkout -b branchefinalSymfony`
 3. Make changes and commit
-4. Push to fork: `git push origin zeinebsymfony`
+4. Push to fork: `git push origin branchefinalSymfony`
 5. Create Pull Request
 
 ---

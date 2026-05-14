@@ -67,11 +67,11 @@
                 </td>
 
                 <td>
-                {% if post.image %}
-                    <img src="{{ asset(post.image) }}" width="100" >
-                {% else %}
-                    N/A
-                {% endif %}
+              {% if post.image %}
+                <img src="{{ path('file_show') }}?path={{ post.image|url_encode }}" width="100">
+            {% else %}
+                N/A
+            {% endif %}
                 </td>
 
                 <td>

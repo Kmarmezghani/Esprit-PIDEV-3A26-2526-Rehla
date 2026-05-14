@@ -143,7 +143,7 @@
            href="#" id="userDropdown" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {% if app.session.get('user_photo') %}
-                <img src="{{ asset(app.session.get('user_photo')) }}" alt="Photo de profil"
+                <img  src="{{ path('file_show') }}?path={{ app.session.get('user_photo')|url_encode }}" alt="Photo de profil"
                      class="rounded-circle" style="width:35px; height:35px; object-fit:cover;">
             {% else %}
                 <span style="display:inline-block;width:35px;height:35px;border-radius:50%;overflow:hidden;vertical-align:middle;">{{ avatar_svg(app.session.get('user_prenom') ?? '', app.session.get('user_nom') ?? '') | raw }}</span>
